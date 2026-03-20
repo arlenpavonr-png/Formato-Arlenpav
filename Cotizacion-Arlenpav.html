@@ -1,400 +1,62 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cotización – Automatismos Arlenpav</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
-  :root {
-    --navy:#0f2044;--blue:#1a3a6e;--accent:#2563eb;--gold:#d97706;
-    --bg:#f5f6fa;--card:#ffffff;--border:#d1d5db;--text:#1e293b;
-    --muted:#64748b;--light:#e8edf5;--green:#16a34a;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh;padding:16px;}
-  .page{max-width:760px;margin:0 auto;background:var(--card);border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.10);}
-  .header{background:var(--navy);padding:20px 24px 16px;display:flex;align-items:center;gap:16px;}
-  .header img{width:68px;height:68px;border-radius:50%;background:white;object-fit:contain;flex-shrink:0;}
-  .header-info{flex:1;}
-  .header-info h1{font-size:16px;font-weight:700;color:#fff;letter-spacing:.4px;}
-  .header-info p{font-size:10.5px;color:#a8c0e8;margin-top:2px;line-height:1.5;}
-  .header-meta{text-align:right;flex-shrink:0;}
-  .doc-type{background:var(--gold);color:white;font-size:11px;font-weight:700;letter-spacing:1px;padding:4px 10px;border-radius:6px;text-transform:uppercase;display:inline-block;margin-bottom:6px;}
-  .no-field{display:flex;align-items:center;gap:6px;justify-content:flex-end;}
-  .no-field label{color:#a8c0e8;font-size:10px;font-weight:600;}
-  .no-field input{width:80px;padding:4px 6px;border-radius:5px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:white;font-size:12px;font-weight:600;text-align:center;}
-  .gold-bar{height:4px;background:linear-gradient(90deg,var(--gold),#f59e0b,var(--gold));}
-  .body{padding:20px 24px;display:flex;flex-direction:column;gap:18px;}
-  .section-title{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--light);}
-  .section-title span.dot{width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0;}
-  .grid{display:grid;gap:10px;}
-  .g2{grid-template-columns:1fr 1fr;}
-  .g3{grid-template-columns:1fr 1fr 1fr;}
-  .span2{grid-column:span 2;}
-  .field{display:flex;flex-direction:column;gap:3px;}
-  .field label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
-  .field input,.field select,.field textarea{border:1.5px solid var(--border);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:var(--bg);outline:none;transition:border .2s,box-shadow .2s;width:100%;}
-  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12);background:white;}
-  .field textarea{resize:vertical;min-height:60px;}
-  /* BUSCADOR */
-  .buscador-wrap{background:var(--light);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;}
-  .buscador-row{display:flex;gap:8px;align-items:flex-end;}
-  .buscador-input{flex:1;border:1.5px solid var(--border);border-radius:7px;padding:8px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:white;outline:none;transition:border .2s;}
-  .buscador-input:focus{border-color:var(--accent);}
-  .resultados{background:white;border:1.5px solid var(--border);border-radius:8px;max-height:200px;overflow-y:auto;display:none;}
-  .resultado-item{padding:8px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;transition:background .15s;}
-  .resultado-item:hover{background:#eff6ff;}
-  .resultado-item:last-child{border-bottom:none;}
-  .resultado-cod{color:var(--muted);font-size:10px;font-family:'DM Mono',monospace;flex-shrink:0;}
-  .resultado-nom{color:var(--text);flex:1;}
-  .resultado-pvp{color:var(--green);font-weight:700;flex-shrink:0;font-family:'DM Mono',monospace;}
-  /* TABLA */
-  .tabla-productos{width:100%;border-collapse:collapse;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;}
-  .tabla-productos thead tr{background:var(--navy);}
-  .tabla-productos thead th{padding:9px 10px;text-align:left;font-size:10px;font-weight:700;color:white;text-transform:uppercase;letter-spacing:.5px;}
-  .tabla-productos tbody tr{border-bottom:1px solid var(--border);}
-  .tabla-productos tbody tr:last-child{border-bottom:none;}
-  .tabla-productos tbody tr:nth-child(even){background:#f8fafc;}
-  .tabla-productos td{padding:8px 10px;font-size:12px;color:var(--text);vertical-align:middle;}
-  .td-cod{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
-  .td-cant input{width:56px;border:1.5px solid var(--border);border-radius:5px;padding:4px 6px;text-align:center;font-family:'DM Mono',monospace;font-size:13px;font-weight:700;background:white;outline:none;}
-  .td-cant input:focus{border-color:var(--accent);}
-  .td-precio{font-family:'DM Mono',monospace;font-weight:600;color:var(--blue);}
-  .td-total{font-family:'DM Mono',monospace;font-weight:700;color:var(--green);}
-  .btn-quitar{background:#fee2e2;color:#dc2626;border:none;border-radius:5px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;}
-  .btn-quitar:hover{background:#fca5a5;}
-  .empty-row td{text-align:center;color:var(--muted);font-size:12px;padding:24px;font-style:italic;}
-  /* MANO DE OBRA */
-  .mano-obra-wrap{background:#fefce8;border:1.5px solid #fde68a;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;}
-  .mano-obra-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:end;}
-  .mano-obra-precio-wrap{display:flex;flex-direction:column;gap:3px;min-width:130px;}
-  .mano-obra-precio-wrap label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
-  .mano-obra-precio-wrap input{border:1.5px solid var(--border);border-radius:7px;padding:8px 10px;font-family:'DM Mono',sans-serif;font-size:13px;font-weight:700;color:var(--green);background:white;outline:none;text-align:right;}
-  .mano-obra-precio-wrap input:focus{border-color:var(--accent);}
-  .btn-agregar-mo{background:var(--gold);color:white;border:none;border-radius:7px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;align-self:flex-end;white-space:nowrap;}
-  .btn-agregar-mo:hover{background:#b45309;}
-  /* TOTALES */
-  .totales-box{background:var(--light);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
-  .total-row{display:flex;gap:16px;align-items:center;justify-content:flex-end;}
-  .total-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;min-width:120px;text-align:right;}
-  .total-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:var(--blue);min-width:130px;text-align:right;}
-  .total-row.grand{border-top:2px solid var(--border);padding-top:10px;margin-top:4px;}
-  .total-row.grand .total-val{font-size:18px;color:var(--navy);}
-  .iva-toggle{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;align-self:flex-end;}
-  .iva-toggle input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;}
-  /* CONDICIONES */
-  .condiciones-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  .cond-item{background:var(--light);border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:4px;}
-  .cond-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
-  .cond-val{font-size:13px;font-weight:600;color:var(--navy);}
-  .cond-val input,.cond-val select{border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--navy);outline:none;width:100%;}
-  /* NOTA */
-  .nota-cot{background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;font-size:11px;color:#92400e;line-height:1.6;}
-  .nota-cot strong{font-weight:700;}
-  /* FIRMAS */
-  .firmas{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-  .firma-box{border:1.5px solid var(--border);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px;}
-  .firma-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
-  .firma-area{height:64px;border:1px dashed var(--border);border-radius:6px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;color:#cbd5e1;}
-  .firma-name{border:none;border-bottom:1px solid var(--border);font-size:12px;font-family:'DM Sans',sans-serif;background:transparent;outline:none;padding:4px 2px;color:var(--text);width:100%;}
-  .footer{background:var(--navy);padding:12px 24px;text-align:center;font-size:10px;color:#7090b8;}
-  @media print{
-    body{background:white;padding:0;}
-    .page{box-shadow:none;border-radius:0;}
-    button,.buscador-wrap,.btn-quitar,.mano-obra-wrap{display:none!important;}
-    *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  }
-  @media(max-width:520px){
-    .g2{grid-template-columns:1fr;}
-    .condiciones-grid{grid-template-columns:1fr;}
-    .firmas{grid-template-columns:1fr;}
-    .header{flex-wrap:wrap;}
-    .header-meta{width:100%;text-align:left;}
-    .mano-obra-row{grid-template-columns:1fr;}
-  }
-</style>
-</head>
-<body>
-<div class="page">
-
-  <div class="header">
-    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%230f2044'/%3E%3Ctext x='50' y='62' text-anchor='middle' fill='%23d97706' font-size='28' font-weight='bold' font-family='Arial'%3EARPA%3C/text%3E%3C/svg%3E" alt="ARPA">
-    <div class="header-info">
-      <h1>AUTOMATISMOS ARLENPAV S.A.S</h1>
-      <p>NIT: 901.473.259-8 &nbsp;|&nbsp; Tel: 300-568-3914<br>
-         CL 77C C 86A 38 – Medellín, Colombia<br>
-         www.automatismosarpa.com</p>
-    </div>
-    <div class="header-meta">
-      <div class="doc-type">💰 Cotización</div>
-      <div class="no-field" style="margin-top:6px;">
-        <label>N°</label>
-        <input type="text" id="numero-cot" placeholder="0001">
-      </div>
-      <div style="margin-top:5px;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">
-        <button onclick="nuevoCotNumero()" style="background:var(--gold);color:white;border:none;border-radius:5px;padding:4px 9px;font-size:10px;font-weight:700;cursor:pointer;">+ NUEVO N°</button>
-        <button onclick="guardarCotPDF()" style="background:var(--accent);color:white;border:none;border-radius:5px;padding:4px 9px;font-size:10px;font-weight:700;cursor:pointer;">📄 PDF</button>
-      </div>
-    </div>
-  </div>
-  <div class="gold-bar"></div>
-
-  <div class="body">
-
-    <!-- DATOS CLIENTE -->
-    <div class="section">
-      <div class="section-title"><span class="dot"></span>Datos del Cliente</div>
-      <div class="grid g2">
-        <div class="field span2"><label>Nombre / Empresa</label><input id="cot-nombre" type="text" placeholder="Nombre completo o razón social"></div>
-        <div class="field"><label>NIT / Cédula</label><input id="cot-nit" type="text" placeholder="000.000.000-0"></div>
-        <div class="field"><label>Teléfono</label><input id="cot-tel" type="tel" placeholder="+57 300 000 0000"></div>
-        <div class="field"><label>Correo electrónico</label><input id="cot-email" type="email" placeholder="correo@ejemplo.com"></div>
-        <div class="field"><label>Ciudad</label><input id="cot-ciudad" type="text" placeholder="Medellín"></div>
-        <div class="field"><label>Fecha</label><input id="cot-fecha" type="date"></div>
-        <div class="field"><label>Válida hasta</label><input id="cot-validez" type="date"></div>
-      </div>
-    </div>
-
-    <!-- BUSCADOR -->
-    <div class="section">
-      <div class="section-title"><span class="dot"></span>Buscar y Agregar Productos</div>
-      <div class="buscador-wrap">
-        <div class="buscador-row">
-          <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
-            <label style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Producto</label>
-            <input type="text" class="buscador-input" id="buscador" placeholder="🔍  Buscar por nombre o código (ej: Pitbull, Fox, Bulldozer...)" oninput="buscarProducto()" autocomplete="off">
-          </div>
-          <div style="display:flex;flex-direction:column;gap:3px;min-width:65px;">
-            <label style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Cant.</label>
-            <input type="number" id="cant-input" min="1" value="1" style="border:1.5px solid var(--border);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:13px;width:65px;text-align:center;background:white;outline:none;">
-          </div>
-        </div>
-        <div class="resultados" id="resultados"></div>
-        <div style="font-size:11px;color:var(--muted);">💡 Haz clic en un producto para agregarlo automáticamente a la cotización</div>
-      </div>
-    </div>
-
-    <!-- TABLA PRODUCTOS -->
-    <div class="section">
-      <div class="section-title"><span class="dot"></span>Productos Cotizados</div>
-      <table class="tabla-productos">
-        <thead>
-          <tr>
-            <th style="width:95px;">Código</th>
-            <th>Descripción</th>
-            <th style="width:58px;text-align:center;">Cant.</th>
-            <th style="width:110px;text-align:right;">P.V.P Unit.</th>
-            <th style="width:110px;text-align:right;">Total</th>
-            <th style="width:36px;"></th>
-          </tr>
-        </thead>
-        <tbody id="tabla-body">
-          <tr class="empty-row">
-            <td colspan="6">Agrega productos usando el buscador de arriba</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- MANO DE OBRA -->
-    <div class="section">
-      <div class="section-title"><span class="dot"></span>🔧 Mano de Obra / Instalación</div>
-      <div class="mano-obra-wrap">
-        <div class="mano-obra-row">
-          <div style="display:flex;flex-direction:column;gap:3px;">
-            <label style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Descripción del servicio</label>
-            <input type="text" id="mo-descripcion" placeholder="Ej: Instalación motor corredizo, programación y puesta en marcha" style="border:1.5px solid var(--border);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:13px;background:white;outline:none;width:100%;">
-          </div>
-          <div class="mano-obra-precio-wrap">
-            <label>Valor ($)</label>
-            <input type="number" id="mo-precio" placeholder="0" min="0" step="1000">
-          </div>
-          <button class="btn-agregar-mo" onclick="agregarManoObra()">+ Agregar</button>
-        </div>
-        <div style="font-size:11px;color:#92400e;">🔨 La mano de obra se lista por separado en el resumen de totales</div>
-      </div>
-    </div>
-
-    <!-- TOTALES -->
-    <div class="section">
-      <div class="section-title"><span class="dot"></span>Resumen de Cotización</div>
-      <div class="totales-box">
-        <label class="iva-toggle">
-          <input type="checkbox" id="iva-check" onchange="recalcular()">
-          Incluir IVA 19%
-        </label>
-        <div class="total-row">
-          <span class="total-label">Subtotal Productos</span>
-          <span class="total-val" id="subtotal-val">$ 0</span>
-        </div>
-        <div class="total-row" id="mo-row" style="display:none;">
-          <span class="total-label">Mano de Obra</span>
-          <span class="total-val" id="mo-val" style="color:var(--gold);">$ 0</span>
-        </div>
-        <div class="total-row" id="iva-row" style="display:none;">
-          <span class="total-label">IVA (19%)</span>
-          <span class="total-val" id="iva-val">$ 0</span>
-        </div>
-        <div class="total-row grand">
-          <span class="total-label" style="font-weight:700;color:var(--navy);">TOTAL</span>
-          <span class="total-val" id="total-val">$ 0</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- CONDICIONES -->
-    <div class="section">
-      <div class="section-title"><span class="dot"></span>Condiciones Comerciales</div>
-      <div class="condiciones-grid">
-        <div class="cond-item">
-          <div class="cond-label">Forma de pago</div>
-          <div class="cond-val">
-            <select id="cot-pago">
-              <option>50% anticipo – 50% contra entrega</option>
-              <option>100% anticipado</option>
-              <option>Crédito 30 días</option>
-              <option>Negociable</option>
-            </select>
-          </div>
-        </div>
-        <div class="cond-item">
-          <div class="cond-label">Tiempo de entrega</div>
-          <div class="cond-val"><input id="cot-entrega" type="text" placeholder="Ej: 3-5 días hábiles"></div>
-        </div>
-        <div class="cond-item">
-          <div class="cond-label">Garantía del equipo</div>
-          <div class="cond-val"><input id="cot-garantia" type="text" value="Según fabricante (2-3 años)"></div>
-        </div>
-        <div class="cond-item">
-          <div class="cond-label">Instalación</div>
-          <div class="cond-val">
-            <select id="cot-instalacion">
-              <option>No incluida – cotizar aparte</option>
-              <option>Incluida en el precio</option>
-              <option>A convenir</option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- OBSERVACIONES -->
-    <div class="section">
-      <div class="section-title"><span class="dot"></span>Observaciones</div>
-      <div class="field">
-        <textarea id="cot-obs" placeholder="Especificaciones adicionales, notas para el cliente, aclaraciones..."></textarea>
-      </div>
-    </div>
-
-    <!-- NOTA -->
-    <div class="nota-cot">
-      <strong>Nota:</strong> Esta cotización tiene vigencia de <strong>15 días calendario</strong> a partir de la fecha de emisión. Los precios están expresados en pesos colombianos (COP) e incluyen el suministro del equipo. El punto eléctrico (110V–220V) con polo a tierra corre por cuenta del cliente. <strong>Automatismos Arlenpav S.A.S</strong> no se hace responsable de daños causados por instalaciones realizadas por terceros no autorizados.
-    </div>
-
-    <!-- FIRMAS -->
-    <div class="section">
-      <div class="section-title"><span class="dot"></span>Aprobación</div>
-      <div class="firmas">
-        <div class="firma-box">
-          <div class="firma-label">Aprobado por (Cliente)</div>
-          <div class="firma-area">Firma aquí</div>
-          <input class="firma-name" type="text" placeholder="Nombre completo">
-          <input class="firma-name" type="text" placeholder="CC / NIT">
-        </div>
-        <div class="firma-box">
-          <div class="firma-label">Elaborado por Arlenpav</div>
-          <div class="firma-area">Firma aquí</div>
-          <input class="firma-name" type="text" value="Arlen Pavón R.">
-          <input class="firma-name" type="text" value="300-568-3914">
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="footer">
-    Automatismos Arlenpav S.A.S &nbsp;|&nbsp; NIT 901.473.259-8 &nbsp;|&nbsp; Tel 300-568-3914 &nbsp;|&nbsp; www.automatismosarpa.com
-  </div>
-</div>
-
-<script>
-const catalogo = [
-  {cod:"AUELMG750",nom:"Motor Elite MG 750 – ½ HP Silencioso 110V",pvp:939900},
-  {cod:"AUACSC901",nom:"Accessmatic Scorpion 901 – ½ HP 24V 110V",pvp:999900},
-  {cod:"AUACFX1000",nom:"Accessmatic Fox 1000 Pro – ¾ HP 110V (sin riel)",pvp:799900},
-  {cod:"AUACKFOX1000C",nom:"Accessmatic Fox 1000 Pro + Riel C correa – ¾ HP",pvp:1049900},
-  {cod:"AUACKFOX1000T",nom:"Accessmatic Fox 1000 Pro + Riel T metálico – ¾ HP",pvp:1149900},
-  {cod:"AUACFX1100WS",nom:"Accessmatic Fox 1100 Pro WiFi – ¾ HP 110V",pvp:1119900},
-  {cod:"AUACKFOX1050HS",nom:"Accessmatic Fox 1050 High Speed – ¾ HP alta velocidad",pvp:1219900},
-  {cod:"AUACKFOX1100WS",nom:"Accessmatic Fox 1100 Pro WiFi + Riel T",pvp:1399900},
-  {cod:"AUACSH1000",nom:"Accessmatic Shark 1000 – ¾ HP silencioso 110V",pvp:1095900},
-  {cod:"AUACRP120",nom:"Accessmatic Raptor 1200 – 1 HP 110V",pvp:1399900},
-  {cod:"AUACPUMA1200",nom:"Accessmatic Puma 1200 WiFi – 1 HP 110V",pvp:1369900},
-  {cod:"AUACKSC1800C",nom:"Accessmatic Scorpion 1800 – 1.5 HP + Riel C 4m",pvp:1999900},
-  {cod:"AUACKSC1800T",nom:"Accessmatic Scorpion 1800 – 1.5 HP + Riel T 4m",pvp:1999900},
-  {cod:"AUELMC4",nom:"Elite Slide 400 – 400 kg corrediza 110V",pvp:1069900},
-  {cod:"AUACKPB400",nom:"Accessmatic Pitbull 400 – 400 kg corrediza 110V",pvp:1099900},
-  {cod:"AUELMC5",nom:"Elite Slide 500 – 500 kg corrediza 110V",pvp:1199900},
-  {cod:"AUELMC8",nom:"Elite Slide 800 – 800 kg corrediza 110V",pvp:1549900},
-  {cod:"AUELMC8FV",nom:"Elite Slide 800 FV – 800 kg + lámpara destellante",pvp:1899900},
-  {cod:"AUACKBD850",nom:"Accessmatic Bulldozer 850 – 850 kg corrediza 110V",pvp:1599900},
-  {cod:"AUACKBD1024BL",nom:"Accessmatic Bulldog 1024BL – 1000 kg sin escobillas",pvp:3399900},
-  {cod:"AUACKBD1100",nom:"Accessmatic Bulldog 1100 – 1100 kg corrediza 110V",pvp:1999900},
-  {cod:"AUELMC12",nom:"Elite Slide 1200 – 1200 kg industrial 110V",pvp:1999900},
-  {cod:"AUACKBD1522",nom:"Accessmatic Bulldog 1522 – 1500 kg 220V industrial",pvp:2629900},
-  {cod:"AUACKBD1824BL",nom:"Accessmatic Bulldog 1824BL – 1800 kg sin escobillas",pvp:3999900},
-  {cod:"AUACKBD2024",nom:"Accessmatic Bulldog 2024 – 2000 kg industrial 110V",pvp:3599900},
-  {cod:"AUELTW25",nom:"Elite Twist 250 – 2 hojas batiente / 250 kg / 2.5m",pvp:1799900},
-  {cod:"AUACEG250",nom:"Accessmatic Eagle 250 – 2 hojas / 250 kg / 3m",pvp:2519900},
-  {cod:"AUACFC300",nom:"Accessmatic Falcon 300 – 2 hojas / 300 kg / 3m",pvp:2199900},
-  {cod:"AUACFC350",nom:"Accessmatic Falcon 350 – 2 hojas / 350 kg / 4m",pvp:3749900},
-  {cod:"AUACEG500",nom:"Accessmatic Eagle 500 – 2 hojas / 350 kg / 5m",pvp:3889900},
-  {cod:"AUACFENIX600",nom:"Accessmatic Fénix 600 – 2 hojas / 600 kg / 5.5m",pvp:6719900},
-  {cod:"AUACFC351",nom:"Accessmatic Falcon 351 – 1 hoja / 350 kg / 4m",pvp:2719900},
-  {cod:"AUACEG501",nom:"Accessmatic Eagle 501 – 1 hoja / 350 kg / 5m",pvp:2729900},
-  {cod:"AUACFENIX601",nom:"Accessmatic Fénix 601 – 1 hoja / 600 kg / 5.5m",pvp:4159900},
-  {cod:"AUACKAR201B",nom:"Accessmatic Armadillo 200 sin control – 200 kg cortina",pvp:1249900},
-  {cod:"AUACKAR382B",nom:"Accessmatic Armadillo 380 sin control – 380 kg cortina",pvp:1699900},
-  {cod:"AUACKAR201F",nom:"Accessmatic Armadillo 200 con control – 200 kg cortina",pvp:1349900},
-  {cod:"AUACKAR382F",nom:"Accessmatic Armadillo 380 con control – 380 kg cortina",pvp:1889900},
-  {cod:"AUELKME611",nom:"Elite ME622 – 600 kg cortina industrial 110V",pvp:1169900},
-  {cod:"AUELKME624DC",nom:"Elite Spin 624DC – 600 kg cortina con batería 24V",pvp:1649900},
-  {cod:"AUELKME8511",nom:"Elite Spin ME8511 – 800 kg cortina 110V",pvp:1759900},
-  {cod:"AUELKME824DC",nom:"Elite Spin ME824DC – 800 kg cortina con batería",pvp:2469900},
-  {cod:"AUACKHULK500S",nom:"Accessmatic Hulk 500S – 500 kg cortina industrial",pvp:1399900},
-  {cod:"AUACKHULK624DC",nom:"Accessmatic Hulk 624DC – 600 kg cortina con batería",pvp:1729900},
-  {cod:"AUACKHULK750",nom:"Accessmatic Hulk 750 – 750 kg cortina industrial",pvp:1999900},
-  {cod:"AUACKHULK950",nom:"Accessmatic Hulk 950 – 950 kg cortina industrial",pvp:2249900},
-  {cod:"AUACKHULK1024DC",nom:"Accessmatic Hulk 1024DC – 1000 kg cortina con batería",pvp:2699900},
-  {cod:"AUACKHULK1500",nom:"Accessmatic Hulk 1500 – 1500 kg cortina 220V",pvp:4249900},
-  {cod:"AUACMTD224",nom:"Accessmatic Mastodon 224 – barrera vehicular 220V",pvp:2999900},
-  {cod:"AUCKMTD224",nom:"Kit Mastodon 224 + asta metálica 2m",pvp:3499900},
-  {cod:"AUACMTD624",nom:"Accessmatic Mastodon 624 – barrera alta velocidad 110/220V",pvp:4599900},
-  {cod:"AUACKMTD624",nom:"Kit Mastodon 624 + asta telescópica 3-6m",pvp:5399900},
-  {cod:"AUACKMTD624ART",nom:"Kit Mastodon 624 + asta articulada 4m",pvp:6199900},
-  {cod:"AUACALW4",nom:"Control remoto Accessmatic 4 botones verdes 433MHz",pvp:39900},
-  {cod:"AUACALH3",nom:"Control remoto Accessmatic 3 botones visor 433MHz",pvp:69900},
-  {cod:"AUACALT2",nom:"Control remoto Accessmatic 2 botones visor 433MHz",pvp:69900},
-  {cod:"AUACALS4",nom:"Control remoto Accessmatic 4 canales – Pitbull/Bulldozer",pvp:69900},
-  {cod:"AUACALM4",nom:"Control remoto Accessmatic 4 canales – Eagle/Falcon",pvp:69900},
-  {cod:"AUACAL3900U",nom:"Control remoto universal Accessmatic 300-868MHz",pvp:199900},
-  {cod:"AUACAF24Li",nom:"Batería respaldo Accessmatic 24V litio",pvp:249900},
-  {cod:"AUACAE20",nom:"Fotoceldas Accessmatic 20m interior 12-24V",pvp:55900},
-  {cod:"AUACAE30",nom:"Fotoceldas Accessmatic 30m intemperie 12-24V",pvp:129900},
-  {cod:"AUACAH45",nom:"Receptora universal Accessmatic AccessHub 500 controles",pvp:194900},
-  {cod:"AUACACCESSCAM",nom:"Cámara WiFi Accesscam universal 1280p visión nocturna",pvp:589900},
-  {cod:"AUELEP100240",nom:"Módulo WiFi Elite Pulse universal con sensor magnético",pvp:199900},
-  {cod:"AUACSONAR",nom:"Sistema apertura remoto WiFi Accessmatic 2.4GHz",pvp:149900},
-  {cod:"AUACFL1224",nom:"Lámpara LED destellante 12-240V naranja",pvp:159900},
-  {cod:"AUACRIM4F",nom:"Cremallera acero galvanizado 1m – hasta 1200 kg",pvp:89900},
-  {cod:"AUACRIM4Z",nom:"Cremallera gruesa para soldar 1m – hasta 2000 kg",pvp:129900},
-  {cod:"AUACRT2415U",nom:"Fotoceldas Reflex15 – 15m para barreras y comerciales",pvp:379900},
-  {cod:"AUELSL3000L",nom:"Cerradura inteligente Elite Lock SL3000 – 5 métodos",pvp:329900},
-  {cod:"AUELSL5000",nom:"Cerradura inteligente Elite Lock SL5000 WiFi – 5 métodos",pvp:369900},
-  {cod:"AUELSL5500L",nom:"Cerradura inteligente Elite Lock SL5500L WiFi",pvp:399900},
-  {cod:"AUACOWL504",nom:"Cerradura inteligente digital 5 métodos + huella",pvp:699900},
-  {cod:"AUACOWL608",nom:"Cerradura inteligente digital 6 métodos NFC",pvp:899900},
+ {cod:"KFORZA800-2",nom:"NAS Forza 800 – 800 kg corrediza 220V + 4m cremallera + 2 controles",pvp:1218900},
+  // NAS — Corredizas Forte
+  {cod:"KFORTE800-1",nom:"NAS Forte 800 – 800 kg corrediza 110V + 4m cremallera + 2 controles",pvp:1183900},
+  {cod:"KFORTE1200-1",nom:"NAS Forte 1200 – 1200 kg corrediza 110V + 4m cremallera + 2 controles",pvp:1314900},
+  {cod:"KFORTE1500-1",nom:"NAS Forte 1500 – 1500 kg corrediza 110V + 4m cremallera + 2 controles",pvp:1380900},
+  {cod:"KFORTE800DC-1",nom:"NAS Forte 800DC – 800 kg corrediza 110V/24V + batería + 2 controles",pvp:1536900},
+  {cod:"KFORTE800PLUS-1",nom:"NAS Forte 800+ – 800 kg corrediza 110V + 4m cremallera + 2 controles",pvp:1183900},
+  // NAS — Cremalleras
+  {cod:"CRG001",nom:"NAS Cremallera acero galvanizado 1m módulo 4 (hasta 1200 kg)",pvp:61000},
+  // NAS — Cortinas Thor
+  {cod:"KTHOR600-1",nom:"NAS Thor 600 – motor cortina enrollable 600 kg 110V",pvp:955000},
+  {cod:"KTHOR800-1",nom:"NAS Thor 800 – motor cortina enrollable 800 kg 110V",pvp:1219000},
+  {cod:"NT001",nom:"NAS Receptora Thor + 2 controles 433MHz + entrada fotoceldas",pvp:178000},
+  // NAS — Cortinas Odin
+  {cod:"KODIN500-1",nom:"NAS Odin 500 – motor cortina enrollable 500 kg 110V",pvp:969900},
+  {cod:"KODIN800-1",nom:"NAS Odin 800 – motor cortina enrollable 800 kg 110V",pvp:1499900},
+  {cod:"KODIN1000-1",nom:"NAS Odin 1000 – motor cortina enrollable 1000 kg 110V",pvp:1628900},
+  // NAS — Cortinas Hércules (uso interno)
+  {cod:"HERCULES1600",nom:"NAS Hércules 1600 – motorreductor cortina interna 150 kg 110V",pvp:732000},
+  {cod:"HERCULES2000",nom:"NAS Hércules 2000 – motorreductor cortina interna 180 kg 110V",pvp:760000},
+  {cod:"HERCULES2800",nom:"NAS Hércules 2800 – motorreductor doble cortina 280 kg 110V",pvp:1105000},
+  {cod:"HERCULES3600",nom:"NAS Hércules 3600 – motorreductor doble cortina 360 kg 110V",pvp:1216000},
+  // BFT — Corredizas
+  {cod:"KDEIMOSACA600",nom:"BFT Deimos AC A600 – 600 kg corrediza 110V/220V + 4m cremallera + 2 controles",pvp:2960900},
+  {cod:"KDEIMOSACA800SL",nom:"BFT Deimos AC A800 SL DM – 800 kg corrediza 110V/220V + 4m cremallera + 2 controles",pvp:3728900},
+  {cod:"KARESBTA1000",nom:"BFT Ares BTA 1000 – 1000 kg corrediza 220V/24V + 4m cremallera + 2 controles",pvp:3539900},
+  {cod:"KARESBTA1500Z18",nom:"BFT Ares BTA 1500 – 1500 kg corrediza 220V/24V piñón 18d + 4m cremallera + 1 control",pvp:4000000},
+  {cod:"KICAROSMARTACA2000V",nom:"BFT Ícaro Smart AC A2000V – 1000 kg corrediza 220V uso continuo + 4m cremallera + 2 controles",pvp:5522900},
+  {cod:"KICAROSMARTACA2000",nom:"BFT Ícaro Smart AC A2000 – 2000 kg corrediza 220V uso continuo + 4m cremallera + 2 controles",pvp:5522900},
+  // BFT — Batientes electromecánicos (2 brazos)
+  {cod:"K2PHOBOSBT-A25",nom:"BFT Phobos BT A25 – 2 brazos batiente 400 kg / 2.5m 110V/24V + 2 controles",pvp:3278900},
+  {cod:"K2PHOBOSBT-A40",nom:"BFT Phobos BT A40 – 2 brazos batiente 500 kg / 4m 110V/24V + 2 controles",pvp:3498900},
+  {cod:"K2PHOBOSBT-B35V",nom:"BFT Phobos BT B35 Veloce – 2 brazos batiente 450 kg / 3m 220V/24V + 2 controles",pvp:4293900},
+  {cod:"K2PHOBOSACA25-AL",nom:"BFT Phobos AC A25 – 2 brazos batiente 400 kg / 2.5m 110V tarjeta Alena + 2 controles",pvp:3253900},
+  {cod:"K2PHOBOSACA25-R",nom:"BFT Phobos AC A25 – 2 brazos batiente 400 kg / 2.5m 110V tarjeta Rigel + 2 controles",pvp:3823900},
+  // BFT — Batientes electromecánicos (1 brazo)
+  {cod:"K1PHOBOSACA25-AL",nom:"BFT Phobos AC A25 – 1 brazo batiente 400 kg / 2.5m 110V tarjeta Alena + 2 controles",pvp:2844900},
+  {cod:"K1PHOBOSACA25-R",nom:"BFT Phobos AC A25 – 1 brazo batiente 400 kg / 2.5m 110V tarjeta Rigel + 2 controles",pvp:3170900},
+  {cod:"K1PHOBOSBT-A25",nom:"BFT Phobos BT A25 – 1 brazo batiente 400 kg / 2.5m 110V/24V + 2 controles",pvp:2663900},
+  {cod:"K1PHOBOSBT-A40",nom:"BFT Phobos BT A40 – 1 brazo batiente 500 kg / 4m 110V/24V + 2 controles",pvp:2995900},
+  // BFT — Accesorios
+  {cod:"D112306",nom:"BFT Control remoto Mitto Cool C2 – 2 canales 433MHz",pvp:89000},
+  {cod:"D112318",nom:"BFT Control remoto Mitto Cool C4 – 4 canales 433MHz",pvp:124000},
+  {cod:"P111526",nom:"BFT Fotoceldas Desme A15 – exterior 30m 24V autoalineantes",pvp:251000},
+  // BFT — Brazos hidráulicos 2 brazos
+  {cod:"K2LUX2B",nom:"BFT Lux 2B – 2 brazos hidráulico 300 kg / 3.5m 110V/220V + 2 controles",pvp:9413900},
+  {cod:"K2GIUNO-BTA20",nom:"BFT Giuno Ultra BT A20 – 2 brazos hidráulico 300 kg / 2.5m 24V uso continuo + 2 controles",pvp:9709900},
+  {cod:"K2GIUNO-BTA50",nom:"BFT Giuno Ultra BT A50 – 2 brazos hidráulico 800 kg / 5m 24V uso muy intensivo + 2 controles",pvp:10394900},
+  {cod:"K2LUXGV2B",nom:"BFT Lux GV 2B – 2 brazos hidráulico 300 kg / 3.5m 110V/220V + 2 controles",pvp:8407900},
+  // BFT — Brazos hidráulicos 1 brazo
+  {cod:"K1LUX2B",nom:"BFT Lux 2B – 1 brazo hidráulico 300 kg / 3.5m 110V/220V + 2 controles",pvp:3875900},
+  {cod:"K1GIUNO-BTA20",nom:"BFT Giuno Ultra BT A20 – 1 brazo hidráulico 300 kg / 2.5m 24V uso continuo + 2 controles",pvp:6096900},
+  {cod:"K1GIUNO-BTA50",nom:"BFT Giuno Ultra BT A50 – 1 brazo hidráulico 800 kg / 5m 24V uso muy intensivo + 2 controles",pvp:7024900},
+  {cod:"K1LUXGV2B",nom:"BFT Lux GV 2B – 1 brazo hidráulico 300 kg / 3.5m 110V/220V + 2 controles",pvp:4923900},
+  // BFT — Barreras
+  {cod:"KMOOVI30",nom:"BFT Moovi 30 – barrera 3m 220V apertura 4seg uso intensivo + 2 controles",pvp:5383900},
+  {cod:"KMOOVI60",nom:"BFT Moovi 60 – barrera 6m 220V apertura 8.5seg uso intensivo + 2 controles",pvp:6587900},
+  {cod:"KGIOTTOBTA30U",nom:"BFT Giotto BT A30 – barrera 3m 220V/24V apertura 4seg uso muy intensivo + 2 controles",pvp:6670900},
+  {cod:"KGIOTTOBTA60U",nom:"BFT Giotto BT A60 – barrera 6m 220V/24V apertura 5seg uso muy intensivo + 2 controles",pvp:7862900},
 ];
 
 let filas = [];
