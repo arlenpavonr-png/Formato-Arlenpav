@@ -65,6 +65,15 @@
   .btn-quitar{background:#fee2e2;color:#dc2626;border:none;border-radius:5px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;}
   .btn-quitar:hover{background:#fca5a5;}
   .empty-row td{text-align:center;color:var(--muted);font-size:12px;padding:24px;font-style:italic;}
+  /* MANO DE OBRA */
+  .mano-obra-wrap{background:#fefce8;border:1.5px solid #fde68a;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+  .mano-obra-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:end;}
+  .mano-obra-precio-wrap{display:flex;flex-direction:column;gap:3px;min-width:130px;}
+  .mano-obra-precio-wrap label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .mano-obra-precio-wrap input{border:1.5px solid var(--border);border-radius:7px;padding:8px 10px;font-family:'DM Mono',sans-serif;font-size:13px;font-weight:700;color:var(--green);background:white;outline:none;text-align:right;}
+  .mano-obra-precio-wrap input:focus{border-color:var(--accent);}
+  .btn-agregar-mo{background:var(--gold);color:white;border:none;border-radius:7px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;align-self:flex-end;white-space:nowrap;}
+  .btn-agregar-mo:hover{background:#b45309;}
   /* TOTALES */
   .totales-box{background:var(--light);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
   .total-row{display:flex;gap:16px;align-items:center;justify-content:flex-end;}
@@ -93,7 +102,7 @@
   @media print{
     body{background:white;padding:0;}
     .page{box-shadow:none;border-radius:0;}
-    button,.buscador-wrap,.btn-quitar{display:none!important;}
+    button,.buscador-wrap,.btn-quitar,.mano-obra-wrap{display:none!important;}
     *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   }
   @media(max-width:520px){
@@ -102,6 +111,7 @@
     .firmas{grid-template-columns:1fr;}
     .header{flex-wrap:wrap;}
     .header-meta{width:100%;text-align:left;}
+    .mano-obra-row{grid-template-columns:1fr;}
   }
 </style>
 </head>
@@ -187,6 +197,25 @@
       </table>
     </div>
 
+    <!-- MANO DE OBRA -->
+    <div class="section">
+      <div class="section-title"><span class="dot"></span>🔧 Mano de Obra / Instalación</div>
+      <div class="mano-obra-wrap">
+        <div class="mano-obra-row">
+          <div style="display:flex;flex-direction:column;gap:3px;">
+            <label style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Descripción del servicio</label>
+            <input type="text" id="mo-descripcion" placeholder="Ej: Instalación motor corredizo, programación y puesta en marcha" style="border:1.5px solid var(--border);border-radius:7px;padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:13px;background:white;outline:none;width:100%;">
+          </div>
+          <div class="mano-obra-precio-wrap">
+            <label>Valor ($)</label>
+            <input type="number" id="mo-precio" placeholder="0" min="0" step="1000">
+          </div>
+          <button class="btn-agregar-mo" onclick="agregarManoObra()">+ Agregar</button>
+        </div>
+        <div style="font-size:11px;color:#92400e;">🔨 La mano de obra se lista por separado en el resumen de totales</div>
+      </div>
+    </div>
+
     <!-- TOTALES -->
     <div class="section">
       <div class="section-title"><span class="dot"></span>Resumen de Cotización</div>
@@ -196,8 +225,12 @@
           Incluir IVA 19%
         </label>
         <div class="total-row">
-          <span class="total-label">Subtotal</span>
+          <span class="total-label">Subtotal Productos</span>
           <span class="total-val" id="subtotal-val">$ 0</span>
+        </div>
+        <div class="total-row" id="mo-row" style="display:none;">
+          <span class="total-label">Mano de Obra</span>
+          <span class="total-val" id="mo-val" style="color:var(--gold);">$ 0</span>
         </div>
         <div class="total-row" id="iva-row" style="display:none;">
           <span class="total-label">IVA (19%)</span>
@@ -365,7 +398,7 @@ const catalogo = [
 ];
 
 let filas = [];
-let productoSeleccionado = null;
+let manoObra = 0;
 
 function buscarProducto() {
   const q = document.getElementById('buscador').value.toLowerCase().trim();
@@ -389,7 +422,6 @@ function buscarProducto() {
 function seleccionarProducto(cod) {
   const prod = catalogo.find(p => p.cod === cod);
   if (!prod) return;
-  productoSeleccionado = prod;
   document.getElementById('buscador').value = prod.nom;
   document.getElementById('resultados').style.display='none';
   const cant = parseInt(document.getElementById('cant-input').value) || 1;
@@ -398,7 +430,6 @@ function seleccionarProducto(cod) {
   renderTabla();
   document.getElementById('buscador').value='';
   document.getElementById('cant-input').value=1;
-  productoSeleccionado=null;
 }
 
 function renderTabla() {
@@ -423,15 +454,28 @@ function renderTabla() {
 function cambiarCant(i,val){ filas[i].cant=parseInt(val)||1; renderTabla(); }
 function quitarFila(i){ filas.splice(i,1); renderTabla(); }
 
+function agregarManoObra() {
+  const precio = parseInt(document.getElementById('mo-precio').value) || 0;
+  const desc = document.getElementById('mo-descripcion').value.trim();
+  if (precio <= 0) { alert('Ingresa un valor para la mano de obra'); return; }
+  manoObra = precio;
+  recalcular();
+  document.getElementById('mo-descripcion').value = desc;
+  document.getElementById('mo-precio').value = '';
+  alert('✅ Mano de obra agregada: ' + formatoPesos(precio));
+}
+
 function recalcular() {
   const subtotal = filas.reduce((s,f) => s+f.pvp*f.cant, 0);
   const conIva = document.getElementById('iva-check').checked;
-  const iva = conIva ? subtotal*0.19 : 0;
-  const total = subtotal+iva;
+  const iva = conIva ? (subtotal + manoObra) * 0.19 : 0;
+  const total = subtotal + manoObra + iva;
   document.getElementById('subtotal-val').textContent = formatoPesos(subtotal);
   document.getElementById('iva-val').textContent = formatoPesos(iva);
   document.getElementById('total-val').textContent = formatoPesos(total);
   document.getElementById('iva-row').style.display = conIva ? 'flex' : 'none';
+  document.getElementById('mo-row').style.display = manoObra > 0 ? 'flex' : 'none';
+  document.getElementById('mo-val').textContent = formatoPesos(manoObra);
 }
 
 function formatoPesos(n) { return '$ '+n.toLocaleString('es-CO'); }
