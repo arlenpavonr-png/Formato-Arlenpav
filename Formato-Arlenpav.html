@@ -1077,6 +1077,8 @@ function exportarCSV() {
   a.href=url; a.download='Clientes_Arlenpav_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
   URL.revokeObjectURL(url);
 }
-</script>
+document.querySelector("button").addEventListener("click", function() {
+  guardarEnSheets();
+});</script>
 </body>
 </html>
