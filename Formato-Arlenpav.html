@@ -1125,7 +1125,14 @@ function compartirWhatsApp() {
   var tipoEl = document.querySelector('input[name="tipo"]:checked');
   var tipo = tipoEl ? tipoEl.value : 'instalacion';
   var tt = tipo === 'mantenimiento' ? 'Mantenimiento' : tipo === 'reparacion' ? 'Reparacion' : 'Instalacion';
-  var msg = 'Hola ' + nombre.split(' ')[0] + ', gracias por elegir Automatismos Arlenpav. Le compartimos el formato de ' + tt + ' No. ' + num + '. Recomendamos realizar mantenimiento preventivo cada 6 meses para mantener su equipo en optimas condiciones. Para cualquier consulta: 300-568-3914.';
+  var msg = 'Hola ' + nombre.split(' ')[0] + ', gracias por elegir Automatismos Arlenpav. Le compartimos el formato de ' + tt + ' No. ' + num + '.
+
+Puede verlo aqui: https://arlenpavonr-png.github.io/Formato-Arlenpav/
+
+Recomendamos realizar mantenimiento preventivo cada 6 meses para mantener su equipo en optimas condiciones.
+
+Para cualquier consulta: 300-568-3914
+www.automatismosarpa.com';
   var w = tel ? 'https://wa.me/57' + tel + '?text=' + encodeURIComponent(msg) : 'https://wa.me/?text=' + encodeURIComponent(msg);
   if (typeof guardarCliente === 'function') guardarCliente();
   window.open(w, '_blank');
