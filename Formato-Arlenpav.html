@@ -654,7 +654,7 @@
           </div>
           <div class="garantia-item">
             <div class="gi-icon gi-cal">📅</div>
-            <div><strong>Mantenimiento preventivo:</strong> Recomendamos realizar mantenimiento <strong>cada 6 meses</strong> con nuestro equipo técnico. Esto permite prolongar la vida útil del equipo, prevenir fallas y conservar las condiciones óptimas de funcionamiento.</div>
+            <div><strong>Mantenimiento preventivo:</strong> Recomendamos realizar mantenimiento preventivo <strong>cada 6 meses</strong>. Esto permite prolongar la vida útil del equipo, prevenir fallas y conservar las condiciones óptimas de funcionamiento.</div>
           </div>
           <div class="garantia-item">
             <div class="gi-icon gi-warn">⚠️</div>
@@ -670,13 +670,15 @@
       <div class="firmas">
         <div class="firma-box">
           <div class="firma-label">Firma Cliente</div>
-          <div class="firma-area">Firma aquí</div>
+          <canvas id="canvas-cliente" width="300" height="100" style="border:1px dashed #d1d5db;border-radius:6px;background:#f5f6fa;width:100%;touch-action:none;cursor:crosshair;"></canvas>
+          <button onclick="limpiarFirma('canvas-cliente')" style="font-size:10px;color:#64748b;background:none;border:none;cursor:pointer;text-align:right;width:100%;">✕ Limpiar</button>
           <input class="firma-name" type="text" placeholder="Nombre completo">
           <input class="firma-name" type="text" placeholder="CC / NIT">
         </div>
         <div class="firma-box">
           <div class="firma-label">Firma Técnico Arlenpav</div>
-          <div class="firma-area">Firma aquí</div>
+          <canvas id="canvas-tecnico" width="300" height="100" style="border:1px dashed #d1d5db;border-radius:6px;background:#f5f6fa;width:100%;touch-action:none;cursor:crosshair;"></canvas>
+          <button onclick="limpiarFirma('canvas-tecnico')" style="font-size:10px;color:#64748b;background:none;border:none;cursor:pointer;text-align:right;width:100%;">✕ Limpiar</button>
           <input class="firma-name" type="text" placeholder="Nombre del técnico">
           <input class="firma-name" type="text" placeholder="ID técnico">
         </div>
@@ -686,14 +688,22 @@
   </div><!-- /body -->
 
   <!-- BOTÓN GUARDAR PDF -->
-  <div style="padding: 16px 24px; background: var(--bg); border-top: 1px solid var(--border);">
+  <div style="padding: 16px 24px; background: var(--bg); border-top: 1px solid var(--border); display:flex; gap:10px;">
     <button onclick="guardarPDF()" style="
-      width:100%; padding:14px; border-radius:10px;
+      flex:1; padding:14px; border-radius:10px;
       background: var(--navy); color: white; border: none;
       font-size:15px; font-weight:700; cursor:pointer;
       display:flex; align-items:center; justify-content:center; gap:10px;
       font-family:'DM Sans',sans-serif; letter-spacing:.5px;">
-      📄 Guardar como PDF
+      📄 Guardar PDF
+    </button>
+    <button onclick="compartirWhatsApp()" style="
+      flex:1; padding:14px; border-radius:10px;
+      background: #25D366; color: white; border: none;
+      font-size:15px; font-weight:700; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      font-family:'DM Sans',sans-serif; letter-spacing:.5px;">
+      💬 Enviar WA
     </button>
   </div>
 
@@ -1083,6 +1093,51 @@ document.querySelectorAll("button").forEach(btn => {
       guardarEnSheets();
     });
   }
-});;</script>
+});
+// -- FIRMA DIGITAL ------------------------------------------------------------
+function initFirma(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.strokeStyle = '#0f2044';
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  let drawing = false;
+  function getPos(e) {
+    const r = canvas.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { x: (src.clientX - r.left) * (canvas.width / r.width), y: (src.clientY - r.top) * (canvas.height / r.height) };
+  }
+  canvas.addEventListener('mousedown', e => { drawing=true; const p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
+  canvas.addEventListener('mousemove', e => { if(!drawing) return; const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); });
+  canvas.addEventListener('mouseup', () => drawing=false);
+  canvas.addEventListener('mouseleave', () => drawing=false);
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing=true; const p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); }, {passive:false});
+  canvas.addEventListener('touchmove', e => { e.preventDefault(); if(!drawing) return; const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); }, {passive:false});
+  canvas.addEventListener('touchend', () => drawing=false);
+}
+function limpiarFirma(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+}
+window.addEventListener('DOMContentLoaded', () => {
+  initFirma('canvas-cliente');
+  initFirma('canvas-tecnico');
+});
+
+// -- COMPARTIR POR WHATSAPP ---------------------------------------------------
+function compartirWhatsApp() {
+  const nombre = document.getElementById('cliente-nombre')?.value || 'Cliente';
+  const tel = (document.getElementById('cliente-tel')?.value||'').replace(/\D/g,'');
+  const num = document.getElementById('numero-formato')?.value || '';
+  const tipo = document.querySelector('input[name="tipo"]:checked')?.value || 'instalacion';
+  const tipoTexto = tipo==='mantenimiento'?'Mantenimiento':tipo==='reparacion'?'Reparacion':'Instalacion';
+  const msg = 'Hola ' + nombre.split(' ')[0] + ', gracias por elegir Automatismos Arlenpav. Adjunto encontrara el formato de ' + tipoTexto + ' N ' + num + '. Recuerde que recomendamos mantenimiento preventivo cada 6 meses para mantener su equipo en optimas condiciones. Quedamos atentos. Tel: 300-568-3914';
+  const waUrl = tel ? 'https://wa.me/57'+tel+'?text='+encodeURIComponent(msg) : 'https://wa.me/?text='+encodeURIComponent(msg);
+  guardarCliente();
+  window.open(waUrl, '_blank');
+}
+;</script>
 </body>
 </html>
