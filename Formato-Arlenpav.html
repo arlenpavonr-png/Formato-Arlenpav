@@ -654,7 +654,7 @@
           </div>
           <div class="garantia-item">
             <div class="gi-icon gi-cal">📅</div>
-            <div><strong>Mantenimiento preventivo:</strong> Recomendamos realizar mantenimiento preventivo <strong>cada 6 meses</strong>. Esto permite prolongar la vida útil del equipo, prevenir fallas y conservar las condiciones óptimas de funcionamiento.</div>
+            <div><strong>Mantenimiento preventivo:</strong> Recomendamos realizar mantenimiento <strong>cada 6 meses</strong> . Esto permite prolongar la vida útil del equipo, prevenir fallas y conservar las condiciones óptimas de funcionamiento.</div>
           </div>
           <div class="garantia-item">
             <div class="gi-icon gi-warn">⚠️</div>
@@ -670,15 +670,15 @@
       <div class="firmas">
         <div class="firma-box">
           <div class="firma-label">Firma Cliente</div>
-          <canvas id="canvas-cliente" width="300" height="100" style="border:1px dashed #d1d5db;border-radius:6px;background:#f5f6fa;width:100%;touch-action:none;cursor:crosshair;"></canvas>
-          <button onclick="limpiarFirma('canvas-cliente')" style="font-size:10px;color:#64748b;background:none;border:none;cursor:pointer;text-align:right;width:100%;">✕ Limpiar</button>
+          <div class="<canvas id="canvas-cliente" width="300" height="100" style="border:1.5px solid #d1d5db;border-radius:6px;background:#f5f6fa;width:100%;touch-action:none;cursor:crosshair;display:block;"></canvas>
+          <button onclick="limpiarFirma('canvas-cliente')" style="font-size:10px;color:#64748b;background:none;border:none;cursor:pointer;float:right;margin-bottom:4px;">✕ Limpiar</button>
           <input class="firma-name" type="text" placeholder="Nombre completo">
           <input class="firma-name" type="text" placeholder="CC / NIT">
         </div>
         <div class="firma-box">
           <div class="firma-label">Firma Técnico Arlenpav</div>
-          <canvas id="canvas-tecnico" width="300" height="100" style="border:1px dashed #d1d5db;border-radius:6px;background:#f5f6fa;width:100%;touch-action:none;cursor:crosshair;"></canvas>
-          <button onclick="limpiarFirma('canvas-tecnico')" style="font-size:10px;color:#64748b;background:none;border:none;cursor:pointer;text-align:right;width:100%;">✕ Limpiar</button>
+          <div class="<canvas id="canvas-tecnico" width="300" height="100" style="border:1.5px solid #d1d5db;border-radius:6px;background:#f5f6fa;width:100%;touch-action:none;cursor:crosshair;display:block;"></canvas>
+          <button onclick="limpiarFirma('canvas-tecnico')" style="font-size:10px;color:#64748b;background:none;border:none;cursor:pointer;float:right;margin-bottom:4px;">✕ Limpiar</button>
           <input class="firma-name" type="text" placeholder="Nombre del técnico">
           <input class="firma-name" type="text" placeholder="ID técnico">
         </div>
@@ -697,12 +697,7 @@
       font-family:'DM Sans',sans-serif; letter-spacing:.5px;">
       📄 Guardar PDF
     </button>
-    <button onclick="compartirWhatsApp()" style="
-      flex:1; padding:14px; border-radius:10px;
-      background: #25D366; color: white; border: none;
-      font-size:15px; font-weight:700; cursor:pointer;
-      display:flex; align-items:center; justify-content:center; gap:10px;
-      font-family:'DM Sans',sans-serif; letter-spacing:.5px;">
+    <button onclick="compartirWhatsApp()" style="flex:1;padding:14px;border-radius:10px;background:#25D366;color:white;border:none;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;">
       💬 Enviar WA
     </button>
   </div>
@@ -1094,50 +1089,46 @@ document.querySelectorAll("button").forEach(btn => {
     });
   }
 });
-// -- FIRMA DIGITAL ------------------------------------------------------------
-function initFirma(canvasId) {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  ctx.strokeStyle = '#0f2044';
-  ctx.lineWidth = 2;
-  ctx.lineCap = 'round';
-  let drawing = false;
-  function getPos(e) {
-    const r = canvas.getBoundingClientRect();
-    const src = e.touches ? e.touches[0] : e;
-    return { x: (src.clientX - r.left) * (canvas.width / r.width), y: (src.clientY - r.top) * (canvas.height / r.height) };
+// FIRMA DIGITAL TACTIL
+function initFirma(id) {
+  var c = document.getElementById(id);
+  if (!c) return;
+  var x = c.getContext('2d');
+  x.strokeStyle = '#0f2044'; x.lineWidth = 2; x.lineCap = 'round';
+  var d = false;
+  function gp(e) {
+    var r = c.getBoundingClientRect();
+    var s = e.touches ? e.touches[0] : e;
+    return { x: (s.clientX - r.left) * (c.width / r.width), y: (s.clientY - r.top) * (c.height / r.height) };
   }
-  canvas.addEventListener('mousedown', e => { drawing=true; const p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
-  canvas.addEventListener('mousemove', e => { if(!drawing) return; const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); });
-  canvas.addEventListener('mouseup', () => drawing=false);
-  canvas.addEventListener('mouseleave', () => drawing=false);
-  canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing=true; const p=getPos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); }, {passive:false});
-  canvas.addEventListener('touchmove', e => { e.preventDefault(); if(!drawing) return; const p=getPos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); }, {passive:false});
-  canvas.addEventListener('touchend', () => drawing=false);
+  c.addEventListener('mousedown', function(e) { d=true; var p=gp(e); x.beginPath(); x.moveTo(p.x,p.y); });
+  c.addEventListener('mousemove', function(e) { if(!d) return; var p=gp(e); x.lineTo(p.x,p.y); x.stroke(); });
+  c.addEventListener('mouseup', function() { d=false; });
+  c.addEventListener('mouseleave', function() { d=false; });
+  c.addEventListener('touchstart', function(e) { e.preventDefault(); d=true; var p=gp(e); x.beginPath(); x.moveTo(p.x,p.y); }, {passive:false});
+  c.addEventListener('touchmove', function(e) { e.preventDefault(); if(!d) return; var p=gp(e); x.lineTo(p.x,p.y); x.stroke(); }, {passive:false});
+  c.addEventListener('touchend', function() { d=false; });
 }
-function limpiarFirma(canvasId) {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) return;
-  canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+function limpiarFirma(id) {
+  var c = document.getElementById(id);
+  if (c) c.getContext('2d').clearRect(0, 0, c.width, c.height);
 }
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', function() {
   initFirma('canvas-cliente');
   initFirma('canvas-tecnico');
-  initFirma('canvas-tecnico2');
 });
-
-// -- COMPARTIR POR WHATSAPP ---------------------------------------------------
+// WHATSAPP
 function compartirWhatsApp() {
-  const nombre = document.getElementById('cliente-nombre')?.value || 'Cliente';
-  const tel = (document.getElementById('cliente-tel')?.value||'').replace(/\D/g,'');
-  const num = document.getElementById('numero-formato')?.value || '';
-  const tipo = document.querySelector('input[name="tipo"]:checked')?.value || 'instalacion';
-  const tipoTexto = tipo==='mantenimiento'?'Mantenimiento':tipo==='reparacion'?'Reparacion':'Instalacion';
-  const msg = 'Hola ' + nombre.split(' ')[0] + ', gracias por elegir Automatismos Arlenpav. Adjunto encontrara el formato de ' + tipoTexto + ' N ' + num + '. Recuerde que recomendamos mantenimiento preventivo cada 6 meses para mantener su equipo en optimas condiciones. Quedamos atentos. Tel: 300-568-3914';
-  const waUrl = tel ? 'https://wa.me/57'+tel+'?text='+encodeURIComponent(msg) : 'https://wa.me/?text='+encodeURIComponent(msg);
-  guardarCliente();
-  window.open(waUrl, '_blank');
+  var nombre = (document.getElementById('cliente-nombre') ? document.getElementById('cliente-nombre').value : '') || 'Cliente';
+  var tel = (document.getElementById('cliente-tel') ? document.getElementById('cliente-tel').value : '').replace(/[^0-9]/g, '');
+  var num = document.getElementById('numero-formato') ? document.getElementById('numero-formato').value : '';
+  var tipoEl = document.querySelector('input[name="tipo"]:checked');
+  var tipo = tipoEl ? tipoEl.value : 'instalacion';
+  var tt = tipo === 'mantenimiento' ? 'Mantenimiento' : tipo === 'reparacion' ? 'Reparacion' : 'Instalacion';
+  var msg = 'Hola ' + nombre.split(' ')[0] + ', gracias por elegir Automatismos Arlenpav. Le compartimos el formato de ' + tt + ' No. ' + num + '. Recomendamos realizar mantenimiento preventivo cada 6 meses para mantener su equipo en optimas condiciones. Para cualquier consulta: 300-568-3914.';
+  var w = tel ? 'https://wa.me/57' + tel + '?text=' + encodeURIComponent(msg) : 'https://wa.me/?text=' + encodeURIComponent(msg);
+  if (typeof guardarCliente === 'function') guardarCliente();
+  window.open(w, '_blank');
 }
 ;</script>
 </body>
