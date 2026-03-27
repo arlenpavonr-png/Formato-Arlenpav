@@ -670,15 +670,15 @@
       <div class="firmas">
         <div class="firma-box">
           <div class="firma-label">Firma Cliente</div>
-          <div class="<canvas id="canvas-cliente" width="300" height="100" style="border:1.5px solid #d1d5db;border-radius:6px;background:#f5f6fa;width:100%;touch-action:none;cursor:crosshair;display:block;"></canvas>
-          <button onclick="limpiarFirma('canvas-cliente')" style="font-size:10px;color:#64748b;background:none;border:none;cursor:pointer;float:right;margin-bottom:4px;">✕ Limpiar</button>
+          <canvas id="canvas-cliente" width="300" height="100" style="border:1.5px solid #d1d5db;border-radius:6px;background:#f5f6fa;width:100%;touch-action:none;cursor:crosshair;display:block;"></canvas>
+          <button onclick="limpiarFirma('canvas-cliente')" style="font-size:10px;color:#64748b;background:none;border:none;cursor:pointer;float:right;">x Limpiar</button>
           <input class="firma-name" type="text" placeholder="Nombre completo">
           <input class="firma-name" type="text" placeholder="CC / NIT">
         </div>
         <div class="firma-box">
           <div class="firma-label">Firma Técnico Arlenpav</div>
-          <div class="<canvas id="canvas-tecnico" width="300" height="100" style="border:1.5px solid #d1d5db;border-radius:6px;background:#f5f6fa;width:100%;touch-action:none;cursor:crosshair;display:block;"></canvas>
-          <button onclick="limpiarFirma('canvas-tecnico')" style="font-size:10px;color:#64748b;background:none;border:none;cursor:pointer;float:right;margin-bottom:4px;">✕ Limpiar</button>
+          <canvas id="canvas-tecnico" width="300" height="100" style="border:1.5px solid #d1d5db;border-radius:6px;background:#f5f6fa;width:100%;touch-action:none;cursor:crosshair;display:block;"></canvas>
+          <button onclick="limpiarFirma('canvas-tecnico')" style="font-size:10px;color:#64748b;background:none;border:none;cursor:pointer;float:right;">x Limpiar</button>
           <input class="firma-name" type="text" placeholder="Nombre del técnico">
           <input class="firma-name" type="text" placeholder="ID técnico">
         </div>
@@ -866,24 +866,20 @@ function actualizarReferencias() {
   const tipo = getTipoPuerta();
   let productos = [];
   if (tipo && catalogo[marca][tipo]) {
-    // Si hay tipo seleccionado, mostrar solo esos
-    catalogo[marca][tipo].forEach(p => productos.push({ cod: p.cod, nom: p.nom }));
+    productos = catalogo[marca][tipo];
+  } else {
+    Object.entries(catalogo[marca]).forEach(([cat, items]) =>
+      items.forEach(p => productos.push({ cod: p.cod, nom: "["+cat+"] "+p.nom }))
+    );
   }
-  // Siempre agregar todos los demas como grupo
-  Object.entries(catalogo[marca]).forEach(([cat, items]) => {
-    if (!tipo || cat !== tipo) {
-      items.forEach(p => productos.push({ cod: p.cod, nom: "[" + cat + "] " + p.nom }));
-    }
-  });
-  selRef.innerHTML = '<option value="">-- Seleccionar modelo --</option>';
+  selRef.innerHTML = '<option value="">Seleccionar referencia...</option>';
   productos.forEach(p => {
     const o = document.createElement("option");
     o.value = p.cod;
-    o.textContent = p.nom;
+    o.textContent = p.cod + " – " + p.nom;
     selRef.appendChild(o);
   });
   selRef.style.display = "";
-  selRef.style.width = "100%";
   inputManual.style.display = "none";
 }
 
@@ -1129,14 +1125,7 @@ function compartirWhatsApp() {
   var tipoEl = document.querySelector('input[name="tipo"]:checked');
   var tipo = tipoEl ? tipoEl.value : 'instalacion';
   var tt = tipo === 'mantenimiento' ? 'Mantenimiento' : tipo === 'reparacion' ? 'Reparacion' : 'Instalacion';
-  var msg = 'Hola ' + nombre.split(' ')[0] + ', gracias por elegir Automatismos Arlenpav. Le compartimos el formato de ' + tt + ' No. ' + num + '.
-
-Puede verlo aqui: https://arlenpavonr-png.github.io/Formato-Arlenpav/
-
-Recomendamos realizar mantenimiento preventivo cada 6 meses para mantener su equipo en optimas condiciones.
-
-Para cualquier consulta: 300-568-3914
-www.automatismosarpa.com';
+  var msg = 'Hola ' + nombre.split(' ')[0] + ', gracias por elegir Automatismos Arlenpav. Le compartimos el formato de ' + tt + ' No. ' + num + '.\n\nPuede verlo aqui: https://arlenpavonr-png.github.io/Formato-Arlenpav/\n\nRecomendamos mantenimiento preventivo cada 6 meses para mantener su equipo en optimas condiciones.\n\nTel: 300-568-3914\nwww.automatismosarpa.com';
   var w = tel ? 'https://wa.me/57' + tel + '?text=' + encodeURIComponent(msg) : 'https://wa.me/?text=' + encodeURIComponent(msg);
   if (typeof guardarCliente === 'function') guardarCliente();
   window.open(w, '_blank');
