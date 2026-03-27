@@ -866,12 +866,15 @@ function actualizarReferencias() {
   const tipo = getTipoPuerta();
   let productos = [];
   if (tipo && catalogo[marca][tipo]) {
-    productos = catalogo[marca][tipo];
-  } else {
-    Object.entries(catalogo[marca]).forEach(([cat, items]) =>
-      items.forEach(p => productos.push({ cod: p.cod, nom: "["+cat+"] "+p.nom }))
-    );
+    // Si hay tipo seleccionado, mostrar solo esos
+    catalogo[marca][tipo].forEach(p => productos.push({ cod: p.cod, nom: p.nom }));
   }
+  // Siempre agregar todos los demas como grupo
+  Object.entries(catalogo[marca]).forEach(([cat, items]) => {
+    if (!tipo || cat !== tipo) {
+      items.forEach(p => productos.push({ cod: p.cod, nom: "[" + cat + "] " + p.nom }));
+    }
+  });
   selRef.innerHTML = '<option value="">-- Seleccionar modelo --</option>';
   productos.forEach(p => {
     const o = document.createElement("option");
