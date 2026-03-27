@@ -689,7 +689,7 @@
 
   <!-- BOTÓN GUARDAR PDF -->
   <div style="padding: 16px 24px; background: var(--bg); border-top: 1px solid var(--border); display:flex; gap:10px;">
-    <button onclick="guardarYCompartir()" style="
+    <button onclick="guardarPDF()" style="
       flex:1; padding:14px; border-radius:10px;
       background: var(--navy); color: white; border: none;
       font-size:15px; font-weight:700; cursor:pointer;
@@ -1117,72 +1117,6 @@ window.addEventListener('DOMContentLoaded', function() {
   initFirma('canvas-cliente');
   initFirma('canvas-tecnico');
 });
-
-// ── GUARDAR Y COMPARTIR PDF ──────────────────────────────────────────────────
-async function guardarYCompartir() {
-  // 1. Preparar la página para impresión
-  const elementos = document.querySelectorAll('input:not([type=file]):not([type=radio]):not([type=checkbox]):not([type=hidden]), select, textarea');
-  const respaldos = [];
-  elementos.forEach(el => {
-    const valor = el.tagName === 'SELECT' ? el.options[el.selectedIndex]?.text || '' : el.value || '';
-    const span = document.createElement('span');
-    span.className = 'pdf-valor';
-    span.textContent = valor || el.placeholder || '';
-    span.style.cssText = 'display:inline-block;width:100%;font-size:13px;color:'+(valor?'#1e293b':'#9ca3af')+';padding:8px 10px;font-family:DM Sans,sans-serif;border-bottom:1px solid #d1d5db;min-height:36px;';
-    respaldos.push({ el, parent: el.parentNode });
-    el.parentNode.replaceChild(span, el);
-  });
-  const checks = document.querySelectorAll('input[type=checkbox], input[type=radio]');
-  checks.forEach(ch => {
-    if (ch.checked) {
-      const lbl = document.querySelector('label[for="'+ch.id+'"]');
-      if (lbl) lbl.style.fontWeight = '800';
-    }
-  });
-  const btnArea = document.querySelector('button[onclick="guardarYCompartir()"]').parentElement;
-  btnArea.style.display = 'none';
-  guardarCliente();
-
-  // 2. Intentar Web Share API (celular Android/iOS)
-  if (navigator.share && navigator.canShare) {
-    try {
-      // Capturar el HTML actual como blob
-      const htmlContent = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Formato Arlenpav</title><style>body{font-family:Arial,sans-serif;padding:20px;} table{width:100%;border-collapse:collapse;} td,th{border:1px solid #ccc;padding:8px;}</style></head><body>' + document.querySelector('.page').outerHTML + '</body></html>';
-      const blob = new Blob([htmlContent], { type: 'text/html' });
-      const file = new File([blob], 'Formato-Arlenpav.html', { type: 'text/html' });
-      
-      if (navigator.canShare({ files: [file] })) {
-        // Restaurar antes de compartir
-        restaurarFormulario(respaldos, checks, btnArea);
-        await navigator.share({
-          title: 'Formato Arlenpav',
-          text: 'Formato de servicio Automatismos Arlenpav',
-          files: [file]
-        });
-        return;
-      }
-    } catch(e) {
-      console.log('Share API no disponible, usando print:', e);
-    }
-  }
-
-  // 3. Fallback: imprimir/guardar PDF normal
-  window.print();
-  setTimeout(() => restaurarFormulario(respaldos, checks, btnArea), 1000);
-}
-
-function restaurarFormulario(respaldos, checks, btnArea) {
-  respaldos.forEach(({ el, parent }) => {
-    const span = parent.querySelector('.pdf-valor');
-    if (span) parent.replaceChild(el, span);
-  });
-  checks.forEach(ch => {
-    const lbl = document.querySelector('label[for="'+ch.id+'"]');
-    if (lbl) lbl.style.fontWeight = '';
-  });
-  if (btnArea) btnArea.style.display = '';
-}
-
 // WHATSAPP
 function compartirWhatsApp() {
   var nombre = (document.getElementById('cliente-nombre') ? document.getElementById('cliente-nombre').value : '') || 'Cliente';
