@@ -872,14 +872,15 @@ function actualizarReferencias() {
       items.forEach(p => productos.push({ cod: p.cod, nom: "["+cat+"] "+p.nom }))
     );
   }
-  selRef.innerHTML = '<option value="">Seleccionar referencia...</option>';
+  selRef.innerHTML = '<option value="">-- Seleccionar modelo --</option>';
   productos.forEach(p => {
     const o = document.createElement("option");
     o.value = p.cod;
-    o.textContent = p.cod + " – " + p.nom;
+    o.textContent = p.nom;
     selRef.appendChild(o);
   });
   selRef.style.display = "";
+  selRef.style.width = "100%";
   inputManual.style.display = "none";
 }
 
