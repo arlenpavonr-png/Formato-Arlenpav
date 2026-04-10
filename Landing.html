@@ -99,6 +99,24 @@ img{max-width:100%;height:auto;display:block}
 .wa-float svg{width:28px;height:28px}
 .bg-oscuro{background:var(--oscuro)}
 </style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-378290143"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-378290143');
+</script>
+<script>
+  document.addEventListener('click', function(e) {
+    var link = e.target.closest('a[href*="wa.me"]');
+    if (link) {
+      gtag('event', 'conversion', {
+        'send_to': 'AW-378290143/clic_whatsapp'
+      });
+    }
+  });
+</script> 
 </head>
 <body>
 
