@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Cotizador ARPA</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap');
+
+:root {
+  --navy:       #1A2B4A;
+  --navy2:      #1E3A6E;
+  --orange:     #E8820C;
+  --orange2:    #F5A030;
+  --bg:         #F2F4F8;
+  --card:       #FFFFFF;
+  --border:     #E2E8F0;
+  --txt:        #1A2B4A;
+  --txt2:       #64748B;
+  --txt3:       #94A3B8;
+  --dot:        #E8820C;
+  --green:      #10B981;
+  --r:          12px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{font-size:15px;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;}
+
+/* ── HEADER ── */
+.hdr{
+  background:var(--navy);
+  padding:0;
+  position:sticky;top:0;z-index:200;
+}
+.hdr-inner{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;
+}
+.hdr-left{display:flex;align-items:center;gap:13px;}
+.logo-wrap{
+  width:46px;height:46px;border-radius:50%;
+  background:var(--card);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.logo-wrap span{
+  font-family:'DM Mono',monospace;font-weight:500;
+  font-size:12px;color:var(--navy);letter-spacing:-0.5px;
+}
+.hdr-txt h1{
+  font-size:15px;font-weight:700;color:#fff;
+  letter-spacing:0.3px;line-height:1.2;
+}
+.hdr-txt p{
+  font-size:11px;color:rgba(255,255,255,0.55);
+  margin-top:1px;line-height:1;
+}
+.hdr-badge{
+  background:var(--orange);
+  color:#fff;font-size:11px;font-weight:700;
+  padding:6px 12px;border-radius:20px;
+  letter-spacing:0.3px;white-space:nowrap;
+}
+.hdr-strip{height:3px;background:linear-gradient(90deg,var(--orange) 0%,var(--orange2) 100%);}
+
+/* ── BODY ── */
+.wrap{max-width:640px;margin:0 auto;padding:16px 14px 40px;}
+
+/* ── CARD ── */
+.card{
+  background:var(--card);border-radius:var(--r);
+  border:1px solid var(--border);
+  margin-bottom:12px;
+  overflow:hidden;
+}
+.sec-hdr{
+  padding:11px 16px;
+  display:flex;align-items:center;gap:8px;
+  border-bottom:1px solid var(--border);
+}
+.sec-dot{
+  width:9px;height:9px;border-radius:50%;
+  background:var(--dot);flex-shrink:0;
+}
+.sec-hdr h2{
+  font-size:11px;font-weight:700;
+  color:var(--txt);letter-spacing:1px;
+  text-transform:uppercase;
+}
+.sec-body{padding:16px;}
+
+/* ── CAMPOS ── */
+.row{display:flex;gap:10px;margin-bottom:10px;}
+.row:last-child{margin-bottom:0;}
+.f{flex:1;display:flex;flex-direction:column;gap:5px;}
+.f label{
+  font-size:10px;font-weight:700;letter-spacing:0.8px;
+  text-transform:uppercase;color:var(--txt2);
+}
+.f input,.f select,.f textarea{
+  border:1px solid var(--border);
+  border-radius:8px;padding:10px 12px;
+  font-family:'DM Sans',sans-serif;font-size:14px;
+  font-weight:500;color:var(--txt);
+  background:var(--card);width:100%;
+  transition:border-color .15s,box-shadow .15s;
+  -webkit-appearance:none;appearance:none;
+}
+.f input:focus,.f select:focus,.f textarea:focus{
+  outline:none;border-color:var(--navy2);
+  box-shadow:0 0 0 3px rgba(30,58,110,.1);
+}
+.f textarea{resize:none;line-height:1.5;}
+.f select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748B' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;
+  padding-right:32px;
+}
+
+/* ── TABLA PRODUCTOS ── */
+.prod-table{width:100%;border-collapse:collapse;font-size:13px;}
+.prod-table thead tr{background:var(--navy);}
+.prod-table thead th{
+  color:#fff;font-weight:600;font-size:11px;
+  letter-spacing:0.5px;padding:10px 10px;
+  text-align:left;
+}
+.prod-table thead th:nth-child(3),
+.prod-table thead th:nth-child(4),
+.prod-table thead th:nth-child(5){text-align:right;}
+.prod-table tbody tr{border-bottom:1px solid var(--border);}
+.prod-table tbody tr:nth-child(even){background:#F8FAFC;}
+.prod-table tbody td{padding:10px 10px;color:var(--txt);vertical-align:middle;}
+.prod-table .cod{
+  font-family:'DM Mono',monospace;font-size:11px;
+  color:var(--txt2);white-space:nowrap;
+}
+.prod-table .desc{font-weight:500;font-size:13px;}
+.prod-table .num{
+  text-align:right;font-family:'DM Mono',monospace;
+  font-size:13px;font-weight:500;
+}
+.qty-input{
+  width:48px;border:1px solid var(--border);
+  border-radius:6px;padding:5px 6px;text-align:center;
+  font-family:'DM Mono',monospace;font-size:13px;
+  font-weight:600;color:var(--txt);background:var(--card);
+  -webkit-appearance:none;appearance:none;
+}
+.qty-input:focus{outline:none;border-color:var(--navy2);}
+.qty-td{text-align:center;}
+.del-btn{
+  background:none;border:none;cursor:pointer;
+  color:#CBD5E1;font-size:16px;padding:2px 4px;
+  border-radius:4px;transition:color .15s;
+  line-height:1;
+}
+.del-btn:hover{color:#EF4444;}
+
+/* ── BUSCAR PRODUCTO ── */
+.search-bar{
+  display:flex;gap:8px;margin-bottom:12px;
+}
+.search-bar input{
+  flex:1;border:1px solid var(--border);
+  border-radius:8px;padding:10px 12px;
+  font-family:'DM Sans',sans-serif;font-size:14px;
+  color:var(--txt);background:var(--card);
+}
+.search-bar input:focus{
+  outline:none;border-color:var(--navy2);
+  box-shadow:0 0 0 3px rgba(30,58,110,.1);
+}
+.btn-add-custom{
+  background:var(--navy);color:#fff;
+  border:none;border-radius:8px;
+  padding:10px 14px;font-size:13px;font-weight:600;
+  cursor:pointer;white-space:nowrap;
+  transition:background .15s;
+}
+.btn-add-custom:hover{background:var(--navy2);}
+
+.catalog-results{
+  background:#F8FAFC;border:1px solid var(--border);
+  border-radius:8px;overflow:hidden;margin-bottom:12px;
+  display:none;
+}
+.cat-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;cursor:pointer;
+  border-bottom:1px solid var(--border);
+  transition:background .12s;
+}
+.cat-item:last-child{border-bottom:none;}
+.cat-item:hover{background:#EFF3FA;}
+.cat-item-info{}
+.cat-item-name{font-size:13px;font-weight:600;color:var(--txt);}
+.cat-item-cod{font-size:11px;color:var(--txt2);font-family:'DM Mono',monospace;}
+.cat-item-price{
+  font-family:'DM Mono',monospace;font-size:13px;
+  font-weight:600;color:var(--navy2);white-space:nowrap;
+}
+
+/* ── MANO DE OBRA ── */
+.mdo-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:8px;margin-bottom:0;
+}
+.mdo-chip{
+  border:2px solid var(--border);
+  border-radius:10px;padding:12px 8px;
+  cursor:pointer;text-align:center;
+  transition:all .15s;
+  background:var(--card);
+  position:relative;
+  user-select:none;
+}
+.mdo-chip:hover{border-color:var(--navy2);background:#EFF3FA;}
+.mdo-chip.active{
+  border-color:var(--orange);
+  background:#FFF7ED;
+}
+.mdo-chip.active::after{
+  content:'✓';
+  position:absolute;top:5px;right:8px;
+  font-size:12px;font-weight:700;color:var(--orange);
+}
+.mdo-icon{font-size:22px;margin-bottom:5px;}
+.mdo-name{font-size:11px;font-weight:700;color:var(--txt);line-height:1.2;margin-bottom:4px;}
+.mdo-price{
+  font-family:'DM Mono',monospace;font-size:12px;
+  font-weight:600;color:var(--orange);
+}
+.mdo-qty-row{
+  display:flex;align-items:center;gap:8px;
+  margin-top:8px;justify-content:center;
+}
+.mdo-qty-row label{font-size:10px;color:var(--txt2);font-weight:600;}
+.mdo-qty{
+  width:44px;border:1px solid var(--border);
+  border-radius:6px;padding:4px 6px;text-align:center;
+  font-family:'DM Mono',monospace;font-size:12px;
+  font-weight:600;display:none;
+}
+.mdo-chip.active .mdo-qty{display:block;}
+
+/* ── RESUMEN ── */
+.res-box{
+  background:#F8FAFC;border-radius:10px;
+  padding:14px 16px;
+}
+.res-row{
+  display:flex;justify-content:space-between;
+  align-items:center;padding:5px 0;
+  font-size:14px;
+}
+.res-row .lbl{color:var(--txt2);font-weight:500;}
+.res-row .val{
+  font-family:'DM Mono',monospace;font-weight:600;
+  color:var(--txt);
+}
+.res-divider{
+  border:none;border-top:1px solid var(--border);
+  margin:8px 0;
+}
+.res-total{
+  display:flex;justify-content:space-between;
+  align-items:center;margin-top:6px;
+}
+.res-total .lbl{
+  font-size:13px;font-weight:700;color:var(--txt2);
+  letter-spacing:0.5px;text-transform:uppercase;
+}
+.res-total .val{
+  font-family:'DM Mono',monospace;font-size:22px;
+  font-weight:700;color:var(--navy);
+}
+.iva-row{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 0;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  margin:4px 0;
+}
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.tslider{
+  position:absolute;cursor:pointer;inset:0;
+  background:#CBD5E1;border-radius:11px;transition:.25s;
+}
+.tslider:before{
+  content:'';position:absolute;
+  width:16px;height:16px;left:3px;bottom:3px;
+  background:#fff;border-radius:50%;transition:.25s;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+}
+input:checked+.tslider{background:var(--navy2);}
+input:checked+.tslider:before{transform:translateX(18px);}
+.iva-label{font-size:13px;font-weight:600;cursor:pointer;color:var(--txt);}
+.iva-val{
+  margin-left:auto;font-family:'DM Mono',monospace;
+  font-size:13px;font-weight:600;color:var(--txt);
+}
+
+/* ── CONDICIONES ── */
+.cond-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.cond-item{
+  background:#F8FAFC;border:1px solid var(--border);
+  border-radius:8px;padding:10px 12px;
+}
+.cond-item label{
+  font-size:10px;font-weight:700;letter-spacing:0.8px;
+  text-transform:uppercase;color:var(--txt2);
+  display:block;margin-bottom:5px;
+}
+.cond-item select,.cond-item input{
+  width:100%;border:none;background:transparent;
+  font-family:'DM Sans',sans-serif;font-size:13px;
+  font-weight:600;color:var(--txt);padding:0;
+  -webkit-appearance:none;
+}
+.cond-full{grid-column:1/-1;}
+.cond-item textarea{
+  width:100%;border:none;background:transparent;
+  font-family:'DM Sans',sans-serif;font-size:13px;
+  color:var(--txt);padding:0;resize:none;
+  min-height:60px;line-height:1.5;
+}
+.nota-box{
+  background:#FFFBEB;border:1px solid #FDE68A;
+  border-radius:8px;padding:12px 14px;margin-bottom:12px;
+  font-size:12px;color:#92400E;line-height:1.6;
+}
+.nota-box strong{color:#78350F;}
+
+/* ── APROBACIÓN ── */
+.apro-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.apro-box{
+  border:1px solid var(--border);border-radius:8px;
+  padding:12px;
+}
+.apro-box label{
+  font-size:10px;font-weight:700;letter-spacing:0.8px;
+  text-transform:uppercase;color:var(--txt2);
+  display:block;margin-bottom:8px;
+}
+.firma-area{
+  width:100%;height:60px;
+  border:1.5px dashed var(--border);
+  border-radius:6px;background:#F8FAFC;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:var(--txt3);margin-bottom:10px;
+  cursor:not-allowed;
+}
+.apro-box input{
+  width:100%;border:none;border-bottom:1px solid var(--border);
+  padding:4px 0;font-family:'DM Sans',sans-serif;
+  font-size:13px;font-weight:500;color:var(--txt);
+  background:transparent;margin-bottom:6px;
+}
+.apro-box input:focus{outline:none;border-bottom-color:var(--navy2);}
+
+/* ── FOOTER BTN ── */
+.btn-gen{
+  width:100%;background:var(--navy);color:#fff;
+  border:none;border-radius:var(--r);
+  padding:16px;font-family:'DM Sans',sans-serif;
+  font-size:15px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  box-shadow:0 4px 16px rgba(26,43,74,.25);
+  transition:transform .15s,box-shadow .15s;
+  letter-spacing:0.3px;
+}
+.btn-gen:active{transform:scale(0.98);}
+.btn-gen .pill{
+  background:var(--orange);
+  padding:3px 10px;border-radius:20px;
+  font-size:12px;font-weight:700;
+}
+
+/* ── FOOTER EMPRESA ── */
+.footer-empresa{
+  background:var(--navy);color:rgba(255,255,255,.5);
+  text-align:center;font-size:11px;padding:12px;
+  margin-top:16px;border-radius:var(--r);
+}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:20px;left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:var(--navy);color:#fff;
+  padding:11px 22px;border-radius:30px;
+  font-size:13px;font-weight:600;
+  box-shadow:0 8px 24px rgba(0,0,0,.25);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  z-index:999;white-space:nowrap;
+}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* ── EMPTY STATE ── */
+.empty-prod{
+  text-align:center;padding:24px;
+  color:var(--txt3);font-size:13px;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-inner">
+    <div class="hdr-left">
+      <div class="logo-wrap"><span>ARPA</span></div>
+      <div class="hdr-txt">
+        <h1>AUTOMATISMOS ARLENPAV S.A.S</h1>
+        <p>NIT: 901.473.259-8 &nbsp;|&nbsp; Tel: 300-568-3914</p>
+      </div>
+    </div>
+    <div class="hdr-badge">💰 COT N° <span id="numDisplay">0001</span></div>
+  </div>
+  <div class="hdr-strip"></div>
+</header>
+
+<div class="wrap">
+
+<!-- ── DATOS DEL CLIENTE ── -->
+<div class="card">
+  <div class="sec-hdr"><div class="sec-dot"></div><h2>Datos del Cliente</h2></div>
+  <div class="sec-body">
+    <div class="row">
+      <div class="f">
+        <label>Nombre / Empresa</label>
+        <input type="text" id="cli_nom" placeholder="Ej: Edificio Torres del Sur" autocomplete="off">
+      </div>
+    </div>
+    <div class="row">
+      <div class="f">
+        <label>NIT / Cédula</label>
+        <input type="text" id="cli_nit" placeholder="900.000.000-0" inputmode="numeric">
+      </div>
+      <div class="f">
+        <label>Teléfono</label>
+        <input type="tel" id="cli_tel" placeholder="+57 310 000 0000" inputmode="tel">
+      </div>
+    </div>
+    <div class="row">
+      <div class="f">
+        <label>Correo Electrónico</label>
+        <input type="email" id="cli_email" placeholder="correo@empresa.com" inputmode="email">
+      </div>
+      <div class="f">
+        <label>Ciudad</label>
+        <input type="text" id="cli_ciudad" placeholder="Medellín" value="Medellín">
+      </div>
+    </div>
+    <div class="row">
+      <div class="f">
+        <label>Fecha</label>
+        <input type="date" id="cli_fecha">
+      </div>
+      <div class="f">
+        <label>Válida Hasta</label>
+        <input type="date" id="cli_validez">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── BUSCAR Y AGREGAR PRODUCTOS ── -->
+<div class="card">
+  <div class="sec-hdr"><div class="sec-dot"></div><h2>Buscar y Agregar Productos</h2></div>
+  <div class="sec-body">
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="🔍  Buscar por nombre o código..." oninput="buscarProducto()" autocomplete="off">
+      <button class="btn-add-custom" onclick="agregarPersonalizado()">+ Manual</button>
+    </div>
+    <div class="catalog-results" id="catalogResults"></div>
+  </div>
+</div>
+
+<!-- ── PRODUCTOS COTIZADOS ── -->
+<div class="card">
+  <div class="sec-hdr"><div class="sec-dot"></div><h2>Productos Cotizados</h2></div>
+  <div style="overflow-x:auto;">
+    <table class="prod-table">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Descripción</th>
+          <th style="text-align:center">Cant.</th>
+          <th>P.V.P Unit.</th>
+          <th>Total</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="prodBody">
+        <tr id="emptyRow">
+          <td colspan="6" class="empty-prod">Agrega productos desde el buscador</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── MANO DE OBRA ── -->
+<div class="card">
+  <div class="sec-hdr"><div class="sec-dot"></div><h2>Mano de Obra</h2></div>
+  <div class="sec-body">
+    <div class="mdo-grid">
+
+      <div class="mdo-chip" id="mdo_brazos" onclick="toggleMDO('brazos')">
+        <div class="mdo-icon">💪</div>
+        <div class="mdo-name">Brazos<br>Abatible</div>
+        <div class="mdo-price">$650.000</div>
+        <div class="mdo-qty-row">
+          <label>Cant:</label>
+          <input class="mdo-qty" id="qbrazos" type="number" value="1" min="1"
+            oninput="recalcular()" onclick="event.stopPropagation()">
+        </div>
+      </div>
+
+      <div class="mdo-chip" id="mdo_corredizo" onclick="toggleMDO('corredizo')">
+        <div class="mdo-icon">↔️</div>
+        <div class="mdo-name">Motor<br>Corredizo</div>
+        <div class="mdo-price">$550.000</div>
+        <div class="mdo-qty-row">
+          <label>Cant:</label>
+          <input class="mdo-qty" id="qcorredizo" type="number" value="1" min="1"
+            oninput="recalcular()" onclick="event.stopPropagation()">
+        </div>
+      </div>
+
+      <div class="mdo-chip" id="mdo_levadizo" onclick="toggleMDO('levadizo')">
+        <div class="mdo-icon">⬆️</div>
+        <div class="mdo-name">Motor<br>Levadizo</div>
+        <div class="mdo-price">$400.000</div>
+        <div class="mdo-qty-row">
+          <label>Cant:</label>
+          <input class="mdo-qty" id="qlevadizo" type="number" value="1" min="1"
+            oninput="recalcular()" onclick="event.stopPropagation()">
+        </div>
+      </div>
+
+    </div>
+    <!-- resumen mano de obra -->
+    <div id="mdoResumen" style="display:none;margin-top:12px;background:#FFF7ED;border:1px solid #FDE68A;border-radius:8px;padding:10px 14px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--orange);margin-bottom:6px;">Mano de obra seleccionada</div>
+      <div id="mdoDetalle" style="font-size:13px;color:var(--txt2);line-height:1.8;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── RESUMEN ── -->
+<div class="card">
+  <div class="sec-hdr"><div class="sec-dot"></div><h2>Resumen de Cotización</h2></div>
+  <div class="sec-body">
+    <div class="res-box">
+      <div class="iva-row">
+        <label class="toggle">
+          <input type="checkbox" id="toggleIva" checked onchange="recalcular()">
+          <span class="tslider"></span>
+        </label>
+        <span class="iva-label">Incluir IVA 19%</span>
+        <span class="iva-val" id="rIva">$ 0</span>
+      </div>
+      <div class="res-row" style="margin-top:8px;">
+        <span class="lbl">Subtotal Productos</span>
+        <span class="val" id="rSubProd">$ 0</span>
+      </div>
+      <div class="res-row">
+        <span class="lbl">Subtotal Mano de Obra</span>
+        <span class="val" id="rSubMDO">$ 0</span>
+      </div>
+      <div class="res-row">
+        <span class="lbl">Subtotal</span>
+        <span class="val" id="rSubtotal">$ 0</span>
+      </div>
+      <hr class="res-divider">
+      <div class="res-total">
+        <span class="lbl">TOTAL</span>
+        <span class="val" id="rTotal">$ 0</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CONDICIONES COMERCIALES ── -->
+<div class="card">
+  <div class="sec-hdr"><div class="sec-dot"></div><h2>Condiciones Comerciales</h2></div>
+  <div class="sec-body">
+    <div class="cond-grid">
+      <div class="cond-item">
+        <label>Forma de Pago</label>
+        <select id="cond_pago">
+          <option>50% anticipo – 50% contra entrega</option>
+          <option>100% anticipo</option>
+          <option>Contra entrega</option>
+          <option>30 días</option>
+        </select>
+      </div>
+      <div class="cond-item">
+        <label>Tiempo de Entrega</label>
+        <select id="cond_entrega">
+          <option>3-5 días hábiles</option>
+          <option>1-2 días hábiles</option>
+          <option>Inmediata</option>
+          <option>8-10 días hábiles</option>
+          <option>A convenir</option>
+        </select>
+      </div>
+      <div class="cond-item">
+        <label>Garantía del Equipo</label>
+        <select id="cond_garantia">
+          <option>Según fabricante (2-3 años)</option>
+          <option>2 años</option>
+          <option>1 año</option>
+          <option>6 meses</option>
+        </select>
+      </div>
+      <div class="cond-item">
+        <label>Instalación</label>
+        <select id="cond_instalacion">
+          <option>Incluida</option>
+          <option>A convenir</option>
+          <option>No incluida</option>
+        </select>
+      </div>
+      <div class="cond-item cond-full">
+        <label>Observaciones</label>
+        <textarea id="cond_obs" placeholder="Especificaciones adicionales, notas para el cliente, aclaraciones..." rows="3"></textarea>
+      </div>
+    </div>
+
+    <div class="nota-box" style="margin-top:12px;">
+      <strong>Nota:</strong> Esta cotización tiene vigencia de <strong>15 días calendario</strong> a partir de la fecha de emisión. Los precios están expresados en pesos colombianos (COP). El punto eléctrico (110V–220V) con polo a tierra corre por cuenta del cliente. <strong>Automatismos Arlenpav S.A.S</strong> no se hace responsable de daños causados por instalaciones realizadas por terceros no autorizados.
+    </div>
+  </div>
+</div>
+
+<!-- ── APROBACIÓN ── -->
+<div class="card">
+  <div class="sec-hdr"><div class="sec-dot"></div><h2>Aprobación</h2></div>
+  <div class="sec-body">
+    <div class="apro-grid">
+      <div class="apro-box">
+        <label>Aprobado por (Cliente)</label>
+        <div class="firma-area">Firma aquí</div>
+        <input type="text" id="apro_nombre" placeholder="Nombre completo">
+        <input type="text" id="apro_cc" placeholder="CC / NIT">
+      </div>
+      <div class="apro-box">
+        <label>Elaborado por Arlenpav</label>
+        <div class="firma-area">Firma aquí</div>
+        <input type="text" value="Arlen Pavón R." readonly style="color:var(--txt2)">
+        <input type="text" value="300-568-3914" readonly style="color:var(--txt2)">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── GENERAR PDF ── -->
+<button class="btn-gen" onclick="generarPDF()">
+  Generar Cotización PDF &nbsp;<span class="pill">📄 DESCARGAR</span>
+</button>
+
+<div class="footer-empresa">
+  Automatismos Arlenpav S.A.S &nbsp;|&nbsp; NIT 901.473.259-8 &nbsp;|&nbsp; Tel 300-568-3914 &nbsp;|&nbsp; www.automatismosarpa.com
+</div>
+
+</div><!-- /wrap -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+// CATÁLOGO DE PRODUCTOS
+// ══════════════════════════════════════════
+const CATALOGO = [
+  { cod:'AUACPUMA1200', nom:'Accessmatic Puma 1200 WiFi – 1 HP 110V', precio:1369900 },
+  { cod:'AUACPUMA900',  nom:'Accessmatic Puma 900 – 0.75 HP 110V',    precio:1180000 },
+  { cod:'AUACAF24Li',   nom:'Batería respaldo Accessmatic 24V litio',  precio:249900 },
+  { cod:'AUACRT2415U',  nom:'Fotoceldas Reflex15 – 15m comerciales',   precio:379900 },
+  { cod:'BFTDEIMOS',    nom:'Motor BFT Deimos BT A400 corredizo',      precio:1850000 },
+  { cod:'BFTPHOBOS',    nom:'Motor BFT Phobos BT A30 abatible',        precio:1650000 },
+  { cod:'BFTLUX',       nom:'Control BFT LUX 24V 2 canales',           precio:189000 },
+  { cod:'ELITEKIT',     nom:'Kit motor Elite SL 1500 corredizo',       precio:1420000 },
+  { cod:'NASGATE',      nom:'Motor NAS Gate 1200 levadizo',            precio:980000 },
+  { cod:'BENINCATWIN',  nom:'Motor Beninca Twin corredizo',            precio:1550000 },
+  { cod:'CONTROL2CH',   nom:'Control remoto 2 canales universal',      precio:45000 },
+  { cod:'CONTROL4CH',   nom:'Control remoto 4 canales universal',      precio:65000 },
+  { cod:'FOTOEXT',      nom:'Fotoceldas exteriores IP65',              precio:290000 },
+  { cod:'TECLADO',      nom:'Teclado numérico exterior IP65',          precio:185000 },
+  { cod:'LLAVERIN',     nom:'Llavero de proximidad (pack x5)',         precio:95000 },
+];
+
+// ══════════════════════════════════════════
+// MANO DE OBRA
+// ══════════════════════════════════════════
+const MDO = {
+  brazos:    { nom:'Inst. Brazos Abatible',    precio:650000 },
+  corredizo: { nom:'Inst. Motor Corredizo',    precio:550000 },
+  levadizo:  { nom:'Inst. Motor Levadizo',     precio:400000 },
+};
+const mdoActivo = { brazos:false, corredizo:false, levadizo:false };
+
+function toggleMDO(tipo) {
+  mdoActivo[tipo] = !mdoActivo[tipo];
+  const chip = document.getElementById(`mdo_${tipo}`);
+  chip.classList.toggle('active', mdoActivo[tipo]);
+  recalcular();
+  actualizarMDOResumen();
+}
+
+function actualizarMDOResumen() {
+  const activos = Object.entries(mdoActivo).filter(([,v])=>v);
+  const res = document.getElementById('mdoResumen');
+  const det = document.getElementById('mdoDetalle');
+  if (!activos.length) { res.style.display='none'; return; }
+  res.style.display='block';
+  det.innerHTML = activos.map(([k])=>{
+    const q = parseInt(document.getElementById(`q${k}`)?.value)||1;
+    return `${MDO[k].nom} × ${q} = <strong>${fmt(MDO[k].precio*q)}</strong>`;
+  }).join('<br>');
+}
+
+// ══════════════════════════════════════════
+// NÚMERO COTIZACIÓN
+// ══════════════════════════════════════════
+const STORAGE_KEY = 'arpa_num_v2';
+function getNum() {
+  return parseInt(localStorage.getItem(STORAGE_KEY)||'1') ;
+}
+function nextNum() {
+  const n = getNum();
+  localStorage.setItem(STORAGE_KEY, n+1);
+  return n;
+}
+function padNum(n){ return String(n).padStart(4,'0'); }
+document.getElementById('numDisplay').textContent = padNum(getNum());
+
+// ══════════════════════════════════════════
+// FECHAS AUTOMÁTICAS
+// ══════════════════════════════════════════
+const hoy = new Date();
+const validez = new Date(); validez.setDate(validez.getDate()+15);
+document.getElementById('cli_fecha').value = hoy.toISOString().split('T')[0];
+document.getElementById('cli_validez').value = validez.toISOString().split('T')[0];
+
+function fmtFecha(str){
+  if(!str) return '';
+  const [y,m,d]=str.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+// ══════════════════════════════════════════
+// PRODUCTOS EN TABLA
+// ══════════════════════════════════════════
+let productos = [];
+let pidCnt = 0;
+
+function agregarProducto(cod, nom, precio, qty=1) {
+  const existing = productos.find(p=>p.cod===cod && !p.manual);
+  if(existing){ existing.qty+=qty; renderProductos(); recalcular(); 
+    document.getElementById('catalogResults').style.display='none';
+    document.getElementById('searchInput').value='';
+    return; 
+  }
+  productos.push({ id: ++pidCnt, cod, nom, precio, qty, manual:false });
+  renderProductos();
+  recalcular();
+  document.getElementById('catalogResults').style.display='none';
+  document.getElementById('searchInput').value='';
+}
+
+function agregarPersonalizado(){
+  // Agrega fila vacía editable directamente en la tabla, sin prompt
+  productos.push({ id:++pidCnt, cod:'MANUAL', nom:'', precio:0, qty:1, manual:true });
+  renderProductos();
+  recalcular();
+  // Focus en la descripción del nuevo ítem
+  const lastDesc = document.getElementById(`desc_${pidCnt}`);
+  if(lastDesc){ lastDesc.focus(); }
+}
+
+function cambiarQty(id, val){
+  const p = productos.find(x=>x.id===id);
+  if(p){ p.qty = Math.max(1, parseInt(val)||1); renderTotalesInline(id); recalcular(); }
+}
+
+function cambiarPrecio(id, val){
+  const p = productos.find(x=>x.id===id);
+  if(p){ p.precio = parseFloat(String(val).replace(/[^0-9.]/g,''))||0; renderTotalesInline(id); recalcular(); }
+}
+
+function cambiarDesc(id, val){
+  const p = productos.find(x=>x.id===id);
+  if(p) p.nom = val;
+}
+
+function renderTotalesInline(id){
+  const p = productos.find(x=>x.id===id);
+  if(!p) return;
+  const el = document.getElementById(`total_${id}`);
+  if(el) el.textContent = fmt(p.precio * p.qty);
+}
+
+function eliminarProducto(id){
+  productos = productos.filter(x=>x.id!==id);
+  renderProductos(); recalcular();
+}
+
+function renderProductos(){
+  const tbody = document.getElementById('prodBody');
+  if(!productos.length){
+    tbody.innerHTML='<tr id="emptyRow"><td colspan="6" class="empty-prod">Agrega productos desde el buscador</td></tr>';
+    return;
+  }
+  tbody.innerHTML = productos.map(p=>`
+    <tr>
+      <td class="cod">${p.cod}</td>
+      <td class="desc">
+        ${p.manual
+          ? `<input style="border:none;border-bottom:1px solid var(--border);width:100%;font-family:inherit;font-size:13px;font-weight:500;color:var(--txt);background:transparent;padding:2px 0;" 
+               id="desc_${p.id}" value="${p.nom}" placeholder="Descripción del producto..."
+               oninput="cambiarDesc(${p.id},this.value)">`
+          : p.nom
+        }
+      </td>
+      <td class="qty-td">
+        <input class="qty-input" type="number" value="${p.qty}" min="1" inputmode="numeric"
+          onchange="cambiarQty(${p.id},this.value)" oninput="cambiarQty(${p.id},this.value)">
+      </td>
+      <td class="num">
+        ${p.manual
+          ? `<input style="border:none;border-bottom:1px solid var(--border);width:80px;text-align:right;font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--txt);background:transparent;padding:2px 4px;" 
+               type="number" value="${p.precio||''}" placeholder="0" inputmode="numeric"
+               onchange="cambiarPrecio(${p.id},this.value)" oninput="cambiarPrecio(${p.id},this.value)">`
+          : fmt(p.precio)
+        }
+      </td>
+      <td class="num" id="total_${p.id}">${fmt(p.precio*p.qty)}</td>
+      <td><button class="del-btn" onclick="eliminarProducto(${p.id})">✕</button></td>
+    </tr>
+  `).join('');
+}
+
+// ══════════════════════════════════════════
+// BUSCADOR
+// ══════════════════════════════════════════
+function buscarProducto(){
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const cont = document.getElementById('catalogResults');
+  if(q.length < 2){ cont.style.display='none'; return; }
+  const res = CATALOGO.filter(p=>
+    p.nom.toLowerCase().includes(q) || p.cod.toLowerCase().includes(q)
+  ).slice(0,6);
+  if(!res.length){ cont.style.display='none'; return; }
+  cont.innerHTML = res.map(p=>`
+    <div class="cat-item" onclick="agregarProducto('${p.cod}','${p.nom}',${p.precio})">
+      <div class="cat-item-info">
+        <div class="cat-item-name">${p.nom}</div>
+        <div class="cat-item-cod">${p.cod}</div>
+      </div>
+      <div class="cat-item-price">${fmt(p.precio)}</div>
+    </div>
+  `).join('');
+  cont.style.display='block';
+}
+document.addEventListener('click', e=>{
+  if(!e.target.closest('#catalogResults')&&!e.target.closest('#searchInput'))
+    document.getElementById('catalogResults').style.display='none';
+});
+
+// ══════════════════════════════════════════
+// CÁLCULOS
+// ══════════════════════════════════════════
+function fmt(n){
+  if(!n||isNaN(n)) return '$ 0';
+  return '$ '+Math.round(n).toLocaleString('es-CO');
+}
+function fmtPDF(n){
+  if(!n||isNaN(n)) return '$0';
+  return '$'+Math.round(n).toLocaleString('es-CO');
+}
+
+function recalcular(){
+  const subProd = productos.reduce((s,p)=>s+p.precio*p.qty, 0);
+
+  let subMDO = 0;
+  Object.entries(mdoActivo).forEach(([k,v])=>{
+    if(v){
+      const q = parseInt(document.getElementById(`q${k}`)?.value)||1;
+      subMDO += MDO[k].precio * q;
+    }
+  });
+  actualizarMDOResumen();
+
+  const subtotal = subProd + subMDO;
+  const ivaOn = document.getElementById('toggleIva').checked;
+  const iva = ivaOn ? Math.round(subtotal*0.19) : 0;
+  const total = subtotal + iva;
+
+  document.getElementById('rSubProd').textContent  = fmt(subProd);
+  document.getElementById('rSubMDO').textContent   = fmt(subMDO);
+  document.getElementById('rSubtotal').textContent = fmt(subtotal);
+  document.getElementById('rIva').textContent      = fmt(iva);
+  document.getElementById('rTotal').textContent    = fmt(total);
+
+  return { subProd, subMDO, subtotal, iva, total, ivaOn };
+}
+
+// ══════════════════════════════════════════
+// GENERAR PDF
+// ══════════════════════════════════════════
+async function generarPDF(){
+  const nom = document.getElementById('cli_nom').value.trim();
+  if(!nom){ toast('⚠️ Escribe el nombre del cliente'); return; }
+  if(!productos.length && !Object.values(mdoActivo).some(Boolean)){
+    toast('⚠️ Agrega al menos un producto o mano de obra'); return;
+  }
+
+  const { subProd, subMDO, subtotal, iva, total, ivaOn } = recalcular();
+  const num = nextNum();
+  const numStr = padNum(num);
+  document.getElementById('numDisplay').textContent = padNum(getNum());
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'letter' });
+  const PW=215.9, PH=279.4, mL=14, mR=14, UW=PW-mL-mR;
+
+  const NAVY  = [26,43,74];
+  const NAVY2 = [30,58,110];
+  const ORG   = [232,130,12];
+  const WHT   = [255,255,255];
+  const BG    = [242,244,248];
+  const BDR   = [226,232,240];
+  const TXT2  = [100,116,135];
+  const TXT   = [26,43,74];
+  const AMB   = [254,243,199];
+  const AMBT  = [146,64,14];
+
+  // ── HEADER AZUL
+  doc.setFillColor(...NAVY);
+  doc.rect(0,0,PW,30,'F');
+
+  // Logo circle
+  doc.setFillColor(...WHT);
+  doc.circle(mL+10,15,9,'F');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8); doc.setTextColor(...NAVY);
+  doc.text('ARPA',mL+10,13.5,{align:'center'});
+  doc.setFontSize(6); doc.setFont('helvetica','normal');
+  doc.text('AUTOMATISMOS',mL+10,17,{align:'center'});
+
+  // Empresa
+  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...WHT);
+  doc.text('AUTOMATISMOS ARLENPAV S.A.S', mL+22, 11);
+  doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(180,200,230);
+  doc.text('NIT: 901.473.259-8  |  Tel: 300-568-3914  |  CL 77C C 86A 38 – Medellín', mL+22, 17);
+  doc.text('www.automatismosarpa.com', mL+22, 22);
+
+  // Badge COT
+  doc.setFillColor(...ORG);
+  doc.roundedRect(PW-mR-38,8,38,10,3,3,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...WHT);
+  doc.text('💰 COTIZACIÓN',PW-mR-19,14.5,{align:'center'});
+
+  // Número
+  doc.setFillColor(240,244,252);
+  doc.roundedRect(PW-mR-28,20,28,7,2,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...NAVY);
+  doc.text(`N°  ${numStr}`,PW-mR-14,25,{align:'center'});
+
+  // Línea naranja
+  doc.setFillColor(...ORG);
+  doc.rect(0,30,PW,2,'F');
+
+  let y = 38;
+
+  // ── DATOS CLIENTE
+  const fecha    = fmtFecha(document.getElementById('cli_fecha').value);
+  const validezV = fmtFecha(document.getElementById('cli_validez').value);
+  const nit      = document.getElementById('cli_nit').value.trim()||'—';
+  const tel      = document.getElementById('cli_tel').value.trim()||'—';
+  const email    = document.getElementById('cli_email').value.trim()||'—';
+  const ciudad   = document.getElementById('cli_ciudad').value.trim()||'Medellín';
+
+  // Encabezado sección
+  doc.setFillColor(...BG);
+  doc.roundedRect(mL,y,UW,6.5,2,2,'F');
+  doc.setFillColor(...ORG);
+  doc.circle(mL+4,y+3.25,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT);
+  doc.text('DATOS DEL CLIENTE',mL+9,y+4.2);
+  y+=9;
+
+  const clienteRows=[
+    [['NOMBRE / EMPRESA',nom],['NIT / CÉDULA',nit]],
+    [['TELÉFONO',tel],['CORREO ELECTRÓNICO',email]],
+    [['CIUDAD',ciudad],['FECHA',fecha]],
+    [['VÁLIDA HASTA',validezV],['','']],
+  ];
+  clienteRows.forEach((fila,fi)=>{
+    doc.setFillColor(fi%2===0?245:255,fi%2===0?247:255,fi%2===0?252:255);
+    doc.rect(mL,y,UW,9,'F');
+    doc.setDrawColor(...BDR); doc.setLineWidth(0.2);
+    doc.rect(mL,y,UW,9,'S');
+    let x=mL+3;
+    fila.forEach(([lbl,val])=>{
+      if(lbl){
+        doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...TXT2);
+        doc.text(lbl,x,y+3.5);
+        doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...TXT);
+        doc.text(String(val),x,y+7.5);
+      }
+      x+=UW/2;
+    });
+    y+=9;
+  });
+  y+=8;
+
+  // ── TABLA PRODUCTOS
+  doc.setFillColor(...BG);
+  doc.roundedRect(mL,y,UW,6.5,2,2,'F');
+  doc.setFillColor(...ORG); doc.circle(mL+4,y+3.25,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT);
+  doc.text('PRODUCTOS COTIZADOS',mL+9,y+4.2);
+  y+=9;
+
+  const prodRows = productos.map((p,i)=>[
+    p.cod, p.nom, p.qty, fmtPDF(p.precio), fmtPDF(p.precio*p.qty)
+  ]);
+
+  doc.autoTable({
+    startY:y,
+    head:[['CÓDIGO','DESCRIPCIÓN','CANT.','P.V.P UNIT.','TOTAL']],
+    body: prodRows.length ? prodRows : [['—','Sin productos cotizados','—','—','—']],
+    margin:{ left:mL, right:mR },
+    columnStyles:{
+      0:{cellWidth:28,fontSize:7.5,fontStyle:'normal'},
+      1:{cellWidth:82,fontSize:8},
+      2:{cellWidth:14,halign:'center',fontSize:8},
+      3:{cellWidth:26,halign:'right',fontSize:8},
+      4:{cellWidth:26,halign:'right',fontSize:8,fontStyle:'bold'},
+    },
+    headStyles:{fillColor:NAVY,textColor:WHT,fontStyle:'bold',fontSize:8,cellPadding:5},
+    alternateRowStyles:{fillColor:[248,250,252]},
+    bodyStyles:{textColor:TXT,cellPadding:{top:5,bottom:5,left:4,right:4}},
+    styles:{lineColor:BDR,lineWidth:0.2},
+  });
+  y = doc.lastAutoTable.finalY + 6;
+
+  // ── MANO DE OBRA (si hay)
+  const mdoActivos = Object.entries(mdoActivo).filter(([,v])=>v);
+  if(mdoActivos.length){
+    doc.setFillColor(...BG);
+    doc.roundedRect(mL,y,UW,6.5,2,2,'F');
+    doc.setFillColor(...ORG); doc.circle(mL+4,y+3.25,2,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT);
+    doc.text('MANO DE OBRA',mL+9,y+4.2);
+    y+=9;
+
+    const mdoRows = mdoActivos.map(([k])=>{
+      const q = parseInt(document.getElementById(`q${k}`)?.value)||1;
+      return ['MDO-'+k.toUpperCase(), MDO[k].nom, q, fmtPDF(MDO[k].precio), fmtPDF(MDO[k].precio*q)];
+    });
+
+    doc.autoTable({
+      startY:y,
+      head:[['CÓDIGO','DESCRIPCIÓN','CANT.','P.V.P UNIT.','TOTAL']],
+      body: mdoRows,
+      margin:{left:mL,right:mR},
+      columnStyles:{
+        0:{cellWidth:28,fontSize:7.5},
+        1:{cellWidth:82,fontSize:8},
+        2:{cellWidth:14,halign:'center',fontSize:8},
+        3:{cellWidth:26,halign:'right',fontSize:8},
+        4:{cellWidth:26,halign:'right',fontSize:8,fontStyle:'bold'},
+      },
+      headStyles:{fillColor:[30,58,110],textColor:WHT,fontStyle:'bold',fontSize:8,cellPadding:5},
+      alternateRowStyles:{fillColor:[248,250,252]},
+      bodyStyles:{textColor:TXT,cellPadding:{top:5,bottom:5,left:4,right:4}},
+      styles:{lineColor:BDR,lineWidth:0.2},
+    });
+    y = doc.lastAutoTable.finalY + 6;
+  }
+
+  // ── RESUMEN
+  doc.setFillColor(...BG);
+  doc.roundedRect(mL,y,UW,6.5,2,2,'F');
+  doc.setFillColor(...ORG); doc.circle(mL+4,y+3.25,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT);
+  doc.text('RESUMEN DE COTIZACIÓN',mL+9,y+4.2);
+  y+=10;
+
+  const resW = 80;
+  const resX = mL+UW-resW;
+
+  const resRows=[
+    ['Subtotal Productos', fmtPDF(subProd)],
+    ...(subMDO>0?[['Subtotal Mano de Obra', fmtPDF(subMDO)]]:[]),
+    ['Subtotal', fmtPDF(subtotal)],
+    [ivaOn?'IVA (19%)':'IVA (0%)', fmtPDF(iva)],
+  ];
+  resRows.forEach(([lbl,val],i)=>{
+    const bg = i%2===0?[245,247,252]:[255,255,255];
+    doc.setFillColor(...bg);
+    doc.rect(resX,y,resW,8,'F');
+    doc.setDrawColor(...BDR); doc.setLineWidth(0.2); doc.rect(resX,y,resW,8,'S');
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...TXT2);
+    doc.text(lbl,resX+4,y+5.5);
+    doc.setFont('helvetica','bold'); doc.setTextColor(...TXT);
+    doc.text(val,resX+resW-4,y+5.5,{align:'right'});
+    y+=8;
+  });
+  // Total
+  doc.setFillColor(...NAVY);
+  doc.rect(resX,y,resW,11,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(...WHT);
+  doc.text('TOTAL',resX+4,y+7.5);
+  doc.setFontSize(11);
+  doc.text(fmtPDF(total),resX+resW-4,y+7.5,{align:'right'});
+  y+=17;
+
+  // ── CONDICIONES
+  if(y > PH-80){ doc.addPage(); y=20; }
+  doc.setFillColor(...BG);
+  doc.roundedRect(mL,y,UW,6.5,2,2,'F');
+  doc.setFillColor(...ORG); doc.circle(mL+4,y+3.25,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT);
+  doc.text('CONDICIONES COMERCIALES',mL+9,y+4.2);
+  y+=9;
+
+  const condG=[
+    ['FORMA DE PAGO',document.getElementById('cond_pago').value],
+    ['TIEMPO DE ENTREGA',document.getElementById('cond_entrega').value],
+    ['GARANTÍA DEL EQUIPO',document.getElementById('cond_garantia').value],
+    ['INSTALACIÓN',document.getElementById('cond_instalacion').value],
+  ];
+  const hw=UW/2-2;
+  condG.forEach(([lbl,val],i)=>{
+    const cx = mL + (i%2===0?0:hw+4);
+    const cy = y + Math.floor(i/2)*18;
+    doc.setFillColor(248,250,252);
+    doc.roundedRect(cx,cy,hw,16,2,2,'F');
+    doc.setDrawColor(...BDR); doc.setLineWidth(0.2);
+    doc.roundedRect(cx,cy,hw,16,2,2,'S');
+    doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...TXT2);
+    doc.text(lbl,cx+5,cy+5.5);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...TXT);
+    doc.text(val,cx+5,cy+12.5);
+  });
+  y+=40;
+
+  // Observaciones
+  const obs = document.getElementById('cond_obs').value.trim();
+  if(obs){
+    doc.setFillColor(...BG);
+    doc.roundedRect(mL,y,UW,6.5,2,2,'F');
+    doc.setFillColor(...ORG); doc.circle(mL+4,y+3.25,2,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT);
+    doc.text('OBSERVACIONES',mL+9,y+4.2);
+    y+=9;
+    doc.setFillColor(248,250,252);
+    const obsLines = doc.splitTextToSize(obs,UW-10);
+    const obsH = obsLines.length*5+10;
+    doc.roundedRect(mL,y,UW,obsH,2,2,'F');
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...TXT);
+    doc.text(obsLines,mL+5,y+7);
+    y+=obsH+6;
+  }
+
+  // Nota legal
+  doc.setFillColor(...AMB);
+  const notaLines = doc.splitTextToSize(
+    'Nota: Esta cotización tiene vigencia de 15 días calendario. Los precios están en COP. El punto eléctrico (110V–220V) con polo a tierra corre por cuenta del cliente. Automatismos Arlenpav S.A.S no se hace responsable de daños por instalaciones de terceros.',
+    UW-10
+  );
+  const notaH = notaLines.length*4.5+10;
+  doc.roundedRect(mL,y,UW,notaH,2,2,'F');
+  doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...AMBT);
+  doc.text(notaLines,mL+5,y+7);
+  y+=notaH+8;
+
+  // ── APROBACIÓN
+  if(y>PH-60){ doc.addPage(); y=20; }
+  doc.setFillColor(...BG);
+  doc.roundedRect(mL,y,UW,6.5,2,2,'F');
+  doc.setFillColor(...ORG); doc.circle(mL+4,y+3.25,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT);
+  doc.text('APROBACIÓN',mL+9,y+4.2);
+  y+=9;
+
+  const aprW=UW/2-3;
+  [[document.getElementById('apro_nombre').value||'_______________',
+    document.getElementById('apro_cc').value||'CC / NIT',
+    'APROBADO POR (CLIENTE)'],
+   ['Arlen Pavón R.','300-568-3914','ELABORADO POR ARLENPAV']
+  ].forEach(([nom2,sub,lbl],i)=>{
+    const ax=mL+(i===0?0:aprW+6);
+    doc.setFillColor(248,250,252);
+    doc.roundedRect(ax,y,aprW,38,2,2,'F');
+    doc.setDrawColor(...BDR); doc.setLineWidth(0.2);
+    doc.roundedRect(ax,y,aprW,38,2,2,'S');
+    doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...TXT2);
+    doc.text(lbl,ax+5,y+5.5);
+    // firma box
+    doc.setFillColor(240,244,248);
+    doc.roundedRect(ax+5,y+8,aprW-10,14,1,1,'F');
+    doc.setDrawColor(...BDR); doc.setLineWidth(0.5);
+    doc.setLineDash([1.5,1.5],0);
+    doc.roundedRect(ax+5,y+8,aprW-10,14,1,1,'S');
+    doc.setLineDash([],0);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...TXT2);
+    doc.text('Firma aquí',ax+aprW/2,y+16,{align:'center'});
+    // líneas nombre
+    doc.setDrawColor(...BDR); doc.setLineWidth(0.3);
+    doc.line(ax+5,y+27,ax+aprW-5,y+27);
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...TXT);
+    doc.text(nom2,ax+5,y+25);
+    doc.line(ax+5,y+34,ax+aprW-5,y+34);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...TXT2);
+    doc.text(sub,ax+5,y+32);
+  });
+
+  // ── PIE
+  doc.setFillColor(...NAVY);
+  doc.rect(0,PH-10,PW,10,'F');
+  doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(180,200,230);
+  doc.text('Automatismos Arlenpav S.A.S  |  NIT 901.473.259-8  |  Tel 300-568-3914  |  www.automatismosarpa.com',PW/2,PH-4,{align:'center'});
+
+  const archivo=`Cotizacion_${numStr}_${nom.replace(/[^a-zA-Z0-9]/g,'_')}.pdf`;
+  doc.save(archivo);
+  toast(`✅ Cotización #${numStr} generada`);
+}
+
+// ══════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>
