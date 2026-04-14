@@ -680,21 +680,57 @@ input:checked+.tslider:before{transform:translateX(18px);}
 // CATÁLOGO DE PRODUCTOS
 // ══════════════════════════════════════════
 const CATALOGO = [
-  { cod:'AUACPUMA1200', nom:'Accessmatic Puma 1200 WiFi – 1 HP 110V', precio:1369900 },
-  { cod:'AUACPUMA900',  nom:'Accessmatic Puma 900 – 0.75 HP 110V',    precio:1180000 },
-  { cod:'AUACAF24Li',   nom:'Batería respaldo Accessmatic 24V litio',  precio:249900 },
-  { cod:'AUACRT2415U',  nom:'Fotoceldas Reflex15 – 15m comerciales',   precio:379900 },
-  { cod:'BFTDEIMOS',    nom:'Motor BFT Deimos BT A400 corredizo',      precio:1850000 },
-  { cod:'BFTPHOBOS',    nom:'Motor BFT Phobos BT A30 abatible',        precio:1650000 },
-  { cod:'BFTLUX',       nom:'Control BFT LUX 24V 2 canales',           precio:189000 },
-  { cod:'ELITEKIT',     nom:'Kit motor Elite SL 1500 corredizo',       precio:1420000 },
-  { cod:'NASGATE',      nom:'Motor NAS Gate 1200 levadizo',            precio:980000 },
-  { cod:'BENINCATWIN',  nom:'Motor Beninca Twin corredizo',            precio:1550000 },
-  { cod:'CONTROL2CH',   nom:'Control remoto 2 canales universal',      precio:45000 },
-  { cod:'CONTROL4CH',   nom:'Control remoto 4 canales universal',      precio:65000 },
-  { cod:'FOTOEXT',      nom:'Fotoceldas exteriores IP65',              precio:290000 },
-  { cod:'TECLADO',      nom:'Teclado numérico exterior IP65',          precio:185000 },
-  { cod:'LLAVERIN',     nom:'Llavero de proximidad (pack x5)',         precio:95000 },
+  // ── CORREDIZAS BFT – DEIMOS BT (brushless, uso intensivo)
+  { cod:'KDEIMOSBTA400-1',    nom:'BFT Deimos BT A400 Corredizo hasta 400kg 110V (Kit)',      precio:1948900 },
+  { cod:'KDEIMOSBTA600-1',    nom:'BFT Deimos BT A600 Corredizo hasta 600kg 110V (Kit)',      precio:2391900 },
+
+  // ── CORREDIZAS BFT – DEIMOS AC (uso semi-intensivo)
+  { cod:'KDEIMOSACA600-1',    nom:'BFT Deimos AC A600 Corredizo hasta 600kg 110V (Kit)',      precio:2960900 },
+  { cod:'KDEIMOSACA600-2',    nom:'BFT Deimos AC A600 Corredizo hasta 600kg 220V (Kit)',      precio:2960900 },
+  { cod:'KDEIMOSACA800SLDN-1',nom:'BFT Deimos AC A800 SL DN Corredizo hasta 800kg 110V (Kit)',precio:3728900 },
+  { cod:'KDEIMOSACA800SLDN-2',nom:'BFT Deimos AC A800 SL DN Corredizo hasta 800kg 220V (Kit)',precio:3728900 },
+
+  // ── CORREDIZAS BFT – ARES BT (uso intensivo, hasta 1000kg)
+  { cod:'KARESBTA1000Z18-2',  nom:'BFT Ares BTA 1000 Corredizo hasta 1000kg 220V Piñón 18 (Kit)', precio:3539900 },
+  { cod:'KARESBTA1000Z25-2',  nom:'BFT Ares BTA 1000 Corredizo hasta 500kg 220V Piñón 25 (Kit)',  precio:3539000 },
+  { cod:'KARESBTA1500Z18-2',  nom:'BFT Ares BTA 1500 Corredizo hasta 1500kg 220V Piñón 18 (Kit)',precio:4209900 },
+  { cod:'KARESBTA1500Z25-2',  nom:'BFT Ares BTA 1500 Corredizo hasta 750kg 220V Piñón 25 (Kit)', precio:4402900 },
+
+  // ── CORREDIZAS BFT – ICARO SMART (uso continuo, industrial)
+  { cod:'KICAROSMARTACA2000V', nom:'BFT Icaro Smart AC A2000 Corredizo hasta 1000kg 220V (Kit)',  precio:5522900 },
+  { cod:'KICAROSMARTACA2000',  nom:'BFT Icaro Smart AC A2000 Corredizo hasta 2000kg 220V (Kit)',  precio:5522900 },
+
+  // ── BATIENTES BFT – PHOBOS BT (electromecánico)
+  { cod:'KPHOBOBTA25-1',      nom:'BFT Phobos BT A25 Batiente hasta 400kg 2.5m 110V (Kit 2 brazos)', precio:3278900 },
+  { cod:'KPHOBOBTA40-1',      nom:'BFT Phobos BT A40 Batiente hasta 500kg 4m 110V (Kit 2 brazos)',   precio:3498900 },
+
+  // ── BATIENTES BFT – LUX 2B (hidráulico, uso muy intensivo)
+  { cod:'K2LUX2B-1',          nom:'BFT Lux 2B Batiente Hidráulico hasta 300kg 2.5m 110/220V (Kit)', precio:6413900 },
+  { cod:'K2LUX2B-2',          nom:'BFT Lux 2B Batiente Hidráulico hasta 300kg 2.5m 110/220V – Tarjeta (Kit)', precio:6413900 },
+  { cod:'K2LUX2B-1-A',        nom:'BFT Lux 2B Batiente Hidráulico hasta 300kg 2.5m – Tarjeta Alcor AC A (Kit)', precio:6134900 },
+  { cod:'K2LUX2B-2-A',        nom:'BFT Lux 2B Batiente Hidráulico hasta 300kg 2.5m – Tarjeta Alcor AC A (Kit 2)', precio:6134900 },
+
+  // ── BATIENTES BFT – LUX GV 2B (hidráulico, uso muy intensivo 3.5m)
+  { cod:'K2LUXGV2B-1',        nom:'BFT Lux GV 2B Batiente Hidráulico hasta 300kg 3.5m 110/220V (Kit)',          precio:8407900 },
+  { cod:'K2LUXGV2B-1-A',      nom:'BFT Lux GV 2B Batiente Hidráulico hasta 300kg 3.5m – Tarjeta Alcor AC A (Kit)', precio:8106900 },
+  { cod:'K2LUXGV2B-2-A',      nom:'BFT Lux GV 2B Batiente Hidráulico hasta 300kg 3.5m – Tarjeta Alcor AC A (Kit 2)', precio:8106900 },
+
+  // ── BATIENTES BFT – GIUNO ULTRA BT (hidráulico, uso continuo)
+  { cod:'K2GIUNO-BTA20-1',    nom:'BFT Giuno Ultra BT A20 Batiente Hidráulico hasta 300kg 2.5m 24V (Kit)',      precio:9709900 },
+  { cod:'K2GIUNO-BTA20-2',    nom:'BFT Giuno Ultra BT A20 Batiente Hidráulico hasta 300kg 2.5m 24V – Tarjeta (Kit)', precio:9709900 },
+  { cod:'K2GIUNO-BTA50-1',    nom:'BFT Giuno Ultra BT A50 Batiente Hidráulico hasta 800kg 5m 24V (Kit)',        precio:10394900 },
+  { cod:'K2GIUNO-BTA50-2',    nom:'BFT Giuno Ultra BT A50 Batiente Hidráulico hasta 800kg 5m 24V – Tarjeta (Kit)', precio:10394900 },
+
+  // ── ACCESORIOS BFT
+  { cod:'CRG001',   nom:'Cremallera Acero Galvanizado NAS 1m 30x12mm Módulo 4 (con pernos)', precio:61000 },
+  { cod:'CRG003',   nom:'Cremallera Acero Galvanizado NAS CFZ 2m 22x22mm Módulo 4',          precio:150000 },
+  { cod:'CRG004',   nom:'Cremallera Acero Galvanizado NAS CFZ6 2m 30x30mm Módulo 6',         precio:437000 },
+  { cod:'CRP002',   nom:'Cremallera Plástica NAS',                                            precio:57000 },
+  { cod:'D112306',  nom:'Control Remoto BFT Mitto Cool C2 – 2 canales 433MHz',               precio:89000 },
+  { cod:'D112318',  nom:'Control Remoto BFT Mitto Cool C4 – 4 canales 433MHz',               precio:124000 },
+  { cod:'KCMC-10',  nom:'Caja x10 Controles BFT Mitto Cool C2 – 2 canales 433MHz',           precio:740000 },
+  { cod:'P111526',  nom:'Par Fotoceldas BFT Desme A15 Exterior 30m 24V (autoalineantes)',     precio:251000 },
+  { cod:'P111827',  nom:'Fotoceldas BFT Reflecta Reflexión Exterior 12m 24V (con reflector)', precio:705000 },
 ];
 
 // ══════════════════════════════════════════
@@ -1249,3 +1285,4 @@ function toast(msg){
 </script>
 </body>
 </html>
+
