@@ -265,7 +265,7 @@ input::placeholder{color:var(--light);}
   </div>
 
   <!-- FOTOS -->
-  <div class="card hidden" id="s-fotos">
+  <div class="card" id="s-fotos">
     <div class="card-hdr"><div class="bullet"></div><div class="card-title">Fotos Antes / Después</div></div>
     <div class="card-body">
       <div class="fotos-cols">
@@ -307,6 +307,22 @@ input::placeholder{color:var(--light);}
     </div>
   </div>
 
+  <!-- NOTA EXONERACIÓN -->
+  <div class="card">
+    <div class="card-hdr"><div class="bullet"></div><div class="card-title">⚠️ Condiciones de Garantía</div></div>
+    <div class="card-body">
+      <div style="background:#FFF8E1;border:1.5px solid #F59E0B;border-radius:8px;padding:14px 16px;font-size:13px;color:#78350F;line-height:1.7;">
+        <strong>La garantía del equipo NO cubre daños causados por:</strong><br>
+        • Instalación eléctrica deficiente, voltaje inestable o fuera de especificación.<br>
+        • Ausencia de polo a tierra o acometida eléctrica inadecuada.<br>
+        • Obras civiles inadecuadas (perforaciones, anclajes, estructura de soporte).<br>
+        • Uso indebido del equipo o intervención de terceros no autorizados por ARPA.<br><br>
+        <strong>Las obras eléctricas y civiles son responsabilidad exclusiva del cliente.</strong><br>
+        Automatismos Arlenpav S.A.S no se hace responsable por daños derivados de instalaciones eléctricas o civiles deficientes realizadas por el cliente o terceros.
+      </div>
+    </div>
+  </div>
+
   <!-- FIRMAS -->
   <div class="card">
     <div class="card-hdr"><div class="bullet"></div><div class="card-title">Firmas</div></div>
@@ -342,8 +358,282 @@ input::placeholder{color:var(--light);}
 // CATÁLOGO COMPLETO (igual que el cotizador)
 // ══════════════════════════════════════════
 const CATALOGO = [
-  // ── BFT CORREDIZAS
-  { cod:'KDEIMOSBTA400-1',     nom:'BFT Deimos BT A400 Corredizo hasta 400kg 110V (Kit)',                precio:1948900,  marca:'BFT' },
+
+  // ══ ACCESSMATIC – SMART LOCK ══
+  { cod:'AUACOWL504',  nom:'Cerradura Inteligente Accessmatic WL504 – 5 métodos (huella/contraseña/tarjeta/llave/app) USB',  precio:699900,  marca:'Accessmatic' },
+  { cod:'AUACOWL608',  nom:'Cerradura Inteligente Accessmatic WL608 – 6 métodos (huella/contraseña/tarjeta/llave/app/NFC) USB', precio:899900, marca:'Accessmatic' },
+
+  // ══ ELITE – SMART LOCK ══
+  { cod:'AUELSL3000L', nom:'Cerradura Inteligente Elite SL3000L – 5 métodos (50 huellas/llave/Bluetooth/100 contraseñas/tarjeta)', precio:329900, marca:'Elite' },
+  { cod:'AUELSL5000',  nom:'Cerradura Inteligente Elite SL5000 Sobreponer – 5 métodos (100 huellas/llave/WiFi/100 contraseñas/tarjeta)', precio:369900, marca:'Elite' },
+  { cod:'AUELSL5500L', nom:'Cerradura Inteligente Elite SL5500L – 5 métodos (100 huellas/llave/WiFi/100 contraseñas/tarjeta)', precio:399900, marca:'Elite' },
+
+  // ══ ACCESSMATIC – LEVADIZAS ══
+  { cod:'AUACSC901',    nom:'Motor Levadizo Accessmatic Scorpion 901 – 1/2HP 24V, riel C 3m, pantalla LCD, 2 controles', precio:999900, marca:'Accessmatic' },
+  { cod:'AUACFX1000',   nom:'Motor Levadizo Accessmatic Fox 1000 Pro – 3/4HP sin riel, SilentDrive, batería incluida, 2 controles', precio:799900, marca:'Accessmatic' },
+  { cod:'AUACKFOX1000C',nom:'Kit Motor Levadizo Accessmatic Fox 1000 Pro – 3/4HP + riel C correa 3m, SilentDrive, 2 controles', precio:1049900, marca:'Accessmatic' },
+  { cod:'AUACKFOX1000T',nom:'Kit Motor Levadizo Accessmatic Fox 1000 Pro – 3/4HP + riel T coche metálico, SilentDrive, 2 controles', precio:1149900, marca:'Accessmatic' },
+  { cod:'AUACFX1100WS', nom:'Motor Levadizo Accessmatic Fox 1100 Pro – 3/4HP WiFi integrado, SilentDrive, 2 controles (sin riel)', precio:1119900, marca:'Accessmatic' },
+  { cod:'AUACKFOX1050HS',nom:'Kit Motor Levadizo Accessmatic Fox 1050 High Speed – 3/4HP 240cm/s inalámbrico, riel 3m, 2 controles', precio:1219900, marca:'Accessmatic' },
+  { cod:'AUACKFOX1100WS',nom:'Kit Motor Levadizo Accessmatic Fox 1100 Pro WiFi – 3/4HP riel T 3m hasta 7m, 2 controles', precio:1399900, marca:'Accessmatic' },
+  { cod:'AUACSH1000',   nom:'Motor Levadizo Accessmatic Shark 1000 – 3/4HP 24V silencioso, 12m recorrido, 2 controles', precio:1095900, marca:'Accessmatic' },
+  { cod:'AUACRP120',    nom:'Motor Levadizo Accessmatic Raptor 1200 – 1HP 24V silencioso, riel 4m 12m recorrido, 2 controles', precio:1399900, marca:'Accessmatic' },
+  { cod:'AUACPUMA1200', nom:'Motor Levadizo Accessmatic Puma 1200 – 1HP WiFi, riel C hasta 5m, 2 controles', precio:1369900, marca:'Accessmatic' },
+  { cod:'AUACKSC1800C', nom:'Kit Motor Levadizo Accessmatic Scorpion 1800 – 1.5HP riel C 4m, batería, 2 controles', precio:1999900, marca:'Accessmatic' },
+  { cod:'AUACKSC1800T', nom:'Kit Motor Levadizo Accessmatic Scorpion 1800 – 1.5HP riel T 4m, batería, 2 controles', precio:1999900, marca:'Accessmatic' },
+
+  // ══ ELITE – LEVADIZAS ══
+  { cod:'AUELMG750', nom:'Motor Levadizo Elite MG750 – 1/2HP 110V/24V silencioso, riel C 3m hasta 5m, 2 controles', precio:939900, marca:'Elite' },
+
+  // ══ ACCESSMATIC – CORREDIZAS ══
+  { cod:'AUACKPB400',   nom:'Kit Motor Corredizo Accessmatic Pitbull 400 – 400kg, cremallera 4m, 2 controles', precio:1099900, marca:'Accessmatic' },
+  { cod:'AUACKBD850',   nom:'Kit Motor Corredizo Accessmatic Bulldozer 850 – 850kg AC, cremallera 4m, 2 controles', precio:1599900, marca:'Accessmatic' },
+  { cod:'AUACKBD1100',  nom:'Kit Motor Corredizo Accessmatic Bulldog 1100 – 1100kg, cremallera 4m, 2 controles', precio:1999900, marca:'Accessmatic' },
+  { cod:'AUACKBD1024BL',nom:'Kit Motor Corredizo Accessmatic Bulldog 1024BL – 1000kg sin escobillas 24V, batería respaldo', precio:3399900, marca:'Accessmatic' },
+  { cod:'AUACKBD1522',  nom:'Kit Motor Corredizo Accessmatic Bulldog 1522 – 1500kg 220V aceite industrial, cremallera 4m', precio:2629900, marca:'Accessmatic' },
+  { cod:'AUACKBD1824BL',nom:'Kit Motor Corredizo Accessmatic Bulldog 1824BL – 1800kg sin escobillas 24V, batería respaldo', precio:3999900, marca:'Accessmatic' },
+  { cod:'AUACKBD2024',  nom:'Kit Motor Corredizo Accessmatic Bulldog 2024 – 2000kg 110V aceite industrial, cremallera 4m', precio:3599900, marca:'Accessmatic' },
+
+  // ══ ELITE – CORREDIZAS ══
+  { cod:'AUELMC4',   nom:'Kit Motor Corredizo Elite Slide 400 – 400kg cremallera 4m, 2 controles', precio:1069900, marca:'Elite' },
+  { cod:'AUELMC5',   nom:'Kit Motor Corredizo Elite Slide 500 – 500kg cremallera 4m, 2 controles', precio:1199900, marca:'Elite' },
+  { cod:'AUELMC8',   nom:'Kit Motor Corredizo Elite Slide 800 – 800kg cremallera 4m, 2 controles', precio:1549900, marca:'Elite' },
+  { cod:'AUELMC8FV', nom:'Kit Motor Corredizo Elite Slide 800 FV – 800kg cremallera 5m + lámpara + base metálica, 2 controles', precio:1899900, marca:'Elite' },
+  { cod:'AUELMC12',  nom:'Kit Motor Corredizo Elite 1200kg – cremallera 4m uso industrial, 2 controles', precio:1999900, marca:'Elite' },
+
+  // ══ ACCESSMATIC – BATIENTES ══
+  { cod:'AUACEG250',    nom:'Kit Motores Batientes Accessmatic Eagle 250 – 2 hojas 3m/250kg, tarjeta 24V display, 2 controles', precio:2519900, marca:'Accessmatic' },
+  { cod:'AUACFC300',    nom:'Kit Motores Batientes Accessmatic Falcon 300 – 2 hojas 3m/300kg, batería incluida, 2 controles', precio:2199900, marca:'Accessmatic' },
+  { cod:'AUACFC350',    nom:'Kit Motores Batientes Accessmatic Falcon 350 – 2 hojas 4m/350kg, tarjeta 24V display, 2 controles', precio:3749900, marca:'Accessmatic' },
+  { cod:'AUACEG500',    nom:'Kit Motores Batientes Accessmatic Eagle 500 – 2 hojas 5m/350kg, tarjeta 24V display, 2 controles', precio:3889900, marca:'Accessmatic' },
+  { cod:'AUACFENIX600', nom:'Kit Motores Batientes Accessmatic Fénix 600 – 2 hojas 5.5m/600kg, tarjeta 24V display, 2 controles', precio:6719900, marca:'Accessmatic' },
+  { cod:'AUACFC351',    nom:'Kit Motor Batiente Accessmatic Falcon 351 – 1 hoja 4m/350kg, tarjeta 24V display, 2 controles', precio:2719900, marca:'Accessmatic' },
+  { cod:'AUACEG501',    nom:'Kit Motor Batiente Accessmatic Eagle 501 – 1 hoja 5m/350kg, tarjeta 24V display, 2 controles', precio:2729900, marca:'Accessmatic' },
+  { cod:'AUACFENIX601', nom:'Kit Motor Batiente Accessmatic Fénix 601 – 1 hoja 5.5m/600kg, tarjeta 24V display, 2 controles', precio:4159900, marca:'Accessmatic' },
+
+  // ══ ELITE – BATIENTES ══
+  { cod:'AUELTW25', nom:'Kit Motores Batientes Elite Twist250 – 2 hojas 2.5m/250kg por hoja, 110/24V, tarjeta display, 2 controles', precio:1799900, marca:'Elite' },
+
+  // ══ ACCESSMATIC – ENROLLABLES ══
+  { cod:'AUACKAR201B',   nom:'Kit Motor Enrollable Accessmatic Armadillo 200kg Central – con freno y desbloqueo, uso comercial', precio:1249900, marca:'Accessmatic' },
+  { cod:'AUACKAR382B',   nom:'Kit Motor Enrollable Accessmatic Armadillo 380kg Central – con freno y desbloqueo, uso comercial', precio:1699900, marca:'Accessmatic' },
+  { cod:'AUACKAR201F',   nom:'Kit Motor Enrollable Accessmatic Armadillo 200kg Full – freno+tarjeta+receptor+2 controles', precio:1349900, marca:'Accessmatic' },
+  { cod:'AUACKAR382F',   nom:'Kit Motor Enrollable Accessmatic Armadillo 380kg Full – freno+tarjeta+receptor+2 controles', precio:1889900, marca:'Accessmatic' },
+  { cod:'AUACKHULK500S', nom:'Kit Motor Enrollable Accessmatic Hulk 500kg – sin resorte, uso industrial, 110V', precio:1399900, marca:'Accessmatic' },
+  { cod:'AUACKHULK624DC',nom:'Kit Motor Enrollable Accessmatic Hulk 600kg DC – sin resorte, batería respaldo, uso industrial', precio:1729900, marca:'Accessmatic' },
+  { cod:'AUACKHULK750',  nom:'Kit Motor Enrollable Accessmatic Hulk 750kg – sin resorte, pulsador industrial, 110V', precio:1999900, marca:'Accessmatic' },
+  { cod:'AUACKHULK950',  nom:'Kit Motor Enrollable Accessmatic Hulk 950kg – sin resorte, pulsador industrial, 110V', precio:2249900, marca:'Accessmatic' },
+  { cod:'AUACKHULK1024DC',nom:'Kit Motor Enrollable Accessmatic Hulk 1000kg DC – sin resorte, batería respaldo, uso industrial', precio:2699900, marca:'Accessmatic' },
+  { cod:'AUACKHULK1500', nom:'Kit Motor Enrollable Accessmatic Hulk 1500kg – sin resorte, pulsador industrial, 220V', precio:4249900, marca:'Accessmatic' },
+
+  // ══ ELITE – ENROLLABLES ══
+  { cod:'AUELKME611',   nom:'Kit Motor Enrollable Elite ME622 – 600kg sin resorte, receptor+2 controles+pulsador, 110V', precio:1169900, marca:'Elite' },
+  { cod:'AUELKME624DC', nom:'Kit Motor Enrollable Elite Spin624DC – 600kg sin resorte, batería respaldo, 24V', precio:1649900, marca:'Elite' },
+  { cod:'AUELKME8511',  nom:'Kit Motor Enrollable Elite Spin ME8511 – 800kg sin resorte, receptor+2 controles, 110V', precio:1759900, marca:'Elite' },
+  { cod:'AUELKME824DC', nom:'Kit Motor Enrollable Elite Spin ME824DC – 800kg sin resorte, batería respaldo+tarjeta+2 controles', precio:2469900, marca:'Elite' },
+
+  // ══ ACCESSMATIC – CABEZALES PUERTAS AUTOMÁTICAS ══
+  { cod:'AUACKAN4275',     nom:'Kit Cabezal Puerta Automática Accessmatic Avalon 4200 – 4.2m/100kg×2 hojas, sensores+batería', precio:7099900, marca:'Accessmatic' },
+  { cod:'AUACKAT42M',      nom:'Kit Cabezal Puerta Automática Accessmatic Avanti 4200 – 4.2m/140kg×2 hojas, sensores+batería', precio:8549900, marca:'Accessmatic' },
+  { cod:'AUACKAT63M',      nom:'Kit Cabezal Puerta Automática Accessmatic Avanti 6300 – 6.3m/140kg×2 hojas, sensores', precio:9699900, marca:'Accessmatic' },
+  { cod:'AUACKAVANTI6000Z',nom:'Kit Cabezal Puerta Automática Accessmatic Telescópica 6m – 4 hojas max 120kg, sensores+batería', precio:15990000, marca:'Accessmatic' },
+  { cod:'AUACKVIPER100',   nom:'Kit Puerta Batiente Accessmatic Viper100 Pull&Push – max 100kg 120°, 2 controles, 110V', precio:1999900, marca:'Accessmatic' },
+  { cod:'AUACKVIPER200',   nom:'Kit Puerta Batiente Accessmatic Viper200 Pull&Push – max 200kg 115°, 2 controles, 110V', precio:3399900, marca:'Accessmatic' },
+  { cod:'AUACKVIPER350',   nom:'Kit Puerta Batiente Accessmatic Viper350 Pull&Push – max 350kg 99°, 2 controles, 110V', precio:7899900, marca:'Accessmatic' },
+
+  // ══ ELITE – CABEZALES ══
+  { cod:'AUELKPA42', nom:'Kit Cabezal Puerta Automática Elite Zoom 4.2m – 100kg×2 hojas, sensores+fotoceldas+batería, 220V', precio:5299900, marca:'Elite' },
+
+  // ══ ACCESSMATIC – BARRERAS ══
+  { cod:'AUACMTD224',     nom:'Barrera Accessmatic Mastodon 224 – 3M ciclos, brushless 24V, semáforo LED (sin asta)', precio:2999900, marca:'Accessmatic' },
+  { cod:'AUCKMTD224',     nom:'Kit Barrera Accessmatic Mastodon 224 – 3M ciclos + asta metálica 2m, semáforo LED, 2 controles', precio:3499900, marca:'Accessmatic' },
+  { cod:'AUACMTD624',     nom:'Barrera Accessmatic Mastodon 624 – 3M ciclos, brushless 24V, 110/220V (sin asta)', precio:4599900, marca:'Accessmatic' },
+  { cod:'AUACKMTD624',    nom:'Kit Barrera Accessmatic Mastodon 624 – 3M ciclos + asta telescópica 3-6m, 2 controles', precio:5399900, marca:'Accessmatic' },
+  { cod:'AUACKMTD624ART', nom:'Kit Barrera Accessmatic Mastodon 624 – 3M ciclos + asta articulada 4m, 2 controles', precio:6199900, marca:'Accessmatic' },
+
+  // ══ ACCESSMATIC – PUERTAS SECCIONALES ══
+  { cod:'AUACKCP200C', nom:'Puerta Seccional Panel Cuadros Accessmatic 2.44×2.14m', precio:3389900, marca:'Accessmatic' },
+  { cod:'AUACKCP300C', nom:'Puerta Seccional Panel Cuadros Accessmatic 2.74×2.14m', precio:3699900, marca:'Accessmatic' },
+  { cod:'AUACKCP400C', nom:'Puerta Seccional Panel Cuadros Accessmatic 3.05×2.14m', precio:4029900, marca:'Accessmatic' },
+  { cod:'AUACKCP490C', nom:'Puerta Seccional Panel Cuadros Accessmatic 3.05×2.44m', precio:4599900, marca:'Accessmatic' },
+  { cod:'AUACKCP201R', nom:'Puerta Seccional Panel Liso Accessmatic 2.44×2.14m', precio:3389900, marca:'Accessmatic' },
+  { cod:'AUACKCP301R', nom:'Puerta Seccional Panel Liso Accessmatic 2.74×2.14m', precio:3699900, marca:'Accessmatic' },
+  { cod:'AUACKCP401R', nom:'Puerta Seccional Panel Liso Accessmatic 3.05×2.14m', precio:4029900, marca:'Accessmatic' },
+  { cod:'AUACKCP491R', nom:'Puerta Seccional Panel Liso Accessmatic 3.05×2.44m', precio:4599900, marca:'Accessmatic' },
+  { cod:'AUACKCP501R', nom:'Puerta Seccional Panel Liso Accessmatic 3.66×2.14m', precio:4709900, marca:'Accessmatic' },
+  { cod:'AUACKCP575R', nom:'Puerta Seccional Panel Liso Accessmatic 3.66×2.44m', precio:5179900, marca:'Accessmatic' },
+  { cod:'AUACKCP801R', nom:'Puerta Seccional Panel Liso Accessmatic 4.88×2.14m', precio:6229900, marca:'Accessmatic' },
+  { cod:'AUACKCP875R', nom:'Puerta Seccional Panel Liso Accessmatic 4.88×2.44m', precio:6939900, marca:'Accessmatic' },
+  { cod:'AUACKCP900R', nom:'Puerta Seccional Panel Liso Accessmatic 5.49×2.14m', precio:6489900, marca:'Accessmatic' },
+  { cod:'AUACKCP975R', nom:'Puerta Seccional Panel Liso Accessmatic 5.50×2.44m', precio:8079900, marca:'Accessmatic' },
+
+  // ══ ACCESORIOS ACCESSMATIC – CONTROLES ══
+  { cod:'AUACALW4',   nom:'Control Remoto Accessmatic 4 botones verdes 433MHz – resistente agua', precio:39900, marca:'Accessmatic' },
+  { cod:'AUACALH3',   nom:'Control Remoto Accessmatic 3 botones visor clip 433MHz – para Shark 1000', precio:69900, marca:'Accessmatic' },
+  { cod:'AUACALT2',   nom:'Control Remoto Accessmatic 2 botones visor clip 433MHz – para Fox', precio:69900, marca:'Accessmatic' },
+  { cod:'AUACALR4',   nom:'Control Remoto Accessmatic 4 canales 433MHz – compatible Raptor y Elite', precio:69900, marca:'Accessmatic' },
+  { cod:'AUACALS4',   nom:'Control Remoto Accessmatic 4 canales 433MHz – compatible Pitbull/Bulldozer/Bulldog', precio:69900, marca:'Accessmatic' },
+  { cod:'AUACALM4',   nom:'Control Remoto Accessmatic 4 canales 433MHz – compatible Eagle 250/Falcon 350', precio:69900, marca:'Accessmatic' },
+  { cod:'AUACALN6',   nom:'Control Remoto Accessmatic 6 funciones 433MHz – para cabezales Avanti/Avalon', precio:122900, marca:'Accessmatic' },
+  { cod:'AUACAL3900U',nom:'Control Remoto Accessmatic Universal 3 canales 300-868MHz', precio:199900, marca:'Accessmatic' },
+  { cod:'AUACAH45',   nom:'Receptora Universal Accessmatic AccessHub500 – 500 controles rolling code, 2 canales 433MHz', precio:194900, marca:'Accessmatic' },
+  { cod:'AUACHK4',    nom:'Control Remoto Accessmatic 4 canales 433MHz – compatible Hulk y receptor HR42', precio:99900, marca:'Accessmatic' },
+
+  // ══ ACCESORIOS ACCESSMATIC – FOTOCELDAS / SENSORES ══
+  { cod:'AUACAE20',    nom:'Fotoceldas Accessmatic AccessEye 20 – 20m interior 12-24V', precio:55900, marca:'Accessmatic' },
+  { cod:'AUACAE30',    nom:'Fotoceldas Accessmatic AccessEye 30 – 30m exterior 12-24V orientables', precio:129900, marca:'Accessmatic' },
+  { cod:'AUACRT2415U', nom:'Fotoceldas Accessmatic Reflex15 – 15m reflexión, ideal barreras, 12-36VDC', precio:379900, marca:'Accessmatic' },
+  { cod:'AUACAE15',    nom:'Fotoceldas Accessmatic AccessEye Mini – para cabezales/puertas automáticas', precio:289900, marca:'Accessmatic' },
+  { cod:'AUACMN20',    nom:'Sensor de movimiento Accessmatic Access-Motion – microondas, para cabezales', precio:569900, marca:'Accessmatic' },
+
+  // ══ ACCESORIOS ACCESSMATIC – BATERÍAS / WIFI ══
+  { cod:'AUACAF24Li',   nom:'Batería respaldo Accessmatic AccesFuel24Li – para Scorpion/Shark/Raptor/Fox (litio)', precio:249900, marca:'Accessmatic' },
+  { cod:'AUACACCESSCAM',nom:'Cámara WiFi Accessmatic AccessCam – 720p grabación/nocturna/intercomunicación', precio:589900, marca:'Accessmatic' },
+  { cod:'AUACSONAR',    nom:'Módulo WiFi Accessmatic Sonar – apertura remota para Fox1000/Fox1050HS/RP120', precio:149900, marca:'Accessmatic' },
+
+  // ══ ACCESORIOS ACCESSMATIC – CREMALLERAS ══
+  { cod:'AUACRIM4F', nom:'Cremallera acero galvanizado mediana 1m – hasta 1200kg, incluye pernos 30×12mm', precio:89900, marca:'Accessmatic' },
+  { cod:'AUACRIM4Z', nom:'Cremallera acero galvanizado gruesa 1m – hasta 2000kg, para soldar 22×22mm', precio:129900, marca:'Accessmatic' },
+
+  // ══ ACCESORIOS ACCESSMATIC – RESORTES TORSIÓN ══
+  { cod:'AUACSPRING45R', nom:'Resorte torsión derecho Accessmatic – puertas seccionales 45kg', precio:264900, marca:'Accessmatic' },
+  { cod:'AUACSPRING45L', nom:'Resorte torsión izquierdo Accessmatic – puertas seccionales 45kg', precio:264900, marca:'Accessmatic' },
+  { cod:'AUACSPRING50R', nom:'Resorte torsión derecho Accessmatic – puertas seccionales 50kg', precio:299900, marca:'Accessmatic' },
+  { cod:'AUACSPRING55R', nom:'Resorte torsión derecho Accessmatic – puertas seccionales 55kg', precio:329900, marca:'Accessmatic' },
+  { cod:'AUACSPRING60R', nom:'Resorte torsión derecho Accessmatic – puertas seccionales 60kg', precio:344900, marca:'Accessmatic' },
+  { cod:'AUACSPRING70R', nom:'Resorte torsión derecho Accessmatic – puertas seccionales 70kg', precio:409900, marca:'Accessmatic' },
+  { cod:'AUACSPRING80R', nom:'Resorte torsión derecho Accessmatic – puertas seccionales 80kg', precio:459900, marca:'Accessmatic' },
+
+  // ══ ACCESORIOS ACCESSMATIC – HERRAJES SECCIONALES ══
+  { cod:'AUACANT55',  nom:'Kit herrajes seccional Accessmatic 55kg – 3.05×2.44m (resorte+herrajes+guías+barra)', precio:1219900, marca:'Accessmatic' },
+  { cod:'AUACANT60',  nom:'Kit herrajes seccional Accessmatic 60kg – 3.05×2.44m (resorte+herrajes+guías+barra)', precio:1309900, marca:'Accessmatic' },
+  { cod:'AUACANT70',  nom:'Kit herrajes seccional Accessmatic 70kg – 3.05×2.44m (resorte+herrajes+guías+barra)', precio:1339900, marca:'Accessmatic' },
+  { cod:'AUACANT80',  nom:'Kit herrajes seccional Accessmatic 80kg – 3.66×2.44m (resorte+herrajes+guías+barra)', precio:1379900, marca:'Accessmatic' },
+  { cod:'AUACANT100', nom:'Kit herrajes seccional Accessmatic 100kg – 3.66×2.44m (2 resortes+guías+barra)', precio:1499900, marca:'Accessmatic' },
+  { cod:'AUACANT120', nom:'Kit herrajes seccional Accessmatic 120kg – 3.66×2.44m (2 resortes+guías+barra)', precio:1579900, marca:'Accessmatic' },
+  { cod:'AUACANT160', nom:'Kit herrajes seccional Accessmatic 160kg – 3.66×2.44m (2 resortes+guías+barra)', precio:1859900, marca:'Accessmatic' },
+
+  // ══ ACCESORIOS ACCESSMATIC – ASTAS BARRERAS ══
+  { cod:'AUACBOOM02',  nom:'Asta metálica redonda 2m – para talanquera Accessmatic', precio:559900, marca:'Accessmatic' },
+  { cod:'AUACBOOM06T', nom:'Asta telescópica ajustable 3-6m – para talanquera Accessmatic', precio:859900, marca:'Accessmatic' },
+  { cod:'AUACBOOM04F', nom:'Kit asta articulada 4m – para talanquera Accessmatic MTD624', precio:1599900, marca:'Accessmatic' },
+
+  // ══ ELITE – CONTROL REMOTO ══
+  { cod:'AUELCR433',    nom:'Control Remoto Elite 3 botones 433MHz visor clip – para colgar en carro', precio:54900, marca:'Elite' },
+  { cod:'AUELEP100240', nom:'Módulo WiFi Elite Elite-Pulse Universal – compatible todos los motores Elite, Tuya/Alexa/Google', precio:199900, marca:'Elite' },
+
+  // ══ BFT – CORREDIZAS ══
+  { cod:'KDEIMOSBTA400-1',    nom:'BFT Deimos BT A400 – Corredizo hasta 400kg 110V (Kit)', precio:1948900, marca:'BFT' },
+  { cod:'KDEIMOSBTA600-1',    nom:'BFT Deimos BT A600 – Corredizo hasta 600kg 110V (Kit)', precio:2391900, marca:'BFT' },
+  { cod:'KDEIMOSACA600-1',    nom:'BFT Deimos AC A600 – Corredizo hasta 600kg 110V (Kit)', precio:2960900, marca:'BFT' },
+  { cod:'KDEIMOSACA800SLDN-1',nom:'BFT Deimos AC A800 SL DN – Corredizo hasta 800kg 110V (Kit)', precio:3728900, marca:'BFT' },
+  { cod:'KARESBTA1000Z18-2',  nom:'BFT Ares BTA 1000 – Corredizo hasta 1000kg 220V Piñón 18 (Kit)', precio:3539900, marca:'BFT' },
+  { cod:'KARESBTA1500Z18-2',  nom:'BFT Ares BTA 1500 – Corredizo hasta 1500kg 220V Piñón 18 (Kit)', precio:4209900, marca:'BFT' },
+  { cod:'KICAROSMARTACA2000V', nom:'BFT Icaro Smart AC A2000 – Corredizo hasta 1000kg 220V (Kit)', precio:5522900, marca:'BFT' },
+
+  // ══ BFT – BATIENTES ══
+  { cod:'KPHOBOBTA25-1', nom:'BFT Phobos BT A25 – Batiente hasta 400kg 2.5m 110V (Kit 2 brazos)', precio:3278900, marca:'BFT' },
+  { cod:'KPHOBOBTA40-1', nom:'BFT Phobos BT A40 – Batiente hasta 500kg 4m 110V (Kit 2 brazos)', precio:3498900, marca:'BFT' },
+  { cod:'K2LUX2B-1',     nom:'BFT Lux 2B Hidráulico – Batiente hasta 300kg 2.5m 110/220V (Kit)', precio:6413900, marca:'BFT' },
+  { cod:'K2LUXGV2B-1',   nom:'BFT Lux GV 2B Hidráulico – Batiente hasta 300kg 3.5m 110/220V (Kit)', precio:8407900, marca:'BFT' },
+  { cod:'K2GIUNO-BTA20-1',nom:'BFT Giuno Ultra BT A20 Hidráulico – Batiente hasta 300kg 2.5m 24V (Kit)', precio:9709900, marca:'BFT' },
+  { cod:'K2GIUNO-BTA50-1',nom:'BFT Giuno Ultra BT A50 Hidráulico – Batiente hasta 800kg 5m 24V (Kit)', precio:10394900, marca:'BFT' },
+
+  // ══ ACCESORIOS BFT ══
+  { cod:'D112306', nom:'Control Remoto BFT Mitto Cool C2 – 2 canales 433MHz', precio:89000, marca:'BFT' },
+  { cod:'D112318', nom:'Control Remoto BFT Mitto Cool C4 – 4 canales 433MHz', precio:124000, marca:'BFT' },
+  { cod:'KCMC-10', nom:'Caja x10 Controles BFT Mitto Cool C2 – 2 canales 433MHz', precio:740000, marca:'BFT' },
+  { cod:'P111526', nom:'Par Fotoceldas BFT Desme A15 Exterior 30m 24V (autoalineantes)', precio:251000, marca:'BFT' },
+  { cod:'P111827', nom:'Fotoceldas BFT Reflecta Reflexión Exterior 12m 24V (con reflector)', precio:705000, marca:'BFT' },
+
+  // ══ NAS – LEVADIZAS ══
+  { cod:'KPOWER700',  nom:'Kit Motor Levadizo NAS Power 700 – 1/2HP 24V riel C 3m, trolley metálico, 2 controles+botonera', precio:770000, marca:'NAS' },
+  { cod:'KPOWER1000', nom:'Kit Motor Levadizo NAS Power 1000 – 3/4HP 24V riel C 3m, trolley metálico, 2 controles+botonera', precio:826000, marca:'NAS' },
+  { cod:'KPOWER1200', nom:'Kit Motor Levadizo NAS Power 1200 – 1HP 24V riel C 3m, trolley metálico, 2 controles+botonera', precio:893000, marca:'NAS' },
+
+  // ══ NAS – CORREDIZAS ══
+  { cod:'KFORZA500-1',    nom:'Kit Motor Corredizo NAS Forza 500 – hasta 500kg 110V, cremallera 4m, 2 controles', precio:999900, marca:'NAS' },
+  { cod:'KFORZA800-1',    nom:'Kit Motor Corredizo NAS Forza 800 – hasta 800kg 110V, cremallera 4m, 2 controles', precio:1183900, marca:'NAS' },
+  { cod:'KFORZA800-2',    nom:'Kit Motor Corredizo NAS Forza 800 – hasta 800kg 220V, cremallera 4m, 2 controles', precio:1218900, marca:'NAS' },
+  { cod:'KFORTE800-1',    nom:'Kit Motor Corredizo NAS Forte 800 – hasta 800kg 110V, cremallera 4m, 2 controles', precio:1183900, marca:'NAS' },
+  { cod:'KFORTE1200-1',   nom:'Kit Motor Corredizo NAS Forte 1200 – hasta 1200kg 110V, cremallera 4m, 2 controles', precio:1314900, marca:'NAS' },
+  { cod:'KFORTE1500-1',   nom:'Kit Motor Corredizo NAS Forte 1500 – hasta 1500kg 110V, cremallera 4m, 2 controles', precio:1380900, marca:'NAS' },
+  { cod:'KFORTE800DC-1',  nom:'Kit Motor Corredizo NAS Forte 800DC – hasta 800kg 110V/24V con batería respaldo, cremallera 4m', precio:1536900, marca:'NAS' },
+
+  // ══ NAS – BATIENTES ══
+  { cod:'APOLO200-1',   nom:'Kit Brazos Batientes NAS Apolo 200 – 2 hojas hasta 200kg 2.5m, 110V, tarjeta+2 controles', precio:990000, marca:'NAS' },
+  { cod:'APOLO300-1',   nom:'Kit Brazos Batientes NAS Apolo 300 – 2 hojas hasta 300kg 3m, 110V, tarjeta+2 controles', precio:1086000, marca:'NAS' },
+  { cod:'MAGNO200-1',   nom:'Kit Brazos Batientes NAS Magno 200 – 2 hojas hasta 200kg 2.5m, intensivo, tarjeta+2 controles', precio:2135000, marca:'NAS' },
+  { cod:'POTENZA400-1', nom:'Kit Brazos Batientes NAS Potenza 400 – 2 hojas hasta 350kg 4m, intensivo, tarjeta+2 controles', precio:3136000, marca:'NAS' },
+
+  // ══ NAS – BARRERAS ══
+  { cod:'KELECTRADC421', nom:'Kit Barrera NAS Electra DC421 – uso continuo +1M ciclos, asta 3.6m, 220V, 2 controles', precio:4055000, marca:'NAS' },
+  { cod:'KELECTRADC656', nom:'Kit Barrera NAS Electra DC656 – uso intensivo +1M ciclos, asta 6m, 220V, 2 controles', precio:4116000, marca:'NAS' },
+  { cod:'NE001-R', nom:'Asta rectangular con reflectivos NAS 3.6m – para barreras Electra', precio:509000, marca:'NAS' },
+  { cod:'NE002-R', nom:'Asta rectangular con reflectivos NAS 6m – para barreras Electra', precio:621000, marca:'NAS' },
+
+  // ══ NAS – CABEZALES PUERTAS AUTOMÁTICAS ══
+  { cod:'KMBS90',    nom:'Kit Cabezal Puerta Automática NAS MBS90 – 4.2m 2 hojas 100kg c/u, 24V, sensores+fotoceldas+batería+2 controles', precio:5366000, marca:'NAS' },
+  { cod:'KMBS90-2',  nom:'Kit Cabezal Puerta Automática NAS MBS90-2 – 4.2m 2 hojas 100kg c/u, sensores Optex AO-203', precio:6248000, marca:'NAS' },
+  { cod:'MBS-QP02',  nom:'Puerta Batiente Automática NAS MBS-QP02 – hoja 60-120cm/100kg, 120° apertura, 110/220V, 2 controles', precio:2850000, marca:'NAS' },
+
+  // ══ NAS – ENROLLABLES ══
+  { cod:'KTHOR600-1',   nom:'Kit Motor Enrollable NAS Thor 600 – 600kg sin resorte industrial, pulsador 3 botones, 110V', precio:955000, marca:'NAS' },
+  { cod:'KTHOR800-1',   nom:'Kit Motor Enrollable NAS Thor 800 – 800kg sin resorte industrial, pulsador 3 botones, 110V', precio:1219000, marca:'NAS' },
+  { cod:'KODIN500-1',   nom:'Kit Motor Enrollable NAS Odin 500 – 500kg sin resorte industrial, pulsador 3 botones, 110V', precio:969900, marca:'NAS' },
+  { cod:'KODIN800-1',   nom:'Kit Motor Enrollable NAS Odin 800 – 800kg sin resorte industrial, pulsador 3 botones, 110V', precio:1499900, marca:'NAS' },
+  { cod:'KODIN1000-1',  nom:'Kit Motor Enrollable NAS Odin 1000 – 1000kg sin resorte industrial, pulsador 3 botones, 110V', precio:1628900, marca:'NAS' },
+  { cod:'HERCULES1600', nom:'Motor Enrollable NAS Hércules 1600 – 150kg uso interno 3.5m, corona aluminio eje 60mm, 110V', precio:732000, marca:'NAS' },
+  { cod:'HERCULES2000', nom:'Motor Enrollable NAS Hércules 2000 – 180kg uso interno 3.5m, corona aluminio eje 60mm, 110V', precio:760000, marca:'NAS' },
+  { cod:'HERCULES2800', nom:'Motor Enrollable NAS Hércules 2800 doble – 280kg uso interno 3.5m, eje 76mm, 110V', precio:1105000, marca:'NAS' },
+  { cod:'HERCULES3600', nom:'Motor Enrollable NAS Hércules 3600 doble – 360kg uso interno 3.5m, eje 76mm, 110V', precio:1216000, marca:'NAS' },
+
+  // ══ NAS – PUERTAS DE GARAJE ══
+  { cod:'KPELEGANCE 8X7',  nom:'Puerta NAS Doble Lámina Cuadros 2.44×2.14m – herrajes completos', precio:2607000, marca:'NAS' },
+  { cod:'KPELEGANCE 8X8',  nom:'Puerta NAS Doble Lámina Cuadros 2.44×2.44m – herrajes completos', precio:3280000, marca:'NAS' },
+  { cod:'KPELEGANCE 9X7',  nom:'Puerta NAS Doble Lámina Cuadros 2.74×2.14m – herrajes completos', precio:2844000, marca:'NAS' },
+  { cod:'KPELEGANCE 10X7', nom:'Puerta NAS Doble Lámina Cuadros 3.05×2.14m – herrajes completos', precio:3096000, marca:'NAS' },
+  { cod:'KPELEGANCE 10X8', nom:'Puerta NAS Doble Lámina Cuadros 3.05×2.44m – herrajes completos', precio:3535000, marca:'NAS' },
+  { cod:'KPELEGANCE 12X7', nom:'Puerta NAS Doble Lámina Cuadros 3.66×2.14m – herrajes completos', precio:3876000, marca:'NAS' },
+  { cod:'KPELEGANCE 12X8', nom:'Puerta NAS Doble Lámina Cuadros 3.66×2.44m – herrajes completos', precio:4176000, marca:'NAS' },
+  { cod:'KPELEGANCE 16X7', nom:'Puerta NAS Doble Lámina Cuadros 4.88×2.14m – herrajes completos', precio:5129000, marca:'NAS' },
+  { cod:'KPELEGANCE 16X8', nom:'Puerta NAS Doble Lámina Cuadros 4.88×2.44m – herrajes completos', precio:5717000, marca:'NAS' },
+  { cod:'KPELEGANCEFLUSH 8X7',  nom:'Puerta NAS Doble Lámina Lisa 2.44×2.14m – herrajes completos', precio:2607000, marca:'NAS' },
+  { cod:'KPELEGANCEFLUSH 10X7', nom:'Puerta NAS Doble Lámina Lisa 3.05×2.14m – herrajes completos', precio:3096000, marca:'NAS' },
+  { cod:'KPELEGANCEFLUSH 12X7', nom:'Puerta NAS Doble Lámina Lisa 3.66×2.14m – herrajes completos', precio:3618000, marca:'NAS' },
+  { cod:'KPELEGANCEFLUSH 12X8', nom:'Puerta NAS Doble Lámina Lisa 3.66×2.44m – herrajes completos', precio:3984000, marca:'NAS' },
+  { cod:'KPELEGANCEFLUSH 16X7', nom:'Puerta NAS Doble Lámina Lisa 4.88×2.14m – herrajes completos', precio:4787000, marca:'NAS' },
+
+  // ══ ACCESORIOS NAS – CONTROLES ══
+  { cod:'NP027',  nom:'Control Remoto NAS NP027 3 canales 433MHz – para Power 700/1000/1200', precio:39000, marca:'NAS' },
+  { cod:'NP028',  nom:'Control Remoto Lujo NAS NP028 3 canales 433MHz – para Power 700/1000/1200', precio:46000, marca:'NAS' },
+  { cod:'YKF09',  nom:'Control Remoto NAS YKF09 433MHz – para Forza 500 y Forza 800', precio:31000, marca:'NAS' },
+  { cod:'NKZ01',  nom:'Control Remoto NAS NKZ01 433MHz – para Zeus/Kratos/Apolo', precio:31000, marca:'NAS' },
+  { cod:'PR3-001',nom:'Control Remoto NAS TMT3 433MHz – para Forza BT/Magno 200/Potenza 400', precio:97000, marca:'NAS' },
+  { cod:'NF031',  nom:'Receptora Universal NAS 4 canales + 2 controles 433MHz – para corredizos/batientes/barreras', precio:157900, marca:'NAS' },
+
+  // ══ ACCESORIOS NAS – CREMALLERAS ══
+  { cod:'CRG001', nom:'Cremallera Acero Galvanizado NAS 1m 30×12mm Módulo 4 (con pernos)', precio:61000, marca:'NAS' },
+  { cod:'CRG003', nom:'Cremallera Acero Galvanizado NAS CFZ 2m 22×22mm Módulo 4', precio:150000, marca:'NAS' },
+  { cod:'CRG004', nom:'Cremallera Acero Galvanizado NAS CFZ6 2m 30×30mm Módulo 6', precio:437000, marca:'NAS' },
+  { cod:'CRP002', nom:'Cremallera Plástica NAS – guía corrediza', precio:57000, marca:'NAS' },
+
+  // ══ ACCESORIOS NAS – RESORTES / HERRAJES ══
+  { cod:'KHN10X7-55K', nom:'Kit Herrajes NAS seccional 3.05×2.14m – resorte 55kg + caja herrajes + guías + tubo torsión', precio:1017000, marca:'NAS' },
+  { cod:'KHN10X8-61K', nom:'Kit Herrajes NAS seccional 3.05×2.44m – resorte 61kg + caja herrajes + guías + tubo torsión', precio:1115000, marca:'NAS' },
+  { cod:'KHN12X8-70K', nom:'Kit Herrajes NAS seccional 3.66×2.44m – resorte 70kg + caja herrajes + guías + tubo torsión', precio:1130000, marca:'NAS' },
+  { cod:'KHN12X8-120K',nom:'Kit Herrajes NAS seccional 3.66×2.44m Cal.11 – 2 resortes 60kg + doble riel + guías', precio:1354000, marca:'NAS' },
+  { cod:'KHN12X8-140K',nom:'Kit Herrajes NAS seccional 3.66×2.44m Cal.11 – 2 resortes 70kg + doble riel + guías', precio:1549000, marca:'NAS' },
+  { cod:'KREN 67KGS',  nom:'Kit resortes NAS 67kg – izquierdo cono rojo + derecho cono negro', precio:384000, marca:'NAS' },
+  { cod:'KREN 80KGS',  nom:'Kit resortes NAS 80kg – izquierdo cono rojo + derecho cono negro', precio:411000, marca:'NAS' },
+  { cod:'KREN 93KGS',  nom:'Kit resortes NAS 93kg – izquierdo cono rojo + derecho cono negro', precio:493000, marca:'NAS' },
+
+  // ══ ACCESORIOS NAS – BATERÍA / WIFI ══
+  { cod:'NP035', nom:'Batería respaldo litio NAS NP035 – para Power 700/1000/1200', precio:223000, marca:'NAS' },
+  { cod:'NP036', nom:'Batería respaldo ácido plomo NAS – para Power 700/1000/1200', precio:131000, marca:'NAS' },
+  { cod:'NP040', nom:'Módulo WiFi USB NAS – para motores Power', precio:149900, marca:'NAS' },
+  { cod:'NP043', nom:'Fotocelda Universal NAS NP043 – 12-24V', precio:94900, marca:'NAS' },
+  { cod:'CB210', nom:'Tarjeta electrónica NAS CB210 110V/24V – para brazos Magno 200 y Potenza 400', precio:811000, marca:'NAS' },
   { cod:'KDEIMOSBTA600-1',     nom:'BFT Deimos BT A600 Corredizo hasta 600kg 110V (Kit)',                precio:2391900,  marca:'BFT' },
   { cod:'KDEIMOSACA600-1',     nom:'BFT Deimos AC A600 Corredizo hasta 600kg 110V (Kit)',                precio:2960900,  marca:'BFT' },
   { cod:'KDEIMOSACA600-2',     nom:'BFT Deimos AC A600 Corredizo hasta 600kg 220V (Kit)',                precio:2960900,  marca:'BFT' },
@@ -374,68 +664,6 @@ const CATALOGO = [
   { cod:'P111526',  nom:'Par Fotoceldas BFT Desme A15 Exterior 30m 24V',         precio:251000, marca:'BFT' },
   { cod:'P111827',  nom:'Fotoceldas BFT Reflecta Reflexión Exterior 12m 24V',    precio:705000, marca:'BFT' },
 
-  // ── ACCESSMATIC CORREDIZAS
-  { cod:'AM-COR-100',  nom:'Accessmatic Motor Corredizo 100kg 110V (Kit)',        precio:890000,  marca:'Accessmatic' },
-  { cod:'AM-COR-300',  nom:'Accessmatic Motor Corredizo 300kg 110V (Kit)',        precio:1250000, marca:'Accessmatic' },
-  { cod:'AM-COR-500',  nom:'Accessmatic Motor Corredizo 500kg 110V (Kit)',        precio:1580000, marca:'Accessmatic' },
-  { cod:'AM-COR-1000', nom:'Accessmatic Motor Corredizo 1000kg 220V (Kit)',       precio:2100000, marca:'Accessmatic' },
-  // ── ACCESSMATIC BATIENTES
-  { cod:'AM-BAT-25',   nom:'Accessmatic Motor Batiente Brazo Articulado 2.5m',   precio:980000,  marca:'Accessmatic' },
-  { cod:'AM-BAT-40',   nom:'Accessmatic Motor Batiente Brazo Articulado 4m',     precio:1350000, marca:'Accessmatic' },
-  // ── ACCESSMATIC ENROLLABLES
-  { cod:'AM-ENR-110',  nom:'Accessmatic Motor Enrollable Tubular 110V',          precio:650000,  marca:'Accessmatic' },
-  { cod:'AM-ENR-220',  nom:'Accessmatic Motor Enrollable Industrial 220V',       precio:1100000, marca:'Accessmatic' },
-  // ── ACCESSMATIC SECCIONAL
-  { cod:'AM-SEC-001',  nom:'Accessmatic Motor Seccional Puerta Garaje 110V',     precio:1200000, marca:'Accessmatic' },
-  // ── ACCESSMATIC BARRERAS
-  { cod:'AM-BAR-3',    nom:'Accessmatic Barrera Vehicular 3m 110V',              precio:1800000, marca:'Accessmatic' },
-  { cod:'AM-BAR-6',    nom:'Accessmatic Barrera Vehicular 6m 110V',              precio:2400000, marca:'Accessmatic' },
-  // ── ACCESSMATIC ACCESORIOS
-  { cod:'AM-REM-2',    nom:'Control Remoto Accessmatic 2 canales',               precio:55000,   marca:'Accessmatic' },
-  { cod:'AM-REM-4',    nom:'Control Remoto Accessmatic 4 canales',               precio:75000,   marca:'Accessmatic' },
-  { cod:'AM-FOT-EXT',  nom:'Fotoceldas Accessmatic Exterior 20m',                precio:180000,  marca:'Accessmatic' },
-  { cod:'AM-BOT-SAL',  nom:'Botonera Salida Accessmatic',                        precio:45000,   marca:'Accessmatic' },
-  { cod:'AM-ANT-433',  nom:'Antena Externa Accessmatic 433MHz',                  precio:35000,   marca:'Accessmatic' },
-
-  // ── ELITE CORREDIZAS
-  { cod:'EL-ROAD-200',  nom:'Elite Road 200 Motor Corredizo 200kg 110V (Kit)',   precio:950000,  marca:'Elite' },
-  { cod:'EL-ROAD-500',  nom:'Elite Road 500 Motor Corredizo 500kg 110V (Kit)',   precio:1400000, marca:'Elite' },
-  { cod:'EL-ROAD-600',  nom:'Elite Road 600 Motor Corredizo 600kg 110V (Kit)',   precio:1650000, marca:'Elite' },
-  // ── ELITE BATIENTES
-  { cod:'EL-SPIN-024',  nom:'Elite Spin 24V Motor Batiente 2.5m (Kit 2 brazos)', precio:1100000, marca:'Elite' },
-  { cod:'EL-SPIN-230',  nom:'Elite Spin 230V Motor Batiente 4m (Kit 2 brazos)',  precio:1450000, marca:'Elite' },
-  // ── ELITE ENROLLABLES / SECCIONAL
-  { cod:'EL-ROLL-100',  nom:'Elite Roll Motor Enrollable 110V (Kit)',            precio:700000,  marca:'Elite' },
-  { cod:'EL-SEC-001',   nom:'Elite Motor Seccional Residencial 110V (Kit)',      precio:1300000, marca:'Elite' },
-  // ── ELITE BARRERAS
-  { cod:'EL-BAR-001',   nom:'Elite Barrera Vehicular 4m 110V',                  precio:1900000, marca:'Elite' },
-  // ── ELITE ACCESORIOS
-  { cod:'EL-REM-4',     nom:'Control Remoto Elite 4 canales 433MHz',            precio:65000,   marca:'Elite' },
-  { cod:'EL-FOT-001',   nom:'Fotoceldas Elite Exterior 15m',                    precio:160000,  marca:'Elite' },
-  { cod:'EL-BOT-001',   nom:'Botonera Pulsador Salida Elite',                   precio:42000,   marca:'Elite' },
-
-  // ── NAS GARAJE
-  { cod:'NAS-P700-1',   nom:'NAS Power 700 Motor Garaje 110V (Kit)',             precio:850000,  marca:'NAS' },
-  { cod:'NAS-P1000-1',  nom:'NAS Power 1000 Motor Garaje 110V (Kit)',            precio:1050000, marca:'NAS' },
-  { cod:'NAS-P1200-1',  nom:'NAS Power 1200 Motor Garaje 110V (Kit)',            precio:1250000, marca:'NAS' },
-  // ── NAS CORREDIZAS
-  { cod:'NAS-FOR-400',  nom:'NAS Forza Motor Corredizo 400kg 110V (Kit)',        precio:1180000, marca:'NAS' },
-  { cod:'NAS-FTE-600',  nom:'NAS Forte Motor Corredizo 600kg 110V (Kit)',        precio:1480000, marca:'NAS' },
-  // ── NAS BATIENTES
-  { cod:'NAS-APO-25',   nom:'NAS Apolo Motor Batiente 2.5m 110V (Kit 2 brazos)',precio:980000,  marca:'NAS' },
-  { cod:'NAS-MAG-40',   nom:'NAS Magno Motor Batiente 4m 110V (Kit 2 brazos)',  precio:1280000, marca:'NAS' },
-  { cod:'NAS-POT-HID',  nom:'NAS Potenza Motor Batiente Hidráulico (Kit)',       precio:2100000, marca:'NAS' },
-  // ── NAS BARRERAS
-  { cod:'NAS-ELC-001',  nom:'NAS Electra Barrera Vehicular 4m 110V',            precio:1750000, marca:'NAS' },
-  // ── NAS CORTINAS / ENROLLABLES
-  { cod:'NAS-THO-001',  nom:'NAS Thor Motor Cortina Enrollable Industrial 220V', precio:1350000, marca:'NAS' },
-  { cod:'NAS-ODI-001',  nom:'NAS Odin Motor Cortina Enrollable 110V',           precio:980000,  marca:'NAS' },
-  { cod:'NAS-HER-001',  nom:'NAS Hércules Motor Cortina Industrial 220V',       precio:1680000, marca:'NAS' },
-  // ── NAS ACCESORIOS
-  { cod:'NAS-REM-2',    nom:'Control Remoto NAS 2 canales 433MHz',              precio:48000,   marca:'NAS' },
-  { cod:'NAS-REM-4',    nom:'Control Remoto NAS 4 canales 433MHz',              precio:68000,   marca:'NAS' },
-  { cod:'NAS-FOT-001',  nom:'Fotoceldas NAS Exterior 20m',                      precio:170000,  marca:'NAS' },
-  { cod:'NAS-BOT-001',  nom:'Botonera Pulsador NAS',                            precio:38000,   marca:'NAS' },
 ];
 
 // ══════════════════════════════════════════
@@ -472,7 +700,7 @@ function addEquipo() {
     <div class="eq-selected" id="eq-sel-${id}">
       <div class="eq-sel-name" id="eq-sel-name-${id}"></div>
       <div class="eq-sel-cod" id="eq-sel-cod-${id}"></div>
-      <div class="eq-sel-price" id="eq-sel-price-${id}"></div>
+      <div class="eq-sel-price" id="eq-sel-price-${id}" style="display:none"></div>
       <button class="eq-sel-clear" onclick="clearEquipoSel(${id})" title="Cambiar producto">✕</button>
     </div>
 
@@ -532,7 +760,7 @@ function buscarEquipo(id) {
         <div class="eq-res-name">${p.nom}</div>
         <div class="eq-res-cod">${p.cod}</div>
       </div>
-      <div class="eq-res-price">${fmt(p.precio)}</div>
+      
     </div>
   `).join('');
   res.classList.add('open');
@@ -603,7 +831,7 @@ function setTipo(t){
   document.getElementById('lbl-fecha').textContent=inst?'Fecha Instalación':'Fecha Mantenimiento';
   tog('s-equipos',inst);tog('s-eq-mant',!inst);
   tog('s-check-inst',inst);tog('s-check-mant',!inst);
-  tog('s-fotos',!inst);
+  tog('s-fotos',true);
   tog('gi',inst);tog('gm',!inst);
   document.getElementById('title-garantia').textContent=inst?'Garantía y Observaciones':'Resultado del Servicio';
 }
