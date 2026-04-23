@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Formato ARPA</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
 :root{--navy:#0D1B2A;--gold:#C9A84C;--bg:#f4f6f9;--white:#fff;--border:#dde3ec;--text:#1a2535;--mid:#4a5568;--light:#8a9bb0;--red:#e53e3e;--green:#38a169;--orange:#E8820C;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -345,7 +347,7 @@ input::placeholder{color:var(--light);}
   </div>
 
   <div class="acciones">
-    <button class="btn btn-pdf" onclick="imprimirFormato()">🖨 Imprimir / PDF</button>
+    <button class="btn btn-pdf" onclick="generarPDF()">📄 Guardar PDF</button>
     <button class="btn btn-wa" onclick="enviarWA()">📲 WhatsApp</button>
     <button class="btn btn-clrf" onclick="limpiar()">🗑 Limpiar</button>
   </div>
@@ -870,13 +872,172 @@ initF('fc');initF('ft');
 // ══════════════════════════════════════════
 // IMPRIMIR
 // ══════════════════════════════════════════
-function imprimirFormato(){
-  const style=document.createElement('style');
-  style.id='print-style';
-  style.textContent=`@media print{.header{position:relative!important;}.tipo-wrap,.acciones,.btn-add-row,.btn-del-eq,.btn-add-foto,.btn-clr,.eq-search-wrap,.eq-sel-clear,.foto-ph,.foto-input{display:none!important;}body{background:#fff!important;}.card{break-inside:avoid;box-shadow:none!important;}@page{margin:15mm;}}`;
-  document.head.appendChild(style);
-  window.print();
-  setTimeout(()=>{const s=document.getElementById('print-style');if(s)s.remove();},1000);
+async function generarPDF(){
+  const nombre=document.getElementById('cli-nombre').value.trim();
+  if(!nombre){ toast('⚠️ Escribe el nombre del cliente'); return; }
+
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'letter'});
+  const PW=215.9,PH=279.4,mL=14,mR=14,UW=PW-mL-mR;
+  const NAVY=[13,27,42],GOLD=[201,168,76],WHT=[255,255,255],BG=[244,246,249],BDR=[221,227,236],TXT=[26,37,53],TXT2=[74,85,104],AMB=[255,248,225],AMBT=[120,53,15];
+  const inst=tipo==='instalacion';
+
+  // HEADER
+  doc.setFillColor(...NAVY); doc.rect(0,0,PW,28,'F');
+  doc.setFillColor(...GOLD); doc.roundedRect(mL,6,16,16,2,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...NAVY);
+  doc.text('ARPA',mL+8,15.5,{align:'center'});
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...WHT);
+  doc.text('AUTOMATISMOS ARLENPAV S.A.S',mL+20,11);
+  doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(180,200,230);
+  doc.text('NIT: 901.473.259-8  |  Tel: 300-568-3914  |  Medellín',mL+20,16);
+  doc.text('www.automatismosarpa.com.co',mL+20,21);
+  // Badge tipo
+  const tipoLabel=inst?'ENTREGA INSTALACIÓN':'MANTENIMIENTO';
+  doc.setFillColor(...GOLD); doc.roundedRect(PW-mR-45,6,45,10,2,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...NAVY);
+  doc.text(tipoLabel,PW-mR-22.5,12.5,{align:'center'});
+  // Número
+  const numFmt=document.getElementById('hnum').textContent;
+  doc.setFillColor(30,50,80); doc.roundedRect(PW-mR-35,18,35,7,2,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...GOLD);
+  doc.text(numFmt,PW-mR-17.5,23,{align:'center'});
+  // Línea dorada
+  doc.setFillColor(...GOLD); doc.rect(0,28,PW,1.5,'F');
+
+  let y=36;
+
+  // DATOS CLIENTE
+  doc.setFillColor(...BG); doc.roundedRect(mL,y,UW,6,2,2,'F');
+  doc.setFillColor(...GOLD); doc.circle(mL+4,y+3,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT);
+  doc.text('DATOS DEL CLIENTE',mL+9,y+4); y+=8;
+
+  const cliRows=[
+    [['NOMBRE / EMPRESA',nombre],['NIT / CÉDULA',document.getElementById('cli-nit').value||'—']],
+    [['TELÉFONO',document.getElementById('cli-tel').value||'—'],['CORREO',document.getElementById('cli-email').value||'—']],
+    [['DIRECCIÓN',document.getElementById('cli-dir').value||'—'],['CIUDAD',document.getElementById('cli-ciudad').value||'Medellín']],
+    [['FECHA'+(inst?' INSTALACIÓN':' MANTENIMIENTO'),document.getElementById('fecha').value||'—'],['TÉCNICO',document.getElementById('tecnico').value||'—']],
+  ];
+  cliRows.forEach((fila,fi)=>{
+    doc.setFillColor(fi%2===0?248:255,fi%2===0?250:255,fi%2===0?252:255);
+    doc.rect(mL,y,UW,9,'F'); doc.setDrawColor(...BDR); doc.setLineWidth(0.2); doc.rect(mL,y,UW,9,'S');
+    let x=mL+3;
+    fila.forEach(([lbl,val])=>{
+      doc.setFont('helvetica','bold'); doc.setFontSize(6); doc.setTextColor(...TXT2); doc.text(lbl,x,y+3.5);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...TXT); doc.text(String(val||'—').substring(0,35),x,y+7.5);
+      x+=UW/2;
+    }); y+=9;
+  }); y+=6;
+
+  // EQUIPOS
+  const eqItems=Object.entries(eqData).filter(([,eq])=>eq.nom);
+  if(eqItems.length){
+    doc.setFillColor(...BG); doc.roundedRect(mL,y,UW,6,2,2,'F');
+    doc.setFillColor(...GOLD); doc.circle(mL+4,y+3,2,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT);
+    doc.text('EQUIPOS '+(inst?'INSTALADOS':'ATENDIDOS'),mL+9,y+4); y+=8;
+    const eqRows=eqItems.map(([id,eq])=>[
+      eq.marca||'—', eq.nom.substring(0,50),
+      document.getElementById(`eq-tipo-${id}`)?.value||'—',
+      document.getElementById(`eq-serial-${id}`)?.value||'—',
+      document.getElementById(`eq-ubic-${id}`)?.value||'—',
+    ]);
+    doc.autoTable({startY:y,head:[['MARCA','DESCRIPCIÓN','TIPO PUERTA','SERIAL','UBICACIÓN']],body:eqRows,margin:{left:mL,right:mR},columnStyles:{0:{cellWidth:20,fontSize:7},1:{cellWidth:68,fontSize:7},2:{cellWidth:28,fontSize:7},3:{cellWidth:28,fontSize:7},4:{cellWidth:28,fontSize:7}},headStyles:{fillColor:NAVY,textColor:WHT,fontStyle:'bold',fontSize:7,cellPadding:4},alternateRowStyles:{fillColor:[248,250,252]},bodyStyles:{textColor:TXT,cellPadding:{top:4,bottom:4,left:3,right:3}},styles:{lineColor:BDR,lineWidth:0.2}});
+    y=doc.lastAutoTable.finalY+6;
+  }
+
+  // CHECKLIST
+  if(y>PH-80){doc.addPage();y=20;}
+  const clItems=inst?
+    document.querySelectorAll('#cl-inst .ci'):
+    document.querySelectorAll('#cl-mant .ci');
+  if(clItems.length){
+    doc.setFillColor(...BG); doc.roundedRect(mL,y,UW,6,2,2,'F');
+    doc.setFillColor(...GOLD); doc.circle(mL+4,y+3,2,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT);
+    doc.text('CHECKLIST '+(inst?'INSTALACIÓN':'MANTENIMIENTO'),mL+9,y+4); y+=8;
+    const clRows=[];
+    clItems.forEach(ci=>{
+      const cb=ci.querySelector('input[type=checkbox]');
+      const lbl=ci.querySelector('label').textContent;
+      clRows.push([cb.checked?'✓':'✗',lbl]);
+    });
+    doc.autoTable({startY:y,head:[['','ÍTEM']],body:clRows,margin:{left:mL,right:mR},columnStyles:{0:{cellWidth:10,halign:'center',fontSize:10},1:{cellWidth:UW-10,fontSize:8}},headStyles:{fillColor:NAVY,textColor:WHT,fontStyle:'bold',fontSize:7,cellPadding:4},bodyStyles:{textColor:TXT,cellPadding:{top:3,bottom:3,left:3,right:3}},styles:{lineColor:BDR,lineWidth:0.2},
+      didParseCell:(data)=>{if(data.column.index===0&&data.cell.text[0]==='✓'){data.cell.styles.textColor=[56,161,105];data.cell.styles.fontStyle='bold';}}
+    });
+    y=doc.lastAutoTable.finalY+6;
+  }
+
+  // GARANTÍA
+  if(y>PH-70){doc.addPage();y=20;}
+  doc.setFillColor(...BG); doc.roundedRect(mL,y,UW,6,2,2,'F');
+  doc.setFillColor(...GOLD); doc.circle(mL+4,y+3,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT);
+  doc.text('GARANTÍA Y CONDICIONES',mL+9,y+4); y+=8;
+
+  const garRows=inst?[
+    ['Garantía Mano de Obra',document.getElementById('garantia-mo').value],
+    ['Garantía Equipos',document.getElementById('garantia-eq').value],
+    ['Próximo Mantenimiento',document.getElementById('prox-mant').value],
+  ]:[
+    ['Garantía Servicio',document.getElementById('garantia-serv').value],
+    ['Próximo Mantenimiento',document.getElementById('prox-mant-m').value],
+    ['Trabajos Realizados',document.getElementById('trabajos').value||'—'],
+    ['Repuestos Utilizados',document.getElementById('repuestos').value||'—'],
+  ];
+  const obs=document.getElementById('observaciones').value;
+  if(obs) garRows.push(['Observaciones',obs]);
+  garRows.forEach(([lbl,val],i)=>{
+    doc.setFillColor(i%2===0?248:255,i%2===0?250:255,i%2===0?252:255);
+    doc.rect(mL,y,UW,9,'F'); doc.setDrawColor(...BDR); doc.setLineWidth(0.2); doc.rect(mL,y,UW,9,'S');
+    doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...TXT2); doc.text(lbl.toUpperCase(),mL+3,y+3.5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...TXT);
+    const lines=doc.splitTextToSize(String(val||'—'),UW-50);
+    doc.text(lines[0],mL+UW/2,y+7); y+=9;
+  }); y+=5;
+
+  // NOTA EXONERACIÓN
+  if(y>PH-40){doc.addPage();y=20;}
+  doc.setFillColor(...AMB);
+  const exoLines=doc.splitTextToSize('CONDICIONES DE GARANTIA: La garantia NO cubre danos por: instalacion electrica deficiente, voltaje inestable, ausencia de polo a tierra, obras civiles inadecuadas, uso indebido o intervencion de terceros no autorizados. Las obras electricas y civiles son responsabilidad exclusiva del cliente.',UW-10);
+  const exoH=exoLines.length*4.5+10;
+  doc.roundedRect(mL,y,UW,exoH,2,2,'F');
+  doc.setDrawColor(245,158,11); doc.setLineWidth(0.5); doc.roundedRect(mL,y,UW,exoH,2,2,'S');
+  doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...AMBT);
+  doc.text(exoLines,mL+5,y+7); y+=exoH+6;
+
+  // FIRMAS
+  if(y>PH-55){doc.addPage();y=20;}
+  doc.setFillColor(...BG); doc.roundedRect(mL,y,UW,6,2,2,'F');
+  doc.setFillColor(...GOLD); doc.circle(mL+4,y+3,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT);
+  doc.text('APROBACIÓN',mL+9,y+4); y+=8;
+  const aprW=UW/2-3;
+  [['FIRMA DEL CLIENTE','Recibido a satisfacción',nombre||'_______________'],['FIRMA DEL TÉCNICO','AutomatismosARPA','Arlen Pavón R.']].forEach(([lbl,sub,nom2],i)=>{
+    const ax=mL+(i===0?0:aprW+6);
+    doc.setFillColor(248,250,252); doc.roundedRect(ax,y,aprW,36,2,2,'F');
+    doc.setDrawColor(...BDR); doc.setLineWidth(0.2); doc.roundedRect(ax,y,aprW,36,2,2,'S');
+    doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...TXT2); doc.text(lbl,ax+5,y+5.5);
+    doc.setFillColor(240,243,248); doc.roundedRect(ax+5,y+8,aprW-10,14,1,1,'F');
+    doc.setDrawColor(...BDR); doc.setLineWidth(0.4); doc.setLineDash([1.5,1.5],0);
+    doc.roundedRect(ax+5,y+8,aprW-10,14,1,1,'S'); doc.setLineDash([],0);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...TXT2);
+    doc.text('Firma aquí',ax+aprW/2,y+16,{align:'center'});
+    doc.setDrawColor(...BDR); doc.setLineWidth(0.3);
+    doc.line(ax+5,y+26,ax+aprW-5,y+26);
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT); doc.text(nom2,ax+5,y+24.5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...TXT2); doc.text(sub,ax+5,y+31);
+  });
+
+  // PIE
+  doc.setFillColor(...NAVY); doc.rect(0,PH-10,PW,10,'F');
+  doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(180,200,230);
+  doc.text('Automatismos Arlenpav S.A.S  |  NIT 901.473.259-8  |  Tel 300-568-3914  |  www.automatismosarpa.com.co',PW/2,PH-4,{align:'center'});
+
+  const archivo=`Formato_${inst?'Instalacion':'Mantenimiento'}_${nombre.replace(/[^a-zA-Z0-9]/g,'_')}.pdf`;
+  doc.save(archivo);
+  toast('✅ PDF guardado — ahora adjúntalo en WhatsApp');
 }
 
 // ══════════════════════════════════════════
