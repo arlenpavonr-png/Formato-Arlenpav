@@ -3,1233 +3,607 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ARPA - Sistema Integrado</title>
+<title>Dashboard ARPA - Automatismos</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--primary:#1a237e;--secondary:#0d47a1;--accent:#ff6f00;--success:#2e7d32;--danger:#c62828;--warning:#f9a825;--bg:#f5f5f5;--card:#fff;--text:#333;--border:#ddd;}
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif;}
-body{background:var(--bg);color:var(--text);}
-.sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;background:var(--primary);color:#fff;padding:20px 0;overflow-y:auto;z-index:100;}
-.sidebar h2{text-align:center;padding:0 20px 20px;border-bottom:1px solid rgba(255,255,255,0.2);font-size:18px;}
-.sidebar h2 span{color:var(--accent);font-size:12px;display:block;margin-top:5px;}
-.sidebar nav{padding:10px 0;}
-.sidebar a{display:block;padding:12px 20px;color:rgba(255,255,255,0.9);text-decoration:none;transition:0.3s;font-size:14px;border-left:3px solid transparent;}
-.sidebar a:hover,.sidebar a.active{background:rgba(255,255,255,0.1);border-left-color:var(--accent);color:#fff;}
-.sidebar a i{margin-right:10px;width:20px;display:inline-block;text-align:center;}
-.main-content{margin-left:220px;padding:20px;min-height:100vh;}
-.header{background:var(--card);padding:15px 25px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;}
-.header h1{font-size:22px;color:var(--primary);}
-.header .date{font-size:13px;color:#666;}
-.card{background:var(--card);border-radius:8px;padding:20px;box-shadow:0 2px 4px rgba(0,0,0,0.08);margin-bottom:20px;}
-.card h3{font-size:16px;color:var(--primary);margin-bottom:15px;padding-bottom:10px;border-bottom:2px solid var(--accent);display:flex;justify-content:space-between;align-items:center;}
-.grid{display:grid;gap:15px;}
-.grid-4{grid-template-columns:repeat(4,1fr);}
-.grid-3{grid-template-columns:repeat(3,1fr);}
-.grid-2{grid-template-columns:repeat(2,1fr);}
-.kpi-card{background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;padding:20px;border-radius:8px;text-align:center;}
-.kpi-card h4{font-size:28px;margin-bottom:5px;}
-.kpi-card p{font-size:12px;opacity:0.9;text-transform:uppercase;letter-spacing:1px;}
-.kpi-card.success{background:linear-gradient(135deg,var(--success),#43a047);}
-.kpi-card.warning{background:linear-gradient(135deg,var(--warning),#fbc02d);color:#333;}
-.kpi-card.danger{background:linear-gradient(135deg,var(--danger),#e53935);}
-table{width:100%;border-collapse:collapse;font-size:13px;}
-th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);}
-th{background:var(--primary);color:#fff;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;}
-tr:hover{background:#f8f9fa;}
-.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;text-transform:uppercase;}
-.badge-enviada{background:#e3f2fd;color:#1565c0;}
-.badge-negociando{background:#fff3e0;color:#ef6c00;}
-.badge-cerrada{background:#e8f5e9;color:#2e7d32;}
-.badge-perdida{background:#ffebee;color:#c62828;}
-.badge-pendiente{background:#fce4ec;color:#ad1457;}
-.badge-curso{background:#e8eaf6;color:#3949ab;}
-.badge-instalada{background:#e0f2f1;color:#00695c;}
-.badge-garantia{background:#f3e5f5;color:#6a1b9a;}
-.badge-completada{background:#e8f5e9;color:#2e7d32;}
-.btn{padding:8px 16px;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:600;transition:0.2s;display:inline-flex;align-items:center;gap:5px;}
-.btn-primary{background:var(--primary);color:#fff;}
-.btn-primary:hover{background:var(--secondary);}
-.btn-success{background:var(--success);color:#fff;}
-.btn-success:hover{background:#1b5e20;}
-.btn-danger{background:var(--danger);color:#fff;}
-.btn-warning{background:var(--warning);color:#333;}
-.btn-sm{padding:5px 10px;font-size:11px;}
-.btn-group{display:flex;gap:5px;flex-wrap:wrap;}
-.form-group{margin-bottom:15px;}
-.form-group label{display:block;margin-bottom:5px;font-size:13px;font-weight:600;color:#555;}
-.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:4px;font-size:13px;transition:0.2s;}
-.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,35,126,0.1);}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:15px;}
-.search-box{position:relative;margin-bottom:15px;}
-.search-box input{width:100%;padding:10px 12px 10px 35px;border:1px solid var(--border);border-radius:4px;font-size:13px;}
-.search-box::before{content:"🔍";position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:12px;}
-.tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:20px;}
-.tab-btn{padding:10px 20px;background:none;border:none;cursor:pointer;font-size:13px;font-weight:600;color:#666;border-bottom:2px solid transparent;margin-bottom:-2px;transition:0.2s;}
-.tab-btn.active{color:var(--primary);border-bottom-color:var(--primary);}
-.tab-content{display:none;}
-.tab-content.active{display:block;}
-.producto-item{display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px solid var(--border);border-radius:4px;margin-bottom:8px;background:#fafafa;}
-.producto-item:hover{background:#f0f0f0;}
-.producto-info{flex:1;}
-.producto-nombre{font-weight:600;font-size:13px;}
-.producto-ref{color:#888;font-size:11px;}
-.producto-precio{font-weight:700;color:var(--primary);font-size:14px;}
-.cotizacion-resumen{background:#f8f9fa;padding:15px;border-radius:4px;margin-top:15px;border:2px solid var(--primary);}
-.cotizacion-resumen .row{display:flex;justify-content:space-between;padding:5px 0;}
-.cotizacion-resumen .total{font-size:18px;font-weight:700;color:var(--primary);border-top:2px solid var(--primary);padding-top:10px;margin-top:10px;}
-.hidden{display:none !important;}
-.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;justify-content:center;align-items:center;z-index:1000;}
-.modal.active{display:flex;}
-.modal-content{background:#fff;padding:25px;border-radius:8px;width:90%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.2);}
-.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
-.modal-header h3{margin:0;border:none;padding:0;}
-.close-btn{background:none;border:none;font-size:24px;cursor:pointer;color:#999;}
-.close-btn:hover{color:var(--danger);}
-.checklist-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #eee;}
-.checklist-item input[type="checkbox"]{width:18px;height:18px;cursor:pointer;}
-.firma-box{border:2px dashed var(--border);padding:20px;text-align:center;border-radius:4px;background:#fafafa;cursor:pointer;min-height:80px;display:flex;align-items:center;justify-content:center;}
-.firma-box:hover{border-color:var(--primary);}
-.firma-box.firmado{border-color:var(--success);background:#e8f5e9;}
-.foto-upload{border:2px dashed var(--border);padding:15px;text-align:center;border-radius:4px;cursor:pointer;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:#fafafa;}
-.foto-upload:hover{border-color:var(--primary);}
-.foto-preview{max-width:100%;max-height:150px;border-radius:4px;margin-top:5px;}
-.status-select{padding:4px 8px;border-radius:4px;border:1px solid var(--border);font-size:12px;cursor:pointer;}
-.precio-costos{background:#fff3e0;padding:15px;border-radius:4px;margin-bottom:15px;border-left:4px solid var(--accent);}
-.precio-costos h4{color:var(--accent);margin-bottom:10px;font-size:14px;}
-.ganancia-box{background:#e8f5e9;padding:15px;border-radius:4px;border-left:4px solid var(--success);}
-.ganancia-box h4{color:var(--success);margin-bottom:10px;font-size:14px;}
-@media print{.sidebar,.btn,.no-print{display:none !important;}.main-content{margin-left:0;padding:10px;}}
-@media(max-width:768px){.sidebar{width:100%;height:auto;position:relative;}.main-content{margin-left:0;}.grid-4,.grid-3{grid-template-columns:1fr;}}
+  :root{--primary:#2563eb;--primary-dark:#1d4ed8;--success:#10b981;--warning:#f59e0b;--danger:#ef4444;--dark:#1e293b;--gray:#64748b;--light:#f1f5f9;--white:#ffffff}
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif}
+  body{background:var(--light);color:var(--dark);overflow-x:hidden}
+  .sidebar{width:260px;height:100vh;background:var(--dark);position:fixed;left:0;top:0;z-index:100;transition:.3s;padding:20px 0}
+  .sidebar h2{color:var(--white);padding:0 20px 20px;font-size:1.3rem;border-bottom:1px solid #334155;margin-bottom:10px}
+  .sidebar h2 span{color:var(--primary);font-weight:700}
+  .sidebar nav a{display:block;padding:12px 20px;color:#94a3b8;text-decoration:none;transition:.2s;border-left:3px solid transparent;margin:2px 0;font-size:.9rem}
+  .sidebar nav a:hover{background:#334155;color:var(--white)}
+  .sidebar nav a.active{background:#334155;color:var(--white);border-left-color:var(--primary)}
+  .main{margin-left:260px;padding:20px;min-height:100vh}
+  .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;background:var(--white);padding:15px 20px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+  .header h1{font-size:1.5rem;color:var(--dark)}
+  .header .date{color:var(--gray);font-size:.9rem}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;margin-bottom:25px}
+  .stat-card{background:var(--white);padding:20px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.1);border-left:4px solid var(--primary)}
+  .stat-card.success{border-left-color:var(--success)}
+  .stat-card.warning{border-left-color:var(--warning)}
+  .stat-card.danger{border-left-color:var(--danger)}
+  .stat-card h3{font-size:.85rem;color:var(--gray);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+  .stat-card .value{font-size:1.8rem;font-weight:700;color:var(--dark)}
+  .stat-card .change{font-size:.8rem;margin-top:5px;color:var(--gray)}
+  .stat-card .change.positive{color:var(--success)}
+  .stat-card .change.negative{color:var(--danger)}
+  .section{background:var(--white);padding:20px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.1);margin-bottom:20px}
+  .section h2{font-size:1.1rem;margin-bottom:15px;color:var(--dark);display:flex;align-items:center;gap:8px}
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  th,td{padding:12px;text-align:left;border-bottom:1px solid var(--light)}
+  th{background:var(--light);font-weight:600;color:var(--gray);font-size:.8rem;text-transform:uppercase;letter-spacing:.5px}
+  tr:hover{background:#f8fafc}
+  .badge{padding:4px 10px;border-radius:20px;font-size:.75rem;font-weight:600}
+  .badge-success{background:#d1fae5;color:#065f46}
+  .badge-warning{background:#fef3c7;color:#92400e}
+  .badge-danger{background:#fee2e2;color:#991b1b}
+  .badge-info{background:#dbeafe;color:#1e40af}
+  .btn{padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-size:.85rem;font-weight:500;transition:.2s}
+  .btn-primary{background:var(--primary);color:var(--white)}
+  .btn-primary:hover{background:var(--primary-dark)}
+  .btn-success{background:var(--success);color:var(--white)}
+  .btn-warning{background:var(--warning);color:var(--white)}
+  .btn-danger{background:var(--danger);color:var(--white)}
+  .form-group{margin-bottom:15px}
+  .form-group label{display:block;margin-bottom:5px;font-size:.85rem;font-weight:500;color:var(--gray)}
+  .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:6px;font-size:.9rem;transition:.2s}
+  .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+  .form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px}
+  .hidden{display:none}
+  .tabs{display:flex;gap:5px;margin-bottom:15px;border-bottom:2px solid var(--light);padding-bottom:10px}
+  .tab{padding:8px 16px;background:none;border:none;cursor:pointer;font-size:.9rem;color:var(--gray);border-bottom:2px solid transparent;margin-bottom:-12px}
+  .tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  @media(max-width:768px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}.grid-2,.grid-3{grid-template-columns:1fr}}
+  .product-card{border:1px solid #e2e8f0;border-radius:8px;padding:15px;transition:.2s}
+  .product-card:hover{box-shadow:0 4px 6px rgba(0,0,0,.1)}
+  .product-card h4{font-size:1rem;margin-bottom:5px}
+  .product-card .price{font-size:1.2rem;font-weight:700;color:var(--primary)}
+  .product-card .specs{font-size:.8rem;color:var(--gray);margin:8px 0}
+  .search-box{width:100%;padding:10px 15px;border:1px solid #e2e8f0;border-radius:6px;margin-bottom:15px;font-size:.9rem}
+  .cliente-info{background:#f0f9ff;padding:15px;border-radius:8px;margin-bottom:15px;border-left:4px solid var(--primary)}
+  .total-box{background:var(--dark);color:var(--white);padding:15px;border-radius:8px;text-align:right;font-size:1.2rem;font-weight:700}
+  .item-cotizacion{background:#f8fafc;padding:12px;border-radius:6px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+  .item-cotizacion button{background:none;border:none;color:var(--danger);cursor:pointer;font-size:1rem}
 </style>
+<base target="_blank">
 </head>
 <body>
-
 <div class="sidebar">
-<h2>ARPA <span>Automatismos</span></h2>
-<nav>
-<a href="#" class="active" onclick="showSection('dashboard')">📊 Dashboard</a>
-<a href="#" onclick="showSection('cotizador')">📝 Cotizador</a>
-<a href="#" onclick="showSection('cotizaciones')">📋 Cotizaciones</a>
-<a href="#" onclick="showSection('obras')">🔧 Obras/Entregas</a>
-<a href="#" onclick="showSection('formato')">📄 Formato Técnico</a>
-<a href="#" onclick="showSection('catalogo')">📦 Catálogo</a>
-</nav>
+  <h2>ARPA <span>Automatismos</span></h2>
+  <nav>
+    <a href="#" class="active" onclick="showSection('dashboard')">📊 Dashboard</a>
+    <a href="#" onclick="showSection('cotizador')">📝 Cotizador</a>
+    <a href="#" onclick="showSection('cotizaciones')">📋 Cotizaciones</a>
+    <a href="#" onclick="showSection('obras')">🏗️ Obras/Entregas</a>
+    <a href="#" onclick="showSection('formato')">📄 Formato Técnico</a>
+    <a href="#" onclick="showSection('catalogo')">📦 Catálogo</a>
+  </nav>
 </div>
 
-<div class="main-content">
+<div class="main">
+  <div class="header">
+    <h1>Panel de Control</h1>
+    <div class="date" id="fechaHoy"></div>
+  </div>
 
-<!-- DASHBOARD -->
-<div id="dashboard" class="section">
-<div class="header">
-<h1>Dashboard ARPA</h1>
-<div class="date" id="fechaHoy"></div>
-</div>
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="section">
+    <div class="stats">
+      <div class="stat-card">
+        <h3>Cotizaciones Mes</h3>
+        <div class="value" id="totalCotizaciones">0</div>
+        <div class="change positive">+12% vs mes anterior</div>
+      </div>
+      <div class="stat-card success">
+        <h3>Ventas Cerradas</h3>
+        <div class="value" id="ventasCerradas">0</div>
+        <div class="change positive">+8% vs mes anterior</div>
+      </div>
+      <div class="stat-card warning">
+        <h3>En Proceso</h3>
+        <div class="value" id="enProceso">0</div>
+        <div class="change">3 urgentes</div>
+      </div>
+      <div class="stat-card danger">
+        <h3>Pendientes</h3>
+        <div class="value" id="pendientes">0</div>
+        <div class="change negative">2 vencidas</div>
+      </div>
+    </div>
+    <div class="section">
+      <h2>📋 Últimas Cotizaciones</h2>
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Cliente</th><th>Fecha</th><th>Valor</th><th>Estado</th><th>Acción</th></tr>
+        </thead>
+        <tbody id="tablaCotizaciones"></tbody>
+      </table>
+    </div>
+  </div>
 
-<div class="grid grid-4">
-<div class="kpi-card">
-<h4 id="kpi-cotizaciones">0</h4>
-<p>Cotizaciones Mes</p>
-</div>
-<div class="kpi-card success">
-<h4 id="kpi-cerradas">0</h4>
-<p>Cerradas</p>
-</div>
-<div class="kpi-card warning">
-<h4 id="kpi-negociando">0</h4>
-<p>Negociando</p>
-</div>
-<div class="kpi-card danger">
-<h4 id="kpi-perdidas">0</h4>
-<p>Perdidas</p>
-</div>
-</div>
+  <!-- COTIZADOR -->
+  <div id="cotizador" class="section hidden">
+    <h2>📝 Nuevo Cotizador</h2>
+    <div class="cliente-info">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Cliente</label>
+          <input type="text" id="cotCliente" placeholder="Nombre completo">
+        </div>
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="text" id="cotTelefono" placeholder="300 000 0000">
+        </div>
+        <div class="form-group">
+          <label>Correo</label>
+          <input type="email" id="cotCorreo" placeholder="cliente@email.com">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ciudad</label>
+          <input type="text" id="cotCiudad" value="Medellín">
+        </div>
+        <div class="form-group">
+          <label>Dirección</label>
+          <input type="text" id="cotDireccion" placeholder="Calle, barrio">
+        </div>
+      </div>
+    </div>
 
-<div class="grid grid-2">
-<div class="card">
-<h3>Pipeline de Ventas</h3>
-<table>
-<thead><tr><th>Cliente</th><th>Valor</th><th>Estado</th><th>Días</th></tr></thead>
-<tbody id="pipeline-table"></tbody>
-</table>
-</div>
-<div class="card">
-<h3>Obras Activas</h3>
-<table>
-<thead><tr><th>Obra</th><th>Cliente</th><th>Estado</th><th>Progreso</th></tr></thead>
-<tbody id="obras-activas-table"></tbody>
-</table>
-</div>
-</div>
+    <h3 style="margin:20px 0 10px">Productos</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Categoría</label>
+        <select id="catProducto" onchange="cargarProductos()">
+          <option value="">Seleccionar...</option>
+          <option value="corrediza">Corrediza</option>
+          <option value="batiente">Batiente</option>
+          <option value="levadiza">Levadiza</option>
+          <option value="seccional">Seccional</option>
+          <option value="barrera">Barrera</option>
+          <option value="accesorios">Accesorios</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Producto</label>
+        <select id="selProducto">
+          <option value="">Seleccionar categoría primero</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Cantidad</label>
+        <input type="number" id="cantProducto" value="1" min="1">
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="agregarItem()">➕ Agregar Producto</button>
 
-<div class="card">
-<h3>Actividad Reciente</h3>
-<table>
-<thead><tr><th>Fecha</th><th>Acción</th><th>Cliente</th><th>Valor</th></tr></thead>
-<tbody id="actividad-table"></tbody>
-</table>
-</div>
-</div>
+    <div id="itemsCotizacion" style="margin:20px 0"></div>
 
-<!-- COTIZADOR -->
-<div id="cotizador" class="section hidden">
-<div class="header">
-<h1>Cotizador ARPA</h1>
-<div class="btn-group">
-<button class="btn btn-primary" onclick="nuevaCotizacion()">📝 Nueva</button>
-<button class="btn btn-success" onclick="guardarCotizacion()">💾 Guardar</button>
-<button class="btn btn-warning" onclick="generarPDFCotizacion()">📄 PDF</button>
-</div>
-</div>
+    <div class="form-group">
+      <label>Notas / Observaciones</label>
+      <textarea id="cotNotas" rows="3" placeholder="Detalles especiales, garantía, etc."></textarea>
+    </div>
 
-<div class="card">
-<h3>Información del Cliente</h3>
-<div class="form-row">
-<div class="form-group"><label>Nombre Cliente</label><input type="text" id="cot-cliente" placeholder="Nombre completo"></div>
-<div class="form-group"><label>Teléfono / WhatsApp</label><input type="text" id="cot-telefono" placeholder="300-000-0000"></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label>Email</label><input type="email" id="cot-email" placeholder="cliente@email.com"></div>
-<div class="form-group"><label>Dirección</label><input type="text" id="cot-direccion" placeholder="Dirección de instalación"></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label>Tipo de Trabajo</label>
-<select id="cot-tipo">
-<option value="instalacion">Instalación Nueva</option>
-<option value="mantenimiento">Mantenimiento</option>
-<option value="reparacion">Reparación</option>
-<option value="repuesto">Venta Repuesto</option>
-</select>
-</div>
-<div class="form-group"><label>Vendedor</label><input type="text" id="cot-vendedor" value="Arlen Pavón"></div>
-</div>
-</div>
+    <div class="total-box">Total: $<span id="totalCotizacion">0</span> COP</div>
+    <div style="text-align:right;margin-top:15px">
+      <button class="btn btn-success" onclick="guardarCotizacion()">💾 Guardar Cotización</button>
+      <button class="btn btn-primary" onclick="generarPDF()">📄 Generar PDF</button>
+    </div>
+  </div>
 
-<div class="grid grid-2">
-<div class="card">
-<h3>Catálogo de Productos <span style="font-size:11px;font-weight:400;color:#888">(Click para agregar)</span></h3>
-<div class="search-box"><input type="text" id="buscar-producto" placeholder="Buscar producto..." onkeyup="filtrarProductos()"></div>
-<div id="lista-productos" style="max-height:400px;overflow-y:auto;"></div>
-</div>
+  <!-- COTIZACIONES -->
+  <div id="cotizaciones" class="section hidden">
+    <h2>📋 Historial de Cotizaciones</h2>
+    <input type="text" class="search-box" id="buscarCot" placeholder="Buscar por cliente, ciudad o producto..." onkeyup="filtrarCotizaciones()">
+    <table>
+      <thead>
+        <tr><th>ID</th><th>Fecha</th><th>Cliente</th><th>Ciudad</th><th>Productos</th><th>Total</th><th>Estado</th><th>Acciones</th></tr>
+      </thead>
+      <tbody id="tablaHistorial"></tbody>
+    </table>
+  </div>
 
-<div class="card">
-<h3>Items de la Cotización</h3>
-<div id="items-cotizacion"></div>
-<div class="cotizacion-resumen">
-<div class="row"><span>Subtotal:</span><span id="res-subtotal">$0</span></div>
-<div class="row"><span>IVA (19%):</span><span><input type="checkbox" id="chk-iva" onchange="calcularTotales()"> <span id="res-iva">$0</span></span></div>
-<div class="row"><span>Mano de Obra:</span><span><input type="number" id="cot-mano-obra" value="0" style="width:80px;text-align:right;" onchange="calcularTotales()"> <span id="res-mano">$0</span></span></div>
-<div class="row"><span>Descuento:</span><span><input type="number" id="cot-descuento" value="0" style="width:80px;text-align:right;" onchange="calcularTotales()">% <span id="res-descuento">$0</span></span></div>
-<div class="row total"><span>TOTAL CLIENTE:</span><span id="res-total">$0</span></div>
-</div>
-</div>
-</div>
+  <!-- OBRAS -->
+  <div id="obras" class="section hidden">
+    <h2>🏗️ Obras y Entregas</h2>
+    <div class="tabs">
+      <button class="tab active" onclick="mostrarTabObras('activas')">Activas</button>
+      <button class="tab" onclick="mostrarTabObras('completadas')">Completadas</button>
+      <button class="tab" onclick="mostrarTabObras('garantia')">Garantía</button>
+    </div>
+    <div id="tabObrasActivas">
+      <table>
+        <thead>
+          <tr><th>Obra</th><th>Cliente</th><th>Ciudad</th><th>Inicio</th><th>Estado</th><th>Acciones</th></tr>
+        </thead>
+        <tbody id="tablaObrasActivas"></tbody>
+      </table>
+    </div>
+    <div id="tabObrasCompletadas" class="hidden">
+      <table>
+        <thead>
+          <tr><th>Obra</th><th>Cliente</th><th>Ciudad</th><th>Entrega</th><th>Calificación</th></tr>
+        </thead>
+        <tbody id="tablaObrasCompletadas"></tbody>
+      </table>
+    </div>
+    <div id="tabObrasGarantia" class="hidden">
+      <table>
+        <thead>
+          <tr><th>Obra</th><th>Cliente</th><th>Vencimiento</th><th>Estado</th><th>Acciones</th></tr>
+        </thead>
+        <tbody id="tablaObrasGarantia"></tbody>
+      </table>
+    </div>
+  </div>
 
-<div class="card precio-costos">
-<h4>💰 Costos y Ganancia (Solo visible para ti)</h4>
-<div class="form-row">
-<div class="form-group"><label>Costo Total Productos</label><input type="number" id="costo-total" value="0" readonly style="background:#fff3e0;font-weight:700;"></div>
-<div class="form-group"><label>Precio Venta Total</label><input type="number" id="venta-total" value="0" readonly style="background:#e3f2fd;font-weight:700;"></div>
-</div>
-<div class="ganancia-box">
-<div class="row"><span>Ganancia Bruta:</span><span id="ganancia-bruta" style="font-weight:700;color:var(--success);">$0</span></div>
-<div class="row"><span>Margen %:</span><span id="margen-porcentaje" style="font-weight:700;color:var(--success);">0%</span></div>
-</div>
-</div>
-</div>
+  <!-- FORMATO TÉCNICO -->
+  <div id="formato" class="section hidden">
+    <h2>📄 Formato Técnico de Entrega</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Seleccionar Obra</label>
+        <select id="selObraFormato" onchange="cargarDatosObra()">
+          <option value="">Seleccionar obra...</option>
+        </select>
+      </div>
+    </div>
+    <div id="datosObraFormato" class="hidden">
+      <div class="form-row">
+        <div class="form-group"><label>Cliente</label><input type="text" id="fmtCliente" readonly></div>
+        <div class="form-group"><label>Ciudad</label><input type="text" id="fmtCiudad" readonly></div>
+      </div>
+      <h3 style="margin:20px 0 10px">Checklist de Entrega</h3>
+      <div class="form-group">
+        <label><input type="checkbox" id="chkMotor"> Motor instalado y funcionando</label>
+      </div>
+      <div class="form-group">
+        <label><input type="checkbox" id="chkControles"> Controles programados</label>
+      </div>
+      <div class="form-group">
+        <label><input type="checkbox" id="chkFotoceldas"> Fotoceldas instaladas y alineadas</label>
+      </div>
+      <div class="form-group">
+        <label><input type="checkbox" id="chkCremallera"> Cremallera instalada</label>
+      </div>
+      <div class="form-group">
+        <label><input type="checkbox" id="chkManual"> Manual de usuario entregado</label>
+      </div>
+      <div class="form-group">
+        <label><input type="checkbox" id="chkGarantia"> Carta de garantía entregada</label>
+      </div>
+      <div class="form-group">
+        <label>Observaciones Técnicas</label>
+        <textarea id="fmtObservaciones" rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Firma Cliente</label>
+        <input type="text" id="fmtFirma" placeholder="Nombre quien recibe">
+      </div>
+      <button class="btn btn-success" onclick="guardarFormato()">✅ Guardar Formato de Entrega</button>
+    </div>
+  </div>
 
-<!-- COTIZACIONES -->
-<div id="cotizaciones" class="section hidden">
-<div class="header">
-<h1>Historial de Cotizaciones</h1>
-<div class="btn-group">
-<button class="btn btn-primary" onclick="showSection('cotizador')">➕ Nueva</button>
-<button class="btn btn-success" onclick="exportarCotizaciones()">📥 Exportar</button>
+  <!-- CATÁLOGO -->
+  <div id="catalogo" class="section hidden">
+    <h2>📦 Catálogo de Productos</h2>
+    <input type="text" class="search-box" id="buscarProd" placeholder="Buscar producto..." onkeyup="filtrarCatalogo()">
+    <div class="tabs">
+      <button class="tab active" onclick="mostrarTabCat('corrediza')">Corrediza</button>
+      <button class="tab" onclick="mostrarTabCat('batiente')">Batiente</button>
+      <button class="tab" onclick="mostrarTabCat('levadiza')">Levadiza</button>
+      <button class="tab" onclick="mostrarTabCat('seccional')">Seccional</button>
+      <button class="tab" onclick="mostrarTabCat('barrera')">Barrera</button>
+      <button class="tab" onclick="mostrarTabCat('accesorios')">Accesorios</button>
+    </div>
+    <div id="gridCatalogo" class="grid-3"></div>
+  </div>
 </div>
-</div>
-<div class="card">
-<div class="search-box"><input type="text" id="buscar-cotizacion" placeholder="Buscar cotización..." onkeyup="filtrarCotizaciones()"></div>
-<table>
-<thead><tr><th>#</th><th>Fecha</th><th>Cliente</th><th>Tipo</th><th>Valor</th><th>Estado</th><th>Acciones</th></tr></thead>
-<tbody id="tabla-cotizaciones"></tbody>
-</table>
-</div>
-</div>
-
-<!-- OBRAS/ENTREGAS -->
-<div id="obras" class="section hidden">
-<div class="header">
-<h1>Obras y Entregas</h1>
-<div class="btn-group">
-<button class="btn btn-primary" onclick="nuevaObraManual()">➕ Nueva Obra</button>
-</div>
-</div>
-<div class="card">
-<table>
-<thead><tr><th>ID</th><th>Cliente</th><th>Cotización</th><th>Tipo</th><th>Estado</th><th>Fecha Inicio</th><th>Acciones</th></tr></thead>
-<tbody id="tabla-obras"></tbody>
-</table>
-</div>
-</div>
-
-<!-- FORMATO TÉCNICO -->
-<div id="formato" class="section hidden">
-<div class="header">
-<h1>Formato Técnico - Instalación/Mantenimiento</h1>
-<div class="btn-group">
-<button class="btn btn-primary" onclick="nuevoFormato()">📝 Nuevo</button>
-<button class="btn btn-success" onclick="guardarFormato()">💾 Guardar</button>
-<button class="btn btn-warning" onclick="generarPDFFormato()">📄 PDF</button>
-</div>
-</div>
-
-<div class="card">
-<h3>Información General</h3>
-<div class="form-row">
-<div class="form-group"><label>Cliente</label><input type="text" id="fmt-cliente"></div>
-<div class="form-group"><label>Dirección</label><input type="text" id="fmt-direccion"></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label>Tipo de Servicio</label>
-<select id="fmt-tipo">
-<option value="instalacion">Instalación</option>
-<option value="mantenimiento">Mantenimiento Preventivo</option>
-<option value="correctivo">Correctivo/Reparación</option>
-</select>
-</div>
-<div class="form-group"><label>Fecha</label><input type="date" id="fmt-fecha"></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label>Técnico</label><input type="text" id="fmt-tecnico" value="Arlen Pavón"></div>
-<div class="form-group"><label>Obra Relacionada</label><select id="fmt-obra"><option value="">-- Seleccionar --</option></select></div>
-</div>
-</div>
-
-<div class="grid grid-2">
-<div class="card">
-<h3>Checklist de Instalación</h3>
-<div id="checklist-container">
-<div class="checklist-item"><input type="checkbox" id="chk1"><label for="chk1">Verificar medidas del portón</label></div>
-<div class="checklist-item"><input type="checkbox" id="chk2"><label for="chk2">Instalar base/carril de motor</label></div>
-<div class="checklist-item"><input type="checkbox" id="chk3"><label for="chk3">Montar motor y conectar alimentación</label></div>
-<div class="checklist-item"><input type="checkbox" id="chk4"><label for="chk4">Instalar fotoceldas y dispositivos de seguridad</label></div>
-<div class="checklist-item"><input type="checkbox" id="chk5"><label for="chk5">Programar controles remotos</label></div>
-<div class="checklist-item"><input type="checkbox" id="chk6"><label for="chk6">Ajustar fuerza y recorrido del motor</label></div>
-<div class="checklist-item"><input type="checkbox" id="chk7"><label for="chk7">Probar funcionamiento completo</label></div>
-<div class="checklist-item"><input type="checkbox" id="chk8"><label for="chk8">Capacitar al cliente</label></div>
-<div class="checklist-item"><input type="checkbox" id="chk9"><label for="chk9">Entregar manuales y garantía</label></div>
-<div class="checklist-item"><input type="checkbox" id="chk10"><label for="chk10">Limpieza del área de trabajo</label></div>
-</div>
-</div>
-
-<div class="card">
-<h3>Fotos y Firmas</h3>
-<div class="form-group">
-<label>Foto Antes (opcional)</label>
-<div class="foto-upload" onclick="document.getElementById('foto-antes').click()">
-📷 Click para subir foto ANTES
-<input type="file" id="foto-antes" accept="image/*" style="display:none" onchange="previewFoto(this,'preview-antes')">
-<img id="preview-antes" class="foto-preview hidden">
-</div>
-</div>
-<div class="form-group">
-<label>Foto Después (opcional)</label>
-<div class="foto-upload" onclick="document.getElementById('foto-despues').click()">
-📷 Click para subir foto DESPUÉS
-<input type="file" id="foto-despues" accept="image/*" style="display:none" onchange="previewFoto(this,'preview-despues')">
-<img id="preview-despues" class="foto-preview hidden">
-</div>
-</div>
-<div class="form-row">
-<div class="form-group">
-<label>Firma Cliente</label>
-<div class="firma-box" id="firma-cliente" onclick="firmar(this)">✍️ Click para firmar</div>
-</div>
-<div class="form-group">
-<label>Firma Técnico</label>
-<div class="firma-box" id="firma-tecnico" onclick="firmar(this)">✍️ Click para firmar</div>
-</div>
-</div>
-</div>
-</div>
-
-<div class="card">
-<h3>Observaciones y Notas</h3>
-<textarea id="fmt-observaciones" rows="4" placeholder="Observaciones técnicas, recomendaciones, estado del equipo..."></textarea>
-</div>
-</div>
-
-<!-- CATÁLOGO -->
-<div id="catalogo" class="section hidden">
-<div class="header">
-<h1>Catálogo de Productos</h1>
-<div class="search-box"><input type="text" id="buscar-catalogo" placeholder="Buscar en catálogo..." onkeyup="filtrarCatalogo()"></div>
-</div>
-<div class="card">
-<table>
-<thead><tr><th>Referencia</th><th>Producto</th><th>Categoría</th><th>Precio Público</th><th>Stock</th></tr></thead>
-<tbody id="tabla-catalogo"></tbody>
-</table>
-</div>
-</div>
-
-</div><!-- main-content -->
 
 <script>
-// ==================== BASE DE DATOS ====================
-const catalogo = [
-{ref:"AUACE250", nombre:"EAGLE 250 - Kit 2 brazos batientes 250kg", categoria:"Batientes", precio:2519900, costo:1511940, stock:5},
-{ref:"AUACE500", nombre:"EAGLE 500 - Kit 2 brazos batientes 500kg", categoria:"Batientes", precio:3889900, costo:2333940, stock:3},
-{ref:"AUCF300", nombre:"FALCON 300 - Motor batiente 300kg", categoria:"Batientes", precio:2199900, costo:1319940, stock:4},
-{ref:"AUCF350", nombre:"FALCON 350 - Motor batiente 350kg", categoria:"Batientes", precio:3749900, costo:2249940, stock:2},
-{ref:"AUCP400", nombre:"PITBULL 400 - Motor corredizo 400kg", categoria:"Corredizos", precio:1099900, costo:659940, stock:8},
-{ref:"AUCB850", nombre:"BULLDOZER 850 - Motor corredizo 850kg", categoria:"Corredizos", precio:1599900, costo:959940, stock:6},
-{ref:"AUCB901", nombre:"SCORPION 901 - Motor corredizo 900kg", categoria:"Corredizos", precio:999900, costo:599940, stock:7},
-{ref:"AUCF1000", nombre:"FOX 1000 PRO - Motor levadizo 1000kg", categoria:"Levadizos", precio:799900, costo:479940, stock:10},
-{ref:"AUCH1000", nombre:"SHARK 1000 - Motor levadizo 3/4HP", categoria:"Levadizos", precio:1299900, costo:779940, stock:5},
-{ref:"AUCM624", nombre:"HULK 624 - Motor corredizo 600kg DC", categoria:"Corredizos", precio:1684000, costo:1010400, stock:3},
-{ref:"AUEC3900U", nombre:"Control remoto universal 3 canales 300-868Mhz", categoria:"Controles", precio:199900, costo:119940, stock:20},
-{ref:"AUECALM4", nombre:"Control remoto 4 canales 433Mhz", categoria:"Controles", precio:79900, costo:47940, stock:25},
-{ref:"AUECALS4", nombre:"Control remoto 4 canales 433Mhz (clip)", categoria:"Controles", precio:69900, costo:41940, stock:30},
-{ref:"AUSC30", nombre:"AE30 - Fotocélulas de seguridad", categoria:"Seguridad", precio:129900, costo:77940, stock:15},
-{ref:"AUSC4M", nombre:"ALM4 - Control de muro 4 canales", categoria:"Accesorios", precio:69900, costo:41940, stock:12},
-{ref:"AUSC4MF", nombre:"RIM4F - Cremallera nylon 1 metro", categoria:"Accesorios", precio:89900, costo:53940, stock:50},
-{ref:"AUSC4MF6", nombre:"RIM4F - Cremallera nylon 6 metros", categoria:"Accesorios", precio:499900, costo:299940, stock:20},
-{ref:"AUSC4MF4", nombre:"RIM4F - Cremallera nylon 4 metros", categoria:"Accesorios", precio:349900, costo:209940, stock:15},
-{ref:"AUSFLA", nombre:"FLA - Flashing light / Luz intermitente", categoria:"Seguridad", precio:149900, costo:89940, stock:10},
-{ref:"AUSKEY", nombre:"KEY - Selector de llave exterior", categoria:"Accesorios", precio:119900, costo:71940, stock:8},
-{ref:"AUSANT", nombre:"ANT - Antena exterior 433Mhz", categoria:"Accesorios", precio:89900, costo:53940, stock:12},
-{ref:"AUSBAT", nombre:"BATERIA 12V 7Ah - Respaldo", categoria:"Accesorios", precio:189900, costo:113940, stock:10},
-{ref:"AUSCEN", nombre:"CEN - Centro de carga solar", categoria:"Accesorios", precio:249900, costo:149940, stock:6},
-{ref:"BFT-PHOBOS", nombre:"BFT Phobos BT A25 - Motor batiente 250kg", categoria:"Batientes", precio:2899900, costo:1739940, stock:4},
-{ref:"BFT-ICARO", nombre:"BFT Icaro Smart AC A2000 - Corredizo 2000kg", categoria:"Corredizos", precio:4599900, costo:2759940, stock:2},
-{ref:"BFT-DEIMOS", nombre:"BFT Deimos BT A400 - Corredizo 400kg", categoria:"Corredizos", precio:1899900, costo:1139940, stock:5},
-{ref:"BFT-RIGEL", nombre:"BFT Rigel 6 - Barrera 6 metros", categoria:"Barreras", precio:3899900, costo:2339940, stock:3},
-{ref:"BFT-MOON", nombre:"BFT Moon - Barrera 4 metros", categoria:"Barreras", precio:2999900, costo:1799940, stock:4},
-{ref:"LIFT-CSW", nombre:"LiftMaster CSW200 - Corredizo industrial 2000kg", categoria:"Corredizos", precio:5899900, costo:3539940, stock:2},
-{ref:"LIFT-SL", nombre:"LiftMaster SL3000 - Corredizo 3000kg", categoria:"Corredizos", precio:7899900, costo:4739940, stock:1},
-{ref:"LIFT-LA", nombre:"LiftMaster LA500 - Batiente 500kg", categoria:"Batientes", precio:3499900, costo:2099940, stock:3},
-{ref:"LIFT-MJ", nombre:"LiftMaster MJ5011 - Levadizo industrial", categoria:"Levadizos", precio:4599900, costo:2759940, stock:2},
-{ref:"NAS-1000", nombre:"NAS AC-1000 - Corredizo 1000kg", categoria:"Corredizos", precio:1299900, costo:779940, stock:6},
-{ref:"NAS-1500", nombre:"NAS AC-1500 - Corredizo 1500kg", categoria:"Corredizos", precio:1699900, costo:1019940, stock:4},
-{ref:"NAS-400", nombre:"NAS AC-400 - Batiente 400kg", categoria:"Batientes", precio:1499900, costo:899940, stock:5},
-{ref:"NAS-600", nombre:"NAS AC-600 - Batiente 600kg", categoria:"Batientes", precio:1999900, costo:1199940, stock:3},
-{ref:"NAS-BARR", nombre:"NAS Barrera 4 metros", categoria:"Barreras", precio:2499900, costo:1499940, stock:4},
-{ref:"ELITE-CSW", nombre:"Elite CSW200 - Corredizo 2000kg", categoria:"Corredizos", precio:5299900, costo:3179940, stock:2},
-{ref:"ELITE-ROB", nombre:"Elite Robo-Slide - Corredizo 500kg", categoria:"Corredizos", precio:1899900, costo:1139940, stock:5},
-{ref:"ELITE-SL", nombre:"Elite SL3000 - Corredizo 3000kg", categoria:"Corredizos", precio:7299900, costo:4379940, stock:1},
-{ref:"BENI-5", nombre:"Beninca BEN5 - Batiente 500kg", categoria:"Batientes", precio:2199900, costo:1319940, stock:4},
-{ref:"BENI-3", nombre:"Beninca BEN3 - Batiente 300kg", categoria:"Batientes", precio:1699900, costo:1019940, stock:5},
-{ref:"BENI-COR", nombre:"Beninca COR - Corredizo 800kg", categoria:"Corredizos", precio:1999900, costo:1199940, stock:4},
-{ref:"BENI-BULL", nombre:"Beninca BULL5 - Barrera 5 metros", categoria:"Barreras", precio:3299900, costo:1979940, stock:3},
-{ref:"ACCM-224", nombre:"Accessmatic Mastodon 224 - Barrera 2m", categoria:"Barreras", precio:3900000, costo:2340000, stock:2},
-{ref:"ACCM-624", nombre:"Accessmatic Mastodon 624 - Barrera articulada", categoria:"Barreras", precio:6400000, costo:3840000, stock:1},
-{ref:"MAN-MO", nombre:"Mano de Obra - Instalación básica", categoria:"Servicios", precio:350000, costo:150000, stock:99},
-{ref:"MAN-MO2", nombre:"Mano de Obra - Instalación compleja", categoria:"Servicios", precio:500000, costo:200000, stock:99},
-{ref:"MAN-MANT", nombre:"Mantenimiento preventivo", categoria:"Servicios", precio:180000, costo:80000, stock:99},
-{ref:"MAN-REP", nombre:"Reparación / Diagnóstico", categoria:"Servicios", precio:150000, costo:60000, stock:99},
-{ref:"MAN-VIS", nombre:"Visita técnica / Evaluación", categoria:"Servicios", precio:80000, costo:30000, stock:99},
-{ref:"REP-PLA", nombre:"Placa control universal", categoria:"Repuestos", precio:299900, costo:179940, stock:8},
-{ref:"REP-CAP", nombre:"Capacitor 16uf", categoria:"Repuestos", precio:89900, costo:53940, stock:15},
-{ref:"REP-FIN", nombre:"Final de carrera magnético", categoria:"Repuestos", precio:49900, costo:29940, stock:20},
-{ref:"REP-ENGR", nombre:"Engranaje nylon corredizo", categoria:"Repuestos", precio:129900, costo:77940, stock:10},
-{ref:"REP-BRA", nombre:"Brazo batiente completo", categoria:"Repuestos", precio:199900, costo:119940, stock:6},
-{ref:"REP-MOT", nombre:"Motorreductor completo", categoria:"Repuestos", precio:549900, costo:329940, stock:4},
-{ref:"REP-TAR", nombre:"Tarjeta receptor 433Mhz", categoria:"Repuestos", precio:159900, costo:95940, stock:8},
-{ref:"REP-CIN", nombre:"Cinta encoder / Cremallera metálica", categoria:"Repuestos", precio:99900, costo:59940, stock:12},
-{ref:"ACCM-RET", nombre:"Toldo / Techo retráctil motorizado", categoria:"Especiales", precio:4599900, costo:2759940, stock:2},
-{ref:"ACCM-CORR", nombre:"Cortina metálica motorizada", categoria:"Especiales", precio:3299900, costo:1979940, stock:3},
-{ref:"ACCM-SEC", nombre:"Puerta seccional industrial", categoria:"Especiales", precio:6899900, costo:4139940, stock:1},
-{ref:"KIT-BAT-1", nombre:"Kit Básico Batiente - Motor+Control+Fotocelda", categoria:"Kits", precio:2899900, costo:1739940, stock:5},
-{ref:"KIT-COR-1", nombre:"Kit Básico Corredizo - Motor+Control+Cremallera", categoria:"Kits", precio:1999900, costo:1199940, stock:6},
-{ref:"KIT-LEV-1", nombre:"Kit Básico Levadizo - Motor+Control+Seguridad", categoria:"Kits", precio:2199900, costo:1319940, stock:4},
-{ref:"KIT-BARR-1", nombre:"Kit Barrera Vehicular - Barrera+Control+Loop", categoria:"Kits", precio:4299900, costo:2579940, stock:3},
-{ref:"SEG-LOOP", nombre:"Detector de lazo magnético vehicular", categoria:"Seguridad", precio:349900, costo:209940, stock:6},
-{ref:"SEG-BARR", nombre:"Barra de seguridad peatonal", categoria:"Seguridad", precio:199900, costo:119940, stock:8},
-{ref:"SEG-CER", nombre:"Cerradura eléctrica / Electromagnética", categoria:"Seguridad", precio:249900, costo:149940, stock:10},
-{ref:"SEG-INT", nombre:"Intercomunicador / Portero eléctrico", categoria:"Seguridad", precio:299900, costo:179940, stock:7},
-{ref:"SEG-CAM", nombre:"Cámara de seguridad IP", categoria:"Seguridad", precio:399900, costo:239940, stock:5},
-{ref:"ACC-RIE", nombre:"Riel guía corredizo 6 metros", categoria:"Accesorios", precio:189900, costo:113940, stock:15},
-{ref:"ACC-RUE", nombre:"Ruedas para portón corredizo (par)", categoria:"Accesorios", precio:149900, costo:89940, stock:12},
-{ref:"ACC-BIS", nombre:"Bisagras pesadas para batiente (par)", categoria:"Accesorios", precio:129900, costo:77940, stock:10},
-{ref:"ACC-GUI", nombre:"Guías inferiores corredizo", categoria:"Accesorios", precio:99900, costo:59940, stock:14},
-{ref:"ACC-TOPE", nombre:"Topes de carrera corredizo (par)", categoria:"Accesorios", precio:49900, costo:29940, stock:20},
-{ref:"ACC-PER", nombre:"Pernos anclaje expansión (juego)", categoria:"Accesorios", precio:39900, costo:23940, stock:25},
-{ref:"ACC-CAB", nombre:"Cableado eléctrico 3x1.5mm (metro)", categoria:"Accesorios", precio:8900, costo:5340, stock:100},
-{ref:"ACC-CAN", nombre:"Canaleta protectora cableado", categoria:"Accesorios", precio:12900, costo:7740, stock:50},
-{ref:"ACC-TUB", nombre:"Tubo conduit PVC 1/2" (metro)", categoria:"Accesorios", precio:4900, costo:2940, stock:80},
-{ref:"ACC-CAJ", nombre:"Caja de paso estanca", categoria:"Accesorios", precio:24900, costo:14940, stock:30},
-{ref:"BFT-MITO", nombre:"BFT Mitto B RCB - Control 2 canales", categoria:"Controles", precio:149900, costo:89940, stock:15},
-{ref:"BFT-KUSTOS", nombre:"BFT Kustos Ultra BT A25 - Corredizo 2500kg", categoria:"Corredizos", precio:5299900, costo:3179940, stock:2},
-{ref:"BFT-THALIA", nombre:"BFT Thalia - Motor enrollable 170kg", categoria:"Enrollables", precio:1249900, costo:749940, stock:5},
-{ref:"BFT-THALIA2", nombre:"BFT Thalia P - Motor enrollable 200kg", categoria:"Enrollables", precio:1299900, costo:779940, stock:4},
-{ref:"NAS-EN-170", nombre:"NAS EN170 - Motor enrollable 170kg", categoria:"Enrollables", precio:1249900, costo:749940, stock:6},
-{ref:"NAS-EN-200", nombre:"NAS EN200 - Motor enrollable 200kg", categoria:"Enrollables", precio:1299900, costo:779940, stock:5},
-{ref:"LIFT-EL", nombre:"LiftMaster ELITE - Enrollable comercial", categoria:"Enrollables", precio:2199900, costo:1319940, stock:3},
-{ref:"ACCM-EN-300", nombre:"Accessmatic EN300 - Enrollable 300kg", categoria:"Enrollables", precio:1599900, costo:959940, stock:4},
-{ref:"ACCM-EN-500", nombre:"Accessmatic EN500 - Enrollable 500kg", categoria:"Enrollables", precio:1999900, costo:1199940, stock:3},
-{ref:"BENI-EN-200", nombre:"Beninca EN200 - Enrollable 200kg", categoria:"Enrollables", precio:1349900, costo:809940, stock:5},
-{ref:"ELITE-EN", nombre:"Elite EN - Enrollable 250kg", categoria:"Enrollables", precio:1499900, costo:899940, stock:4},
-{ref:"KIT-EN-1", nombre:"Kit Enrollable Residencial - Motor+Control+Seguridad", categoria:"Kits", precio:1899900, costo:1139940, stock:5},
-{ref:"KIT-EN-2", nombre:"Kit Enrollable Comercial - Motor+Control+Cierre", categoria:"Kits", precio:2499900, costo:1499940, stock:3},
-{ref:"SEG-SENS", nombre:"Sensor de movimiento para portón", categoria:"Seguridad", precio:179900, costo:107940, stock:8},
-{ref:"SEG-TECL", nombre:"Teclado numérico inalámbrico", categoria:"Seguridad", precio:219900, costo:131940, stock:6},
-{ref:"SEG-TARJ", nombre:"Lector de tarjetas de proximidad", categoria:"Seguridad", precio:289900, costo:173940, stock:4},
-{ref:"SEG-HUEL", nombre:"Lector de huella digital", categoria:"Seguridad", precio:449900, costo:269940, stock:3},
-{ref:"ACC-SOP", nombre:"Soporte motor batiente (par)", categoria:"Accesorios", precio:89900, costo:53940, stock:12},
-{ref:"ACC-FIJ", nombre:"Fijaciones especiales acero inox", categoria:"Accesorios", precio:159900, costo:95940, stock:8},
-{ref:"ACC-GRE", nombre:"Grasa lubricante para cremallera", categoria:"Accesorios", precio:29900, costo:17940, stock:20},
-{ref:"ACC-LUB", nombre:"Lubricante spray para guías", categoria:"Accesorios", precio:24900, costo:14940, stock:15},
-{ref:"MAN-INST", nombre:"Instalación completa con materiales", categoria:"Servicios", precio:450000, costo:200000, stock:99},
-{ref:"MAN-RET", nombre:"Instalación techo retráctil", categoria:"Servicios", precio:650000, costo:300000, stock:99},
-{ref:"MAN-SEC", nombre:"Instalación puerta seccional", categoria:"Servicios", precio:550000, costo:250000, stock:99},
-{ref:"MAN-EN", nombre:"Instalación enrollable", categoria:"Servicios", precio:380000, costo:170000, stock:99},
-{ref:"REP-TORN", nombre:"Tornillería completa instalación", categoria:"Repuestos", precio:59900, costo:35940, stock:20},
-{ref:"REP-ELEC", nombre:"Kit componentes eléctricos", categoria:"Repuestos", precio:189900, costo:113940, stock:10},
-{ref:"REP-MEC", nombre:"Kit componentes mecánicos", categoria:"Repuestos", precio:219900, costo:131940, stock:8},
-{ref:"ACCM-LOOP", nombre:"Kit lazo magnético completo", categoria:"Kits", precio:549900, costo:329940, stock:4},
-{ref:"ACCM-INT", nombre:"Kit intercomunicador + apertura", categoria:"Kits", precio:699900, costo:419940, stock:3},
-{ref:"ACCM-CAM", nombre:"Kit cámara + grabación + app", categoria:"Kits", precio:899900, costo:539940, stock:3},
-{ref:"BFT-THOR", nombre:"BFT Thor - Motor seccional 1000kg", categoria:"Seccionales", precio:3899900, costo:2339940, stock:2},
-{ref:"LIFT-8500", nombre:"LiftMaster 8500 - Seccional pared", categoria:"Seccionales", precio:4299900, costo:2579940, stock:2},
-{ref:"NAS-SEC-300", nombre:"NAS SEC300 - Seccional 300kg", categoria:"Seccionales", precio:2499900, costo:1499940, stock:4},
-{ref:"NAS-SEC-500", nombre:"NAS SEC500 - Seccional 500kg", categoria:"Seccionales", precio:3199900, costo:1919940, stock:3},
-{ref:"BENI-SEC-400", nombre:"Beninca SEC400 - Seccional 400kg", categoria:"Seccionales", precio:2899900, costo:1739940, stock:3},
-{ref:"KIT-SEC-1", nombre:"Kit Seccional Residencial completo", categoria:"Kits", precio:4599900, costo:2759940, stock:2},
-{ref:"KIT-SEC-2", nombre:"Kit Seccional Comercial completo", categoria:"Kits", precio:5899900, costo:3539940, stock:2},
-{ref:"SEG-BARR-PE", nombre:"Barrera peatonal acceso controlado", categoria:"Seguridad", precio:349900, costo:209940, stock:5},
-{ref:"SEG-TORNI", nombre:"Torniquete acceso peatonal", categoria:"Seguridad", precio:1299900, costo:779940, stock:2},
-{ref:"SEG-CANCE", nombre:"Cancela abatible vehicular", categoria:"Seguridad", precio:899900, costo:539940, stock:3},
-{ref:"ACC-CONCR", nombre:"Base concreto motor corredizo", categoria:"Accesorios", precio:79900, costo:47940, stock:10},
-{ref:"ACC-ANG", nombre:"Ángulo hierro estructural", categoria:"Accesorios", precio:49900, costo:29940, stock:15},
-{ref:"ACC-PINT", nombre:"Pintura anticorrosiva spray", categoria:"Accesorios", precio:18900, costo:11340, stock:25},
-{ref:"MAN-EMER", nombre:"Servicio emergencia 24h", categoria:"Servicios", precio:250000, costo:100000, stock:99},
-{ref:"MAN-GAR", nombre:"Garantía extendida 2 años", categoria:"Servicios", precio:199900, costo:80000, stock:99},
-{ref:"MAN-CAP", nombre:"Capacitación uso del sistema", categoria:"Servicios", precio:80000, costo:30000, stock:99},
-{ref:"REP-DISP", nombre:"Display / Panel LED motor", categoria:"Repuestos", precio:179900, costo:107940, stock:6},
-{ref:"REP-TRAN", nombre:"Transformador 220/24V", categoria:"Repuestos", precio:149900, costo:89940, stock:8},
-{ref:"REP-RELE", nombre:"Relé de potencia 30A", categoria:"Repuestos", precio:39900, costo:23940, stock:15},
-{ref:"REP-COND", nombre:"Condensador arranque motor", categoria:"Repuestos", precio:69900, costo:41940, stock:12},
-{ref:"ACCM-SMART", nombre:"Kit domótica portón smartphone", categoria:"Kits", precio:349900, costo:209940, stock:5},
-{ref:"ACCM-VOZ", nombre:"Kit control por voz Alexa/Google", categoria:"Kits", precio:299900, costo:179940, stock:4},
-{ref:"BFT-WiFi", nombre:"BFT WiFi Gateway - Control remoto", categoria:"Controles", precio:249900, costo:149940, stock:6},
-{ref:"LIFT-MYQ", nombre:"LiftMaster myQ Smart Hub", categoria:"Controles", precio:199900, costo:119940, stock:7},
-{ref:"NAS-WiFi", nombre:"NAS WiFi Module - Control app", categoria:"Controles", precio:179900, costo:107940, stock:8},
-{ref:"SEG-PIR", nombre:"Sensor PIR exterior anti-máscara", categoria:"Seguridad", precio:219900, costo:131940, stock:6},
-{ref:"SEG-BOMB", nombre:"Luz estroboscópica 12V", categoria:"Seguridad", precio:89900, costo:53940, stock:10},
-{ref:"SEG-SIR", nombre:"Sirena alámbrica 110dB", categoria:"Seguridad", precio:129900, costo:77940, stock:8},
-{ref:"ACC-CINT", nombre:"Cinta reflectiva seguridad", categoria:"Accesorios", precio:19900, costo:11940, stock:30},
-{ref:"ACC-SEÑ", nombre:"Señalética seguridad portón", categoria:"Accesorios", precio:24900, costo:14940, stock:20},
-{ref:"ACC-PROT", nombre:"Protector cables exterior", categoria:"Accesorios", precio:34900, costo:20940, stock:15},
-{ref:"MAN-REV", nombre:"Revisión trimestral contrato", categoria:"Servicios", precio:120000, costo:50000, stock:99},
-{ref:"MAN-ANU", nombre:"Mantenimiento anual completo", categoria:"Servicios", precio:350000, costo:150000, stock:99},
-{ref:"REP-FUENTE", nombre:"Fuente de poder 24V 5A", categoria:"Repuestos", precio:189900, costo:113940, stock:7},
-{ref:"REP-PUENTE", nombre:"Puente rectificador motor", categoria:"Repuestos", precio:49900, costo:29940, stock:12},
-{ref:"REP-BOB", nombre:"Bobina electromagnética 24V", categoria:"Repuestos", precio:79900, costo:47940, stock:10},
-{ref:"ACCM-TOLD", nombre:"Toldo retráctil 4x3 metros motorizado", categoria:"Especiales", precio:3899900, costo:2339940, stock:2},
-{ref:"ACCM-CORT", nombre:"Cortina enrollable 3x3 motorizada", categoria:"Especiales", precio:2499900, costo:1499940, stock:3},
-{ref:"ACCM-PERG", nombre:"Pérgola bioclimática motorizada", categoria:"Especiales", precio:8999900, costo:5399940, stock:1},
-{ref:"KIT-DOMO-1", nombre:"Kit Domótica Básica - 1 portón", categoria:"Kits", precio:599900, costo:359940, stock:4},
-{ref:"KIT-DOMO-2", nombre:"Kit Domótica Completa - 2 portones + cámaras", categoria:"Kits", precio:1299900, costo:779940, stock:2},
-{ref:"BFT-ARES", nombre:"BFT Ares BT A1000 - Batiente 1000kg", categoria:"Batientes", precio:4299900, costo:2579940, stock:2},
-{ref:"LIFT-CSW24", nombre:"LiftMaster CSW24 - Corredizo 2400kg", categoria:"Corredizos", precio:6899900, costo:4139940, stock:1},
-{ref:"ELITE-CSW24", nombre:"Elite CSW24 - Corredizo 2400kg", categoria:"Corredizos", precio:6299900, costo:3779940, stock:1},
-{ref:"NAS-2000", nombre:"NAS AC-2000 - Corredizo 2000kg", categoria:"Corredizos", precio:2199900, costo:1319940, stock:3},
-{ref:"BENI-1000", nombre:"Beninca BEN1000 - Batiente 1000kg", categoria:"Batientes", precio:3499900, costo:2099940, stock:2},
-{ref:"BFT-G", nombre:"BFT G - Barrera 8 metros industrial", categoria:"Barreras", precio:5299900, costo:3179940, stock:1},
-{ref:"ACCM-BARR-4", nombre:"Accessmatic Barrera 4m con iluminación", categoria:"Barreras", precio:3299900, costo:1979940, stock:3},
-{ref:"ACCM-BARR-6", nombre:"Accessmatic Barrera 6m industrial", categoria:"Barreras", precio:4599900, costo:2759940, stock:2},
-{ref:"KIT-BARR-2", nombre:"Kit Barrera Completo + Loop + Teclado", categoria:"Kits", precio:5499900, costo:3299940, stock:2},
-{ref:"SEG-ULTRA", nombre:"Kit ultrasonido anti-intrusión", categoria:"Seguridad", precio:449900, costo:269940, stock:3},
-{ref:"SEG-LASER", nombre:"Barrera láser perimetral", categoria:"Seguridad", precio:599900, costo:359940, stock:2},
-{ref:"ACC-ACERO", nombre:"Estructura acero inoxidable portón", categoria:"Accesorios", precio:499900, costo:299940, stock:4},
-{ref:"ACC-MALLA", nombre:"Malla electrosoldada seguridad", categoria:"Accesorios", precio:89900, costo:53940, stock:10},
-{ref:"MAN-DISEÑO", nombre:"Diseño estructural portón", categoria:"Servicios", precio:250000, costo:100000, stock:99},
-{ref:"MAN-FAB", nombre:"Fabricación portón metálico", categoria:"Servicios", precio:1200000, costo:600000, stock:99},
-{ref:"REP-CPU", nombre:"CPU placa control programable", categoria:"Repuestos", precio:349900, costo:209940, stock:5},
-{ref:"REP-MEM", nombre:"Memoria EEPROM placa", categoria:"Repuestos", precio:89900, costo:53940, stock:8},
-{ref:"ACCM-PUENTE", nombre:"Puente peatonal motorizado", categoria:"Especiales", precio:12999000, costo:7799400, stock:1},
-{ref:"ACCM-PORT", nombre:"Portón corredizo completo 4x2m", categoria:"Especiales", precio:4599900, costo:2759940, stock:2},
-{ref:"ACCM-BAT", nombre:"Portón batiente completo 3x2m", categoria:"Especiales", precio:3899900, costo:2339940, stock:2},
-{ref:"KIT-SEG-COMP", nombre:"Kit Seguridad Completo - Cámaras+Alarmas+Portón", categoria:"Kits", precio:8999900, costo:5399940, stock:1},
-{ref:"BFT-ERACLE", nombre:"BFT Eracle - Motor hidráulico batiente", categoria:"Batientes", precio:5899900, costo:3539940, stock:1},
-{ref:"LIFT-MH", nombre:"LiftMaster MH - Operador hidráulico industrial", categoria:"Batientes", precio:7299900, costo:4379940, stock:1},
-{ref:"NAS-HID", nombre:"NAS HYDRO - Batiente hidráulico 800kg", categoria:"Batientes", precio:4299900, costo:2579940, stock:2},
-{ref:"BENI-HID", nombre:"Beninca HYDRONIC - Batiente hidráulico", categoria:"Batientes", precio:5299900, costo:3179940, stock:1},
-{ref:"ACCM-HID", nombre:"Accessmatic HYDRO - Batiente 1000kg hidráulico", categoria:"Batientes", precio:4899900, costo:2939940, stock:2},
-{ref:"BFT-SUB", nombre:"BFT SUB - Motor subterráneo batiente", categoria:"Batientes", precio:6699900, costo:4019940, stock:1},
-{ref:"SEG-BIO", nombre:"Lector biométrico facial", categoria:"Seguridad", precio:699900, costo:419940, stock:2},
-{ref:"SEG-TERM", nombre:"Cámara térmica seguridad", categoria:"Seguridad", precio:1299900, costo:779940, stock:2},
-{ref:"ACC-SOLAR", nombre:"Kit panel solar portón", categoria:"Accesorios", precio:449900, costo:269940, stock:4},
-{ref:"MAN-SOLAR", nombre:"Instalación sistema solar portón", categoria:"Servicios", precio:350000, costo:150000, stock:99},
-{ref:"REP-SOLAR", nombre:"Regulador carga solar 10A", categoria:"Repuestos", precio:199900, costo:119940, stock:6},
-{ref:"ACCM-AUTO", nombre:"Sistema automatización completa edificio", categoria:"Especiales", precio:24999000, costo:14999400, stock:1},
-{ref:"KIT-IND-1", nombre:"Kit Industrial Corredizo 3000kg completo", categoria:"Kits", precio:12999900, costo:7799940, stock:1},
-{ref:"KIT-IND-2", nombre:"Kit Industrial Batiente 1500kg completo", categoria:"Kits", precio:9999900, costo:5999940, stock:1},
-{ref:"BFT-ICARO2", nombre:"BFT Icaro MA - Corredizo 3000kg", categoria:"Corredizos", precio:5899900, costo:3539940, stock:1},
-{ref:"LIFT-SL24", nombre:"LiftMaster SL24 - Corredizo 2400kg industrial", categoria:"Corredizos", precio:8299900, costo:4979940, stock:1},
-{ref:"NAS-3000", nombre:"NAS AC-3000 - Corredizo 3000kg", categoria:"Corredizos", precio:2899900, costo:1739940, stock:2},
-{ref:"ELITE-ROB2", nombre:"Elite Robo-Slide 2000 - Corredizo 2000kg", categoria:"Corredizos", precio:3499900, costo:2099940, stock:2},
-{ref:"ACCM-TOPE-HID", nombre:"Tope hidráulico vehicular", categoria:"Seguridad", precio:1899900, costo:1139940, stock:3},
-{ref:"ACCM-SPIN", nombre:"Spinner hidráulico control acceso", categoria:"Seguridad", precio:2499900, costo:1499940, stock:2},
-{ref:"MAN-CIERRE", nombre:"Cierre perimetral completo", categoria:"Servicios", precio:2500000, costo:1250000, stock:99},
-{ref:"REP-GATO", nombre:"Gato hidráulico batiente", categoria:"Repuestos", precio:299900, costo:179940, stock:5},
-{ref:"REP-CIL", nombre:"Cilindro hidráulico operador", categoria:"Repuestos", precio:449900, costo:269940, stock:4},
-{ref:"REP-BOM", nombre:"Bomba hidráulica 24V", categoria:"Repuestos", precio:349900, costo:209940, stock:5},
-{ref:"ACCM-POSTE", nombre:"Poste barrera vehicular fundición", categoria:"Accesorios", precio:599900, costo:359940, stock:4},
-{ref:"ACCM-CAJA", nombre:"Caja fuerte motor exterior", categoria:"Accesorios", precio:199900, costo:119940, stock:6},
-{ref:"SEG-ANPR", nombre:"Sistema lectura placas vehiculares", categoria:"Seguridad", precio:2499900, costo:1499940, stock:2},
-{ref:"SEG-RFID", nombre:"Kit control RFID vehicular", categoria:"Seguridad", precio:1899900, costo:1139940, stock:3},
-{ref:"ACC-BASE", nombre:"Base regulable motor batiente", categoria:"Accesorios", precio:129900, costo:77940, stock:8},
-{ref:"ACC-PROTE", nombre:"Protector meteorológico motor", categoria:"Accesorios", precio:89900, costo:53940, stock:10},
-{ref:"MAN-REMODEL", nombre:"Remodelación sistema existente", categoria:"Servicios", precio:450000, costo:200000, stock:99},
-{ref:"REP-ENC", nombre:"Encoder motor corredizo", categoria:"Repuestos", precio:159900, costo:95940, stock:6},
-{ref:"REP-FRENO", nombre:"Freno electromagnético motor", categoria:"Repuestos", precio:199900, costo:119940, stock:5},
-{ref:"ACCM-GAR", nombre:"Puerta garaje seccional 2.5x2m", categoria:"Especiales", precio:5299900, costo:3179940, stock:2},
-{ref:"ACCM-COM", nombre:"Puerta comercial enrollable 4x3m", categoria:"Especiales", precio:3899900, costo:2339940, stock:2},
-{ref:"KIT-RES-1", nombre:"Kit Residencial Premium - 2 batientes + cámaras", categoria:"Kits", precio:6999900, costo:4199940, stock:1},
-{ref:"KIT-RES-2", nombre:"Kit Residencial Standard - 1 corredizo + control", categoria:"Kits", precio:2999900, costo:1799940, stock:3},
-{ref:"BFT-TOONA", nombre:"BFT Toona - Batiente 500kg electrohidráulico", categoria:"Batientes", precio:4899900, costo:2939940, stock:2},
-{ref:"LIFT-LA400", nombre:"LiftMaster LA400 - Batiente 400kg", categoria:"Batientes", precio:2899900, costo:1739940, stock:3},
-{ref:"NAS-BAT-500", nombre:"NAS BAT500 - Batiente 500kg", categoria:"Batientes", precio:2199900, costo:1319940, stock:4},
-{ref:"BENI-5EVO", nombre:"Beninca BEN5 EVO - Batiente 500kg evolutivo", categoria:"Batientes", precio:2499900, costo:1499940, stock:3},
-{ref:"ELITE-COR500", nombre:"Elite COR500 - Corredizo 500kg", categoria:"Corredizos", precio:1699900, costo:1019940, stock:5},
-{ref:"ACCM-LEV-800", nombre:"Accessmatic LEV800 - Levadizo 800kg", categoria:"Levadizos", precio:1899900, costo:1139940, stock:4},
-{ref:"ACCM-LEV-1200", nombre:"Accessmatic LEV1200 - Levadizo 1200kg", categoria:"Levadizos", precio:2499900, costo:1499940, stock:3},
-{ref:"KIT-LEV-2", nombre:"Kit Levadizo Completo 1000kg + Seguridad", categoria:"Kits", precio:3499900, costo:2099940, stock:2},
-{ref:"SEG-LOOP-IND", nombre:"Detector lazo industrial doble", categoria:"Seguridad", precio:599900, costo:359940, stock:3},
-{ref:"SEG-BARR-IND", nombre:"Barrera peatonal industrial", categoria:"Seguridad", precio:499900, costo:299940, stock:4},
-{ref:"ACC-MOTOR", nombre:"Soporte motor universal", categoria:"Accesorios", precio:69900, costo:41940, stock:15},
-{ref:"ACC-TORN", nombre:"Tornillería grado 8.8 completa", categoria:"Accesorios", precio:49900, costo:29940, stock:20},
-{ref:"MAN-INST-LEV", nombre:"Instalación levadizo con rieles", categoria:"Servicios", precio:500000, costo:220000, stock:99},
-{ref:"MAN-INST-BAT", nombre:"Instalación batiente con columnas", categoria:"Servicios", precio:450000, costo:200000, stock:99},
-{ref:"REP-TUBO", nombre:"Tubo guía corredizo 6m", categoria:"Repuestos", precio:149900, costo:89940, stock:8},
-{ref:"REP-RUEDA", nombre:"Rueda nylon corredizo industrial", categoria:"Repuestos", precio:79900, costo:47940, stock:10},
-{ref:"ACCM-CERR", nombre:"Cerradura eléctrica 12V fail-safe", categoria:"Seguridad", precio:179900, costo:107940, stock:8},
-{ref:"ACCM-MAG", nombre:"Cerradura magnética 300kg", categoria:"Seguridad", precio:149900, costo:89940, stock:10},
-{ref:"KIT-ACC-1", nombre:"Kit Accesorios Básico - Controles+Fotoceldas", categoria:"Kits", precio:499900, costo:299940, stock:5},
-{ref:"KIT-ACC-2", nombre:"Kit Accesorios Premium - Todo incluido", categoria:"Kits", precio:999900, costo:599940, stock:3},
-{ref:"BFT-RCB", nombre:"BFT RCB02 - Receptor 2 canales", categoria:"Controles", precio:179900, costo:107940, stock:8},
-{ref:"LIFT-890MAX", nombre:"LiftMaster 890MAX - Control mini", categoria:"Controles", precio:129900, costo:77940, stock:10},
-{ref:"NAS-CTRL", nombre:"NAS Control 4 canales rolling code", categoria:"Controles", precio:89900, costo:53940, stock:12},
-{ref:"BENI-RC", nombre:"Beninca Remote 4 canales", categoria:"Controles", precio:99900, costo:59940, stock:10},
-{ref:"ELITE-RC", nombre:"Elite Remote - Control 4 canales", categoria:"Controles", precio:119900, costo:71940, stock:8},
-{ref:"ACCM-RC", nombre:"Accessmatic RC4 - Control 4 canales premium", categoria:"Controles", precio:79900, costo:47940, stock:15},
-{ref:"SEG-FOTO", nombre:"Fotocélula espejo 15m", categoria:"Seguridad", precio:159900, costo:95940, stock:8},
-{ref:"SEG-BARR-FOTO", nombre:"Barrera fotoeléctrica 4 haces", categoria:"Seguridad", precio:249900, costo:149940, stock:5},
-{ref:"SEG-CINTA", nombre:"Cinta sensora seguridad puerta", categoria:"Seguridad", precio:189900, costo:113940, stock:6},
-{ref:"ACC-RIEL-AL", nombre:"Riel aluminio corredizo 6m", categoria:"Accesorios", precio:249900, costo:149940, stock:6},
-{ref:"ACC-RIEL-AC", nombre:"Riel acero corredizo 6m", categoria:"Accesorios", precio:199900, costo:119940, stock:8},
-{ref:"ACC-COL", nombre:"Columna batiente acero 3m", categoria:"Accesorios", precio:299900, costo:179940, stock:4},
-{ref:"ACC-CONTRA", nombre:"Contra peso levadizo", categoria:"Accesorios", precio:149900, costo:89940, stock:6},
-{ref:"MAN-INST-COR", nombre:"Instalación corredizo con riel", categoria:"Servicios", precio:400000, costo:180000, stock:99},
-{ref:"MAN-INST-EN", nombre:"Instalación enrollable completa", categoria:"Servicios", precio:380000, costo:170000, stock:99},
-{ref:"REP-PLACA-UNI", nombre:"Placa universal reemplazo", categoria:"Repuestos", precio:249900, costo:149940, stock:7},
-{ref:"REP-REM", nombre:"Remoto receptor externo", categoria:"Repuestos", precio:199900, costo:119940, stock:8},
-{ref:"ACCM-PUERTA", nombre:"Puerta peatonal automática", categoria:"Especiales", precio:3299900, costo:1979940, stock:2},
-{ref:"ACCM-CANCELA", nombre:"Cancela automática peatonal", categoria:"Especiales", precio:2499900, costo:1499940, stock:3},
-{ref:"KIT-PEAT-1", nombre:"Kit Peatonal Completo - Motor+Control+Cerradura", categoria:"Kits", precio:3499900, costo:2099940, stock:2},
-{ref:"BFT-VISTA", nombre:"BFT Vista SL - Corredizo 800kg", categoria:"Corredizos", precio:2499900, costo:1499940, stock:3},
-{ref:"LIFT-RSL", nombre:"LiftMaster RSL12U - Corredizo 1200kg", categoria:"Corredizos", precio:3899900, costo:2339940, stock:2},
-{ref:"NAS-RAIL", nombre:"NAS Rail 1000 - Corredizo 1000kg", categoria:"Corredizos", precio:1799900, costo:1079940, stock:4},
-{ref:"BENI-SL", nombre:"Beninca SL - Corredizo 800kg", categoria:"Corredizos", precio:1999900, costo:1199940, stock:4},
-{ref:"ELITE-SL500", nombre:"Elite SL500 - Corredizo 500kg", categoria:"Corredizos", precio:1599900, costo:959940, stock:5},
-{ref:"ACCM-SL", nombre:"Accessmatic SL600 - Corredizo 600kg", categoria:"Corredizos", precio:1499900, costo:899940, stock:5},
-{ref:"SEG-LOOP-S", nombre:"Detector lazo simple vía", categoria:"Seguridad", precio:199900, costo:119940, stock:6},
-{ref:"SEG-LOOP-D", nombre:"Detector lazo doble vía", categoria:"Seguridad", precio:349900, costo:209940, stock:4},
-{ref:"ACC-BOX", nombre:"Caja estanca conexiones", categoria:"Accesorios", precio:49900, costo:29940, stock:15},
-{ref:"ACC-PROT-2", nombre:"Protector sobretensión", categoria:"Accesorios", precio:79900, costo:47940, stock:10},
-{ref:"MAN-INST-SEC", nombre:"Instalación seccional con rieles", categoria:"Servicios", precio:550000, costo:250000, stock:99},
-{ref:"REP-RIEL-DAÑ", nombre:"Riel guía dañado reemplazo", categoria:"Repuestos", precio:179900, costo:107940, stock:6},
-{ref:"REP-MOTOR-DAÑ", nombre:"Motor quemado reemplazo", categoria:"Repuestos", precio:699900, costo:419940, stock:3},
-{ref:"ACCM-TOR", nombre:"Torniquete trípode acceso", categoria:"Seguridad", precio:899900, costo:539940, stock:3},
-{ref:"ACCM-MOL", nombre:"Molinete acceso controlado", categoria:"Seguridad", precio:699900, costo:419940, stock:4},
-{ref:"KIT-ACCESO-1", nombre:"Kit Control Acceso - Torniquete+Tarjetas+Software", categoria:"Kits", precio:2499900, costo:1499940, stock:2},
-{ref:"BFT-REEVA", nombre:"BFT Reeva - Batiente 500kg", categoria:"Batientes", precio:4299900, costo:2579940, stock:2},
-{ref:"LIFT-LA200", nombre:"LiftMaster LA200 - Batiente 200kg", categoria:"Batientes", precio:2199900, costo:1319940, stock:4},
-{ref:"NAS-BAT-300", nombre:"NAS BAT300 - Batiente 300kg", categoria:"Batientes", precio:1799900, costo:1079940, stock:5},
-{ref:"BENI-3EVO", nombre:"Beninca BEN3 EVO - Batiente 300kg", categoria:"Batientes", precio:1999900, costo:1199940, stock:4},
-{ref:"ELITE-BAT400", nombre:"Elite BAT400 - Batiente 400kg", categoria:"Batientes", precio:2499900, costo:1499940, stock:3},
-{ref:"ACCM-BAT-300", nombre:"Accessmatic BAT300 - Batiente 300kg", categoria:"Batientes", precio:1699900, costo:1019940, stock:5},
-{ref:"SEG-CONTROL", nombre:"Panel de control centralizado", categoria:"Seguridad", precio:449900, costo:269940, stock:4},
-{ref:"SEG-BOTON", nombre:"Botón de pánico inalámbrico", categoria:"Seguridad", precio:89900, costo:53940, stock:12},
-{ref:"ACC-CONEX", nombre:"Kit conectores eléctricos estancos", categoria:"Accesorios", precio:39900, costo:23940, stock:20},
-{ref:"MAN-INST-BARR", nombre:"Instalación barrera vehicular", categoria:"Servicios", precio:500000, costo:220000, stock:99},
-{ref:"REP-BRAZO", nombre:"Brazo barrera reemplazo 4m", categoria:"Repuestos", precio:299900, costo:179940, stock:5},
-{ref:"REP-BRAZO-6", nombre:"Brazo barrera reemplazo 6m", categoria:"Repuestos", precio:399900, costo:239940, stock:4},
-{ref:"ACCM-TABLERO", nombre:"Tablero control edificio", categoria:"Especiales", precio:1299900, costo:779940, stock:2},
-{ref:"ACCM-SCADA", nombre:"Sistema SCADA portones", categoria:"Especiales", precio:4999900, costo:2999940, stock:1},
-{ref:"KIT-EDIF-1", nombre:"Kit Edificio - 4 portones + central + cámaras", categoria:"Kits", precio:19999900, costo:11999940, stock:1}
-];
+// ===================== DATOS =====================
+const productos = {
+  corrediza: [
+    {id:'pitbull400',nombre:'Pitbull 400',marca:'Accessmatic',precio:1099900,specs:'400kg - Uso residencial',img:''},
+    {id:'bulldozer850',nombre:'Bulldozer 850',marca:'Accessmatic',precio:1599900,specs:'850kg - Uso comercial',img:''},
+    {id:'fox1000',nombre:'Fox 1000 Pro',marca:'Accessmatic',precio:799900,specs:'1000kg - Uso industrial',img:''}
+  ],
+  batiente: [
+    {id:'eagle250',nombre:'Eagle 250',marca:'Accessmatic',precio:2519900,specs:'2 brazos - Hasta 3m por hoja',img:''},
+    {id:'eagle500',nombre:'Eagle 500',marca:'Accessmatic',precio:3889900,specs:'2 brazos - Hasta 5m por hoja',img:''},
+    {id:'falcon300',nombre:'Falcon 300',marca:'Accessmatic',precio:2199900,specs:'1 brazo - Hasta 3m',img:''},
+    {id:'falcon350',nombre:'Falcon 350',marca:'Accessmatic',precio:3749900,specs:'1 brazo - Hasta 3.5m',img:''}
+  ],
+  levadiza: [
+    {id:'lm80',nombre:'LM80',marca:'Accessmatic',precio:1899900,specs:'Hasta 80kg',img:''},
+    {id:'lm100',nombre:'LM100',marca:'Accessmatic',precio:2299900,specs:'Hasta 100kg',img:''}
+  ],
+  seccional: [
+    {id:'secc500',nombre:'Seccional 500',marca:'Accessmatic',precio:3299900,specs:'Hasta 12m²',img:''},
+    {id:'secc800',nombre:'Seccional 800',marca:'Accessmatic',precio:4599900,specs:'Hasta 18m²',img:''}
+  ],
+  barrera: [
+    {id:'bar3',nombre:'Barrera 3m',marca:'Accessmatic',precio:1499900,specs:'Hasta 3m de longitud',img:''},
+    {id:'bar6',nombre:'Barrera 6m',marca:'Accessmatic',precio:1999900,specs:'Hasta 6m de longitud',img:''}
+  ],
+  accesorios: [
+    {id:'ae30',nombre:'Fotoceldas AE30',marca:'Accessmatic',precio:129900,specs:'Par de fotoceldas',img:''},
+    {id:'alm4',nombre:'Control ALM4',marca:'Accessmatic',precio:69900,specs:'Control remoto 4 canales',img:''},
+    {id:'rim4f',nombre:'Cremallera RIM4F',marca:'Accessmatic',precio:89900,specs:'Por metro',img:''}
+  ]
+};
 
-let cotizaciones = JSON.parse(localStorage.getItem('arpa_cotizaciones')||'[]');
-let obras = JSON.parse(localStorage.getItem('arpa_obras')||'[]');
-let formatos = JSON.parse(localStorage.getItem('arpa_formatos')||'[]');
-let itemsCotizacion = [];
-let cotizacionActual = null;
+let cotizacionActual = [];
+let cotizacionesGuardadas = JSON.parse(localStorage.getItem('cotizacionesARPA')||'[]');
+let obras = JSON.parse(localStorage.getItem('obrasARPA')||'[]');
 
-function formatMoney(n){return '$'+n.toLocaleString('es-CO');}
-function parseMoney(s){return parseInt(s.replace(/[^0-9]/g,''))||0;}
-
+// ===================== NAVEGACIÓN =====================
 function showSection(id){
   document.querySelectorAll('.section').forEach(s=>s.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
   document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove('active'));
-  
   let links = document.querySelectorAll('.sidebar a');
   links.forEach(a => {
-    let onclick = a.getAttribute('onclick') || '';
-    if(onclick.includes("'"+id+"'") || onclick.includes('"'+id+'"')) {
+    let onclick = a.getAttribute('onclick')||'';
+    if(onclick.includes("'"+id+"'")||onclick.includes('"'+id+'"')){
       a.classList.add('active');
     }
   });
-  
   if(id==='dashboard') cargarDashboard();
   if(id==='cotizaciones') cargarCotizaciones();
   if(id==='obras') cargarObras();
   if(id==='catalogo') cargarCatalogo();
   if(id==='formato') cargarObrasSelect();
 }
-}
 
+// ===================== DASHBOARD =====================
 function cargarDashboard(){
   document.getElementById('fechaHoy').textContent = new Date().toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  let mesActual = cotizaciones.filter(c=>new Date(c.fecha).getMonth()===new Date().getMonth());
-  document.getElementById('kpi-cotizaciones').textContent = mesActual.length;
-  document.getElementById('kpi-cerradas').textContent = mesActual.filter(c=>c.estado==='cerrada').length;
-  document.getElementById('kpi-negociando').textContent = mesActual.filter(c=>c.estado==='negociando').length;
-  document.getElementById('kpi-perdidas').textContent = mesActual.filter(c=>c.estado==='perdida').length;
-
-  let pipeline = cotizaciones.filter(c=>c.estado!=='perdida').sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)).slice(0,5);
-  document.getElementById('pipeline-table').innerHTML = pipeline.map(c=>{
-    let dias = Math.floor((new Date()-new Date(c.fecha))/(1000*60*60*24));
-    return `<tr><td>${c.cliente}</td><td>${formatMoney(c.total)}</td><td><span class="badge badge-${c.estado}">${c.estado}</span></td><td>${dias}d</td></tr>`;
-  }).join('') || '<tr><td colspan="4" style="text-align:center;color:#888;">Sin cotizaciones activas</td></tr>';
-
-  let obrasActivas = obras.filter(o=>o.estado!=='completada').slice(0,5);
-  document.getElementById('obras-activas-table').innerHTML = obrasActivas.map(o=>{
-    let estados = ['pendiente','curso','instalada','garantia','completada'];
-    let idx = estados.indexOf(o.estado);
-    let progreso = Math.round((idx/4)*100);
-    return `<tr><td>${o.id}</td><td>${o.cliente}</td><td><span class="badge badge-${o.estado}">${o.estado}</span></td><td>${progreso}%</td></tr>`;
-  }).join('') || '<tr><td colspan="4" style="text-align:center;color:#888;">Sin obras activas</td></tr>';
-
-  let actividad = [...cotizaciones.map(c=>({fecha:c.fecha,accion:'Cotización '+c.estado,cliente:c.cliente,valor:formatMoney(c.total)})),
-    ...obras.map(o=>({fecha:o.fecha,accion:'Obra '+o.estado,cliente:o.cliente,valor:'-'}))]
-    .sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)).slice(0,8);
-  document.getElementById('actividad-table').innerHTML = actividad.map(a=>`<tr><td>${new Date(a.fecha).toLocaleDateString('es-CO')}</td><td>${a.accion}</td><td>${a.cliente}</td><td>${a.valor}</td></tr>`).join('');
+  document.getElementById('totalCotizaciones').textContent = cotizacionesGuardadas.length;
+  let cerradas = cotizacionesGuardadas.filter(c=>c.estado==='Cerrada').length;
+  document.getElementById('ventasCerradas').textContent = cerradas;
+  document.getElementById('enProceso').textContent = obras.filter(o=>o.estado==='En proceso').length;
+  document.getElementById('pendientes').textContent = cotizacionesGuardadas.filter(c=>c.estado==='Pendiente').length;
+  let tbody = document.getElementById('tablaCotizaciones');
+  tbody.innerHTML = '';
+  cotizacionesGuardadas.slice(-5).reverse().forEach(c=>{
+    let tr = document.createElement('tr');
+    tr.innerHTML = `<td>${c.id}</td><td>${c.cliente}</td><td>${c.fecha}</td><td>$${c.total.toLocaleString()}</td><td><span class="badge badge-${c.estado==='Cerrada'?'success':c.estado==='Pendiente'?'warning':'info'}">${c.estado}</span></td><td><button class="btn btn-primary" onclick="verCotizacion('${c.id}')">Ver</button></td>`;
+    tbody.appendChild(tr);
+  });
 }
 
-function filtrarProductos(){
-  let q = document.getElementById('buscar-producto').value.toLowerCase();
-  let filtrados = catalogo.filter(p=>p.nombre.toLowerCase().includes(q)||p.ref.toLowerCase().includes(q)||p.categoria.toLowerCase().includes(q));
-  mostrarProductos(filtrados);
-}
-
-function mostrarProductos(lista){
-  document.getElementById('lista-productos').innerHTML = lista.map(p=>`
-    <div class="producto-item" onclick="agregarItem('${p.ref}')">
-      <div class="producto-info">
-        <div class="producto-nombre">${p.nombre}</div>
-        <div class="producto-ref">${p.ref} | ${p.categoria} | Stock: ${p.stock}</div>
-      </div>
-      <div class="producto-precio">${formatMoney(p.precio)}</div>
-    </div>
-  `).join('');
-}
-
-function agregarItem(ref){
-  let prod = catalogo.find(p=>p.ref===ref);
-  if(!prod) return;
-  let existente = itemsCotizacion.find(i=>i.ref===ref);
-  if(existente){existente.cantidad++;}else{
-    itemsCotizacion.push({ref:prod.ref,nombre:prod.nombre,precio:prod.precio,costo:prod.costo,cantidad:1});
+// ===================== COTIZADOR =====================
+function cargarProductos(){
+  let cat = document.getElementById('catProducto').value;
+  let sel = document.getElementById('selProducto');
+  sel.innerHTML = '<option value="">Seleccionar...</option>';
+  if(productos[cat]){
+    productos[cat].forEach(p=>{
+      let opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.nombre + ' - $' + p.precio.toLocaleString();
+      sel.appendChild(opt);
+    });
   }
+}
+
+function agregarItem(){
+  let cat = document.getElementById('catProducto').value;
+  let prodId = document.getElementById('selProducto').value;
+  let cant = parseInt(document.getElementById('cantProducto').value)||1;
+  if(!cat||!prodId){alert('Seleccioná categoría y producto');return;}
+  let prod = productos[cat].find(p=>p.id===prodId);
+  if(!prod)return;
+  let item = {id:prod.id,nombre:prod.nombre,precio:prod.precio,cantidad:cant,total:prod.precio*cant};
+  cotizacionActual.push(item);
   renderItems();
-  calcularTotales();
 }
 
 function renderItems(){
-  document.getElementById('items-cotizacion').innerHTML = itemsCotizacion.map((item,idx)=>`
-    <div class="producto-item">
-      <div class="producto-info">
-        <div class="producto-nombre">${item.nombre}</div>
-        <div class="producto-ref">${item.ref} | ${formatMoney(item.precio)} c/u</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <button class="btn btn-sm" onclick="cambiarCantidad(${idx},-1)">-</button>
-        <span style="font-weight:700;min-width:30px;text-align:center;">${item.cantidad}</span>
-        <button class="btn btn-sm" onclick="cambiarCantidad(${idx},1)">+</button>
-        <span style="font-weight:700;color:var(--primary);min-width:100px;text-align:right;">${formatMoney(item.precio*item.cantidad)}</span>
-        <button class="btn btn-sm btn-danger" onclick="eliminarItem(${idx})">🗑️</button>
-      </div>
-    </div>
-  `).join('') || '<div style="text-align:center;color:#888;padding:20px;">Agregá productos del catálogo</div>';
+  let div = document.getElementById('itemsCotizacion');
+  div.innerHTML = '';
+  let total = 0;
+  cotizacionActual.forEach((item,idx)=>{
+    total += item.total;
+    let d = document.createElement('div');
+    d.className = 'item-cotizacion';
+    d.innerHTML = `<span>${item.cantidad}x ${item.nombre} - $${item.total.toLocaleString()}</span><button onclick="eliminarItem(${idx})">🗑️</button>`;
+    div.appendChild(d);
+  });
+  document.getElementById('totalCotizacion').textContent = total.toLocaleString();
 }
 
-function cambiarCantidad(idx,delta){
-  itemsCotizacion[idx].cantidad = Math.max(1,itemsCotizacion[idx].cantidad+delta);
-  renderItems(); calcularTotales();
-}
-function eliminarItem(idx){itemsCotizacion.splice(idx,1);renderItems();calcularTotales();}
-
-function calcularTotales(){
-  let subtotal = itemsCotizacion.reduce((sum,i)=>sum+(i.precio*i.cantidad),0);
-  let costoTotal = itemsCotizacion.reduce((sum,i)=>sum+(i.costo*i.cantidad),0);
-  let iva = document.getElementById('chk-iva').checked ? Math.round(subtotal*0.19) : 0;
-  let manoObra = parseInt(document.getElementById('cot-mano-obra').value)||0;
-  let descuentoPct = parseInt(document.getElementById('cot-descuento').value)||0;
-  let descuento = Math.round((subtotal+iva+manoObra)*(descuentoPct/100));
-  let total = subtotal + iva + manoObra - descuento;
-  let ganancia = total - costoTotal - manoObra;
-  let margen = total>0 ? Math.round((ganancia/total)*100) : 0;
-
-  document.getElementById('res-subtotal').textContent = formatMoney(subtotal);
-  document.getElementById('res-iva').textContent = formatMoney(iva);
-  document.getElementById('res-mano').textContent = formatMoney(manoObra);
-  document.getElementById('res-descuento').textContent = '-'+formatMoney(descuento);
-  document.getElementById('res-total').textContent = formatMoney(total);
-  document.getElementById('costo-total').value = costoTotal;
-  document.getElementById('venta-total').value = total;
-  document.getElementById('ganancia-bruta').textContent = formatMoney(ganancia);
-  document.getElementById('margen-porcentaje').textContent = margen+'%';
-}
-
-function nuevaCotizacion(){
-  itemsCotizacion = [];
-  cotizacionActual = null;
-  document.getElementById('cot-cliente').value='';
-  document.getElementById('cot-telefono').value='';
-  document.getElementById('cot-email').value='';
-  document.getElementById('cot-direccion').value='';
-  document.getElementById('cot-tipo').value='instalacion';
-  document.getElementById('cot-mano-obra').value=0;
-  document.getElementById('cot-descuento').value=0;
-  document.getElementById('chk-iva').checked=false;
+function eliminarItem(idx){
+  cotizacionActual.splice(idx,1);
   renderItems();
-  calcularTotales();
 }
 
 function guardarCotizacion(){
-  let cliente = document.getElementById('cot-cliente').value.trim();
+  let cliente = document.getElementById('cotCliente').value;
   if(!cliente){alert('Ingresá el nombre del cliente');return;}
-  if(itemsCotizacion.length===0){alert('Agregá al menos un producto');return;}
-
-  let subtotal = itemsCotizacion.reduce((sum,i)=>sum+(i.precio*i.cantidad),0);
-  let iva = document.getElementById('chk-iva').checked ? Math.round(subtotal*0.19) : 0;
-  let manoObra = parseInt(document.getElementById('cot-mano-obra').value)||0;
-  let descuentoPct = parseInt(document.getElementById('cot-descuento').value)||0;
-  let descuento = Math.round((subtotal+iva+manoObra)*(descuentoPct/100));
-  let total = subtotal + iva + manoObra - descuento;
-  let costoTotal = itemsCotizacion.reduce((sum,i)=>sum+(i.costo*i.cantidad),0);
-
+  if(cotizacionActual.length===0){alert('Agregá al menos un producto');return;}
+  let total = cotizacionActual.reduce((sum,item)=>sum+item.total,0);
   let cot = {
-    id: cotizacionActual ? cotizacionActual.id : 'COT-'+Date.now(),
-    fecha: new Date().toISOString(),
-    cliente: cliente,
-    telefono: document.getElementById('cot-telefono').value,
-    email: document.getElementById('cot-email').value,
-    direccion: document.getElementById('cot-direccion').value,
-    tipo: document.getElementById('cot-tipo').value,
-    vendedor: document.getElementById('cot-vendedor').value,
-    items: JSON.parse(JSON.stringify(itemsCotizacion)),
-    subtotal: subtotal,
-    iva: iva,
-    manoObra: manoObra,
-    descuento: descuento,
-    descuentoPct: descuentoPct,
-    total: total,
-    costoTotal: costoTotal,
-    estado: cotizacionActual ? cotizacionActual.estado : 'enviada'
+    id:'COT-'+Date.now(),
+    fecha:new Date().toLocaleDateString('es-CO'),
+    cliente:cliente,
+    telefono:document.getElementById('cotTelefono').value,
+    correo:document.getElementById('cotCorreo').value,
+    ciudad:document.getElementById('cotCiudad').value,
+    direccion:document.getElementById('cotDireccion').value,
+    items:cotizacionActual,
+    total:total,
+    notas:document.getElementById('cotNotas').value,
+    estado:'Pendiente'
   };
-
-  if(cotizacionActual){
-    let idx = cotizaciones.findIndex(c=>c.id===cotizacionActual.id);
-    if(idx>=0) cotizaciones[idx]=cot;
-  }else{
-    cotizaciones.push(cot);
-  }
-  localStorage.setItem('arpa_cotizaciones',JSON.stringify(cotizaciones));
+  cotizacionesGuardadas.push(cot);
+  localStorage.setItem('cotizacionesARPA',JSON.stringify(cotizacionesGuardadas));
   alert('Cotización guardada: '+cot.id);
-
-  if(cot.estado==='cerrada'){
-    generarObra(cot);
-  }
+  cotizacionActual = [];
+  renderItems();
+  document.getElementById('cotCliente').value='';
+  document.getElementById('cotTelefono').value='';
+  document.getElementById('cotCorreo').value='';
+  document.getElementById('cotDireccion').value='';
+  document.getElementById('cotNotas').value='';
 }
 
-function generarObra(cot){
-  let obraExistente = obras.find(o=>o.cotizacionId===cot.id);
-  if(obraExistente) return;
-  let obra = {
-    id: 'OBRA-'+Date.now(),
-    cotizacionId: cot.id,
-    cliente: cot.cliente,
-    direccion: cot.direccion,
-    tipo: cot.tipo,
-    valor: cot.total,
-    estado: 'pendiente',
-    fecha: new Date().toISOString(),
-    notas: ''
-  };
-  obras.push(obra);
-  localStorage.setItem('arpa_obras',JSON.stringify(obras));
-  alert('Obra generada automáticamente: '+obra.id);
+function generarPDF(){
+  alert('Generando PDF... (función en desarrollo)');
 }
 
+// ===================== COTIZACIONES =====================
 function cargarCotizaciones(){
-  let q = document.getElementById('buscar-cotizacion')?.value?.toLowerCase()||'';
-  let filtradas = cotizaciones.filter(c=>c.cliente.toLowerCase().includes(q)||c.id.toLowerCase().includes(q)).sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
-  document.getElementById('tabla-cotizaciones').innerHTML = filtradas.map(c=>`
-    <tr>
-      <td>${c.id}</td>
-      <td>${new Date(c.fecha).toLocaleDateString('es-CO')}</td>
-      <td>${c.cliente}</td>
-      <td>${c.tipo}</td>
-      <td>${formatMoney(c.total)}</td>
-      <td><select class="status-select" onchange="cambiarEstadoCot('${c.id}',this.value)">
-        <option value="enviada" ${c.estado==='enviada'?'selected':''}>Enviada</option>
-        <option value="negociando" ${c.estado==='negociando'?'selected':''}>Negociando</option>
-        <option value="cerrada" ${c.estado==='cerrada'?'selected':''}>Cerrada</option>
-        <option value="perdida" ${c.estado==='perdida'?'selected':''}>Perdida</option>
-      </select></td>
-      <td class="btn-group">
-        <button class="btn btn-sm btn-primary" onclick="editarCotizacion('${c.id}')">✏️</button>
-        <button class="btn btn-sm btn-success" onclick="verCotizacion('${c.id}')">👁️</button>
-        <button class="btn btn-sm btn-danger" onclick="eliminarCotizacion('${c.id}')">🗑️</button>
-      </td>
-    </tr>
-  `).join('') || '<tr><td colspan="7" style="text-align:center;color:#888;">Sin cotizaciones</td></tr>';
+  let tbody = document.getElementById('tablaHistorial');
+  tbody.innerHTML = '';
+  cotizacionesGuardadas.slice().reverse().forEach(c=>{
+    let tr = document.createElement('tr');
+    tr.innerHTML = `<td>${c.id}</td><td>${c.fecha}</td><td>${c.cliente}</td><td>${c.ciudad}</td><td>${c.items.length} productos</td><td>$${c.total.toLocaleString()}</td><td><span class="badge badge-${c.estado==='Cerrada'?'success':c.estado==='Pendiente'?'warning':'info'}">${c.estado}</span></td><td><button class="btn btn-primary" onclick="verCotizacion('${c.id}')">Ver</button></td>`;
+    tbody.appendChild(tr);
+  });
 }
 
-function cambiarEstadoCot(id,estado){
-  let c = cotizaciones.find(x=>x.id===id);
-  if(c){c.estado=estado;localStorage.setItem('arpa_cotizaciones',JSON.stringify(cotizaciones));}
-  if(estado==='cerrada') generarObra(c);
-  cargarCotizaciones(); cargarDashboard();
-}
-
-function editarCotizacion(id){
-  let c = cotizaciones.find(x=>x.id===id);
-  if(!c) return;
-  cotizacionActual = c;
-  itemsCotizacion = JSON.parse(JSON.stringify(c.items));
-  document.getElementById('cot-cliente').value=c.cliente;
-  document.getElementById('cot-telefono').value=c.telefono||'';
-  document.getElementById('cot-email').value=c.email||'';
-  document.getElementById('cot-direccion').value=c.direccion||'';
-  document.getElementById('cot-tipo').value=c.tipo;
-  document.getElementById('cot-mano-obra').value=c.manoObra||0;
-  document.getElementById('cot-descuento').value=c.descuentoPct||0;
-  document.getElementById('chk-iva').checked=c.iva>0;
-  showSection('cotizador');
-  renderItems();calcularTotales();
+function filtrarCotizaciones(){
+  let txt = document.getElementById('buscarCot').value.toLowerCase();
+  let filas = document.querySelectorAll('#tablaHistorial tr');
+  filas.forEach(tr=>{
+    tr.style.display = tr.textContent.toLowerCase().includes(txt)?'':'none';
+  });
 }
 
 function verCotizacion(id){
-  let c = cotizaciones.find(x=>x.id===id);
-  if(!c) return;
-  let itemsHtml = c.items.map(i=>`<tr><td>${i.cantidad}</td><td>${i.nombre}</td><td>${formatMoney(i.precio)}</td><td>${formatMoney(i.precio*i.cantidad)}</td></tr>`).join('');
-  let html = `
-    <div style="padding:20px;">
-      <h2 style="color:var(--primary);margin-bottom:20px;">COTIZACIÓN ${c.id}</h2>
-      <p><strong>Cliente:</strong> ${c.cliente}<br>
-      <strong>Fecha:</strong> ${new Date(c.fecha).toLocaleDateString('es-CO')}<br>
-      <strong>Tipo:</strong> ${c.tipo}<br>
-      <strong>Vendedor:</strong> ${c.vendedor}</p>
-      <table style="width:100%;margin:15px 0;"><thead><tr><th>Cant</th><th>Producto</th><th>Precio</th><th>Total</th></tr></thead><tbody>${itemsHtml}</tbody></table>
-      <div style="text-align:right;font-size:16px;">
-        <div>Subtotal: ${formatMoney(c.subtotal)}</div>
-        ${c.iva?`<div>IVA: ${formatMoney(c.iva)}</div>`:''}
-        ${c.manoObra?`<div>Mano de Obra: ${formatMoney(c.manoObra)}</div>`:''}
-        ${c.descuento?`<div>Descuento: -${formatMoney(c.descuento)}</div>`:''}
-        <div style="font-size:22px;font-weight:700;color:var(--primary);margin-top:10px;">TOTAL: ${formatMoney(c.total)}</div>
-      </div>
-      <div style="margin-top:30px;text-align:center;color:#888;font-size:12px;">
-        Automatismos ARPA - Medellín, Colombia<br>
-        WhatsApp: 300-568-3914 | automatismosarlenpav@gmail.com<br>
-        Envío gratis a todo el país | Instalación solo en Medellín
-      </div>
-    </div>
-  `;
-  let win = window.open('','_blank');
-  win.document.write('<html><head><title>Cotizacion '+c.id+'</title><style>body{font-family:Arial;padding:20px;}table{border-collapse:collapse;width:100%;}th,td{padding:8px;border:1px solid #ddd;text-align:left;}th{background:#1a237e;color:#fff;}</style></head><body>'+html+'</body></html>');
-  win.document.close();
-  win.print();
+  let c = cotizacionesGuardadas.find(x=>x.id===id);
+  if(!c)return;
+  let items = c.items.map(i=>`${i.cantidad}x ${i.nombre} ($${i.total.toLocaleString()})`).join('\n');
+  alert(`COTIZACIÓN ${c.id}\nCliente: ${c.cliente}\nTel: ${c.telefono}\nCiudad: ${c.ciudad}\n\nProductos:\n${items}\n\nTotal: $${c.total.toLocaleString()}\nEstado: ${c.estado}\n\nNotas: ${c.notas||'Ninguna'}`);
 }
 
-function eliminarCotizacion(id){
-  if(!confirm('¿Eliminar cotización '+id+'?')) return;
-  cotizaciones = cotizaciones.filter(c=>c.id!==id);
-  localStorage.setItem('arpa_cotizaciones',JSON.stringify(cotizaciones));
-  cargarCotizaciones(); cargarDashboard();
-}
-
-function filtrarCotizaciones(){cargarCotizaciones();}
-
+// ===================== OBRAS =====================
 function cargarObras(){
-  document.getElementById('tabla-obras').innerHTML = obras.map(o=>`
-    <tr>
-      <td>${o.id}</td>
-      <td>${o.cliente}</td>
-      <td>${o.cotizacionId||'Manual'}</td>
-      <td>${o.tipo}</td>
-      <td><select class="status-select" onchange="cambiarEstadoObra('${o.id}',this.value)">
-        <option value="pendiente" ${o.estado==='pendiente'?'selected':''}>Pendiente</option>
-        <option value="curso" ${o.estado==='curso'?'selected':''}>En Curso</option>
-        <option value="instalada" ${o.estado==='instalada'?'selected':''}>Instalada</option>
-        <option value="garantia" ${o.estado==='garantia'?'selected':''}>Garantía</option>
-        <option value="completada" ${o.estado==='completada'?'selected':''}>Completada</option>
-      </select></td>
-      <td>${new Date(o.fecha).toLocaleDateString('es-CO')}</td>
-      <td class="btn-group">
-        <button class="btn btn-sm btn-primary" onclick="editarObra('${o.id}')">✏️</button>
-        <button class="btn btn-sm btn-success" onclick="nuevoFormatoDesdeObra('${o.id}')">📄 Formato</button>
-        <button class="btn btn-sm btn-danger" onclick="eliminarObra('${o.id}')">🗑️</button>
-      </td>
-    </tr>
-  `).join('') || '<tr><td colspan="7" style="text-align:center;color:#888;">Sin obras</td></tr>';
+  cargarTablaObras('activas');
+  cargarTablaObras('completadas');
+  cargarTablaObras('garantia');
 }
 
-function cambiarEstadoObra(id,estado){
+function mostrarTabObras(tab){
+  document.querySelectorAll('#obras .tab').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tabObrasActivas').classList.add('hidden');
+  document.getElementById('tabObrasCompletadas').classList.add('hidden');
+  document.getElementById('tabObrasGarantia').classList.add('hidden');
+  document.getElementById('tabObras'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.remove('hidden');
+}
+
+function cargarTablaObras(tipo){
+  let tbody = document.getElementById('tablaObras'+tipo.charAt(0).toUpperCase()+tipo.slice(1));
+  tbody.innerHTML = '';
+  let filtro = tipo==='activas'?'En proceso':tipo==='completadas'?'Entregada':'Garantía';
+  obras.filter(o=>o.estado===filtro).forEach(o=>{
+    let tr = document.createElement('tr');
+    tr.innerHTML = `<td>${o.nombre}</td><td>${o.cliente}</td><td>${o.ciudad}</td><td>${o.fecha}</td><td><span class="badge badge-${o.estado==='En proceso'?'warning':o.estado==='Entregada'?'success':'info'}">${o.estado}</span></td><td><button class="btn btn-primary" onclick="verObra('${o.id}')">Ver</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function verObra(id){
   let o = obras.find(x=>x.id===id);
-  if(o){o.estado=estado;localStorage.setItem('arpa_obras',JSON.stringify(obras));}
-  cargarObras(); cargarDashboard();
+  if(!o)return;
+  alert(`OBRA: ${o.nombre}\nCliente: ${o.cliente}\nCiudad: ${o.ciudad}\nDirección: ${o.direccion}\nEstado: ${o.estado}\nFecha inicio: ${o.fecha}`);
 }
 
-function nuevaObraManual(){
-  let cliente = prompt('Nombre del cliente:');
-  if(!cliente) return;
-  let obra = {
-    id: 'OBRA-'+Date.now(),
-    cotizacionId: '',
-    cliente: cliente,
-    direccion: '',
-    tipo: 'instalacion',
-    valor: 0,
-    estado: 'pendiente',
-    fecha: new Date().toISOString(),
-    notas: ''
-  };
-  obras.push(obra);
-  localStorage.setItem('arpa_obras',JSON.stringify(obras));
-  cargarObras(); cargarDashboard();
-}
-
-function editarObra(id){
-  let o = obras.find(x=>x.id===id);
-  if(!o) return;
-  let notas = prompt('Notas de la obra:',o.notas||'');
-  if(notas!==null){o.notas=notas;localStorage.setItem('arpa_obras',JSON.stringify(obras));}
-}
-function eliminarObra(id){
-  if(!confirm('¿Eliminar obra '+id+'?')) return;
-  obras = obras.filter(o=>o.id!==id);
-  localStorage.setItem('arpa_obras',JSON.stringify(obras));
-  cargarObras(); cargarDashboard();
-}
-
+// ===================== FORMATO TÉCNICO =====================
 function cargarObrasSelect(){
-  let select = document.getElementById('fmt-obra');
-  select.innerHTML = '<option value="">-- Seleccionar --</option>'+obras.map(o=>`<option value="${o.id}">${o.id} - ${o.cliente}</option>`).join('');
+  let sel = document.getElementById('selObraFormato');
+  sel.innerHTML = '<option value="">Seleccionar obra...</option>';
+  obras.filter(o=>o.estado==='En proceso').forEach(o=>{
+    let opt = document.createElement('option');
+    opt.value = o.id;
+    opt.textContent = o.nombre + ' - ' + o.cliente;
+    sel.appendChild(opt);
+  });
 }
 
-function nuevoFormato(){
-  document.getElementById('fmt-cliente').value='';
-  document.getElementById('fmt-direccion').value='';
-  document.getElementById('fmt-tipo').value='instalacion';
-  document.getElementById('fmt-fecha').value=new Date().toISOString().split('T')[0];
-  document.getElementById('fmt-tecnico').value='Arlen Pavón';
-  document.getElementById('fmt-obra').value='';
-  document.getElementById('fmt-observaciones').value='';
-  document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach(ch=>ch.checked=false);
-  document.getElementById('firma-cliente').classList.remove('firmado');
-  document.getElementById('firma-cliente').innerHTML='✍️ Click para firmar';
-  document.getElementById('firma-tecnico').classList.remove('firmado');
-  document.getElementById('firma-tecnico').innerHTML='✍️ Click para firmar';
-  document.getElementById('preview-antes').classList.add('hidden');
-  document.getElementById('preview-despues').classList.add('hidden');
-}
-
-function nuevoFormatoDesdeObra(obraId){
-  let o = obras.find(x=>x.id===obraId);
-  if(!o) return;
-  showSection('formato');
-  nuevoFormato();
-  document.getElementById('fmt-cliente').value=o.cliente;
-  document.getElementById('fmt-direccion').value=o.direccion||'';
-  document.getElementById('fmt-tipo').value=o.tipo||'instalacion';
-  document.getElementById('fmt-obra').value=o.id;
-}
-
-function previewFoto(input,previewId){
-  if(input.files && input.files[0]){
-    let reader = new FileReader();
-    reader.onload = function(e){
-      let img = document.getElementById(previewId);
-      img.src = e.target.result;
-      img.classList.remove('hidden');
-    };
-    reader.readAsDataURL(input.files[0]);
-  }
-}
-
-function firmar(elemento){
-  elemento.classList.add('firmado');
-  elemento.innerHTML = '✅ FIRMA REGISTRADA<br><small>'+new Date().toLocaleString('es-CO')+'</small>';
+function cargarDatosObra(){
+  let id = document.getElementById('selObraFormato').value;
+  let div = document.getElementById('datosObraFormato');
+  if(!id){div.classList.add('hidden');return;}
+  let o = obras.find(x=>x.id===id);
+  if(!o)return;
+  document.getElementById('fmtCliente').value = o.cliente;
+  document.getElementById('fmtCiudad').value = o.ciudad;
+  div.classList.remove('hidden');
 }
 
 function guardarFormato(){
-  let fmt = {
-    id: 'FMT-'+Date.now(),
-    fecha: document.getElementById('fmt-fecha').value,
-    cliente: document.getElementById('fmt-cliente').value,
-    direccion: document.getElementById('fmt-direccion').value,
-    tipo: document.getElementById('fmt-tipo').value,
-    tecnico: document.getElementById('fmt-tecnico').value,
-    obraId: document.getElementById('fmt-obra').value,
-    checklist: Array.from(document.querySelectorAll('#checklist-container input[type="checkbox"]')).map(ch=>({id:ch.id,checked:ch.checked,label:ch.nextElementSibling.textContent})),
-    observaciones: document.getElementById('fmt-observaciones').value,
-    firmaCliente: document.getElementById('firma-cliente').classList.contains('firmado'),
-    firmaTecnico: document.getElementById('firma-tecnico').classList.contains('firmado'),
-    fotoAntes: document.getElementById('preview-antes').src||'',
-    fotoDespues: document.getElementById('preview-despues').src||''
+  let id = document.getElementById('selObraFormato').value;
+  if(!id){alert('Seleccioná una obra');return;}
+  let o = obras.find(x=>x.id===id);
+  if(!o)return;
+  o.formato = {
+    motor:document.getElementById('chkMotor').checked,
+    controles:document.getElementById('chkControles').checked,
+    fotoceldas:document.getElementById('chkFotoceldas').checked,
+    cremallera:document.getElementById('chkCremallera').checked,
+    manual:document.getElementById('chkManual').checked,
+    garantia:document.getElementById('chkGarantia').checked,
+    observaciones:document.getElementById('fmtObservaciones').value,
+    firma:document.getElementById('fmtFirma').value,
+    fecha:new Date().toLocaleDateString('es-CO')
   };
-  formatos.push(fmt);
-  localStorage.setItem('arpa_formatos',JSON.stringify(formatos));
-  alert('Formato técnico guardado: '+fmt.id);
+  o.estado = 'Entregada';
+  localStorage.setItem('obrasARPA',JSON.stringify(obras));
+  alert('Formato de entrega guardado. Obra marcada como entregada.');
+  document.getElementById('selObraFormato').value='';
+  document.getElementById('datosObraFormato').classList.add('hidden');
+  cargarObrasSelect();
 }
 
-function generarPDFFormato(){
-  let cliente = document.getElementById('fmt-cliente').value;
-  let tipo = document.getElementById('fmt-tipo').value;
-  let fecha = document.getElementById('fmt-fecha').value;
-  let tecnico = document.getElementById('fmt-tecnico').value;
-  let checklist = Array.from(document.querySelectorAll('#checklist-container input[type="checkbox"]')).map(ch=>({checked:ch.checked,label:ch.nextElementSibling.textContent}));
-  let obs = document.getElementById('fmt-observaciones').value;
-  let firmaCli = document.getElementById('firma-cliente').classList.contains('firmado');
-  let firmaTec = document.getElementById('firma-tecnico').classList.contains('firmado');
-
-  let html = `
-    <div style="padding:20px;font-family:Arial;">
-      <div style="text-align:center;border-bottom:3px solid #1a237e;padding-bottom:15px;margin-bottom:20px;">
-        <h1 style="color:#1a237e;margin:0;">AUTOMATISMOS ARPA</h1>
-        <p style="margin:5px 0;color:#666;">Formato Técnico - ${tipo.toUpperCase()}</p>
-      </div>
-      <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
-        <div><strong>Cliente:</strong> ${cliente}<br><strong>Fecha:</strong> ${fecha}<br><strong>Dirección:</strong> ${document.getElementById('fmt-direccion').value}</div>
-        <div><strong>Técnico:</strong> ${tecnico}<br><strong>ID:</strong> FMT-${Date.now()}</div>
-      </div>
-      <h3 style="color:#1a237e;border-bottom:2px solid #ff6f00;padding-bottom:5px;">CHECKLIST</h3>
-      <table style="width:100%;border-collapse:collapse;margin:15px 0;">
-        ${checklist.map(c=>`<tr style="border-bottom:1px solid #ddd;"><td style="padding:8px;width:40px;font-size:20px;">${c.checked?'✅':'⬜'}</td><td style="padding:8px;">${c.label}</td></tr>`).join('')}
-      </table>
-      <h3 style="color:#1a237e;border-bottom:2px solid #ff6f00;padding-bottom:5px;">OBSERVACIONES</h3>
-      <p style="background:#f5f5f5;padding:15px;border-radius:4px;">${obs||'Sin observaciones'}</p>
-      <div style="display:flex;justify-content:space-between;margin-top:30px;">
-        <div style="text-align:center;width:45%;border-top:2px solid #333;padding-top:10px;">
-          ${firmaTec?'<span style="color:green;font-size:24px;">✅</span><br>':''}
-          <strong>Firma Técnico</strong><br><small>${tecnico}</small>
-        </div>
-        <div style="text-align:center;width:45%;border-top:2px solid #333;padding-top:10px;">
-          ${firmaCli?'<span style="color:green;font-size:24px;">✅</span><br>':''}
-          <strong>Firma Cliente</strong><br><small>${cliente}</small>
-        </div>
-      </div>
-      <div style="margin-top:40px;text-align:center;color:#888;font-size:11px;border-top:1px solid #ddd;padding-top:10px;">
-        Automatismos ARPA - Medellín, Colombia | WhatsApp: 300-568-3914<br>
-        Garantía de instalación: 1 año | Soporte técnico permanente
-      </div>
-    </div>
-  `;
-  let win = window.open('','_blank');
-  win.document.write('<html><head><title>Formato Tecnico</title></head><body>'+html+'</body></html>');
-  win.document.close();
-  win.print();
-}
-
+// ===================== CATÁLOGO =====================
 function cargarCatalogo(){
-  let q = document.getElementById('buscar-catalogo')?.value?.toLowerCase()||'';
-  let filtrados = catalogo.filter(p=>p.nombre.toLowerCase().includes(q)||p.ref.toLowerCase().includes(q)).sort((a,b)=>a.categoria.localeCompare(b.categoria));
-  document.getElementById('tabla-catalogo').innerHTML = filtrados.map(p=>`
-    <tr>
-      <td><strong>${p.ref}</strong></td>
-      <td>${p.nombre}</td>
-      <td>${p.categoria}</td>
-      <td>${formatMoney(p.precio)}</td>
-      <td>${p.stock}</td>
-    </tr>
-  `).join('') || '<tr><td colspan="5" style="text-align:center;color:#888;">Sin resultados</td></tr>';
-}
-function filtrarCatalogo(){cargarCatalogo();}
-
-function generarPDFCotizacion(){
-  if(itemsCotizacion.length===0){alert('Agregá productos primero');return;}
-  let cliente = document.getElementById('cot-cliente').value||'Cliente';
-  let subtotal = itemsCotizacion.reduce((sum,i)=>sum+(i.precio*i.cantidad),0);
-  let iva = document.getElementById('chk-iva').checked ? Math.round(subtotal*0.19) : 0;
-  let manoObra = parseInt(document.getElementById('cot-mano-obra').value)||0;
-  let descuentoPct = parseInt(document.getElementById('cot-descuento').value)||0;
-  let descuento = Math.round((subtotal+iva+manoObra)*(descuentoPct/100));
-  let total = subtotal + iva + manoObra - descuento;
-
-  let itemsHtml = itemsCotizacion.map(i=>`<tr><td>${i.cantidad}</td><td>${i.nombre}</td><td>${formatMoney(i.precio)}</td><td>${formatMoney(i.precio*i.cantidad)}</td></tr>`).join('');
-  let html = `
-    <div style="padding:20px;font-family:Arial;">
-      <div style="text-align:center;border-bottom:3px solid #1a237e;padding-bottom:15px;margin-bottom:20px;">
-        <h1 style="color:#1a237e;margin:0;">AUTOMATISMOS ARPA</h1>
-        <p style="margin:5px 0;color:#666;">Cotización</p>
-      </div>
-      <p><strong>Cliente:</strong> ${cliente}<br>
-      <strong>Fecha:</strong> ${new Date().toLocaleDateString('es-CO')}<br>
-      <strong>Vendedor:</strong> ${document.getElementById('cot-vendedor').value}</p>
-      <table style="width:100%;border-collapse:collapse;margin:15px 0;">
-        <thead><tr style="background:#1a237e;color:#fff;"><th>Cant</th><th>Producto</th><th>Precio</th><th>Total</th></tr></thead>
-        <tbody>${itemsHtml}</tbody>
-      </table>
-      <div style="text-align:right;font-size:16px;">
-        <div>Subtotal: ${formatMoney(subtotal)}</div>
-        ${iva?`<div>IVA (19%): ${formatMoney(iva)}</div>`:''}
-        ${manoObra?`<div>Mano de Obra: ${formatMoney(manoObra)}</div>`:''}
-        ${descuento?`<div>Descuento (${descuentoPct}%): -${formatMoney(descuento)}</div>`:''}
-        <div style="font-size:24px;font-weight:700;color:#1a237e;margin-top:15px;border-top:2px solid #1a237e;padding-top:10px;">TOTAL: ${formatMoney(total)}</div>
-      </div>
-      <div style="margin-top:30px;padding:15px;background:#f5f5f5;border-radius:4px;">
-        <strong>Condiciones:</strong><br>
-        • Validez: 15 días<br>
-        • Pago: Transferencia Bancolombia a Arlenpav S.A.S.<br>
-        • Envío: Gratis a todo Colombia<br>
-        • Instalación: Solo en Medellín<br>
-        • Garantía: 1 año en motores, 6 meses en accesorios
-      </div>
-      <div style="margin-top:30px;text-align:center;color:#888;font-size:12px;">
-        Automatismos ARPA - Medellín, Colombia<br>
-        WhatsApp: 300-568-3914 | automatismosarlenpav@gmail.com
-      </div>
-    </div>
-  `;
-  let win = window.open('','_blank');
-  win.document.write('<html><head><title>Cotizacion ARPA</title></head><body>'+html+'</body></html>');
-  win.document.close();
-  win.print();
+  mostrarTabCat('corrediza');
 }
 
-function exportarCotizaciones(){
-  let data = cotizaciones.map(c=>({
-    ID:c.id,Fecha:new Date(c.fecha).toLocaleDateString('es-CO'),Cliente:c.cliente,Tipo:c.tipo,
-    Subtotal:c.subtotal,IVA:c.iva,ManoObra:c.manoObra,Descuento:c.descuento,Total:c.total,Estado:c.estado
-  }));
-  let csv = [Object.keys(data[0]||{}).join(','),...data.map(r=>Object.values(r).join(','))].join('\n');
-  let blob = new Blob([csv],{type:'text/csv'});
-  let url = URL.createObjectURL(blob);
-  let a = document.createElement('a');
-  a.href=url; a.download='cotizaciones_arpa.csv'; a.click();
+function mostrarTabCat(cat){
+  document.querySelectorAll('#catalogo .tab').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+  let grid = document.getElementById('gridCatalogo');
+  grid.innerHTML = '';
+  if(!productos[cat])return;
+  productos[cat].forEach(p=>{
+    let card = document.createElement('div');
+    card.className = 'product-card';
+    card.innerHTML = `<h4>${p.nombre}</h4><div class="specs">${p.marca} | ${p.specs}</div><div class="price">$${p.precio.toLocaleString()}</div><button class="btn btn-primary" style="margin-top:10px;width:100%" onclick="agregarDesdeCatalogo('${cat}','${p.id}')">Agregar a Cotización</button>`;
+    grid.appendChild(card);
+  });
 }
 
-// Inicialización
-document.addEventListener('DOMContentLoaded',function(){
-  mostrarProductos(catalogo);
+function filtrarCatalogo(){
+  let txt = document.getElementById('buscarProd').value.toLowerCase();
+  let cards = document.querySelectorAll('.product-card');
+  cards.forEach(c=>{
+    c.style.display = c.textContent.toLowerCase().includes(txt)?'':'none';
+  });
+}
+
+function agregarDesdeCatalogo(cat,prodId){
+  let prod = productos[cat].find(p=>p.id===prodId);
+  if(!prod)return;
+  cotizacionActual.push({id:prod.id,nombre:prod.nombre,precio:prod.precio,cantidad:1,total:prod.precio});
+  renderItems();
+  showSection('cotizador');
+  alert(prod.nombre + ' agregado al cotizador');
+}
+
+// ===================== INICIO =====================
+document.addEventListener('DOMContentLoaded',()=>{
   cargarDashboard();
-  document.getElementById('fechaHoy').textContent = new Date().toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 });
 </script>
 </body>
 </html>
-.<!-- ok -->
