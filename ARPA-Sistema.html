@@ -1,1 +1,513 @@
+function filtrarProductos(){
+  let q = document.getElementById('buscar-producto').value.toLowerCase();
+  let filtrados = catalogo.filter(p=>p.nombre.toLowerCase().includes(q)||p.ref.toLowerCase().includes(q)||p.categoria.toLowerCase().includes(q));
+  mostrarProductos(filtrados);
+}
 
+function mostrarProductos(lista){
+  document.getElementById('lista-productos').innerHTML = lista.map(p=>`
+    <div class="producto-item" onclick="agregarItem('${p.ref}')">
+      <div class="producto-info">
+        <div class="producto-nombre">${p.nombre}</div>
+        <div class="producto-ref">${p.ref} | ${p.categoria} | Stock: ${p.stock}</div>
+      </div>
+      <div class="producto-precio">${formatMoney(p.precio)}</div>
+    </div>
+  `).join('');
+}
+
+function agregarItem(ref){
+  let prod = catalogo.find(p=>p.ref===ref);
+  if(!prod) return;
+  let existente = itemsCotizacion.find(i=>i.ref===ref);
+  if(existente){existente.cantidad++;}else{
+    itemsCotizacion.push({ref:prod.ref,nombre:prod.nombre,precio:prod.precio,costo:prod.costo,cantidad:1});
+  }
+  renderItems();
+  calcularTotales();
+}
+
+function renderItems(){
+  document.getElementById('items-cotizacion').innerHTML = itemsCotizacion.map((item,idx)=>`
+    <div class="producto-item">
+      <div class="producto-info">
+        <div class="producto-nombre">${item.nombre}</div>
+        <div class="producto-ref">${item.ref} | ${formatMoney(item.precio)} c/u</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="btn btn-sm" onclick="cambiarCantidad(${idx},-1)">-</button>
+        <span style="font-weight:700;min-width:30px;text-align:center;">${item.cantidad}</span>
+        <button class="btn btn-sm" onclick="cambiarCantidad(${idx},1)">+</button>
+        <span style="font-weight:700;color:var(--primary);min-width:100px;text-align:right;">${formatMoney(item.precio*item.cantidad)}</span>
+        <button class="btn btn-sm btn-danger" onclick="eliminarItem(${idx})">🗑️</button>
+      </div>
+    </div>
+  `).join('') || '<div style="text-align:center;color:#888;padding:20px;">Agregá productos del catálogo</div>';
+}
+
+function cambiarCantidad(idx,delta){
+  itemsCotizacion[idx].cantidad = Math.max(1,itemsCotizacion[idx].cantidad+delta);
+  renderItems(); calcularTotales();
+}
+function eliminarItem(idx){itemsCotizacion.splice(idx,1);renderItems();calcularTotales();}
+
+function calcularTotales(){
+  let subtotal = itemsCotizacion.reduce((sum,i)=>sum+(i.precio*i.cantidad),0);
+  let costoTotal = itemsCotizacion.reduce((sum,i)=>sum+(i.costo*i.cantidad),0);
+  let iva = document.getElementById('chk-iva').checked ? Math.round(subtotal*0.19) : 0;
+  let manoObra = parseInt(document.getElementById('cot-mano-obra').value)||0;
+  let descuentoPct = parseInt(document.getElementById('cot-descuento').value)||0;
+  let descuento = Math.round((subtotal+iva+manoObra)*(descuentoPct/100));
+  let total = subtotal + iva + manoObra - descuento;
+  let ganancia = total - costoTotal - manoObra;
+  let margen = total>0 ? Math.round((ganancia/total)*100) : 0;
+  
+  document.getElementById('res-subtotal').textContent = formatMoney(subtotal);
+  document.getElementById('res-iva').textContent = formatMoney(iva);
+  document.getElementById('res-mano').textContent = formatMoney(manoObra);
+  document.getElementById('res-descuento').textContent = '-'+formatMoney(descuento);
+  document.getElementById('res-total').textContent = formatMoney(total);
+  document.getElementById('costo-total').value = costoTotal;
+  document.getElementById('venta-total').value = total;
+  document.getElementById('ganancia-bruta').textContent = formatMoney(ganancia);
+  document.getElementById('margen-porcentaje').textContent = margen+'%';
+}
+
+function nuevaCotizacion(){
+  itemsCotizacion = [];
+  cotizacionActual = null;
+  document.getElementById('cot-cliente').value='';
+  document.getElementById('cot-telefono').value='';
+  document.getElementById('cot-email').value='';
+  document.getElementById('cot-direccion').value='';
+  document.getElementById('cot-tipo').value='instalacion';
+  document.getElementById('cot-mano-obra').value=0;
+  document.getElementById('cot-descuento').value=0;
+  document.getElementById('chk-iva').checked=false;
+  renderItems();
+  calcularTotales();
+}
+
+function guardarCotizacion(){
+  let cliente = document.getElementById('cot-cliente').value.trim();
+  if(!cliente){alert('Ingresá el nombre del cliente');return;}
+  if(itemsCotizacion.length===0){alert('Agregá al menos un producto');return;}
+  
+  let subtotal = itemsCotizacion.reduce((sum,i)=>sum+(i.precio*i.cantidad),0);
+  let iva = document.getElementById('chk-iva').checked ? Math.round(subtotal*0.19) : 0;
+  let manoObra = parseInt(document.getElementById('cot-mano-obra').value)||0;
+  let descuentoPct = parseInt(document.getElementById('cot-descuento').value)||0;
+  let descuento = Math.round((subtotal+iva+manoObra)*(descuentoPct/100));
+  let total = subtotal + iva + manoObra - descuento;
+  let costoTotal = itemsCotizacion.reduce((sum,i)=>sum+(i.costo*i.cantidad),0);
+  
+  let cot = {
+    id: cotizacionActual ? cotizacionActual.id : 'COT-'+Date.now(),
+    fecha: new Date().toISOString(),
+    cliente: cliente,
+    telefono: document.getElementById('cot-telefono').value,
+    email: document.getElementById('cot-email').value,
+    direccion: document.getElementById('cot-direccion').value,
+    tipo: document.getElementById('cot-tipo').value,
+    vendedor: document.getElementById('cot-vendedor').value,
+    items: JSON.parse(JSON.stringify(itemsCotizacion)),
+    subtotal: subtotal,
+    iva: iva,
+    manoObra: manoObra,
+    descuento: descuento,
+    descuentoPct: descuentoPct,
+    total: total,
+    costoTotal: costoTotal,
+    estado: cotizacionActual ? cotizacionActual.estado : 'enviada'
+  };
+  
+  if(cotizacionActual){
+    let idx = cotizaciones.findIndex(c=>c.id===cotizacionActual.id);
+    if(idx>=0) cotizaciones[idx]=cot;
+  }else{
+    cotizaciones.push(cot);
+  }
+  localStorage.setItem('arpa_cotizaciones',JSON.stringify(cotizaciones));
+  alert('Cotización guardada: '+cot.id);
+  
+  if(cot.estado==='cerrada'){
+    generarObra(cot);
+  }
+}
+
+function generarObra(cot){
+  let obraExistente = obras.find(o=>o.cotizacionId===cot.id);
+  if(obraExistente) return;
+  let obra = {
+    id: 'OBRA-'+Date.now(),
+    cotizacionId: cot.id,
+    cliente: cot.cliente,
+    direccion: cot.direccion,
+    tipo: cot.tipo,
+    valor: cot.total,
+    estado: 'pendiente',
+    fecha: new Date().toISOString(),
+    notas: ''
+  };
+  obras.push(obra);
+  localStorage.setItem('arpa_obras',JSON.stringify(obras));
+  alert('Obra generada automáticamente: '+obra.id);
+}
+
+function cargarCotizaciones(){
+  let q = document.getElementById('buscar-cotizacion')?.value?.toLowerCase()||'';
+  let filtradas = cotizaciones.filter(c=>c.cliente.toLowerCase().includes(q)||c.id.toLowerCase().includes(q)).sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
+  document.getElementById('tabla-cotizaciones').innerHTML = filtradas.map(c=>`
+    <tr>
+      <td>${c.id}</td>
+      <td>${new Date(c.fecha).toLocaleDateString('es-CO')}</td>
+      <td>${c.cliente}</td>
+      <td>${c.tipo}</td>
+      <td>${formatMoney(c.total)}</td>
+      <td><select class="status-select" onchange="cambiarEstadoCot('${c.id}',this.value)">
+        <option value="enviada" ${c.estado==='enviada'?'selected':''}>Enviada</option>
+        <option value="negociando" ${c.estado==='negociando'?'selected':''}>Negociando</option>
+        <option value="cerrada" ${c.estado==='cerrada'?'selected':''}>Cerrada</option>
+        <option value="perdida" ${c.estado==='perdida'?'selected':''}>Perdida</option>
+      </select></td>
+      <td class="btn-group">
+        <button class="btn btn-sm btn-primary" onclick="editarCotizacion('${c.id}')">✏️</button>
+        <button class="btn btn-sm btn-success" onclick="verCotizacion('${c.id}')">👁️</button>
+        <button class="btn btn-sm btn-danger" onclick="eliminarCotizacion('${c.id}')">🗑️</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="7" style="text-align:center;color:#888;">Sin cotizaciones</td></tr>';
+}
+
+function cambiarEstadoCot(id,estado){
+  let c = cotizaciones.find(x=>x.id===id);
+  if(c){c.estado=estado;localStorage.setItem('arpa_cotizaciones',JSON.stringify(cotizaciones));}
+  if(estado==='cerrada') generarObra(c);
+  cargarCotizaciones(); cargarDashboard();
+}
+
+function editarCotizacion(id){
+  let c = cotizaciones.find(x=>x.id===id);
+  if(!c) return;
+  cotizacionActual = c;
+  itemsCotizacion = JSON.parse(JSON.stringify(c.items));
+  document.getElementById('cot-cliente').value=c.cliente;
+  document.getElementById('cot-telefono').value=c.telefono||'';
+  document.getElementById('cot-email').value=c.email||'';
+  document.getElementById('cot-direccion').value=c.direccion||'';
+  document.getElementById('cot-tipo').value=c.tipo;
+  document.getElementById('cot-mano-obra').value=c.manoObra||0;
+  document.getElementById('cot-descuento').value=c.descuentoPct||0;
+  document.getElementById('chk-iva').checked=c.iva>0;
+  showSection('cotizador');
+  renderItems();calcularTotales();
+}
+
+function verCotizacion(id){
+  let c = cotizaciones.find(x=>x.id===id);
+  if(!c) return;
+  let itemsHtml = c.items.map(i=>`<tr><td>${i.cantidad}</td><td>${i.nombre}</td><td>${formatMoney(i.precio)}</td><td>${formatMoney(i.precio*i.cantidad)}</td></tr>`).join('');
+  let html = `
+    <div style="padding:20px;">
+      <h2 style="color:#1a237e;margin-bottom:20px;">COTIZACIÓN ${c.id}</h2>
+      <p><strong>Cliente:</strong> ${c.cliente}<br>
+      <strong>Fecha:</strong> ${new Date(c.fecha).toLocaleDateString('es-CO')}<br>
+      <strong>Tipo:</strong> ${c.tipo}<br>
+      <strong>Vendedor:</strong> ${c.vendedor}</p>
+      <table style="width:100%;margin:15px 0;"><thead><tr><th>Cant</th><th>Producto</th><th>Precio</th><th>Total</th></tr></thead><tbody>${itemsHtml}</tbody></table>
+      <div style="text-align:right;font-size:16px;">
+        <div>Subtotal: ${formatMoney(c.subtotal)}</div>
+        ${c.iva?`<div>IVA: ${formatMoney(c.iva)}</div>`:''}
+        ${c.manoObra?`<div>Mano de Obra: ${formatMoney(c.manoObra)}</div>`:''}
+        ${c.descuento?`<div>Descuento: -${formatMoney(c.descuento)}</div>`:''}
+        <div style="font-size:22px;font-weight:700;color:#1a237e;margin-top:10px;">TOTAL: ${formatMoney(c.total)}</div>
+      </div>
+      <div style="margin-top:30px;text-align:center;color:#888;font-size:12px;">
+        Automatismos ARPA - Medellín, Colombia<br>
+        WhatsApp: 300-568-3914 | automatismosarlenpav@gmail.com<br>
+        Envío gratis a todo el país | Instalación solo en Medellín
+      </div>
+    </div>
+  `;
+  let win = window.open('','_blank');
+  win.document.write('<html><head><title>Cotizacion '+c.id+'</title><style>body{font-family:Arial;padding:20px;}table{border-collapse:collapse;width:100%;}th,td{padding:8px;border:1px solid #ddd;text-align:left;}th{background:#1a237e;color:#fff;}</style></head><body>'+html+'</body></html>');
+  win.document.close();
+  win.print();
+}
+
+function eliminarCotizacion(id){
+  if(!confirm('¿Eliminar cotización '+id+'?')) return;
+  cotizaciones = cotizaciones.filter(c=>c.id!==id);
+  localStorage.setItem('arpa_cotizaciones',JSON.stringify(cotizaciones));
+  cargarCotizaciones(); cargarDashboard();
+}
+
+function filtrarCotizaciones(){cargarCotizaciones();}
+
+function cargarObras(){
+  document.getElementById('tabla-obras').innerHTML = obras.map(o=>`
+    <tr>
+      <td>${o.id}</td>
+      <td>${o.cliente}</td>
+      <td>${o.cotizacionId||'Manual'}</td>
+      <td>${o.tipo}</td>
+      <td><select class="status-select" onchange="cambiarEstadoObra('${o.id}',this.value)">
+        <option value="pendiente" ${o.estado==='pendiente'?'selected':''}>Pendiente</option>
+        <option value="curso" ${o.estado==='curso'?'selected':''}>En Curso</option>
+        <option value="instalada" ${o.estado==='instalada'?'selected':''}>Instalada</option>
+        <option value="garantia" ${o.estado==='garantia'?'selected':''}>Garantía</option>
+        <option value="completada" ${o.estado==='completada'?'selected':''}>Completada</option>
+      </select></td>
+      <td>${new Date(o.fecha).toLocaleDateString('es-CO')}</td>
+      <td class="btn-group">
+        <button class="btn btn-sm btn-primary" onclick="editarObra('${o.id}')">✏️</button>
+        <button class="btn btn-sm btn-success" onclick="nuevoFormatoDesdeObra('${o.id}')">📄 Formato</button>
+        <button class="btn btn-sm btn-danger" onclick="eliminarObra('${o.id}')">🗑️</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="7" style="text-align:center;color:#888;">Sin obras</td></tr>';
+}
+
+function cambiarEstadoObra(id,estado){
+  let o = obras.find(x=>x.id===id);
+  if(o){o.estado=estado;localStorage.setItem('arpa_obras',JSON.stringify(obras));}
+  cargarObras(); cargarDashboard();
+}
+
+function nuevaObraManual(){
+  let cliente = prompt('Nombre del cliente:');
+  if(!cliente) return;
+  let obra = {
+    id: 'OBRA-'+Date.now(),
+    cotizacionId: '',
+    cliente: cliente,
+    direccion: '',
+    tipo: 'instalacion',
+    valor: 0,
+    estado: 'pendiente',
+    fecha: new Date().toISOString(),
+    notas: ''
+  };
+  obras.push(obra);
+  localStorage.setItem('arpa_obras',JSON.stringify(obras));
+  cargarObras(); cargarDashboard();
+}
+
+function editarObra(id){
+  let o = obras.find(x=>x.id===id);
+  if(!o) return;
+  let notas = prompt('Notas de la obra:',o.notas||'');
+  if(notas!==null){o.notas=notas;localStorage.setItem('arpa_obras',JSON.stringify(obras));}
+}
+function eliminarObra(id){
+  if(!confirm('¿Eliminar obra '+id+'?')) return;
+  obras = obras.filter(o=>o.id!==id);
+  localStorage.setItem('arpa_obras',JSON.stringify(obras));
+  cargarObras(); cargarDashboard();
+}
+
+function cargarObrasSelect(){
+  let select = document.getElementById('fmt-obra');
+  select.innerHTML = '<option value="">-- Seleccionar --</option>'+obras.map(o=>`<option value="${o.id}">${o.id} - ${o.cliente}</option>`).join('');
+}
+
+function nuevoFormato(){
+  document.getElementById('fmt-cliente').value='';
+  document.getElementById('fmt-direccion').value='';
+  document.getElementById('fmt-tipo').value='instalacion';
+  document.getElementById('fmt-fecha').value=new Date().toISOString().split('T')[0];
+  document.getElementById('fmt-tecnico').value='Arlen Pavón';
+  document.getElementById('fmt-obra').value='';
+  document.getElementById('fmt-observaciones').value='';
+  document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach(ch=>ch.checked=false);
+  document.getElementById('firma-cliente').classList.remove('firmado');
+  document.getElementById('firma-cliente').innerHTML='✍️ Click para firmar';
+  document.getElementById('firma-tecnico').classList.remove('firmado');
+  document.getElementById('firma-tecnico').innerHTML='✍️ Click para firmar';
+  document.getElementById('preview-antes').classList.add('hidden');
+  document.getElementById('preview-despues').classList.add('hidden');
+}
+
+function nuevoFormatoDesdeObra(obraId){
+  let o = obras.find(x=>x.id===obraId);
+  if(!o) return;
+  showSection('formato');
+  nuevoFormato();
+  document.getElementById('fmt-cliente').value=o.cliente;
+  document.getElementById('fmt-direccion').value=o.direccion||'';
+  document.getElementById('fmt-tipo').value=o.tipo||'instalacion';
+  document.getElementById('fmt-obra').value=o.id;
+}
+
+function previewFoto(input,previewId){
+  if(input.files && input.files[0]){
+    let reader = new FileReader();
+    reader.onload = function(e){
+      let img = document.getElementById(previewId);
+      img.src = e.target.result;
+      img.classList.remove('hidden');
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function firmar(elemento){
+  elemento.classList.add('firmado');
+  elemento.innerHTML = '✅ FIRMA REGISTRADA<br><small>'+new Date().toLocaleString('es-CO')+'</small>';
+}
+
+function guardarFormato(){
+  let fmt = {
+    id: 'FMT-'+Date.now(),
+    fecha: document.getElementById('fmt-fecha').value,
+    cliente: document.getElementById('fmt-cliente').value,
+    direccion: document.getElementById('fmt-direccion').value,
+    tipo: document.getElementById('fmt-tipo').value,
+    tecnico: document.getElementById('fmt-tecnico').value,
+    obraId: document.getElementById('fmt-obra').value,
+    checklist: Array.from(document.querySelectorAll('#checklist-container input[type="checkbox"]')).map(ch=>({id:ch.id,checked:ch.checked,label:ch.nextElementSibling.textContent})),
+    observaciones: document.getElementById('fmt-observaciones').value,
+    firmaCliente: document.getElementById('firma-cliente').classList.contains('firmado'),
+    firmaTecnico: document.getElementById('firma-tecnico').classList.contains('firmado'),
+    fotoAntes: document.getElementById('preview-antes').src||'',
+    fotoDespues: document.getElementById('preview-despues').src||''
+  };
+  formatos.push(fmt);
+  localStorage.setItem('arpa_formatos',JSON.stringify(formatos));
+  alert('Formato técnico guardado: '+fmt.id);
+}
+
+function generarPDFFormato(){
+  let cliente = document.getElementById('fmt-cliente').value;
+  let tipo = document.getElementById('fmt-tipo').value;
+  let fecha = document.getElementById('fmt-fecha').value;
+  let tecnico = document.getElementById('fmt-tecnico').value;
+  let checklist = Array.from(document.querySelectorAll('#checklist-container input[type="checkbox"]')).map(ch=>({checked:ch.checked,label:ch.nextElementSibling.textContent}));
+  let obs = document.getElementById('fmt-observaciones').value;
+  let firmaCli = document.getElementById('firma-cliente').classList.contains('firmado');
+  let firmaTec = document.getElementById('firma-tecnico').classList.contains('firmado');
+  
+  let html = `
+    <div style="padding:20px;font-family:Arial;">
+      <div style="text-align:center;border-bottom:3px solid #1a237e;padding-bottom:15px;margin-bottom:20px;">
+        <h1 style="color:#1a237e;margin:0;">AUTOMATISMOS ARPA</h1>
+        <p style="margin:5px 0;color:#666;">Formato Técnico - ${tipo.toUpperCase()}</p>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
+        <div><strong>Cliente:</strong> ${cliente}<br><strong>Fecha:</strong> ${fecha}<br><strong>Dirección:</strong> ${document.getElementById('fmt-direccion').value}</div>
+        <div><strong>Técnico:</strong> ${tecnico}<br><strong>ID:</strong> FMT-${Date.now()}</div>
+      </div>
+      <h3 style="color:#1a237e;border-bottom:2px solid #ff6f00;padding-bottom:5px;">CHECKLIST</h3>
+      <table style="width:100%;border-collapse:collapse;margin:15px 0;">
+        ${checklist.map(c=>`<tr style="border-bottom:1px solid #ddd;"><td style="padding:8px;width:40px;font-size:20px;">${c.checked?'✅':'⬜'}</td><td style="padding:8px;">${c.label}</td></tr>`).join('')}
+      </table>
+      <h3 style="color:#1a237e;border-bottom:2px solid #ff6f00;padding-bottom:5px;">OBSERVACIONES</h3>
+      <p style="background:#f5f5f5;padding:15px;border-radius:4px;">${obs||'Sin observaciones'}</p>
+      <div style="display:flex;justify-content:space-between;margin-top:30px;">
+        <div style="text-align:center;width:45%;border-top:2px solid #333;padding-top:10px;">
+          ${firmaTec?'<span style="color:green;font-size:24px;">✅</span><br>':''}
+          <strong>Firma Técnico</strong><br><small>${tecnico}</small>
+        </div>
+        <div style="text-align:center;width:45%;border-top:2px solid #333;padding-top:10px;">
+          ${firmaCli?'<span style="color:green;font-size:24px;">✅</span><br>':''}
+          <strong>Firma Cliente</strong><br><small>${cliente}</small>
+        </div>
+      </div>
+      <div style="margin-top:40px;text-align:center;color:#888;font-size:11px;border-top:1px solid #ddd;padding-top:10px;">
+        Automatismos ARPA - Medellín, Colombia | WhatsApp: 300-568-3914<br>
+        Garantía de instalación: 1 año | Soporte técnico permanente
+      </div>
+    </div>
+  `;
+  let win = window.open('','_blank');
+  win.document.write('<html><head><title>Formato Tecnico</title></head><body>'+html+'</body></html>');
+  win.document.close();
+  win.print();
+}
+
+function cargarCatalogo(){
+  let q = document.getElementById('buscar-catalogo')?.value?.toLowerCase()||'';
+  let filtrados = catalogo.filter(p=>p.nombre.toLowerCase().includes(q)||p.ref.toLowerCase().includes(q)).sort((a,b)=>a.categoria.localeCompare(b.categoria));
+  document.getElementById('tabla-catalogo').innerHTML = filtrados.map(p=>`
+    <tr>
+      <td><strong>${p.ref}</strong></td>
+      <td>${p.nombre}</td>
+      <td>${p.categoria}</td>
+      <td>${formatMoney(p.precio)}</td>
+      <td>${p.stock}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="5" style="text-align:center;color:#888;">Sin resultados</td></tr>';
+}
+function filtrarCatalogo(){cargarCatalogo();}
+
+function generarPDFCotizacion(){
+  if(itemsCotizacion.length===0){alert('Agregá productos primero');return;}
+  let cliente = document.getElementById('cot-cliente').value||'Cliente';
+  let subtotal = itemsCotizacion.reduce((sum,i)=>sum+(i.precio*i.cantidad),0);
+  let iva = document.getElementById('chk-iva').checked ? Math.round(subtotal*0.19) : 0;
+  let manoObra = parseInt(document.getElementById('cot-mano-obra').value)||0;
+  let descuentoPct = parseInt(document.getElementById('cot-descuento').value)||0;
+  let descuento = Math.round((subtotal+iva+manoObra)*(descuentoPct/100));
+  let total = subtotal + iva + manoObra - descuento;
+  
+  let itemsHtml = itemsCotizacion.map(i=>`<tr><td>${i.cantidad}</td><td>${i.nombre}</td><td>${formatMoney(i.precio)}</td><td>${formatMoney(i.precio*i.cantidad)}</td></tr>`).join('');
+  let html = `
+    <div style="padding:20px;font-family:Arial;">
+      <div style="text-align:center;border-bottom:3px solid #1a237e;padding-bottom:15px;margin-bottom:20px;">
+        <h1 style="color:#1a237e;margin:0;">AUTOMATISMOS ARPA</h1>
+        <p style="margin:5px 0;color:#666;">Cotización</p>
+      </div>
+      <p><strong>Cliente:</strong> ${cliente}<br>
+      <strong>Fecha:</strong> ${new Date().toLocaleDateString('es-CO')}<br>
+      <strong>Vendedor:</strong> ${document.getElementById('cot-vendedor').value}</p>
+      <table style="width:100%;border-collapse:collapse;margin:15px 0;">
+        <thead><tr style="background:#1a237e;color:#fff;"><th>Cant</th><th>Producto</th><th>Precio</th><th>Total</th></tr></thead>
+        <tbody>${itemsHtml}</tbody>
+      </table>
+      <div style="text-align:right;font-size:16px;">
+        <div>Subtotal: ${formatMoney(subtotal)}</div>
+        ${iva?`<div>IVA (19%): ${formatMoney(iva)}</div>`:''}
+        ${manoObra?`<div>Mano de Obra: ${formatMoney(manoObra)}</div>`:''}
+        ${descuento?`<div>Descuento (${descuentoPct}%): -${formatMoney(descuento)}</div>`:''}
+        <div style="font-size:24px;font-weight:700;color:#1a237e;margin-top:15px;border-top:2px solid #1a237e;padding-top:10px;">TOTAL: ${formatMoney(total)}</div>
+      </div>
+      <div style="margin-top:30px;padding:15px;background:#f5f5f5;border-radius:4px;">
+        <strong>Condiciones:</strong><br>
+        • Validez: 15 días<br>
+        • Pago: Transferencia Bancolombia a Arlenpav S.A.S.<br>
+        • Envío: Gratis a todo Colombia<br>
+        • Instalación: Solo en Medellín<br>
+        • Garantía: 1 año en motores, 6 meses en accesorios
+      </div>
+      <div style="margin-top:30px;text-align:center;color:#888;font-size:12px;">
+        Automatismos ARPA - Medellín, Colombia<br>
+        WhatsApp: 300-568-3914 | automatismosarlenpav@gmail.com
+      </div>
+    </div>
+  `;
+  let win = window.open('','_blank');
+  win.document.write('<html><head><title>Cotizacion ARPA</title></head><body>'+html+'</body></html>');
+  win.document.close();
+  win.print();
+}
+
+function exportarCotizaciones(){
+  let data = cotizaciones.map(c=>({
+    ID:c.id,Fecha:new Date(c.fecha).toLocaleDateString('es-CO'),Cliente:c.cliente,Tipo:c.tipo,
+    Subtotal:c.subtotal,IVA:c.iva,ManoObra:c.manoObra,Descuento:c.descuento,Total:c.total,Estado:c.estado
+  }));
+  let csv = [Object.keys(data[0]||{}).join(','),...data.map(r=>Object.values(r).join(','))].join('\n');
+  let blob = new Blob([csv],{type:'text/csv'});
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement('a');
+  a.href=url; a.download='cotizaciones_arpa.csv'; a.click();
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  mostrarProductos(catalogo);
+  cargarDashboard();
+  document.getElementById('fechaHoy').textContent = new Date().toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+});
+</script>
+</body>
+</html>
