@@ -669,16 +669,25 @@ let cotizacionActual = null;
 function formatMoney(n){return '$'+n.toLocaleString('es-CO');}
 function parseMoney(s){return parseInt(s.replace(/[^0-9]/g,''))||0;}
 
-function showSection(id){   document.querySelectorAll('.section').forEach(s=>s.classList.add('hidden'));   document.getElementById(id).classList.remove('hidden');   document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove('active'));      // Encontrar el link correcto sin depender de event.target   let links = document.querySelectorAll('.sidebar a');   links.forEach(a => {     if(a.getAttribute('onclick').includes("'"+id+"'")) {       a.classList.add('active');     }   });      if(id==='dashboard') cargarDashboard();   if(id==='cotizaciones') cargarCotizaciones();   if(id==='obras') cargarObras();   if(id==='catalogo') cargarCatalogo();   if(id==='formato') cargarObrasSelect(); }   document.querySelectorAll('.section').forEach(s=>s.classList.add('hidden'));   document.getElementById(id).classList.remove('hidden');   document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove('active'));      // Encontrar el link correcto sin depender de event.target   let links = document.querySelectorAll('.sidebar a');   links.forEach(a => {     if(a.getAttribute('onclick').includes("'"+id+"'")) {       a.classList.add('active');     }   });      if(id==='dashboard') cargarDashboard();   if(id==='cotizaciones') cargarCotizaciones();   if(id==='obras') cargarObras();   if(id==='catalogo') cargarCatalogo();   if(id==='formato') cargarObrasSelect(); }
+function showSection(id){
   document.querySelectorAll('.section').forEach(s=>s.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
   document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove('active'));
-  event.target.classList.add('active');
+  
+  let links = document.querySelectorAll('.sidebar a');
+  links.forEach(a => {
+    let onclick = a.getAttribute('onclick') || '';
+    if(onclick.includes("'"+id+"'") || onclick.includes('"'+id+'"')) {
+      a.classList.add('active');
+    }
+  });
+  
   if(id==='dashboard') cargarDashboard();
   if(id==='cotizaciones') cargarCotizaciones();
   if(id==='obras') cargarObras();
   if(id==='catalogo') cargarCatalogo();
   if(id==='formato') cargarObrasSelect();
+}
 }
 
 function cargarDashboard(){
