@@ -1786,6 +1786,20 @@ function limpiar(){
   eqCnt=0;
   addEquipo();
   toast('🗑 Limpiado');
+}// VALIDACIÓN PDF Y WHATSAPP
+function validarYGenerarPDF() {
+  const nombre = document.getElementById('cli-nombre').value.trim();
+  if (!nombre) { toast('⚠️ Escribe el nombre del cliente'); document.getElementById('cli-nombre').focus(); return; }
+  const hayEquipo = Object.values(eqData).some(eq => eq.nom);
+  if (tipo === 'instalacion' && !hayEquipo) { toast('⚠️ Agrega al menos un equipo'); return; }
+  generarPDF();
+}
+function validarYEnviarWA() {
+  const nombre = document.getElementById('cli-nombre').value.trim();
+  if (!nombre) { toast('⚠️ Escribe el nombre del cliente'); document.getElementById('cli-nombre').focus(); return; }
+  const tel = document.getElementById('cli-tel').value.trim();
+  if (!tel) { toast('⚠️ Escribe el teléfono del cliente'); document.getElementById('cli-tel').focus(); return; }
+  enviarWA();
 }
 
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
