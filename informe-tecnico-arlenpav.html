@@ -52,7 +52,7 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;padding:20px;min-height:
 .check-row:nth-child(even){background:#f9fafb}
 .check-num{font-size:12px;font-weight:700;color:#c9a84c;text-align:center}
 .check-label{font-size:12px;color:#111;line-height:1.4}
-.check-cell{display:flex;justify-content:center;align-items:center}
+.check-cell{display:flex;justify-content:center;align-items:center;font-size:16px}
 .check-cell input[type=checkbox]{width:16px;height:16px;accent-color:#1a2a4a;cursor:pointer}
 .nota-row{display:grid;grid-template-columns:28px 1fr;padding:3px 10px 9px 10px;gap:6px}
 .check-nota{width:100%;border:none;outline:none;font-size:11px;font-family:'Barlow',sans-serif;color:#555;background:transparent;border-bottom:1px dotted #d1d5db;padding-bottom:2px}
@@ -76,14 +76,6 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;padding:20px;min-height:
 .print-btn:hover{background:#c9a84c;color:#1a2a4a}
 .generando{display:none;font-size:12px;color:#6b7280;align-items:center;gap:6px}
 .generando.activo{display:flex}
-@media print{
-  body{background:#fff;padding:0}
-  #doc{box-shadow:none;border:none;border-radius:0}
-  .btn-row,.generando{display:none!important}
-  .foto-remove{display:none!important}
-  .foto-slot{border:1px solid #ccc;min-height:160px}
-  .status-chip,.check-header,.header,.contact-bar{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-}
 @media(max-width:520px){
   .grid2,.grid3,.foto-grid{grid-template-columns:1fr}
   .doc-header{flex-direction:column}
@@ -181,45 +173,45 @@ body{font-family:'Barlow',sans-serif;background:#f0f2f5;padding:20px;min-height:
         <div class="check-row">
           <div class="check-num">1</div>
           <div class="check-label">Inspección visual — quemados, condensadores dañados, pistas rotas</div>
-          <div class="check-cell"><input type="checkbox"></div>
-          <div class="check-cell"><input type="checkbox"></div>
-          <div class="check-cell"><input type="checkbox"></div>
+          <div class="check-cell"><input type="checkbox" id="c1b"><label for="c1b"></label></div>
+          <div class="check-cell"><input type="checkbox" id="c1r"><label for="c1r"></label></div>
+          <div class="check-cell"><input type="checkbox" id="c1m"><label for="c1m"></label></div>
         </div>
         <div class="nota-row"><div></div><input class="check-nota" type="text" placeholder="Observación del ítem..."></div>
 
         <div class="check-row">
           <div class="check-num">2</div>
           <div class="check-label">Verificación de voltajes de entrada y salida</div>
-          <div class="check-cell"><input type="checkbox"></div>
-          <div class="check-cell"><input type="checkbox"></div>
-          <div class="check-cell"><input type="checkbox"></div>
+          <div class="check-cell"><input type="checkbox" id="c2b"></div>
+          <div class="check-cell"><input type="checkbox" id="c2r"></div>
+          <div class="check-cell"><input type="checkbox" id="c2m"></div>
         </div>
         <div class="nota-row"><div></div><input class="check-nota" type="text" placeholder="Observación del ítem..."></div>
 
         <div class="check-row">
           <div class="check-num">3</div>
           <div class="check-label">Revisión de fusibles y protecciones</div>
-          <div class="check-cell"><input type="checkbox"></div>
-          <div class="check-cell"><input type="checkbox"></div>
-          <div class="check-cell"><input type="checkbox"></div>
+          <div class="check-cell"><input type="checkbox" id="c3b"></div>
+          <div class="check-cell"><input type="checkbox" id="c3r"></div>
+          <div class="check-cell"><input type="checkbox" id="c3m"></div>
         </div>
         <div class="nota-row"><div></div><input class="check-nota" type="text" placeholder="Observación del ítem..."></div>
 
         <div class="check-row">
           <div class="check-num">4</div>
           <div class="check-label">Prueba de entradas/salidas — finales de carrera, fotocélulas, mandos</div>
-          <div class="check-cell"><input type="checkbox"></div>
-          <div class="check-cell"><input type="checkbox"></div>
-          <div class="check-cell"><input type="checkbox"></div>
+          <div class="check-cell"><input type="checkbox" id="c4b"></div>
+          <div class="check-cell"><input type="checkbox" id="c4r"></div>
+          <div class="check-cell"><input type="checkbox" id="c4m"></div>
         </div>
         <div class="nota-row"><div></div><input class="check-nota" type="text" placeholder="Observación del ítem..."></div>
 
         <div class="check-row">
           <div class="check-num">5</div>
           <div class="check-label">Prueba de funcionamiento general del motor</div>
-          <div class="check-cell"><input type="checkbox"></div>
-          <div class="check-cell"><input type="checkbox"></div>
-          <div class="check-cell"><input type="checkbox"></div>
+          <div class="check-cell"><input type="checkbox" id="c5b"></div>
+          <div class="check-cell"><input type="checkbox" id="c5r"></div>
+          <div class="check-cell"><input type="checkbox" id="c5m"></div>
         </div>
         <div class="nota-row"><div></div><input class="check-nota" type="text" placeholder="Observación del ítem..."></div>
       </div>
@@ -286,45 +278,78 @@ function quitarFoto(event, slotId){
 }
 
 function generarPDF(){
-  // Convertir inputs a spans para que aparezcan en el PDF
-  const inputs = document.querySelectorAll('input[type=text], textarea');
-  const originals = [];
-  inputs.forEach(inp => {
-    originals.push({el: inp, parent: inp.parentNode, next: inp.nextSibling, val: inp.value});
-    const span = document.createElement('span');
-    span.textContent = inp.value || '';
-    span.style.cssText = inp.style.cssText;
-    span.className = inp.className;
-    inp.parentNode.replaceChild(span, inp);
-  });
-
-  // Ocultar botones y controles de foto
   const btnRow = document.querySelector('.btn-row');
   const generandoEl = document.getElementById('generando');
   const fotoRemoves = document.querySelectorAll('.foto-remove');
   const fotoInputs = document.querySelectorAll('.foto-slot input[type=file]');
+
+  // Convertir checkboxes a símbolos visuales
+  const checkboxes = document.querySelectorAll('input[type=checkbox]');
+  checkboxes.forEach(cb => {
+    const span = document.createElement('span');
+    span.textContent = cb.checked ? '✅' : '☐';
+    span.style.fontSize = '14px';
+    cb.parentNode.replaceChild(span, cb);
+  });
+
+  // Convertir inputs de texto a spans
+  const inputs = document.querySelectorAll('input[type=text], textarea');
+  const saved = [];
+  inputs.forEach(inp => {
+    saved.push({el: inp, parent: inp.parentNode, next: inp.nextSibling});
+    const span = document.createElement('span');
+    span.textContent = inp.value || '';
+    span.className = inp.className;
+    span.style.cssText = window.getComputedStyle(inp).cssText;
+    span.style.display = 'inline-block';
+    span.style.minWidth = '60px';
+    inp.parentNode.replaceChild(span, inp);
+  });
+
   btnRow.style.display = 'none';
   generandoEl.classList.add('activo');
   fotoRemoves.forEach(b => b.style.display = 'none');
   fotoInputs.forEach(i => i.style.display = 'none');
 
-  const folio = document.querySelector('.meta-edit') ? (document.querySelector('.meta-edit span') || {textContent:'informe'}) : {textContent:'informe'};
-  const nombreArchivo = 'Informe-ARPA-' + new Date().toISOString().slice(0,10) + '.pdf';
+  const elemento = document.getElementById('doc');
+  const anchoReal = elemento.scrollWidth;
+  const altoReal = elemento.scrollHeight;
 
   const opt = {
     margin: 0,
-    filename: nombreArchivo,
-    image: { type: 'jpeg', quality: 0.92 },
-    html2canvas: { scale: 2, useCORS: true, allowTaint: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    filename: 'Informe-ARPA-' + new Date().toISOString().slice(0,10) + '.pdf',
+    image: { type: 'jpeg', quality: 0.95 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      width: anchoReal,
+      height: altoReal,
+      windowWidth: anchoReal,
+      scrollY: 0
+    },
+    jsPDF: {
+      unit: 'px',
+      format: [anchoReal * 2, altoReal * 2],
+      orientation: 'portrait'
+    }
   };
 
-  html2pdf().set(opt).from(document.getElementById('doc')).save().then(() => {
+  html2pdf().set(opt).from(elemento).save().then(() => {
+    // Restaurar checkboxes
+    document.querySelectorAll('span').forEach(span => {
+      if(span.textContent === '✅' || span.textContent === '☐'){
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = span.textContent === '✅';
+        cb.style.cssText = 'width:16px;height:16px;accent-color:#1a2a4a;cursor:pointer';
+        span.parentNode.replaceChild(cb, span);
+      }
+    });
     // Restaurar inputs
-    originals.forEach(o => {
-      const inp = o.el;
-      const current = o.parent.querySelector('span.' + inp.className.split(' ')[0]);
-      if(current) o.parent.replaceChild(inp, current);
+    saved.reverse().forEach(o => {
+      const spans = o.parent.querySelectorAll('span.' + (o.el.className.split(' ')[0] || ''));
+      spans.forEach(s => o.parent.replaceChild(o.el, s));
     });
     btnRow.style.display = 'flex';
     generandoEl.classList.remove('activo');
@@ -333,7 +358,6 @@ function generarPDF(){
   });
 }
 
-// Fecha automática
 const hoy = new Date();
 const d = String(hoy.getDate()).padStart(2,'0');
 const m = String(hoy.getMonth()+1).padStart(2,'0');
