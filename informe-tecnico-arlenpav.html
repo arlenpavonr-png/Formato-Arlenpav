@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Informe Técnico — Automatismos Arlenpav</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Barlow',sans-serif;background:#f0f2f5;padding:20px;min-height:100vh}
+.doc{max-width:720px;margin:0 auto;background:#fff;border:1px solid #ddd;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08)}
+.header{background:#1a2a4a;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.brand-name{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:#c9a84c;letter-spacing:1px}
+.brand-sub{font-size:11px;color:#8fa8cc;margin-top:3px}
+.doc-tag{background:#c9a84c;color:#1a2a4a;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;padding:5px 12px;border-radius:4px;letter-spacing:1px;white-space:nowrap}
+.contact-bar{background:#162238;padding:8px 24px;display:flex;gap:20px;flex-wrap:wrap}
+.cb-item{font-size:11px;color:#8fa8cc}
+.cb-item span{color:#c9a84c}
+.body{padding:22px 24px}
+.doc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid #e5e7eb;flex-wrap:wrap;gap:10px}
+.doc-title{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:700;color:#1a2a4a;text-transform:uppercase;letter-spacing:0.5px}
+.doc-meta{text-align:right}
+.meta-row{font-size:12px;color:#6b7280;margin-bottom:3px}
+.meta-row b{color:#111;font-weight:500}
+.meta-edit{border:none;outline:none;border-bottom:1px solid #d1d5db;font-size:12px;font-weight:500;font-family:'Barlow',sans-serif;color:#111;background:transparent;min-width:80px}
+.section{margin-bottom:18px}
+.sec-title{font-size:10px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #e5e7eb}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.field{background:#f9fafb;border-radius:8px;padding:8px 12px;border:1px solid #e5e7eb}
+.field-label{font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+.field-input{width:100%;border:none;outline:none;border-bottom:1px solid #d1d5db;font-size:13px;font-weight:500;font-family:'Barlow',sans-serif;color:#111;background:transparent;padding-bottom:2px}
+.field-input::placeholder{color:#c4c8ce;font-weight:400;font-style:italic}
+.field-full{grid-column:1/-1}
+/* Foto */
+.foto-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.foto-slot{border:2px dashed #d1d5db;border-radius:10px;min-height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;transition:border-color 0.2s;background:#f9fafb}
+.foto-slot:hover{border-color:#c9a84c}
+.foto-slot input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.foto-slot img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:8px}
+.foto-placeholder{display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none}
+.foto-icon{font-size:28px;line-height:1}
+.foto-txt{font-size:11px;color:#9ca3af;font-weight:500}
+.foto-slot.has-img .foto-placeholder{display:none}
+.foto-remove{position:absolute;top:6px;right:6px;background:#1a2a4a;color:#c9a84c;border:none;border-radius:50%;width:22px;height:22px;font-size:13px;cursor:pointer;display:none;align-items:center;justify-content:center;font-weight:700;line-height:1;z-index:2}
+.foto-slot.has-img .foto-remove{display:flex}
+/* Checklist */
+.checklist-wrap{border:1px solid #e5e7eb;border-radius:8px;overflow:hidden}
+.check-header{background:#1a2a4a;display:grid;grid-template-columns:28px 1fr 58px 58px 58px;padding:8px 10px;gap:6px;align-items:center}
+.check-header span{font-size:10px;font-weight:700;color:#c9a84c;letter-spacing:0.5px;text-transform:uppercase;text-align:center}
+.check-header span:nth-child(2){text-align:left}
+.check-row{display:grid;grid-template-columns:28px 1fr 58px 58px 58px;padding:9px 10px;gap:6px;align-items:center;border-top:1px solid #e5e7eb}
+.check-row:nth-child(even){background:#f9fafb}
+.check-num{font-size:12px;font-weight:700;color:#c9a84c;text-align:center}
+.check-label{font-size:12px;color:#111;line-height:1.4}
+.check-cell{display:flex;justify-content:center;align-items:center}
+.check-cell input[type=checkbox]{width:16px;height:16px;accent-color:#1a2a4a;cursor:pointer}
+.nota-row{display:grid;grid-template-columns:28px 1fr;padding:3px 10px 9px 10px;gap:6px}
+.check-nota{width:100%;border:none;outline:none;font-size:11px;font-family:'Barlow',sans-serif;color:#555;background:transparent;border-bottom:1px dotted #d1d5db;padding-bottom:2px}
+.check-nota::placeholder{color:#c4c8ce;font-style:italic}
+.obs-box{width:100%;border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;font-size:12px;color:#111;min-height:60px;font-family:'Barlow',sans-serif;resize:vertical;background:#f9fafb}
+.status-row{display:flex;gap:8px;flex-wrap:wrap}
+.status-chip{padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all 0.15s;font-family:'Barlow',sans-serif}
+.chip-ok{background:#eaf3de;color:#3b6d11;border-color:#97c459}
+.chip-warn{background:#faeeda;color:#854f0b;border-color:#ef9f27}
+.chip-bad{background:#fcebeb;color:#a32d2d;border-color:#f09595}
+.chip-sel{box-shadow:0 0 0 2.5px currentColor}
+.footer{background:#f9fafb;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #e5e7eb;flex-wrap:wrap;gap:12px}
+.sigs{display:flex;gap:32px;flex-wrap:wrap}
+.sig{text-align:center}
+.sig-line{width:130px;border-top:1px solid #9ca3af;margin:0 auto 5px}
+.sig-label{font-size:10px;color:#9ca3af}
+.print-btn{background:#1a2a4a;color:#c9a84c;border:none;padding:10px 20px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px}
+.print-btn:hover{background:#c9a84c;color:#1a2a4a}
+@media print{
+  body{background:#fff;padding:0}
+  .doc{box-shadow:none;border:none;border-radius:0}
+  .print-btn{display:none}
+  .foto-remove{display:none!important}
+  .foto-slot{border:1px solid #ccc;min-height:160px}
+  .status-chip,.check-header,.header,.contact-bar{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+@media(max-width:520px){
+  .grid2,.grid3,.foto-grid{grid-template-columns:1fr}
+  .doc-header{flex-direction:column}
+  .doc-meta{text-align:left}
+  .header{flex-direction:column;align-items:flex-start}
+  .check-header,.check-row{grid-template-columns:24px 1fr 46px 46px 46px}
+}
+</style>
+</head>
+<body>
+<div class="doc">
+  <div class="header">
+    <div>
+      <div class="brand-name">⚙ AUTOMATISMOS ARLENPAV</div>
+      <div class="brand-sub">Automatismos Arlenpav S.A.S. &nbsp;·&nbsp; NIT 901.473.259 &nbsp;·&nbsp; Medellín, Colombia</div>
+    </div>
+    <div class="doc-tag">INFORME TÉCNICO</div>
+  </div>
+  <div class="contact-bar">
+    <div class="cb-item">📞 <span>+57 300-568-3914</span></div>
+    <div class="cb-item">✉ <span>automatismosarlenpav@gmail.com</span></div>
+    <div class="cb-item">🌐 <span>automatismosarpa.com.co</span></div>
+  </div>
+
+  <div class="body">
+    <div class="doc-header">
+      <div><div class="doc-title">Informe de servicio técnico</div></div>
+      <div class="doc-meta">
+        <div class="meta-row">N° &nbsp;<b><input class="meta-edit" type="text" value="IT-2026-001" style="width:90px"></b></div>
+        <div class="meta-row">Fecha: &nbsp;<b><input class="meta-edit" type="text" id="fecha" style="width:90px"></b></div>
+        <div class="meta-row">Técnico: &nbsp;<b><input class="meta-edit" type="text" value="Arlen Pavón" style="width:90px"></b></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">Datos del cliente</div>
+      <div class="grid2">
+        <div class="field"><div class="field-label">Nombre / Empresa</div><input class="field-input" type="text" placeholder="Nombre completo"></div>
+        <div class="field"><div class="field-label">Teléfono</div><input class="field-input" type="text" placeholder="Número de contacto"></div>
+        <div class="field field-full"><div class="field-label">Dirección del servicio</div><input class="field-input" type="text" placeholder="Calle, barrio, ciudad"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">Equipo intervenido</div>
+      <div class="grid3">
+        <div class="field"><div class="field-label">Marca</div><input class="field-input" type="text" placeholder="BFT / Accessmatic…"></div>
+        <div class="field"><div class="field-label">Modelo</div><input class="field-input" type="text" placeholder="Ref. del motor"></div>
+        <div class="field"><div class="field-label">Tipo de puerta</div><input class="field-input" type="text" placeholder="Corrediza / Batiente…"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">Tipo de servicio</div>
+      <div class="status-row" id="svc-row">
+        <button class="status-chip chip-ok" onclick="pick('svc-row',this)">Instalación</button>
+        <button class="status-chip chip-ok" onclick="pick('svc-row',this)">Mantenimiento</button>
+        <button class="status-chip chip-warn" onclick="pick('svc-row',this)">Reparación</button>
+        <button class="status-chip chip-bad" onclick="pick('svc-row',this)">Diagnóstico</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">Fotografías del equipo</div>
+      <div class="foto-grid">
+        <div class="foto-slot" id="slot0">
+          <input type="file" accept="image/*" capture="environment" onchange="cargarFoto(this,'slot0')">
+          <div class="foto-placeholder">
+            <div class="foto-icon">📷</div>
+            <div class="foto-txt">Foto 1 — Estado inicial</div>
+          </div>
+          <button class="foto-remove" onclick="quitarFoto(event,'slot0')">✕</button>
+        </div>
+        <div class="foto-slot" id="slot1">
+          <input type="file" accept="image/*" capture="environment" onchange="cargarFoto(this,'slot1')">
+          <div class="foto-placeholder">
+            <div class="foto-icon">📷</div>
+            <div class="foto-txt">Foto 2 — Tarjeta electrónica</div>
+          </div>
+          <button class="foto-remove" onclick="quitarFoto(event,'slot1')">✕</button>
+        </div>
+        <div class="foto-slot" id="slot2">
+          <input type="file" accept="image/*" capture="environment" onchange="cargarFoto(this,'slot2')">
+          <div class="foto-placeholder">
+            <div class="foto-icon">📷</div>
+            <div class="foto-txt">Foto 3 — Detalle del daño</div>
+          </div>
+          <button class="foto-remove" onclick="quitarFoto(event,'slot2')">✕</button>
+        </div>
+        <div class="foto-slot" id="slot3">
+          <input type="file" accept="image/*" capture="environment" onchange="cargarFoto(this,'slot3')">
+          <div class="foto-placeholder">
+            <div class="foto-icon">📷</div>
+            <div class="foto-txt">Foto 4 — Estado final</div>
+          </div>
+          <button class="foto-remove" onclick="quitarFoto(event,'slot3')">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">Revisión de tarjeta electrónica</div>
+      <div class="checklist-wrap">
+        <div class="check-header">
+          <span>#</span>
+          <span>Ítem revisado</span>
+          <span>Bueno</span>
+          <span>Regular</span>
+          <span>Malo</span>
+        </div>
+
+        <div class="check-row">
+          <div class="check-num">1</div>
+          <div class="check-label">Inspección visual — quemados, condensadores dañados, pistas rotas</div>
+          <div class="check-cell"><input type="checkbox"></div>
+          <div class="check-cell"><input type="checkbox"></div>
+          <div class="check-cell"><input type="checkbox"></div>
+        </div>
+        <div class="nota-row"><div></div><input class="check-nota" type="text" placeholder="Observación del ítem..."></div>
+
+        <div class="check-row">
+          <div class="check-num">2</div>
+          <div class="check-label">Verificación de voltajes de entrada y salida</div>
+          <div class="check-cell"><input type="checkbox"></div>
+          <div class="check-cell"><input type="checkbox"></div>
+          <div class="check-cell"><input type="checkbox"></div>
+        </div>
+        <div class="nota-row"><div></div><input class="check-nota" type="text" placeholder="Observación del ítem..."></div>
+
+        <div class="check-row">
+          <div class="check-num">3</div>
+          <div class="check-label">Revisión de fusibles y protecciones</div>
+          <div class="check-cell"><input type="checkbox"></div>
+          <div class="check-cell"><input type="checkbox"></div>
+          <div class="check-cell"><input type="checkbox"></div>
+        </div>
+        <div class="nota-row"><div></div><input class="check-nota" type="text" placeholder="Observación del ítem..."></div>
+
+        <div class="check-row">
+          <div class="check-num">4</div>
+          <div class="check-label">Prueba de entradas/salidas — finales de carrera, fotocélulas, mandos</div>
+          <div class="check-cell"><input type="checkbox"></div>
+          <div class="check-cell"><input type="checkbox"></div>
+          <div class="check-cell"><input type="checkbox"></div>
+        </div>
+        <div class="nota-row"><div></div><input class="check-nota" type="text" placeholder="Observación del ítem..."></div>
+
+        <div class="check-row">
+          <div class="check-num">5</div>
+          <div class="check-label">Prueba de funcionamiento general del motor</div>
+          <div class="check-cell"><input type="checkbox"></div>
+          <div class="check-cell"><input type="checkbox"></div>
+          <div class="check-cell"><input type="checkbox"></div>
+        </div>
+        <div class="nota-row"><div></div><input class="check-nota" type="text" placeholder="Observación del ítem..."></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">Estado del equipo al finalizar</div>
+      <div class="status-row" id="eq-row">
+        <button class="status-chip chip-ok" onclick="pick('eq-row',this)">Funcionando correctamente</button>
+        <button class="status-chip chip-warn" onclick="pick('eq-row',this)">Requiere seguimiento</button>
+        <button class="status-chip chip-bad" onclick="pick('eq-row',this)">Pendiente de repuesto</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">Observaciones generales</div>
+      <textarea class="obs-box" placeholder="Escriba las observaciones generales del servicio..."></textarea>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="sigs">
+      <div class="sig"><div class="sig-line"></div><div class="sig-label">Firma técnico</div></div>
+      <div class="sig"><div class="sig-line"></div><div class="sig-label">Firma / Visto bueno cliente</div></div>
+    </div>
+    <button class="print-btn" onclick="window.print()">IMPRIMIR / GUARDAR PDF</button>
+  </div>
+</div>
+
+<script>
+function pick(rowId, el){
+  document.getElementById(rowId).querySelectorAll('.status-chip').forEach(c => c.classList.remove('chip-sel'));
+  el.classList.add('chip-sel');
+}
+
+function cargarFoto(input, slotId){
+  const file = input.files[0];
+  if(!file) return;
+  const slot = document.getElementById(slotId);
+  const reader = new FileReader();
+  reader.onload = function(e){
+    let img = slot.querySelector('img');
+    if(!img){ img = document.createElement('img'); slot.appendChild(img); }
+    img.src = e.target.result;
+    slot.classList.add('has-img');
+  };
+  reader.readAsDataURL(file);
+}
+
+function quitarFoto(event, slotId){
+  event.preventDefault();
+  event.stopPropagation();
+  const slot = document.getElementById(slotId);
+  const img = slot.querySelector('img');
+  if(img) img.remove();
+  const input = slot.querySelector('input[type=file]');
+  input.value = '';
+  slot.classList.remove('has-img');
+}
+
+const hoy = new Date();
+const d = String(hoy.getDate()).padStart(2,'0');
+const m = String(hoy.getMonth()+1).padStart(2,'0');
+const a = hoy.getFullYear();
+document.getElementById('fecha').value = d+'/'+m+'/'+a;
+</script>
+</body>
+</html>
