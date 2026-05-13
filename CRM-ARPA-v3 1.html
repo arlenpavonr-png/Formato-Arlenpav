@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>CRM ARPA v3.0</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap');
+:root{--navy:#1A2B4A;--navy2:#1E3A6E;--orange:#E8820C;--orange2:#F5A030;--bg:#F2F4F8;--card:#FFFFFF;--border:#E2E8F0;--txt:#1A2B4A;--txt2:#64748B;--txt3:#94A3B8;--dot:#E8820C;--green:#10B981;--r:12px;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{font-size:15px;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;}
+.hdr{background:var(--navy);padding:0;position:sticky;top:0;z-index:200;}
+.hdr-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;}
+.hdr-left{display:flex;align-items:center;gap:13px;}
+.logo-wrap{width:46px;height:46px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo-wrap span{font-family:'DM Mono',monospace;font-weight:500;font-size:12px;color:var(--navy);letter-spacing:-0.5px;}
+.hdr-txt h1{font-size:15px;font-weight:700;color:#fff;letter-spacing:0.3px;line-height:1.2;}
+.hdr-txt p{font-size:11px;color:rgba(255,255,255,0.55);margin-top:1px;line-height:1;}
+.hdr-badge{background:var(--orange);color:#fff;font-size:11px;font-weight:700;padding:6px 12px;border-radius:20px;letter-spacing:0.3px;white-space:nowrap;}
+.hdr-strip{height:3px;background:linear-gradient(90deg,var(--orange) 0%,var(--orange2) 100%);}
+.wrap{max-width:640px;margin:0 auto;padding:16px 14px 40px;}
+.card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);margin-bottom:12px;overflow:hidden;}
+.sec-hdr{padding:11px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);}
+.sec-dot{width:9px;height:9px;border-radius:50%;background:var(--dot);flex-shrink:0;}
+.sec-hdr h2{font-size:11px;font-weight:700;color:var(--txt);letter-spacing:1px;text-transform:uppercase;}
+.sec-body{padding:16px;}
+.row{display:flex;gap:10px;margin-bottom:10px;}
+.row:last-child{margin-bottom:0;}
+.f{flex:1;display:flex;flex-direction:column;gap:5px;}
+.f label{font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--txt2);}
+.f input,.f select,.f textarea{border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:var(--txt);background:var(--card);width:100%;transition:border-color .15s,box-shadow .15s;-webkit-appearance:none;appearance:none;}
+.f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--navy2);box-shadow:0 0 0 3px rgba(30,58,110,.1);}
+.f textarea{resize:none;line-height:1.5;}
+.f select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748B' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+.prod-table{width:100%;border-collapse:collapse;font-size:13px;}
+.prod-table thead tr{background:var(--navy);}
+.prod-table thead th{color:#fff;font-weight:600;font-size:11px;letter-spacing:0.5px;padding:10px 10px;text-align:left;}
+.prod-table thead th:nth-child(3),.prod-table thead th:nth-child(4),.prod-table thead th:nth-child(5){text-align:right;}
+.prod-table tbody tr{border-bottom:1px solid var(--border);}
+.prod-table tbody tr:nth-child(even){background:#F8FAFC;}
+.prod-table tbody td{padding:10px 10px;color:var(--txt);vertical-align:middle;}
+.prod-table .cod{font-family:'DM Mono',monospace;font-size:11px;color:var(--txt2);white-space:nowrap;}
+.prod-table .desc{font-weight:500;font-size:13px;}
+.prod-table .num{text-align:right;font-family:'DM Mono',monospace;font-size:13px;font-weight:500;}
+.qty-input{width:48px;border:1px solid var(--border);border-radius:6px;padding:5px 6px;text-align:center;font-family:'DM Mono',monospace;font-size:13px;font-weight:600;color:var(--txt);background:var(--card);-webkit-appearance:none;appearance:none;}
+.qty-input:focus{outline:none;border-color:var(--navy2);}
+.qty-td{text-align:center;}
+.del-btn{background:none;border:none;cursor:pointer;color:#CBD5E1;font-size:16px;padding:2px 4px;border-radius:4px;transition:color .15s;line-height:1;}
+.del-btn:hover{color:#EF4444;}
+.search-bar{display:flex;gap:8px;margin-bottom:12px;}
+.search-bar input{flex:1;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--txt);background:var(--card);}
+.search-bar input:focus{outline:none;border-color:var(--navy2);box-shadow:0 0 0 3px rgba(30,58,110,.1);}
+.btn-add-custom{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .15s;}
+.btn-add-custom:hover{background:var(--navy2);}
+.catalog-results{background:#F8FAFC;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:12px;display:none;}
+.cat-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .12s;}
+.cat-item:last-child{border-bottom:none;}
+.cat-item:hover{background:#EFF3FA;}
+.cat-item-name{font-size:13px;font-weight:600;color:var(--txt);}
+.cat-item-cod{font-size:11px;color:var(--txt2);font-family:'DM Mono',monospace;}
+.cat-item-price{font-family:'DM Mono',monospace;font-size:13px;font-weight:600;color:var(--navy2);white-space:nowrap;}
+.cat-item-marca{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:middle;}
+.marca-ac{background:#E8F5E9;color:#2E7D32;}
+.marca-el{background:#E3F2FD;color:#1565C0;}
+.marca-bft{background:#FFF3E0;color:#E65100;}
+.marca-nas{background:#F3E5F5;color:#6A1B9A;}
+.mdo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:0;}
+.mdo-chip{border:2px solid var(--border);border-radius:10px;padding:12px 8px;cursor:pointer;text-align:center;transition:all .15s;background:var(--card);position:relative;user-select:none;}
+.mdo-chip:hover{border-color:var(--navy2);background:#EFF3FA;}
+.mdo-chip.active{border-color:var(--orange);background:#FFF7ED;}
+.mdo-chip.active::after{content:'✓';position:absolute;top:5px;right:8px;font-size:12px;font-weight:700;color:var(--orange);}
+.mdo-icon{font-size:22px;margin-bottom:5px;}
+.mdo-name{font-size:11px;font-weight:700;color:var(--txt);line-height:1.2;margin-bottom:4px;}
+.mdo-price{font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:var(--orange);}
+.mdo-qty-row{display:flex;align-items:center;gap:8px;margin-top:8px;justify-content:center;}
+.mdo-qty-row label{font-size:10px;color:var(--txt2);font-weight:600;}
+.mdo-qty{width:44px;border:1px solid var(--border);border-radius:6px;padding:4px 6px;text-align:center;font-family:'DM Mono',monospace;font-size:12px;font-weight:600;display:none;}
+.mdo-chip.active .mdo-qty{display:block;}
+.res-box{background:#F8FAFC;border-radius:10px;padding:14px 16px;}
+.res-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:14px;}
+.res-row .lbl{color:var(--txt2);font-weight:500;}
+.res-row .val{font-family:'DM Mono',monospace;font-weight:600;color:var(--txt);}
+.res-divider{border:none;border-top:1px solid var(--border);margin:8px 0;}
+.res-total{display:flex;justify-content:space-between;align-items:center;margin-top:6px;}
+.res-total .lbl{font-size:13px;font-weight:700;color:var(--txt2);letter-spacing:0.5px;text-transform:uppercase;}
+.res-total .val{font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--navy);}
+.iva-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:4px 0;}
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.tslider{position:absolute;cursor:pointer;inset:0;background:#CBD5E1;border-radius:11px;transition:.25s;}
+.tslider:before{content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+input:checked+.tslider{background:var(--navy2);}
+input:checked+.tslider:before{transform:translateX(18px);}
+.iva-label{font-size:13px;font-weight:600;cursor:pointer;color:var(--txt);}
+.iva-val{margin-left:auto;font-family:'DM Mono',monospace;font-size:13px;font-weight:600;color:var(--txt);}
+.cond-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.cond-item{background:#F8FAFC;border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
+.cond-item label{font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--txt2);display:block;margin-bottom:5px;}
+.cond-item select,.cond-item input{width:100%;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--txt);padding:0;-webkit-appearance:none;}
+.cond-full{grid-column:1/-1;}
+.cond-item textarea{width:100%;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--txt);padding:0;resize:none;min-height:60px;line-height:1.5;}
+.nota-box{background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:#92400E;line-height:1.6;}
+.nota-box strong{color:#78350F;}
+.exoneracion-box{background:#FFF8E1;border:1.5px solid #F59E0B;border-radius:8px;padding:14px 16px;margin-top:12px;font-size:12px;color:#78350F;line-height:1.7;}
+.exoneracion-box strong{color:#78350F;font-size:13px;}
+.apro-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.apro-box{border:1px solid var(--border);border-radius:8px;padding:12px;}
+.apro-box label{font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--txt2);display:block;margin-bottom:8px;}
+.firma-area{width:100%;height:60px;border:1.5px dashed var(--border);border-radius:6px;background:#F8FAFC;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--txt3);margin-bottom:10px;cursor:not-allowed;}
+.apro-box input{width:100%;border:none;border-bottom:1px solid var(--border);padding:4px 0;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--txt);background:transparent;margin-bottom:6px;}
+.apro-box input:focus{outline:none;border-bottom-color:var(--navy2);}
+.btn-gen{width:100%;background:var(--navy);color:#fff;border:none;border-radius:var(--r);padding:16px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 16px rgba(26,43,74,.25);transition:transform .15s,box-shadow .15s;letter-spacing:0.3px;}
+.btn-gen:active{transform:scale(0.98);}
+.btn-gen .pill{background:var(--orange);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;}
+.footer-empresa{background:var(--navy);color:rgba(255,255,255,.5);text-align:center;font-size:11px;padding:12px;margin-top:16px;border-radius:var(--r);}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--navy);color:#fff;padding:11px 22px;border-radius:30px;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:999;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.empty-prod{text-align:center;padding:24px;color:var(--txt3);font-size:13px;}
+:root{--navy:#0D1B2A;--gold:#C9A84C;--bg:#f4f6f9;--white:#fff;--border:#dde3ec;--text:#1a2535;--mid:#4a5568;--light:#8a9bb0;--red:#e53e3e;--green:#38a169;--orange:#E8820C;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;padding-bottom:80px;}
+.header{background:var(--navy);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;}
+.hbrand{display:flex;align-items:center;gap:10px;}
+.hlogo{width:36px;height:36px;background:var(--gold);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--navy);}
+.hinfo .empresa{font-weight:700;font-size:13px;color:#fff;}
+.hinfo .nit{font-size:10px;color:rgba(255,255,255,0.5);margin-top:1px;}
+.hnum{background:var(--gold);color:var(--navy);font-weight:700;font-size:12px;padding:6px 12px;border-radius:16px;}
+.tipo-wrap{background:var(--white);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;gap:8px;}
+.tipo-btn{padding:8px 18px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--mid);transition:all .18s;}
+.tipo-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+.container{max-width:700px;margin:0 auto;padding:14px 14px;}
+.card{background:var(--white);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;overflow:hidden;}
+.card.hidden{display:none!important;}
+.card-hdr{padding:11px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);}
+.bullet{width:9px;height:9px;background:var(--gold);border-radius:50%;flex-shrink:0;}
+.card-title{font-weight:700;font-size:11px;letter-spacing:.9px;text-transform:uppercase;color:var(--text);}
+.card-body{padding:16px 16px;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.frow.full{grid-template-columns:1fr;}
+.frow.triple{grid-template-columns:1fr 1fr 1fr;}
+.field{display:flex;flex-direction:column;gap:4px;}
+label{font-size:10px;font-weight:600;color:var(--mid);text-transform:uppercase;letter-spacing:.7px;}
+input,select,textarea{background:var(--white);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:inherit;font-size:14px;padding:9px 11px;outline:none;width:100%;transition:border-color .15s;}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);}
+textarea{resize:vertical;min-height:68px;}
+input::placeholder{color:var(--light);}
+.eq-wrap{margin-bottom:10px;}
+.eq-item{border:1px solid var(--border);border-radius:9px;padding:12px;margin-bottom:10px;background:#FAFBFC;position:relative;}
+.eq-item-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.eq-num{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--mid);}
+.btn-del-eq{background:transparent;border:none;color:var(--light);font-size:20px;cursor:pointer;padding:0 4px;line-height:1;transition:color .15s;}
+.btn-del-eq:hover{color:var(--red);}
+.marca-badge{display:inline-block;padding:3px 9px;border-radius:12px;font-size:10px;font-weight:700;letter-spacing:.5px;margin-bottom:8px;}
+.badge-bft{background:#1A2B4A;color:#fff;}
+.badge-access{background:#0066CC;color:#fff;}
+.badge-elite{background:#006633;color:#fff;}
+.badge-nas{background:#CC3300;color:#fff;}
+.badge-beninca{background:#6600CC;color:#fff;}
+.badge-otro{background:#666;color:#fff;}
+.eq-details{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.eq-details .field label{font-size:9px;}
+.eq-details input,.eq-details select{font-size:12px;padding:7px 10px;}
+.btn-add-row{background:transparent;border:1.5px dashed var(--border);color:var(--mid);padding:9px 14px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600;width:100%;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-add-row:hover{border-color:var(--gold);color:var(--navy);}
+.checklist{display:flex;flex-direction:column;gap:6px;}
+.ci{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:7px;border:1px solid var(--border);cursor:pointer;}
+.ci input[type=checkbox]{width:16px;height:16px;accent-color:var(--gold);cursor:pointer;flex-shrink:0;}
+.ci label{font-size:13px;font-weight:500;color:var(--text);cursor:pointer;text-transform:none;letter-spacing:0;}
+.ci.checked{background:#fffbf0;border-color:var(--gold);}
+.fotos-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.foto-col-lbl{font-weight:700;font-size:11px;letter-spacing:.7px;text-transform:uppercase;margin-bottom:8px;}
+.foto-col-lbl.antes{color:var(--red);}
+.foto-col-lbl.despues{color:var(--green);}
+.foto-slot{position:relative;margin-bottom:8px;border-radius:8px;overflow:hidden;border:1px solid var(--border);}
+.foto-ph{width:100%;height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;color:var(--light);font-size:11px;background:var(--bg);}
+.foto-ph .ico{font-size:24px;}
+.foto-prev{width:100%;height:110px;object-fit:cover;display:none;}
+.foto-input{display:none;}
+.foto-del{position:absolute;top:5px;right:5px;background:rgba(255,255,255,.92);color:var(--red);border:1px solid #ffcdd2;border-radius:50%;width:22px;height:22px;font-size:13px;cursor:pointer;display:none;align-items:center;justify-content:center;}
+.foto-del.vis{display:flex;}
+.btn-add-foto{width:100%;background:transparent;border:1.5px dashed var(--border);color:var(--mid);padding:7px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:500;}
+.firmas-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.firma-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;}
+.firma-lbl{font-size:10px;font-weight:600;color:var(--mid);text-transform:uppercase;letter-spacing:.7px;margin-bottom:7px;}
+.firma-canvas{width:100%;height:85px;background:#fff;border:1.5px dashed var(--border);border-radius:6px;display:block;cursor:crosshair;touch-action:none;}
+.firma-sub{font-size:10px;color:var(--light);margin-top:5px;}
+.btn-clr{background:transparent;border:none;color:var(--light);font-size:11px;cursor:pointer;margin-top:3px;text-decoration:underline;}
+.acciones{display:flex;gap:9px;flex-wrap:wrap;padding:14px 0 0;}
+.btn{flex:1;min-width:120px;padding:13px 14px;border-radius:7px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;border:none;transition:all .18s;}
+.btn-pdf{background:var(--navy);color:#fff;}
+.btn-wa{background:#25d366;color:#fff;}
+.btn-clrf{background:var(--white);color:var(--mid);border:1.5px solid var(--border);}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--navy);color:#fff;font-weight:600;font-size:13px;padding:10px 20px;border-radius:8px;transition:transform .3s;z-index:999;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.hidden{display:none!important;}
+@media(max-width:480px){.frow{grid-template-columns:1fr;}.frow.triple{grid-template-columns:1fr 1fr;}.firmas-grid,.fotos-cols{grid-template-columns:1fr;}.eq-details{grid-template-columns:1fr 1fr;}.hinfo .empresa{font-size:11px;}}
+body{display:flex;margin:0;}
+#sidebar{width:220px;background:linear-gradient(180deg,#101d36,#1e3260);min-height:100vh;position:fixed;left:0;top:0;bottom:0;display:flex;flex-direction:column;border-right:1px solid rgba(201,168,76,0.1);z-index:100;}
+.brand{padding:24px 20px 18px;border-bottom:1px solid rgba(201,168,76,0.15);}
+.brand-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;color:#c9a84c;letter-spacing:1px;}
+.brand-sub{font-size:10px;color:#8a97b0;letter-spacing:3px;text-transform:uppercase;margin-top:2px;}
+.nav{padding:12px 0;flex:1;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;font-size:13px;font-weight:500;color:#8a97b0;transition:all .2s;border-left:3px solid transparent;}
+.nav-item:hover{color:#f5f7fa;background:rgba(201,168,76,0.07);}
+.nav-item.active{color:#c9a84c;border-left-color:#c9a84c;background:rgba(201,168,76,0.1);}
+.nav-icon{font-size:15px;width:20px;text-align:center;}
+.nbadge{margin-left:auto;background:#c9a84c;color:#101d36;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;}
+.nav-sep{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:rgba(138,151,176,0.4);padding:10px 20px 4px;margin-top:4px;}
+.sidebar-footer{padding:14px 20px;border-top:1px solid rgba(201,168,76,0.1);font-size:10px;color:#8a97b0;}
+.version-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#2ecc71;margin-right:6px;}
+#main{margin-left:220px;flex:1;min-height:100vh;}
+.page{display:none!important;}.page.active{display:block!important;}
+.dark-page{background:#0e1a2e;color:#f5f7fa;min-height:100vh;padding:28px 32px;}
+.page-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;color:#f5f7fa;}
+.page-sub{font-size:13px;color:#8a97b0;margin-top:2px;}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.kpi-card{background:linear-gradient(135deg,rgba(30,50,96,0.9),rgba(16,29,54,0.95));border:1px solid rgba(201,168,76,0.15);border-radius:12px;padding:20px;position:relative;overflow:hidden;}
+.kpi-card::before{content:'';position:absolute;top:0;right:0;width:60px;height:60px;border-radius:0 0 0 60px;background:rgba(201,168,76,0.1);}
+.kpi-label{font-size:11px;color:#8a97b0;text-transform:uppercase;letter-spacing:1px;}
+.kpi-value{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:#f5f7fa;margin:6px 0 2px;}
+.kpi-value.gold{color:#c9a84c;}.kpi-value.green{color:#2ecc71;}.kpi-value.red{color:#e74c3c;}
+.kpi-meta{font-size:11px;color:#8a97b0;}.kpi-icon{position:absolute;top:16px;right:16px;font-size:20px;opacity:.5;}
+.dash-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:20px;margin-bottom:20px;}
+.dcard{background:linear-gradient(135deg,rgba(30,50,96,0.8),rgba(16,29,54,0.9));border:1px solid rgba(201,168,76,0.12);border-radius:12px;padding:20px;}
+.dcard-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:#8a97b0;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+.chart-bars{display:flex;align-items:flex-end;gap:10px;height:140px;padding:10px 0;}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;}
+.bar{width:100%;border-radius:6px 6px 0 0;background:linear-gradient(180deg,#c9a84c,rgba(201,168,76,0.4));min-height:4px;}
+.bar-label{font-size:10px;color:#8a97b0;}.bar-val{font-size:10px;color:#c9a84c;font-weight:600;}
+.pipeline-table{width:100%;border-collapse:collapse;}
+.pipeline-table th{font-size:10px;text-transform:uppercase;color:#8a97b0;padding:8px 10px;text-align:left;border-bottom:1px solid rgba(201,168,76,0.1);}
+.pipeline-table td{padding:10px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.04);}
+.status-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.s-enviada{background:rgba(52,152,219,.2);color:#3498db;}.s-negociando{background:rgba(243,156,18,.2);color:#f39c12;}
+.s-cerrada{background:rgba(46,204,113,.2);color:#2ecc71;}.s-perdida{background:rgba(231,76,60,.2);color:#e74c3c;}
+.activity-list{display:flex;flex-direction:column;gap:10px;}
+.activity-item{display:flex;align-items:flex-start;gap:10px;}
+.activity-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+.activity-text{font-size:12px;color:#8a97b0;line-height:1.4;}.activity-text strong{color:#f5f7fa;}
+.activity-time{font-size:10px;color:rgba(138,151,176,.6);}
+.filter-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;}
+.filter-tab{padding:6px 14px;border-radius:20px;border:1px solid rgba(201,168,76,.2);background:transparent;color:#8a97b0;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.filter-tab.active{background:#c9a84c;color:#101d36;font-weight:600;}
+.data-card{background:linear-gradient(135deg,rgba(30,50,96,.8),rgba(16,29,54,.9));border:1px solid rgba(201,168,76,.12);border-radius:12px;overflow:hidden;}
+table.dt{width:100%;border-collapse:collapse;}
+table.dt th{font-size:11px;text-transform:uppercase;color:#8a97b0;padding:10px 14px;text-align:left;border-bottom:1px solid rgba(201,168,76,.15);white-space:nowrap;}
+table.dt td{padding:12px 14px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle;}
+table.dt tr:hover td{background:rgba(201,168,76,.04);}
+.col-ac{display:flex;gap:6px;align-items:center;}
+.btn-tbl{padding:6px 10px;border-radius:6px;border:1px solid rgba(201,168,76,.3);background:transparent;color:#c9a84c;font-size:12px;cursor:pointer;}
+.btn-tdel{background:rgba(231,76,60,.15);border:none;color:#e74c3c;border-radius:6px;padding:6px 10px;cursor:pointer;}
+.btn-gd{background:#c9a84c;color:#101d36;display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;}
+.btn-gd:hover{background:#e4c97e;}
+.btn-ol{background:transparent;color:#c9a84c;border:1px solid #c9a84c;display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;}
+.search-dark{background:rgba(255,255,255,.05);border:1px solid rgba(201,168,76,.15);border-radius:8px;padding:9px 14px;color:#f5f7fa;font-family:'DM Sans',sans-serif;font-size:13px;width:260px;}
+.search-dark:focus{outline:none;border-color:#c9a84c;}
+.empty-state{text-align:center;padding:60px 20px;color:#8a97b0;}
+.empty-icon{font-size:48px;margin-bottom:12px;opacity:.4;}.empty-text{font-size:14px;margin-bottom:16px;}
+.obra-card{background:linear-gradient(135deg,rgba(30,50,96,.8),rgba(16,29,54,.9));border:1px solid rgba(201,168,76,.12);border-radius:12px;padding:18px;margin-bottom:14px;display:grid;grid-template-columns:1fr auto;gap:16px;}
+#menu-toggle{display:none;position:fixed;top:12px;left:12px;z-index:200;background:#c9a84c;border:none;color:#101d36;border-radius:8px;width:38px;height:38px;align-items:center;justify-content:center;font-size:18px;cursor:pointer;}
+.overlay-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;}.overlay-bg.open{display:block;}
+@media(max-width:768px){#sidebar{transform:translateX(-100%);transition:transform .3s;}#sidebar.open{transform:translateX(0);}#main{margin-left:0;}.dark-page{padding:16px;}.kpi-grid{grid-template-columns:1fr 1fr;}.dash-grid{grid-template-columns:1fr;}#menu-toggle{display:flex;}}
+::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:rgba(201,168,76,.3);border-radius:3px;}
+</style>
+</head>
+<body>
+<button id="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
+<div class="overlay-bg" id="overlay-bg" onclick="toggleSidebar()"></div>
+<nav id="sidebar">
+  <div class="brand"><div class="brand-logo">ARPA</div><div class="brand-sub">Automatismos</div></div>
+  <div class="nav">
+    <div class="nav-item active" onclick="showPage('dashboard',this)"><span class="nav-icon">&#128202;</span> Dashboard</div>
+    <div class="nav-sep">Ventas</div>
+    <div class="nav-item" onclick="showPage('cotizador',this)"><span class="nav-icon">&#128176;</span> Cotizador</div>
+    <div class="nav-item" onclick="showPage('cotizaciones',this)"><span class="nav-icon">&#128203;</span> Cotizaciones <span class="nbadge" id="nb-cots"></span></div>
+    <div class="nav-sep">Operaciones</div>
+    <div class="nav-item" onclick="showPage('formato',this)"><span class="nav-icon">&#128295;</span> Formato Obra</div>
+    <div class="nav-item" onclick="showPage('obras',this)"><span class="nav-icon">&#128193;</span> Obras <span class="nbadge" id="nb-obras"></span></div>
+    <div class="nav-sep">Cobranza</div>
+    <div class="nav-item" onclick="window.open('cuenta-cobro-arpa.html','_blank')"><span class="nav-icon">🧾</span> Cuenta de Cobro</div>
+  </div>
+  <div class="sidebar-footer"><span class="version-dot"></span> CRM ARPA v3.0 &middot; 2026</div>
+</nav>
+<main id="main">
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+<div class="dark-page">
+  <div class="page-header">
+    <div><div class="page-title">Dashboard ARPA</div><div class="page-sub" id="dash-date"></div></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-ol" onclick="showPage('cotizador',document.querySelectorAll('.nav-item')[2])">&#128176; Nueva Cotizacion</button>
+      <button class="btn-gd" onclick="showPage('formato',document.querySelectorAll('.nav-item')[5])">&#128295; Nuevo Formato</button>
+    </div>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi-card"><span class="kpi-icon">&#128203;</span><div class="kpi-label">Cotizaciones Mes</div><div class="kpi-value" id="kpi-cot">0</div><div class="kpi-meta">Meta: 30/mes</div></div>
+    <div class="kpi-card"><span class="kpi-icon">&#127919;</span><div class="kpi-label">Tasa de Cierre</div><div class="kpi-value green" id="kpi-tasa">0%</div><div class="kpi-meta">Meta: 40%</div></div>
+    <div class="kpi-card"><span class="kpi-icon">&#128176;</span><div class="kpi-label">Ingresos Mes</div><div class="kpi-value gold" id="kpi-ing">$0</div><div class="kpi-meta">Meta: $20M</div></div>
+    <div class="kpi-card"><span class="kpi-icon">&#128295;</span><div class="kpi-label">Obras Registradas</div><div class="kpi-value red" id="kpi-obras">0</div><div class="kpi-meta">Total</div></div>
+  </div>
+  <div class="dash-grid">
+    <div class="dcard"><div class="dcard-title">Cotizaciones - Ultimos 6 Meses</div><div class="chart-bars" id="chart-bars"></div></div>
+    <div class="dcard"><div class="dcard-title">Pipeline de Ventas</div><table class="pipeline-table" style="margin-top:8px"><thead><tr><th>Estado</th><th>Cant.</th><th>Monto</th></tr></thead><tbody id="pipeline-body"></tbody></table></div>
+  </div>
+  <div class="dash-grid">
+    <div class="dcard"><div class="dcard-title">Cotizaciones Recientes</div><div id="dash-recent-cots" style="margin-top:8px"></div></div>
+    <div class="dcard"><div class="dcard-title">Actividad Reciente</div><div class="activity-list" id="activity-list" style="margin-top:8px"></div></div>
+  </div>
+</div>
+</div>
+
+<!-- COTIZADOR -->
+<div class="page" id="page-cotizador">
+<header class="hdr">
+  <div class="hdr-inner">
+    <div class="hdr-left">
+      <div class="logo-wrap"><span>ARPA</span></div>
+      <div class="hdr-txt">
+        <h1>AUTOMATISMOS ARLENPAV S.A.S</h1>
+        <p>NIT: 901.473.259-8 &nbsp;|&nbsp; Tel: 300-568-3914</p>
+      </div>
+    </div>
+    <div class="hdr-badge">💰 COT N° <span id="numDisplay">0001</span></div>
+  </div>
+  <div class="hdr-strip"></div>
+</header>
+<div class="wrap">
+<div class="card">
+  <div class="sec-hdr"><div class="sec-dot"></div><h2>Datos del Cliente</h2></div>
+  <div class="sec-body">
+    <div class="row"><div class="f"><label>Nombre / Empresa</label><input type="text" id="cli_nom" placeholder="Ej: Edificio Torres del Sur" autocomplete="off"></div></div>
+    <div class="row">
+      <div class="f"><label>NIT / Cédula</label><input type="text" id="cli_nit" placeholder="900.000.000-0" inputmode="numeric"></div>
+      <div class="f"><label>Teléfono</label><input type="tel" id="cli_tel" placeholder="+57 310 000 0000" inputmode="tel"></div>
+    </div>
+    <div class="row">
+      <div class="f"><label>Correo Electrónico</label><input type="email" id="cli_email" placeholder="correo@empresa.com" inputmode="email"></div>
+      <div class="f"><label>Ciudad</label><input type="text" id="cli_ciudad" placeholder="Medellín" value="Medellín"></div>
+    </div>
+    <div class="row">
+      <div class="f"><label>Fecha</label><input type="date" id="cli_fecha"></div>
+      <div class="f"><label>Válida Hasta</label><input type="date" id="cli_validez"></div>
+    </div>
+  </div>
+</div>
+<div class="card">
+  <div class="sec-hdr"><div class="sec-dot"></div><h2>Buscar y Agregar Productos</h2></div>
+  <div class="sec-body">
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="🔍  Buscar por nombre, código o marca..." oninput="buscarProducto()" autocomplete="off">
+      <button class="btn-add-custom" onclick="agregarPersonalizado()">+ Manual</button>
+    </div>
+    <div class="catalog-results" id="catalogResults"></div>
+  </div>
+</div>
+<div class="card">
+  <div class="sec-hdr"><div class="sec-dot"></div><h2>Productos Cotizados</h2></div>
+  <div style="overflow-x:auto;">
+    <table class="prod-table">
+      <thead><tr><th>Código</th><th>Descripción</th><th style="text-align:center">Cant.</th><th>P.V.P Unit.</th><th>Total</th><th></th></tr></thead>
+      <tbody id="prodBody"><tr id="emptyRow"><td colspan="6" class="empty-prod">Agrega productos desde el buscador</td></tr></tbody>
+    </table>
+  </div>
+</div>
+<div class="card">
+  <div class="sec-hdr"><div class="sec-dot"></div><h2>Mano de Obra</h2></div>
+  <div class="sec-body">
+    <div class="mdo-grid">
+      <div class="mdo-chip" id="mdo_brazos" onclick="toggleMDO('brazos')">
+        <div class="mdo-icon">💪</div><div class="mdo-name">Brazos<br>Abatible</div><div class="mdo-price">$650.000</div>
+        <div class="mdo-qty-row"><label>Cant:</label><input class="mdo-qty" id="qbrazos" type="number" value="1" min="1" oninput="recalcular()" onclick="event.stopPropagation()"></div>
+      </div>
+      <div class="mdo-chip" id="mdo_corredizo" onclick="toggleMDO('corredizo')">
+        <div class="mdo-icon">↔️</div><div class="mdo-name">Motor<br>Corredizo</div><div class="mdo-price">$550.000</div>
+        <div class="mdo-qty-row"><label>Cant:</label><input class="mdo-qty" id="qcorredizo" type="number" value="1" min="1" oninput="recalcular()" onclick="event.stopPropagation()"></div>
+      </div>
+      <div class="mdo-chip" id="mdo_levadizo" onclick="toggleMDO('levadizo')">
+        <div class="mdo-icon">⬆️</div><div class="mdo-name">Motor<br>Levadizo</div><div class="mdo-price">$400.000</div>
+        <div class="mdo-qty-row"><label>Cant:</label><input class="mdo-qty" id="qlevadizo" type="number" value="1" min="1" oninput="recalcular()" onclick="event.stopPropagation()"></div>
+      </div>
+    </div>
+    <div id="mdoResumen" style="display:none;margin-top:12px;background:#FFF7ED;border:1px solid #FDE68A;border-radius:8px;padding:10px 14px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--orange);margin-bottom:6px;">Mano de obra seleccionada</div>
+      <div id="mdoDetalle" style="font-size:13px;color:var(--txt2);line-height:1.8;"></div>
+    </div>
+  </div>
+</div>
+<div class="card">
+  <div class="sec-hdr"><div class="sec-dot"></div><h2>Resumen de Cotización</h2></div>
+  <div class="sec-body">
+    <div class="res-box">
+      <div class="iva-row">
+        <label class="toggle"><input type="checkbox" id="toggleIva" checked onchange="recalcular()"><span class="tslider"></span></label>
+        <span class="iva-label">Incluir IVA 19%</span><span class="iva-val" id="rIva">$ 0</span>
+      </div>
+      <div class="res-row" style="margin-top:8px;"><span class="lbl">Subtotal Productos</span><span class="val" id="rSubProd">$ 0</span></div>
+      <div class="res-row"><span class="lbl">Subtotal Mano de Obra</span><span class="val" id="rSubMDO">$ 0</span></div>
+      <div class="res-row"><span class="lbl">Subtotal</span><span class="val" id="rSubtotal">$ 0</span></div>
+      <hr class="res-divider">
+      <div class="res-total"><span class="lbl">TOTAL</span><span class="val" id="rTotal">$ 0</span></div>
+    </div>
+  </div>
+</div>
+<div class="card">
+  <div class="sec-hdr"><div class="sec-dot"></div><h2>Condiciones Comerciales</h2></div>
+  <div class="sec-body">
+    <div class="cond-grid">
+      <div class="cond-item"><label>Forma de Pago</label>
+        <select id="cond_pago"><option>50% anticipo – 50% contra entrega</option><option>100% anticipo</option><option>Contra entrega</option><option>30 días</option></select>
+      </div>
+      <div class="cond-item"><label>Tiempo de Entrega</label>
+        <select id="cond_entrega"><option>3-5 días hábiles</option><option>1-2 días hábiles</option><option>Inmediata</option><option>8-10 días hábiles</option><option>A convenir</option></select>
+      </div>
+      <div class="cond-item"><label>Garantía del Equipo</label>
+        <select id="cond_garantia"><option>Según fabricante (2-3 años)</option><option>3 años</option><option>2 años</option><option>1 año</option><option>6 meses</option></select>
+      </div>
+      <div class="cond-item"><label>Instalación</label>
+        <select id="cond_instalacion"><option>Incluida</option><option>A convenir</option><option>No incluida</option></select>
+      </div>
+      <div class="cond-item cond-full"><label>Observaciones</label>
+        <textarea id="cond_obs" placeholder="Especificaciones adicionales, notas para el cliente..." rows="3"></textarea>
+      </div>
+    </div>
+    <div class="nota-box" style="margin-top:12px;">
+      <strong>Nota:</strong> Esta cotización tiene vigencia de <strong>15 días calendario</strong>. Los precios están en pesos colombianos (COP). <strong>Automatismos Arlenpav S.A.S</strong> no se hace responsable de daños causados por instalaciones de terceros no autorizados.
+    </div>
+    <div class="exoneracion-box">
+      <strong>⚠️ Condiciones de Garantía — Importante</strong><br><br>
+      La garantía del equipo <strong>NO cubre</strong> daños causados por:<br>
+      • Instalación eléctrica deficiente, voltaje inestable o fuera de especificación.<br>
+      • Ausencia de polo a tierra o acometida eléctrica inadecuada.<br>
+      • Obras civiles inadecuadas (perforaciones, anclajes, estructura de soporte).<br>
+      • Uso indebido del equipo o intervención de terceros no autorizados por ARPA.<br><br>
+      <strong>Las obras eléctricas y civiles son responsabilidad exclusiva del cliente.</strong>
+    </div>
+  </div>
+</div>
+<div class="card">
+  <div class="sec-hdr"><div class="sec-dot"></div><h2>Aprobación</h2></div>
+  <div class="sec-body">
+    <div class="apro-grid">
+      <div class="apro-box">
+        <label>Aprobado por (Cliente)</label>
+        <div class="firma-area">Firma aquí</div>
+        <input type="text" id="apro_nombre" placeholder="Nombre completo">
+        <input type="text" id="apro_cc" placeholder="CC / NIT">
+      </div>
+      <div class="apro-box">
+        <label>Elaborado por Arlenpav</label>
+        <div class="firma-area">Firma aquí</div>
+        <input type="text" value="Arlen Pavón R." readonly style="color:var(--txt2)">
+        <input type="text" value="300-568-3914" readonly style="color:var(--txt2)">
+      </div>
+    </div>
+  </div>
+</div>
+<button class="btn-gen" onclick="generarPDF()">Generar Cotización PDF &nbsp;<span class="pill">📄 DESCARGAR</span></button>
+<div class="footer-empresa">Automatismos Arlenpav S.A.S &nbsp;|&nbsp; NIT 901.473.259-8 &nbsp;|&nbsp; Tel 300-568-3914 &nbsp;|&nbsp; www.automatismosarpa.com</div>
+</div>
+</div>
+
+<!-- COTIZACIONES -->
+<div class="page" id="page-cotizaciones">
+<div class="dark-page">
+  <div class="page-header">
+    <div><div class="page-title">Cotizaciones</div><div class="page-sub">Gestiona y da seguimiento</div></div>
+    <button class="btn-gd" onclick="showPage('cotizador',document.querySelectorAll('.nav-item')[2])">+ Nueva</button>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <input class="search-dark" id="s_cots" placeholder="Buscar cliente..." oninput="renderCots()">
+  </div>
+  <div class="filter-tabs">
+    <button class="filter-tab active" onclick="fcot('',this)">Todas</button>
+    <button class="filter-tab" onclick="fcot('Enviada',this)">Enviadas</button>
+    <button class="filter-tab" onclick="fcot('Negociando',this)">Negociando</button>
+    <button class="filter-tab" onclick="fcot('Cerrada',this)">Cerradas</button>
+    <button class="filter-tab" onclick="fcot('Perdida',this)">Perdidas</button>
+  </div>
+  <div class="data-card"><div style="overflow-x:auto">
+    <table class="dt"><thead><tr><th>#</th><th>Cliente</th><th>Fecha</th><th>Ciudad</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="cots-tbody"></tbody></table>
+  </div></div>
+</div>
+</div>
+
+<!-- FORMATO -->
+<div class="page" id="page-formato">
+<div class="header">
+  <div class="hbrand">
+    <div class="hlogo">ARPA</div>
+    <div class="hinfo">
+      <div class="empresa">AUTOMATISMOS ARLENPAV S.A.S</div>
+      <div class="nit">NIT: 901.473.259-8 | Tel: 300-568-3914</div>
+    </div>
+  </div>
+  <div class="hnum" id="hnum">FMT ——</div>
+</div>
+<div class="tipo-wrap">
+  <button class="tipo-btn active" id="btn-inst" onclick="setTipo('instalacion')">🔧 Instalación</button>
+  <button class="tipo-btn" id="btn-mant" onclick="setTipo('mantenimiento')">🛠 Mantenimiento</button>
+</div>
+<div class="container">
+  <div class="card">
+    <div class="card-hdr"><div class="bullet"></div><div class="card-title">Datos del Cliente</div></div>
+    <div class="card-body">
+      <div class="frow full"><div class="field"><label>Nombre / Empresa</label><input type="text" id="cli-nombre" placeholder="Ej: Edificio Torres del Sur"></div></div>
+      <div class="frow">
+        <div class="field"><label>NIT / Cédula</label><input type="text" id="cli-nit" placeholder="900.000.000-0"></div>
+        <div class="field"><label>Teléfono</label><input type="tel" id="cli-tel" placeholder="+57 310 000 0000"></div>
+      </div>
+      <div class="frow">
+        <div class="field"><label>Correo</label><input type="email" id="cli-email" placeholder="correo@empresa.com"></div>
+        <div class="field"><label>Ciudad</label><input type="text" id="cli-ciudad" value="Medellín"></div>
+      </div>
+      <div class="frow full"><div class="field"><label>Dirección</label><input type="text" id="cli-dir" placeholder="Calle, barrio, ciudad"></div></div>
+      <div class="frow">
+        <div class="field"><label id="lbl-fecha">Fecha Instalación</label><input type="date" id="fecha"></div>
+        <div class="field"><label>Técnico</label><input type="text" id="tecnico" placeholder="Nombre del técnico"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card" id="s-equipos">
+    <div class="card-hdr"><div class="bullet"></div><div class="card-title">Equipos Instalados</div></div>
+    <div class="card-body">
+      <div class="eq-wrap" id="eq-wrap"></div>
+      <button class="btn-add-row" onclick="addEquipo()">＋ Agregar equipo</button>
+    </div>
+  </div>
+  <div class="card hidden" id="s-eq-mant">
+    <div class="card-hdr"><div class="bullet"></div><div class="card-title">Equipo Atendido</div></div>
+    <div class="card-body">
+      <div class="frow">
+        <div class="field"><label>Marca</label><select id="mant-marca"><option value="">—</option><option>BFT</option><option>Accessmatic</option><option>Elite</option><option>NAS</option><option>Beninca</option></select></div>
+        <div class="field"><label>Referencia/Modelo</label><input type="text" id="mant-ref" placeholder="Modelo del motor"></div>
+      </div>
+      <div class="frow">
+        <div class="field"><label>Tipo de Puerta</label><select id="mant-tipo"><option value="">—</option><option>Corredera</option><option>Enrollable</option><option>Abatible</option><option>Seccional</option><option>Barrera</option><option>Techo corredizo</option></select></div>
+        <div class="field"><label>Serial</label><input type="text" id="mant-serial" placeholder="Serial"></div>
+      </div>
+      <div class="frow">
+        <div class="field"><label>Tipo Mantenimiento</label><select id="mant-tipo-serv"><option>Preventivo</option><option>Correctivo</option><option>Preventivo + Correctivo</option><option>Revisión / Diagnóstico</option></select></div>
+        <div class="field"><label>Último Mantenimiento</label><input type="date" id="mant-ultimo"></div>
+      </div>
+      <div class="frow full"><div class="field"><label>Falla Reportada</label><textarea id="mant-falla" placeholder="Problema reportado por el cliente..."></textarea></div></div>
+    </div>
+  </div>
+  <div class="card" id="s-check-inst">
+    <div class="card-hdr"><div class="bullet"></div><div class="card-title">Checklist de Instalación</div></div>
+    <div class="card-body"><div class="checklist" id="cl-inst"></div></div>
+  </div>
+  <div class="card hidden" id="s-check-mant">
+    <div class="card-hdr"><div class="bullet"></div><div class="card-title">Checklist de Mantenimiento</div></div>
+    <div class="card-body"><div class="checklist" id="cl-mant"></div></div>
+  </div>
+  <div class="card" id="s-fotos">
+    <div class="card-hdr"><div class="bullet"></div><div class="card-title">Fotos Antes / Después</div></div>
+    <div class="card-body">
+      <div class="fotos-cols">
+        <div>
+          <div class="foto-col-lbl antes">📷 Antes</div>
+          <div id="fc-antes"></div>
+          <button class="btn-add-foto" onclick="addFoto('antes')">+ Foto Antes</button>
+        </div>
+        <div>
+          <div class="foto-col-lbl despues">📷 Después</div>
+          <div id="fc-despues"></div>
+          <button class="btn-add-foto" onclick="addFoto('despues')">+ Foto Después</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="bullet"></div><div class="card-title" id="title-garantia">Garantía y Observaciones</div></div>
+    <div class="card-body">
+      <div id="gi">
+        <div class="frow triple">
+          <div class="field"><label>Garantía Mano Obra</label><select id="garantia-mo"><option>3 meses</option><option>6 meses</option><option selected>1 año</option><option>2 años</option></select></div>
+          <div class="field"><label>Garantía Equipos</label><select id="garantia-eq"><option>6 meses</option><option selected>1 año</option><option>2 años</option></select></div>
+          <div class="field"><label>Próx. Mantenimiento</label><input type="date" id="prox-mant"></div>
+        </div>
+      </div>
+      <div id="gm" class="hidden">
+        <div class="frow">
+          <div class="field"><label>Garantía Servicio</label><select id="garantia-serv"><option>Sin garantía</option><option>15 días</option><option selected>1 mes</option><option>3 meses</option></select></div>
+          <div class="field"><label>Próx. Mantenimiento</label><input type="date" id="prox-mant-m"></div>
+        </div>
+        <div class="frow full"><div class="field"><label>Trabajos Realizados</label><textarea id="trabajos" placeholder="Limpieza, lubricación, ajuste de finales..."></textarea></div></div>
+        <div class="frow full"><div class="field"><label>Repuestos Utilizados</label><textarea id="repuestos" placeholder="Ej: 1 tarjeta BFT, 2 condensadores..."></textarea></div></div>
+      </div>
+      <div style="height:1px;background:var(--border);margin:12px 0;"></div>
+      <div class="frow full"><div class="field"><label>Observaciones Generales</label><textarea id="observaciones" placeholder="Recomendaciones al cliente..."></textarea></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="bullet"></div><div class="card-title">⚠️ Condiciones de Garantía</div></div>
+    <div class="card-body">
+      <div style="background:#FFF8E1;border:1.5px solid #F59E0B;border-radius:8px;padding:14px 16px;font-size:13px;color:#78350F;line-height:1.7;">
+        <strong>La garantía del equipo NO cubre daños causados por:</strong><br>
+        • Instalación eléctrica deficiente, voltaje inestable o fuera de especificación.<br>
+        • Ausencia de polo a tierra o acometida eléctrica inadecuada.<br>
+        • Obras civiles inadecuadas (perforaciones, anclajes, estructura de soporte).<br>
+        • Uso indebido del equipo o intervención de terceros no autorizados por ARPA.<br><br>
+        <strong>Las obras eléctricas y civiles son responsabilidad exclusiva del cliente.</strong>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr"><div class="bullet"></div><div class="card-title">Firmas</div></div>
+    <div class="card-body">
+      <div class="firmas-grid">
+        <div class="firma-box">
+          <div class="firma-lbl">Firma del Cliente</div>
+          <canvas id="fc" class="firma-canvas" width="280" height="85"></canvas>
+          <div class="firma-sub">Recibido a satisfacción</div>
+          <button class="btn-clr" onclick="clearF('fc')">Limpiar</button>
+        </div>
+        <div class="firma-box">
+          <div class="firma-lbl">Firma del Técnico</div>
+          <canvas id="ft" class="firma-canvas" width="280" height="85"></canvas>
+          <div class="firma-sub">AutomatismosARPA</div>
+          <button class="btn-clr" onclick="clearF('ft')">Limpiar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="acciones">
+    <button class="btn btn-pdf" onclick="validarYGenerarPDF()">📄 Guardar PDF</button>
+    <button class="btn btn-wa" onclick="validarYEnviarWA()">📲 WhatsApp</button>
+    <button class="btn btn-clrf" onclick="limpiar()">🗑 Limpiar</button>
+  </div>
+</div>
+<div class="toast" id="toast">✓ Listo</div>
+</div>
+
+<!-- OBRAS -->
+<div class="page" id="page-obras">
+<div class="dark-page">
+  <div class="page-header">
+    <div><div class="page-title">Obras</div><div class="page-sub">Instalaciones y mantenimientos</div></div>
+    <button class="btn-gd" onclick="showPage('formato',document.querySelectorAll('.nav-item')[5])">+ Nuevo Formato</button>
+  </div>
+  <div class="filter-tabs">
+    <button class="filter-tab active" onclick="fobra('',this)">Todas</button>
+    <button class="filter-tab" onclick="fobra('instalacion',this)">Instalaciones</button>
+    <button class="filter-tab" onclick="fobra('mantenimiento',this)">Mantenimientos</button>
+  </div>
+  <div id="obras-list"></div>
+</div>
+</div>
+
+</main>
+<div id="toast"></div>
+<script>
+const CATALOGO = [
+  { cod:'AUACOWL504',  nom:'Cerradura Inteligente Accessmatic WL504', precio:699900, marca:'Accessmatic' },
+  { cod:'AUACOWL608',  nom:'Cerradura Inteligente Accessmatic WL608', precio:899900, marca:'Accessmatic' },
+  { cod:'AUELSL3000L', nom:'Cerradura Inteligente Elite SL3000L', precio:329900, marca:'Elite' },
+  { cod:'AUELSL5000',  nom:'Cerradura Inteligente Elite SL5000', precio:369900, marca:'Elite' },
+  { cod:'AUELSL5500L', nom:'Cerradura Inteligente Elite SL5500L', precio:399900, marca:'Elite' },
+  { cod:'AUACSC901',    nom:'Motor Levadizo Accessmatic Scorpion 901 – 1/2HP 24V riel C 3m, pantalla LCD, 2 controles', precio:999900, marca:'Accessmatic' },
+  { cod:'AUACFX1000',   nom:'Motor Levadizo Accessmatic Fox 1000 Pro – 3/4HP sin riel, SilentDrive, batería, 2 controles', precio:799900, marca:'Accessmatic' },
+  { cod:'AUACKFOX1000C',nom:'Kit Motor Levadizo Accessmatic Fox 1000 Pro – riel C correa 3m, 2 controles', precio:1049900, marca:'Accessmatic' },
+  { cod:'AUACKFOX1000T',nom:'Kit Motor Levadizo Accessmatic Fox 1000 Pro – riel T coche metálico, 2 controles', precio:1149900, marca:'Accessmatic' },
+  { cod:'AUACFX1100WS', nom:'Motor Levadizo Accessmatic Fox 1100 Pro – WiFi, SilentDrive, 2 controles', precio:1119900, marca:'Accessmatic' },
+  { cod:'AUACKFOX1050HS',nom:'Kit Motor Levadizo Accessmatic Fox 1050 High Speed – 240cm/s, riel 3m, 2 controles', precio:1219900, marca:'Accessmatic' },
+  { cod:'AUACKFOX1100WS',nom:'Kit Motor Levadizo Accessmatic Fox 1100 Pro WiFi – riel T 3m hasta 7m, 2 controles', precio:1399900, marca:'Accessmatic' },
+  { cod:'AUACSH1000',   nom:'Motor Levadizo Accessmatic Shark 1000 – 3/4HP 24V, 12m recorrido, 2 controles', precio:1095900, marca:'Accessmatic' },
+  { cod:'AUACRP120',    nom:'Motor Levadizo Accessmatic Raptor 1200 – 1HP 24V, riel 4m, 2 controles', precio:1399900, marca:'Accessmatic' },
+  { cod:'AUACPUMA1200', nom:'Motor Levadizo Accessmatic Puma 1200 – 1HP WiFi, riel C hasta 5m, 2 controles', precio:1369900, marca:'Accessmatic' },
+  { cod:'AUACKSC1800C', nom:'Kit Motor Levadizo Accessmatic Scorpion 1800 – 1.5HP riel C 4m, batería, 2 controles', precio:1999900, marca:'Accessmatic' },
+  { cod:'AUACKSC1800T', nom:'Kit Motor Levadizo Accessmatic Scorpion 1800 – 1.5HP riel T 4m, batería, 2 controles', precio:1999900, marca:'Accessmatic' },
+  { cod:'AUELMG750', nom:'Motor Levadizo Elite MG750 – 1/2HP 110V/24V, riel C 3m, 2 controles', precio:939900, marca:'Elite' },
+  { cod:'AUACKPB400',   nom:'Kit Motor Corredizo Accessmatic Pitbull 400 – 400kg, cremallera 4m, 2 controles', precio:1099900, marca:'Accessmatic' },
+  { cod:'AUACKBD850',   nom:'Kit Motor Corredizo Accessmatic Bulldozer 850 – 850kg AC, cremallera 4m, 2 controles', precio:1599900, marca:'Accessmatic' },
+  { cod:'AUACKBD1100',  nom:'Kit Motor Corredizo Accessmatic Bulldog 1100 – 1100kg, cremallera 4m, 2 controles', precio:1999900, marca:'Accessmatic' },
+  { cod:'AUACKBD1024BL',nom:'Kit Motor Corredizo Accessmatic Bulldog 1024BL – 1000kg brushless 24V, batería respaldo', precio:3399900, marca:'Accessmatic' },
+  { cod:'AUACKBD1522',  nom:'Kit Motor Corredizo Accessmatic Bulldog 1522 – 1500kg 220V, cremallera 4m', precio:2629900, marca:'Accessmatic' },
+  { cod:'AUACKBD1824BL',nom:'Kit Motor Corredizo Accessmatic Bulldog 1824BL – 1800kg brushless 24V, batería respaldo', precio:3999900, marca:'Accessmatic' },
+  { cod:'AUACKBD2024',  nom:'Kit Motor Corredizo Accessmatic Bulldog 2024 – 2000kg 110V, cremallera 4m', precio:3599900, marca:'Accessmatic' },
+  { cod:'AUELMC4',   nom:'Kit Motor Corredizo Elite Slide 400 – 400kg cremallera 4m, 2 controles', precio:1069900, marca:'Elite' },
+  { cod:'AUELMC5',   nom:'Kit Motor Corredizo Elite Slide 500 – 500kg cremallera 4m, 2 controles', precio:1199900, marca:'Elite' },
+  { cod:'AUELMC8',   nom:'Kit Motor Corredizo Elite Slide 800 – 800kg cremallera 4m, 2 controles', precio:1549900, marca:'Elite' },
+  { cod:'AUELMC8FV', nom:'Kit Motor Corredizo Elite Slide 800 FV – 800kg cremallera 5m + lámpara, 2 controles', precio:1899900, marca:'Elite' },
+  { cod:'AUELMC12',  nom:'Kit Motor Corredizo Elite 1200kg – cremallera 4m uso industrial, 2 controles', precio:1999900, marca:'Elite' },
+  { cod:'AUACEG250',    nom:'Kit Motores Batientes Accessmatic Eagle 250 – 2 hojas 3m/250kg, 2 controles', precio:2519900, marca:'Accessmatic' },
+  { cod:'AUACFC300',    nom:'Kit Motores Batientes Accessmatic Falcon 300 – 2 hojas 3m/300kg, batería, 2 controles', precio:2199900, marca:'Accessmatic' },
+  { cod:'AUACFC350',    nom:'Kit Motores Batientes Accessmatic Falcon 350 – 2 hojas 4m/350kg, 2 controles', precio:3749900, marca:'Accessmatic' },
+  { cod:'AUACEG500',    nom:'Kit Motores Batientes Accessmatic Eagle 500 – 2 hojas 5m/350kg, 2 controles', precio:3889900, marca:'Accessmatic' },
+  { cod:'AUACFENIX600', nom:'Kit Motores Batientes Accessmatic Fénix 600 – 2 hojas 5.5m/600kg, 2 controles', precio:6719900, marca:'Accessmatic' },
+  { cod:'AUACFC351',    nom:'Kit Motor Batiente Accessmatic Falcon 351 – 1 hoja 4m/350kg, 2 controles', precio:2719900, marca:'Accessmatic' },
+  { cod:'AUACEG501',    nom:'Kit Motor Batiente Accessmatic Eagle 501 – 1 hoja 5m/350kg, 2 controles', precio:2729900, marca:'Accessmatic' },
+  { cod:'AUACFENIX601', nom:'Kit Motor Batiente Accessmatic Fénix 601 – 1 hoja 5.5m/600kg, 2 controles', precio:4159900, marca:'Accessmatic' },
+  { cod:'AUELTW25', nom:'Kit Motores Batientes Elite Twist250 – 2 hojas 2.5m/250kg, 2 controles', precio:1799900, marca:'Elite' },
+  { cod:'AUACKAR201B',   nom:'Kit Motor Enrollable Accessmatic Armadillo 200kg Central', precio:1249900, marca:'Accessmatic' },
+  { cod:'AUACKAR382B',   nom:'Kit Motor Enrollable Accessmatic Armadillo 380kg Central', precio:1699900, marca:'Accessmatic' },
+  { cod:'AUACKAR201F',   nom:'Kit Motor Enrollable Accessmatic Armadillo 200kg Full', precio:1349900, marca:'Accessmatic' },
+  { cod:'AUACKAR382F',   nom:'Kit Motor Enrollable Accessmatic Armadillo 380kg Full', precio:1889900, marca:'Accessmatic' },
+  { cod:'AUACKHULK500S', nom:'Kit Motor Enrollable Accessmatic Hulk 500kg – sin resorte, 110V', precio:1399900, marca:'Accessmatic' },
+  { cod:'AUACKHULK624DC',nom:'Kit Motor Enrollable Accessmatic Hulk 600kg DC – batería respaldo', precio:1729900, marca:'Accessmatic' },
+  { cod:'AUACKHULK750',  nom:'Kit Motor Enrollable Accessmatic Hulk 750kg – sin resorte, 110V', precio:1999900, marca:'Accessmatic' },
+  { cod:'AUACKHULK950',  nom:'Kit Motor Enrollable Accessmatic Hulk 950kg – sin resorte, 110V', precio:2249900, marca:'Accessmatic' },
+  { cod:'AUACKHULK1024DC',nom:'Kit Motor Enrollable Accessmatic Hulk 1000kg DC – batería respaldo', precio:2699900, marca:'Accessmatic' },
+  { cod:'AUACKHULK1500', nom:'Kit Motor Enrollable Accessmatic Hulk 1500kg – sin resorte, 220V', precio:4249900, marca:'Accessmatic' },
+  { cod:'AUELKME611',   nom:'Kit Motor Enrollable Elite ME622 – 600kg sin resorte, 110V', precio:1169900, marca:'Elite' },
+  { cod:'AUELKME624DC', nom:'Kit Motor Enrollable Elite Spin624DC – 600kg sin resorte, batería 24V', precio:1649900, marca:'Elite' },
+  { cod:'AUELKME8511',  nom:'Kit Motor Enrollable Elite Spin ME8511 – 800kg sin resorte, 110V', precio:1759900, marca:'Elite' },
+  { cod:'AUELKME824DC', nom:'Kit Motor Enrollable Elite Spin ME824DC – 800kg batería respaldo 24V', precio:2469900, marca:'Elite' },
+  { cod:'AUACKAN4275',     nom:'Kit Cabezal Puerta Automática Accessmatic Avalon 4200 – 4.2m/100kg×2 hojas', precio:7099900, marca:'Accessmatic' },
+  { cod:'AUACKAT42M',      nom:'Kit Cabezal Puerta Automática Accessmatic Avanti 4200 – 4.2m/140kg×2 hojas', precio:8549900, marca:'Accessmatic' },
+  { cod:'AUACKAT63M',      nom:'Kit Cabezal Puerta Automática Accessmatic Avanti 6300 – 6.3m/140kg×2 hojas', precio:9699900, marca:'Accessmatic' },
+  { cod:'AUACKAVANTI6000Z',nom:'Kit Cabezal Puerta Automática Accessmatic Telescópica 6m – 4 hojas', precio:15990000, marca:'Accessmatic' },
+  { cod:'AUACKVIPER100',   nom:'Kit Puerta Batiente Accessmatic Viper100 Pull-Push – max 100kg', precio:1999900, marca:'Accessmatic' },
+  { cod:'AUACKVIPER200',   nom:'Kit Puerta Batiente Accessmatic Viper200 Pull-Push – max 200kg', precio:3399900, marca:'Accessmatic' },
+  { cod:'AUACKVIPER350',   nom:'Kit Puerta Batiente Accessmatic Viper350 Pull-Push – max 350kg', precio:7899900, marca:'Accessmatic' },
+  { cod:'AUELKPA42', nom:'Kit Cabezal Puerta Automática Elite Zoom 4.2m – 100kg×2 hojas', precio:5299900, marca:'Elite' },
+  { cod:'AUACMTD224',     nom:'Barrera Accessmatic Mastodon 224 – 3M ciclos brushless 24V (sin asta)', precio:2999900, marca:'Accessmatic' },
+  { cod:'AUCKMTD224',     nom:'Kit Barrera Accessmatic Mastodon 224 – asta metálica 2m, 2 controles', precio:3499900, marca:'Accessmatic' },
+  { cod:'AUACMTD624',     nom:'Barrera Accessmatic Mastodon 624 – 3M ciclos brushless (sin asta)', precio:4599900, marca:'Accessmatic' },
+  { cod:'AUACKMTD624',    nom:'Kit Barrera Accessmatic Mastodon 624 – asta telescópica 3-6m, 2 controles', precio:5399900, marca:'Accessmatic' },
+  { cod:'AUACKMTD624ART', nom:'Kit Barrera Accessmatic Mastodon 624 – asta articulada 4m, 2 controles', precio:6199900, marca:'Accessmatic' },
+  { cod:'AUACKCP200C', nom:'Puerta Seccional Panel Cuadros Accessmatic 2.44×2.14m', precio:3389900, marca:'Accessmatic' },
+  { cod:'AUACKCP300C', nom:'Puerta Seccional Panel Cuadros Accessmatic 2.74×2.14m', precio:3699900, marca:'Accessmatic' },
+  { cod:'AUACKCP400C', nom:'Puerta Seccional Panel Cuadros Accessmatic 3.05×2.14m', precio:4029900, marca:'Accessmatic' },
+  { cod:'AUACKCP490C', nom:'Puerta Seccional Panel Cuadros Accessmatic 3.05×2.44m', precio:4599900, marca:'Accessmatic' },
+  { cod:'AUACKCP201R', nom:'Puerta Seccional Panel Liso Accessmatic 2.44×2.14m', precio:3389900, marca:'Accessmatic' },
+  { cod:'AUACKCP301R', nom:'Puerta Seccional Panel Liso Accessmatic 2.74×2.14m', precio:3699900, marca:'Accessmatic' },
+  { cod:'AUACKCP401R', nom:'Puerta Seccional Panel Liso Accessmatic 3.05×2.14m', precio:4029900, marca:'Accessmatic' },
+  { cod:'AUACKCP491R', nom:'Puerta Seccional Panel Liso Accessmatic 3.05×2.44m', precio:4599900, marca:'Accessmatic' },
+  { cod:'AUACKCP501R', nom:'Puerta Seccional Panel Liso Accessmatic 3.66×2.14m', precio:4709900, marca:'Accessmatic' },
+  { cod:'AUACKCP575R', nom:'Puerta Seccional Panel Liso Accessmatic 3.66×2.44m', precio:5179900, marca:'Accessmatic' },
+  { cod:'AUACKCP801R', nom:'Puerta Seccional Panel Liso Accessmatic 4.88×2.14m', precio:6229900, marca:'Accessmatic' },
+  { cod:'AUACKCP875R', nom:'Puerta Seccional Panel Liso Accessmatic 4.88×2.44m', precio:6939900, marca:'Accessmatic' },
+  { cod:'AUACKCP900R', nom:'Puerta Seccional Panel Liso Accessmatic 5.49×2.14m', precio:6489900, marca:'Accessmatic' },
+  { cod:'AUACKCP975R', nom:'Puerta Seccional Panel Liso Accessmatic 5.50×2.44m', precio:8079900, marca:'Accessmatic' },
+  { cod:'AUACALW4',   nom:'Control Remoto Accessmatic 4 botones verdes 433MHz', precio:39900, marca:'Accessmatic' },
+  { cod:'AUACALH3',   nom:'Control Remoto Accessmatic 3 botones visor clip 433MHz', precio:69900, marca:'Accessmatic' },
+  { cod:'AUACALT2',   nom:'Control Remoto Accessmatic 2 botones visor clip 433MHz', precio:69900, marca:'Accessmatic' },
+  { cod:'AUACALR4',   nom:'Control Remoto Accessmatic 4 canales 433MHz – Raptor/Elite', precio:69900, marca:'Accessmatic' },
+  { cod:'AUACALS4',   nom:'Control Remoto Accessmatic 4 canales 433MHz – Pitbull/Bulldozer', precio:69900, marca:'Accessmatic' },
+  { cod:'AUACALM4',   nom:'Control Remoto Accessmatic 4 canales 433MHz – Eagle/Falcon', precio:69900, marca:'Accessmatic' },
+  { cod:'AUACALN6',   nom:'Control Remoto Accessmatic 6 funciones 433MHz – Avanti/Avalon', precio:122900, marca:'Accessmatic' },
+  { cod:'AUACAL3900U',nom:'Control Remoto Accessmatic Universal 3 canales 300-868MHz', precio:199900, marca:'Accessmatic' },
+  { cod:'AUACAH45',   nom:'Receptora Universal Accessmatic AccessHub500 – 500 controles, 2 canales', precio:194900, marca:'Accessmatic' },
+  { cod:'AUACHK4',    nom:'Control Remoto Accessmatic 4 canales 433MHz – Hulk', precio:99900, marca:'Accessmatic' },
+  { cod:'AUACAE20',    nom:'Fotoceldas Accessmatic AccessEye 20 – 20m interior 12-24V', precio:55900, marca:'Accessmatic' },
+  { cod:'AUACAE30',    nom:'Fotoceldas Accessmatic AccessEye 30 – 30m exterior 12-24V', precio:129900, marca:'Accessmatic' },
+  { cod:'AUACRT2415U', nom:'Fotoceldas Accessmatic Reflex15 – 15m reflexión 12-36VDC', precio:379900, marca:'Accessmatic' },
+  { cod:'AUACAE15',    nom:'Fotoceldas Accessmatic AccessEye Mini – para cabezales', precio:289900, marca:'Accessmatic' },
+  { cod:'AUACMN20',    nom:'Sensor de movimiento Accessmatic Access-Motion – microondas', precio:569900, marca:'Accessmatic' },
+  { cod:'AUACAF24Li',   nom:'Batería respaldo Accessmatic AccesFuel24Li – litio', precio:249900, marca:'Accessmatic' },
+  { cod:'AUACACCESSCAM',nom:'Cámara WiFi Accessmatic AccessCam – 720p nocturna', precio:589900, marca:'Accessmatic' },
+  { cod:'AUACSONAR',    nom:'Módulo WiFi Accessmatic Sonar – Fox1000/Fox1050HS/RP120', precio:149900, marca:'Accessmatic' },
+  { cod:'AUACRIM4F', nom:'Cremallera acero galvanizado mediana 1m – hasta 1200kg', precio:89900, marca:'Accessmatic' },
+  { cod:'AUACRIM4Z', nom:'Cremallera acero galvanizado gruesa 1m – hasta 2000kg', precio:129900, marca:'Accessmatic' },
+  { cod:'AUACSPRING45R', nom:'Resorte torsión derecho Accessmatic 45kg', precio:264900, marca:'Accessmatic' },
+  { cod:'AUACSPRING45L', nom:'Resorte torsión izquierdo Accessmatic 45kg', precio:264900, marca:'Accessmatic' },
+  { cod:'AUACSPRING50R', nom:'Resorte torsión derecho Accessmatic 50kg', precio:299900, marca:'Accessmatic' },
+  { cod:'AUACSPRING55R', nom:'Resorte torsión derecho Accessmatic 55kg', precio:329900, marca:'Accessmatic' },
+  { cod:'AUACSPRING60R', nom:'Resorte torsión derecho Accessmatic 60kg', precio:344900, marca:'Accessmatic' },
+  { cod:'AUACSPRING70R', nom:'Resorte torsión derecho Accessmatic 70kg', precio:409900, marca:'Accessmatic' },
+  { cod:'AUACSPRING80R', nom:'Resorte torsión derecho Accessmatic 80kg', precio:459900, marca:'Accessmatic' },
+  { cod:'AUACANT55',  nom:'Kit herrajes seccional Accessmatic 55kg – 3.05×2.44m', precio:1219900, marca:'Accessmatic' },
+  { cod:'AUACANT60',  nom:'Kit herrajes seccional Accessmatic 60kg – 3.05×2.44m', precio:1309900, marca:'Accessmatic' },
+  { cod:'AUACANT70',  nom:'Kit herrajes seccional Accessmatic 70kg – 3.05×2.44m', precio:1339900, marca:'Accessmatic' },
+  { cod:'AUACANT80',  nom:'Kit herrajes seccional Accessmatic 80kg – 3.66×2.44m', precio:1379900, marca:'Accessmatic' },
+  { cod:'AUACANT100', nom:'Kit herrajes seccional Accessmatic 100kg – 3.66×2.44m', precio:1499900, marca:'Accessmatic' },
+  { cod:'AUACANT120', nom:'Kit herrajes seccional Accessmatic 120kg – 3.66×2.44m', precio:1579900, marca:'Accessmatic' },
+  { cod:'AUACANT160', nom:'Kit herrajes seccional Accessmatic 160kg – 3.66×2.44m', precio:1859900, marca:'Accessmatic' },
+  { cod:'AUACBOOM02',  nom:'Asta metálica redonda 2m – para talanquera Accessmatic', precio:559900, marca:'Accessmatic' },
+  { cod:'AUACBOOM06T', nom:'Asta telescópica ajustable 3-6m – Accessmatic', precio:859900, marca:'Accessmatic' },
+  { cod:'AUACBOOM04F', nom:'Kit asta articulada 4m – Accessmatic MTD624', precio:1599900, marca:'Accessmatic' },
+  { cod:'AUELCR433',    nom:'Control Remoto Elite 3 botones 433MHz visor clip', precio:54900, marca:'Elite' },
+  { cod:'AUELEP100240', nom:'Módulo WiFi Elite Elite-Pulse Universal – Tuya/Alexa/Google', precio:199900, marca:'Elite' },
+  { cod:'KDEIMOSBTA400-1',    nom:'BFT Deimos BT A400 – Corredizo 400kg 110V (Kit)', precio:1948900, marca:'BFT' },
+  { cod:'KDEIMOSBTA600-1',    nom:'BFT Deimos BT A600 – Corredizo 600kg 110V (Kit)', precio:2391900, marca:'BFT' },
+  { cod:'KDEIMOSACA600-1',    nom:'BFT Deimos AC A600 – Corredizo 600kg 110V (Kit)', precio:2960900, marca:'BFT' },
+  { cod:'KDEIMOSACA600-2',    nom:'BFT Deimos AC A600 – Corredizo 600kg 220V (Kit)', precio:2960900, marca:'BFT' },
+  { cod:'KDEIMOSACA800SLDN-1',nom:'BFT Deimos AC A800 SL DN – Corredizo 800kg 110V (Kit)', precio:3728900, marca:'BFT' },
+  { cod:'KDEIMOSACA800SLDN-2',nom:'BFT Deimos AC A800 SL DN – Corredizo 800kg 220V (Kit)', precio:3728900, marca:'BFT' },
+  { cod:'KARESBTA1000Z18-2',  nom:'BFT Ares BTA 1000 – Corredizo 1000kg 220V Piñón 18 (Kit)', precio:3539900, marca:'BFT' },
+  { cod:'KARESBTA1000Z25-2',  nom:'BFT Ares BTA 1000 – Corredizo 500kg 220V Piñón 25 (Kit)', precio:3539000, marca:'BFT' },
+  { cod:'KARESBTA1500Z18-2',  nom:'BFT Ares BTA 1500 – Corredizo 1500kg 220V Piñón 18 (Kit)', precio:4209900, marca:'BFT' },
+  { cod:'KARESBTA1500Z25-2',  nom:'BFT Ares BTA 1500 – Corredizo 750kg 220V Piñón 25 (Kit)', precio:4402900, marca:'BFT' },
+  { cod:'KICAROSMARTACA2000V', nom:'BFT Icaro Smart AC A2000 – Corredizo 1000kg 220V (Kit)', precio:5522900, marca:'BFT' },
+  { cod:'KICAROSMARTACA2000',  nom:'BFT Icaro Smart AC A2000 – Corredizo 2000kg uso continuo (Kit)', precio:5522900, marca:'BFT' },
+  { cod:'KPHOBOBTA25-1',    nom:'BFT Phobos BT A25 – Batiente 400kg 2.5m 110V (Kit 2 brazos)', precio:3278900, marca:'BFT' },
+  { cod:'KPHOBOBTA40-1',    nom:'BFT Phobos BT A40 – Batiente 500kg 4m 110V (Kit 2 brazos)', precio:3498900, marca:'BFT' },
+  { cod:'K1PHOBOBTA25-1',   nom:'BFT Phobos BT A25 – Batiente 400kg 2.5m 110V (Kit 1 brazo)', precio:2663900, marca:'BFT' },
+  { cod:'K1PHOBOBTA40-1',   nom:'BFT Phobos BT A40 – Batiente 500kg 4m 110V (Kit 1 brazo)', precio:2995900, marca:'BFT' },
+  { cod:'K2PHOBOSACA25-AL', nom:'BFT Phobos AC A25 – Batiente 400kg 2.5m tarjeta Alena (Kit 2 brazos)', precio:3253900, marca:'BFT' },
+  { cod:'K2PHOBOSACA25-R',  nom:'BFT Phobos AC A25 – Batiente 400kg 2.5m tarjeta Rigel (Kit 2 brazos)', precio:3823900, marca:'BFT' },
+  { cod:'K1PHOBOSACA25-AL', nom:'BFT Phobos AC A25 – Batiente 400kg 2.5m tarjeta Alena (Kit 1 brazo)', precio:2844900, marca:'BFT' },
+  { cod:'K1PHOBOSACA25-R',  nom:'BFT Phobos AC A25 – Batiente 400kg 2.5m tarjeta Rigel (Kit 1 brazo)', precio:3170900, marca:'BFT' },
+  { cod:'K2LUX2B-1',       nom:'BFT Lux 2B Hidráulico – Batiente 300kg 3.5m (Kit 2 brazos)', precio:6413900, marca:'BFT' },
+  { cod:'K1LUX2B-1',       nom:'BFT Lux 2B Hidráulico – Batiente 300kg 3.5m (Kit 1 brazo)', precio:3875900, marca:'BFT' },
+  { cod:'K2LUXGV2B-1',     nom:'BFT Lux GV 2B Hidráulico – Batiente 300kg 3.5m (Kit 2 brazos)', precio:8407900, marca:'BFT' },
+  { cod:'K1LUXGV2B-1',     nom:'BFT Lux GV 2B Hidráulico – Batiente 300kg 3.5m (Kit 1 brazo)', precio:4923900, marca:'BFT' },
+  { cod:'K2GIUNO-BTA20-1', nom:'BFT Giuno Ultra BT A20 Hidráulico – Batiente 300kg 2.5m uso continuo (Kit 2 brazos)', precio:9709900, marca:'BFT' },
+  { cod:'K1GIUNO-BTA20-1', nom:'BFT Giuno Ultra BT A20 Hidráulico – Batiente 300kg 2.5m uso continuo (Kit 1 brazo)', precio:6096900, marca:'BFT' },
+  { cod:'K2GIUNO-BTA50-1', nom:'BFT Giuno Ultra BT A50 Hidráulico – Batiente 800kg 5m uso intensivo (Kit 2 brazos)', precio:10394900, marca:'BFT' },
+  { cod:'K1GIUNO-BTA50-1', nom:'BFT Giuno Ultra BT A50 Hidráulico – Batiente 800kg 5m uso intensivo (Kit 1 brazo)', precio:7024900, marca:'BFT' },
+  { cod:'KMOOVI30',        nom:'BFT Moovi 30 – Barrera 3m 220V apertura 4seg (Kit)', precio:5383900, marca:'BFT' },
+  { cod:'KMOOVI60',        nom:'BFT Moovi 60 – Barrera 6m 220V apertura 8.5seg (Kit)', precio:6587900, marca:'BFT' },
+  { cod:'KGIOTTOBTA30U',   nom:'BFT Giotto BT A30 – Barrera 3m 220V/24V uso muy intensivo (Kit)', precio:6670900, marca:'BFT' },
+  { cod:'KGIOTTOBTA60U',   nom:'BFT Giotto BT A60 – Barrera 6m 220V/24V uso muy intensivo (Kit)', precio:7862900, marca:'BFT' },
+  { cod:'KMICHELANGELO30', nom:'BFT Michelangelo – Barrera 3m 220V apertura 1.3seg (Kit)', precio:12890900, marca:'BFT' },
+  { cod:'D112306', nom:'Control Remoto BFT Mitto Cool C2 – 2 canales 433MHz', precio:89000, marca:'BFT' },
+  { cod:'D112318', nom:'Control Remoto BFT Mitto Cool C4 – 4 canales 433MHz', precio:124000, marca:'BFT' },
+  { cod:'KCMC-10', nom:'Caja x10 Controles BFT Mitto Cool C2', precio:740000, marca:'BFT' },
+  { cod:'P111526', nom:'Par Fotoceldas BFT Desme A15 Exterior 30m 24V', precio:251000, marca:'BFT' },
+  { cod:'P111827', nom:'Fotoceldas BFT Reflecta Reflexión Exterior 12m 24V', precio:705000, marca:'BFT' },
+  { cod:'KPOWER700',  nom:'Kit Motor Levadizo NAS Power 700 – 1/2HP 24V riel C 3m, 2 controles', precio:770000, marca:'NAS' },
+  { cod:'KPOWER1000', nom:'Kit Motor Levadizo NAS Power 1000 – 3/4HP 24V riel C 3m, 2 controles', precio:826000, marca:'NAS' },
+  { cod:'KPOWER1200', nom:'Kit Motor Levadizo NAS Power 1200 – 1HP 24V riel C 3m, 2 controles', precio:893000, marca:'NAS' },
+  { cod:'KFORZA500-1',   nom:'Kit Motor Corredizo NAS Forza 500 – 500kg 110V, cremallera 4m, 2 controles', precio:999900, marca:'NAS' },
+  { cod:'KFORZA800-1',   nom:'Kit Motor Corredizo NAS Forza 800 – 800kg 110V, cremallera 4m, 2 controles', precio:1183900, marca:'NAS' },
+  { cod:'KFORZA800-2',   nom:'Kit Motor Corredizo NAS Forza 800 – 800kg 220V, cremallera 4m, 2 controles', precio:1218900, marca:'NAS' },
+  { cod:'KFORTE800-1',   nom:'Kit Motor Corredizo NAS Forte 800 – 800kg 110V, cremallera 4m, 2 controles', precio:1183900, marca:'NAS' },
+  { cod:'KFORTE1200-1',  nom:'Kit Motor Corredizo NAS Forte 1200 – 1200kg 110V, cremallera 4m, 2 controles', precio:1314900, marca:'NAS' },
+  { cod:'KFORTE1500-1',  nom:'Kit Motor Corredizo NAS Forte 1500 – 1500kg 110V, cremallera 4m, 2 controles', precio:1380900, marca:'NAS' },
+  { cod:'KFORTE800DC-1', nom:'Kit Motor Corredizo NAS Forte 800DC – 800kg con batería respaldo', precio:1536900, marca:'NAS' },
+  { cod:'APOLO200-1',   nom:'Kit Brazos Batientes NAS Apolo 200 – 2 hojas 200kg 2.5m, 110V', precio:990000, marca:'NAS' },
+  { cod:'APOLO300-1',   nom:'Kit Brazos Batientes NAS Apolo 300 – 2 hojas 300kg 3m, 110V', precio:1086000, marca:'NAS' },
+  { cod:'MAGNO200-1',   nom:'Kit Brazos Batientes NAS Magno 200 – 2 hojas 200kg intensivo', precio:2135000, marca:'NAS' },
+  { cod:'POTENZA400-1', nom:'Kit Brazos Batientes NAS Potenza 400 – 2 hojas 350kg 4m intensivo', precio:3136000, marca:'NAS' },
+  { cod:'KELECTRADC421', nom:'Kit Barrera NAS Electra DC421 – asta 3.6m uso continuo, 220V', precio:4055000, marca:'NAS' },
+  { cod:'KELECTRADC656', nom:'Kit Barrera NAS Electra DC656 – asta 6m uso intensivo, 220V', precio:4116000, marca:'NAS' },
+  { cod:'NE001-R', nom:'Asta rectangular con reflectivos NAS 3.6m', precio:509000, marca:'NAS' },
+  { cod:'NE002-R', nom:'Asta rectangular con reflectivos NAS 6m', precio:621000, marca:'NAS' },
+  { cod:'KMBS90',   nom:'Kit Cabezal Puerta Automática NAS MBS90 – 4.2m 2 hojas 100kg c/u', precio:5366000, marca:'NAS' },
+  { cod:'KMBS90-2', nom:'Kit Cabezal Puerta Automática NAS MBS90-2 – sensores Optex', precio:6248000, marca:'NAS' },
+  { cod:'MBS-QP02', nom:'Puerta Batiente Automática NAS MBS-QP02 – 100kg 120° apertura', precio:2850000, marca:'NAS' },
+  { cod:'KTHOR600-1',  nom:'Kit Motor Enrollable NAS Thor 600 – 600kg sin resorte, 110V', precio:955000, marca:'NAS' },
+  { cod:'KTHOR800-1',  nom:'Kit Motor Enrollable NAS Thor 800 – 800kg sin resorte, 110V', precio:1219000, marca:'NAS' },
+  { cod:'KODIN500-1',  nom:'Kit Motor Enrollable NAS Odin 500 – 500kg sin resorte, 110V', precio:969900, marca:'NAS' },
+  { cod:'KODIN800-1',  nom:'Kit Motor Enrollable NAS Odin 800 – 800kg sin resorte, 110V', precio:1499900, marca:'NAS' },
+  { cod:'KODIN1000-1', nom:'Kit Motor Enrollable NAS Odin 1000 – 1000kg sin resorte, 110V', precio:1628900, marca:'NAS' },
+  { cod:'HERCULES1600',nom:'Motor Enrollable NAS Hércules 1600 – 150kg uso interno, 110V', precio:732000, marca:'NAS' },
+  { cod:'HERCULES2000',nom:'Motor Enrollable NAS Hércules 2000 – 180kg uso interno, 110V', precio:760000, marca:'NAS' },
+  { cod:'HERCULES2800',nom:'Motor Enrollable NAS Hércules 2800 doble – 280kg, 110V', precio:1105000, marca:'NAS' },
+  { cod:'HERCULES3600',nom:'Motor Enrollable NAS Hércules 3600 doble – 360kg, 110V', precio:1216000, marca:'NAS' },
+  { cod:'KPELEGANCE 8X7',  nom:'Puerta NAS Doble Lámina Cuadros 2.44×2.14m', precio:2607000, marca:'NAS' },
+  { cod:'KPELEGANCE 10X7', nom:'Puerta NAS Doble Lámina Cuadros 3.05×2.14m', precio:3096000, marca:'NAS' },
+  { cod:'KPELEGANCE 10X8', nom:'Puerta NAS Doble Lámina Cuadros 3.05×2.44m', precio:3535000, marca:'NAS' },
+  { cod:'KPELEGANCE 12X7', nom:'Puerta NAS Doble Lámina Cuadros 3.66×2.14m', precio:3876000, marca:'NAS' },
+  { cod:'KPELEGANCE 12X8', nom:'Puerta NAS Doble Lámina Cuadros 3.66×2.44m', precio:4176000, marca:'NAS' },
+  { cod:'KPELEGANCE 16X7', nom:'Puerta NAS Doble Lámina Cuadros 4.88×2.14m', precio:5129000, marca:'NAS' },
+  { cod:'KPELEGANCE 16X8', nom:'Puerta NAS Doble Lámina Cuadros 4.88×2.44m', precio:5717000, marca:'NAS' },
+  { cod:'KPELEGANCEFLUSH 8X7',  nom:'Puerta NAS Doble Lámina Lisa 2.44×2.14m', precio:2607000, marca:'NAS' },
+  { cod:'KPELEGANCEFLUSH 10X7', nom:'Puerta NAS Doble Lámina Lisa 3.05×2.14m', precio:3096000, marca:'NAS' },
+  { cod:'KPELEGANCEFLUSH 12X7', nom:'Puerta NAS Doble Lámina Lisa 3.66×2.14m', precio:3618000, marca:'NAS' },
+  { cod:'KPELEGANCEFLUSH 12X8', nom:'Puerta NAS Doble Lámina Lisa 3.66×2.44m', precio:3984000, marca:'NAS' },
+  { cod:'KPELEGANCEFLUSH 16X7', nom:'Puerta NAS Doble Lámina Lisa 4.88×2.14m', precio:4787000, marca:'NAS' },
+  { cod:'NP027',   nom:'Control Remoto NAS NP027 3 canales 433MHz – Power 700/1000/1200', precio:39000, marca:'NAS' },
+  { cod:'NP028',   nom:'Control Remoto Lujo NAS NP028 3 canales 433MHz', precio:46000, marca:'NAS' },
+  { cod:'YKF09',   nom:'Control Remoto NAS YKF09 433MHz – Forza 500/800', precio:31000, marca:'NAS' },
+  { cod:'NKZ01',   nom:'Control Remoto NAS NKZ01 433MHz – Zeus/Kratos/Apolo', precio:31000, marca:'NAS' },
+  { cod:'PR3-001', nom:'Control Remoto NAS TMT3 433MHz – Forza BT/Magno/Potenza', precio:97000, marca:'NAS' },
+  { cod:'NF031',   nom:'Receptora Universal NAS 4 canales + 2 controles 433MHz', precio:157900, marca:'NAS' },
+  { cod:'CRG001', nom:'Cremallera Acero Galvanizado NAS 1m 30×12mm Módulo 4', precio:61000, marca:'NAS' },
+  { cod:'CRG003', nom:'Cremallera Acero Galvanizado NAS CFZ 2m 22×22mm Módulo 4', precio:150000, marca:'NAS' },
+  { cod:'CRG004', nom:'Cremallera Acero Galvanizado NAS CFZ6 2m 30×30mm Módulo 6', precio:437000, marca:'NAS' },
+  { cod:'CRP002', nom:'Cremallera Plástica NAS – guía corrediza', precio:57000, marca:'NAS' },
+  { cod:'KHN10X7-55K',  nom:'Kit Herrajes NAS seccional 3.05×2.14m – resorte 55kg', precio:1017000, marca:'NAS' },
+  { cod:'KHN10X8-61K',  nom:'Kit Herrajes NAS seccional 3.05×2.44m – resorte 61kg', precio:1115000, marca:'NAS' },
+  { cod:'KHN12X8-70K',  nom:'Kit Herrajes NAS seccional 3.66×2.44m – resorte 70kg', precio:1130000, marca:'NAS' },
+  { cod:'KHN12X8-120K', nom:'Kit Herrajes NAS seccional 3.66×2.44m Cal.11 – 2 resortes 60kg', precio:1354000, marca:'NAS' },
+  { cod:'KHN12X8-140K', nom:'Kit Herrajes NAS seccional 3.66×2.44m Cal.11 – 2 resortes 70kg', precio:1549000, marca:'NAS' },
+  { cod:'KREN 67KGS',   nom:'Kit resortes NAS 67kg izquierdo+derecho', precio:384000, marca:'NAS' },
+  { cod:'KREN 80KGS',   nom:'Kit resortes NAS 80kg izquierdo+derecho', precio:411000, marca:'NAS' },
+  { cod:'KREN 93KGS',   nom:'Kit resortes NAS 93kg izquierdo+derecho', precio:493000, marca:'NAS' },
+  { cod:'NP035', nom:'Batería respaldo litio NAS NP035 – Power 700/1000/1200', precio:223000, marca:'NAS' },
+  { cod:'NP036', nom:'Batería respaldo ácido plomo NAS – Power 700/1000/1200', precio:131000, marca:'NAS' },
+  { cod:'NP040', nom:'Módulo WiFi USB NAS – motores Power', precio:149900, marca:'NAS' },
+  { cod:'NP043', nom:'Fotocelda Universal NAS NP043 – 12-24V', precio:94900, marca:'NAS' },
+  { cod:'CB210', nom:'Tarjeta electrónica NAS CB210 110V/24V – Magno 200/Potenza 400', precio:811000, marca:'NAS' },
+];
+
+const MDO = {
+  brazos:    { nom:'Inst. Brazos Abatible',  precio:650000 },
+  corredizo: { nom:'Inst. Motor Corredizo',  precio:550000 },
+  levadizo:  { nom:'Inst. Motor Levadizo',   precio:400000 },
+};
+const mdoActivo = { brazos:false, corredizo:false, levadizo:false };
+
+function toggleMDO(tipo) {
+  mdoActivo[tipo] = !mdoActivo[tipo];
+  document.getElementById(`mdo_${tipo}`).classList.toggle('active', mdoActivo[tipo]);
+  recalcular(); actualizarMDOResumen();
+}
+function actualizarMDOResumen() {
+  const activos = Object.entries(mdoActivo).filter(([,v])=>v);
+  const res = document.getElementById('mdoResumen');
+  const det = document.getElementById('mdoDetalle');
+  if (!activos.length) { res.style.display='none'; return; }
+  res.style.display='block';
+  det.innerHTML = activos.map(([k])=>{
+    const q = parseInt(document.getElementById(`q${k}`)?.value)||1;
+    return `${MDO[k].nom} × ${q} = <strong>${fmt(MDO[k].precio*q)}</strong>`;
+  }).join('<br>');
+}
+
+const STORAGE_KEY = 'arpa_num_v2';
+function getNum(){ return parseInt(localStorage.getItem(STORAGE_KEY)||'1'); }
+function nextNum(){ const n=getNum(); localStorage.setItem(STORAGE_KEY,n+1); return n; }
+function padNum(n){ return String(n).padStart(4,'0'); }
+document.getElementById('numDisplay').textContent = padNum(getNum());
+
+const hoy = new Date();
+const validez = new Date(); validez.setDate(validez.getDate()+15);
+document.getElementById('cli_fecha').value = hoy.toISOString().split('T')[0];
+document.getElementById('cli_validez').value = validez.toISOString().split('T')[0];
+function fmtFecha(str){ if(!str) return ''; const [y,m,d]=str.split('-'); return `${d}/${m}/${y}`; }
+
+let productos = [];
+let pidCnt = 0;
+
+function agregarProducto(cod, nom, precio, qty=1) {
+  const existing = productos.find(p=>p.cod===cod && !p.manual);
+  if(existing){ existing.qty+=qty; renderProductos(); recalcular();
+    document.getElementById('catalogResults').style.display='none';
+    document.getElementById('searchInput').value=''; return; }
+  productos.push({ id:++pidCnt, cod, nom, precio, qty, manual:false });
+  renderProductos(); recalcular();
+  document.getElementById('catalogResults').style.display='none';
+  document.getElementById('searchInput').value='';
+}
+function agregarPersonalizado(){
+  productos.push({ id:++pidCnt, cod:'MANUAL', nom:'', precio:0, qty:1, manual:true });
+  renderProductos(); recalcular();
+  const lastDesc = document.getElementById(`desc_${pidCnt}`);
+  if(lastDesc){ lastDesc.focus(); }
+}
+function cambiarQty(id,val){ const p=productos.find(x=>x.id===id); if(p){ p.qty=Math.max(1,parseInt(val)||1); renderTotalesInline(id); recalcular(); } }
+function cambiarPrecio(id,val){ const p=productos.find(x=>x.id===id); if(p){ p.precio=parseFloat(String(val).replace(/[^0-9.]/g,''))||0; renderTotalesInline(id); recalcular(); } }
+function cambiarDesc(id,val){ const p=productos.find(x=>x.id===id); if(p) p.nom=val; }
+function renderTotalesInline(id){ const p=productos.find(x=>x.id===id); if(!p) return; const el=document.getElementById(`total_${id}`); if(el) el.textContent=fmt(p.precio*p.qty); }
+function eliminarProducto(id){ productos=productos.filter(x=>x.id!==id); renderProductos(); recalcular(); }
+function renderProductos(){
+  const tbody=document.getElementById('prodBody');
+  if(!productos.length){ tbody.innerHTML='<tr id="emptyRow"><td colspan="6" class="empty-prod">Agrega productos desde el buscador</td></tr>'; return; }
+  tbody.innerHTML=productos.map(p=>`
+    <tr>
+      <td class="cod">${p.cod}</td>
+      <td class="desc">${p.manual?`<input style="border:none;border-bottom:1px solid var(--border);width:100%;font-family:inherit;font-size:13px;font-weight:500;color:var(--txt);background:transparent;padding:2px 0;" id="desc_${p.id}" value="${p.nom}" placeholder="Descripción..." oninput="cambiarDesc(${p.id},this.value)">`:p.nom}</td>
+      <td class="qty-td"><input class="qty-input" type="number" value="${p.qty}" min="1" inputmode="numeric" onchange="cambiarQty(${p.id},this.value)" oninput="cambiarQty(${p.id},this.value)"></td>
+      <td class="num">${p.manual?`<input style="border:none;border-bottom:1px solid var(--border);width:80px;text-align:right;font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--txt);background:transparent;padding:2px 4px;" type="number" value="${p.precio||''}" placeholder="0" inputmode="numeric" onchange="cambiarPrecio(${p.id},this.value)" oninput="cambiarPrecio(${p.id},this.value)">`:fmt(p.precio)}</td>
+      <td class="num" id="total_${p.id}">${fmt(p.precio*p.qty)}</td>
+      <td><button class="del-btn" onclick="eliminarProducto(${p.id})">✕</button></td>
+    </tr>`).join('');
+}
+
+const MARCA_CLASS = { Accessmatic:'marca-ac', Elite:'marca-el', BFT:'marca-bft', NAS:'marca-nas' };
+const MARCA_LABEL = { Accessmatic:'Accessmatic', Elite:'Elite', BFT:'BFT', NAS:'NAS' };
+
+function buscarProducto(){
+  const q=document.getElementById('searchInput').value.trim().toLowerCase();
+  const cont=document.getElementById('catalogResults');
+  if(q.length<2){ cont.style.display='none'; return; }
+  const res=CATALOGO.filter(p=>
+    p.nom.toLowerCase().includes(q)||p.cod.toLowerCase().includes(q)||
+    (p.marca&&p.marca.toLowerCase().includes(q))
+  ).slice(0,8);
+  if(!res.length){ cont.style.display='none'; return; }
+  cont.innerHTML=res.map(p=>`
+    <div class="cat-item" onclick="agregarProducto('${p.cod}','${p.nom.replace(/'/g,"\\'")}',${p.precio})">
+      <div class="cat-item-info">
+        <div class="cat-item-name">${p.nom}${p.marca?`<span class="cat-item-marca ${MARCA_CLASS[p.marca]||''}">${MARCA_LABEL[p.marca]||p.marca}</span>`:''}</div>
+        <div class="cat-item-cod">${p.cod}</div>
+      </div>
+      <div class="cat-item-price">${fmt(p.precio)}</div>
+    </div>`).join('');
+  cont.style.display='block';
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#catalogResults')&&!e.target.closest('#searchInput'))
+    document.getElementById('catalogResults').style.display='none';
+});
+
+function fmt(n){ if(!n||isNaN(n)) return '$ 0'; return '$ '+Math.round(n).toLocaleString('es-CO'); }
+function fmtPDF(n){ if(!n||isNaN(n)) return '$0'; return '$'+Math.round(n).toLocaleString('es-CO'); }
+
+function recalcular(){
+  const subProd=productos.reduce((s,p)=>s+p.precio*p.qty,0);
+  let subMDO=0;
+  Object.entries(mdoActivo).forEach(([k,v])=>{ if(v){ const q=parseInt(document.getElementById(`q${k}`)?.value)||1; subMDO+=MDO[k].precio*q; } });
+  actualizarMDOResumen();
+  const subtotal=subProd+subMDO;
+  const ivaOn=document.getElementById('toggleIva').checked;
+  const iva=ivaOn?Math.round(subtotal*0.19):0;
+  const total=subtotal+iva;
+  document.getElementById('rSubProd').textContent=fmt(subProd);
+  document.getElementById('rSubMDO').textContent=fmt(subMDO);
+  document.getElementById('rSubtotal').textContent=fmt(subtotal);
+  document.getElementById('rIva').textContent=fmt(iva);
+  document.getElementById('rTotal').textContent=fmt(total);
+  return { subProd,subMDO,subtotal,iva,total,ivaOn };
+}
+
+async function generarPDF(){
+  const nom=document.getElementById('cli_nom').value.trim();
+  if(!nom){ toast('⚠️ Escribe el nombre del cliente'); return; }
+  if(!productos.length&&!Object.values(mdoActivo).some(Boolean)){ toast('⚠️ Agrega al menos un producto o mano de obra'); return; }
+  const { subProd,subMDO,subtotal,iva,total,ivaOn }=recalcular();
+  const num=nextNum(); const numStr=padNum(num);
+  document.getElementById('numDisplay').textContent=padNum(getNum());
+  const { jsPDF }=window.jspdf;
+  const doc=new jsPDF({ orientation:'portrait',unit:'mm',format:'letter' });
+  const PW=215.9,PH=279.4,mL=14,mR=14,UW=PW-mL-mR;
+  const NAVY=[26,43,74],ORG=[232,130,12],WHT=[255,255,255],BG=[242,244,248],BDR=[226,232,240],TXT2=[100,116,135],TXT=[26,43,74],AMB=[254,243,199],AMBT=[146,64,14];
+  doc.setFillColor(...NAVY); doc.rect(0,0,PW,30,'F');
+  doc.setFillColor(...WHT); doc.circle(mL+10,15,9,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...NAVY);
+  doc.text('ARPA',mL+10,13.5,{align:'center'});
+  doc.setFontSize(6); doc.setFont('helvetica','normal');
+  doc.text('AUTOMATISMOS',mL+10,17,{align:'center'});
+  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...WHT);
+  doc.text('AUTOMATISMOS ARLENPAV S.A.S',mL+22,11);
+  doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(180,200,230);
+  doc.text('NIT: 901.473.259-8  |  Tel: 300-568-3914  |  CL 77C C 86A 38 – Medellín',mL+22,17);
+  doc.text('www.automatismosarpa.com',mL+22,22);
+  doc.setFillColor(...ORG); doc.roundedRect(PW-mR-38,8,38,10,3,3,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...WHT);
+  doc.text('COTIZACION',PW-mR-19,14.5,{align:'center'});
+  doc.setFillColor(240,244,252); doc.roundedRect(PW-mR-28,20,28,7,2,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...NAVY);
+  doc.text(`N  ${numStr}`,PW-mR-14,25,{align:'center'});
+  doc.setFillColor(...ORG); doc.rect(0,30,PW,2,'F');
+  let y=38;
+  const fecha=fmtFecha(document.getElementById('cli_fecha').value);
+  const validezV=fmtFecha(document.getElementById('cli_validez').value);
+  const nit=document.getElementById('cli_nit').value.trim()||'—';
+  const tel=document.getElementById('cli_tel').value.trim()||'—';
+  const email=document.getElementById('cli_email').value.trim()||'—';
+  const ciudad=document.getElementById('cli_ciudad').value.trim()||'Medellín';
+  doc.setFillColor(...BG); doc.roundedRect(mL,y,UW,6.5,2,2,'F');
+  doc.setFillColor(...ORG); doc.circle(mL+4,y+3.25,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT);
+  doc.text('DATOS DEL CLIENTE',mL+9,y+4.2); y+=9;
+  const clienteRows=[[['NOMBRE / EMPRESA',nom],['NIT / CEDULA',nit]],[['TELEFONO',tel],['CORREO ELECTRONICO',email]],[['CIUDAD',ciudad],['FECHA',fecha]],[['VALIDA HASTA',validezV],[' ',' ']]];
+  clienteRows.forEach((fila,fi)=>{
+    doc.setFillColor(fi%2===0?245:255,fi%2===0?247:255,fi%2===0?252:255);
+    doc.rect(mL,y,UW,9,'F'); doc.setDrawColor(...BDR); doc.setLineWidth(0.2); doc.rect(mL,y,UW,9,'S');
+    let x=mL+3;
+    fila.forEach(([lbl,val])=>{
+      if(lbl&&lbl.trim()){ doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...TXT2); doc.text(lbl,x,y+3.5); doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...TXT); doc.text(String(val),x,y+7.5); }
+      x+=UW/2;
+    }); y+=9;
+  }); y+=8;
+  doc.setFillColor(...BG); doc.roundedRect(mL,y,UW,6.5,2,2,'F');
+  doc.setFillColor(...ORG); doc.circle(mL+4,y+3.25,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT);
+  doc.text('PRODUCTOS COTIZADOS',mL+9,y+4.2); y+=9;
+  const prodRows=productos.map(p=>[p.cod,p.nom,p.qty,fmtPDF(p.precio),fmtPDF(p.precio*p.qty)]);
+  doc.autoTable({ startY:y, head:[['CODIGO','DESCRIPCION','CANT.','P.V.P UNIT.','TOTAL']], body:prodRows.length?prodRows:[['—','Sin productos cotizados','—','—','—']], margin:{left:mL,right:mR}, columnStyles:{0:{cellWidth:28,fontSize:7.5},1:{cellWidth:82,fontSize:8},2:{cellWidth:14,halign:'center',fontSize:8},3:{cellWidth:26,halign:'right',fontSize:8},4:{cellWidth:26,halign:'right',fontSize:8,fontStyle:'bold'}}, headStyles:{fillColor:NAVY,textColor:WHT,fontStyle:'bold',fontSize:8,cellPadding:5}, alternateRowStyles:{fillColor:[248,250,252]}, bodyStyles:{textColor:TXT,cellPadding:{top:5,bottom:5,left:4,right:4}}, styles:{lineColor:BDR,lineWidth:0.2} });
+  y=doc.lastAutoTable.finalY+6;
+  const mdoActivos=Object.entries(mdoActivo).filter(([,v])=>v);
+  if(mdoActivos.length){
+    doc.setFillColor(...BG); doc.roundedRect(mL,y,UW,6.5,2,2,'F');
+    doc.setFillColor(...ORG); doc.circle(mL+4,y+3.25,2,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT);
+    doc.text('MANO DE OBRA',mL+9,y+4.2); y+=9;
+    const mdoRows=mdoActivos.map(([k])=>{ const q=parseInt(document.getElementById(`q${k}`)?.value)||1; return ['MDO-'+k.toUpperCase(),MDO[k].nom,q,fmtPDF(MDO[k].precio),fmtPDF(MDO[k].precio*q)]; });
+    doc.autoTable({ startY:y, head:[['CODIGO','DESCRIPCION','CANT.','P.V.P UNIT.','TOTAL']], body:mdoRows, margin:{left:mL,right:mR}, columnStyles:{0:{cellWidth:28,fontSize:7.5},1:{cellWidth:82,fontSize:8},2:{cellWidth:14,halign:'center',fontSize:8},3:{cellWidth:26,halign:'right',fontSize:8},4:{cellWidth:26,halign:'right',fontSize:8,fontStyle:'bold'}}, headStyles:{fillColor:[30,58,110],textColor:WHT,fontStyle:'bold',fontSize:8,cellPadding:5}, alternateRowStyles:{fillColor:[248,250,252]}, bodyStyles:{textColor:TXT,cellPadding:{top:5,bottom:5,left:4,right:4}}, styles:{lineColor:BDR,lineWidth:0.2} });
+    y=doc.lastAutoTable.finalY+6;
+  }
+  doc.setFillColor(...BG); doc.roundedRect(mL,y,UW,6.5,2,2,'F');
+  doc.setFillColor(...ORG); doc.circle(mL+4,y+3.25,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT);
+  doc.text('RESUMEN DE COTIZACION',mL+9,y+4.2); y+=10;
+  const resW=80,resX=mL+UW-resW;
+  const resRows=[['Subtotal Productos',fmtPDF(subProd)],...(subMDO>0?[['Subtotal Mano de Obra',fmtPDF(subMDO)]]:[]),['Subtotal',fmtPDF(subtotal)],[ivaOn?'IVA (19%)':'IVA (0%)',fmtPDF(iva)]];
+  resRows.forEach(([lbl,val],i)=>{
+    const bg=i%2===0?[245,247,252]:[255,255,255];
+    doc.setFillColor(...bg); doc.rect(resX,y,resW,8,'F'); doc.setDrawColor(...BDR); doc.setLineWidth(0.2); doc.rect(resX,y,resW,8,'S');
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...TXT2); doc.text(lbl,resX+4,y+5.5);
+    doc.setFont('helvetica','bold'); doc.setTextColor(...TXT); doc.text(val,resX+resW-4,y+5.5,{align:'right'}); y+=8;
+  });
+  doc.setFillColor(...NAVY); doc.rect(resX,y,resW,11,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(9.5); doc.setTextColor(...WHT);
+  doc.text('TOTAL',resX+4,y+7.5); doc.setFontSize(11); doc.text(fmtPDF(total),resX+resW-4,y+7.5,{align:'right'}); y+=17;
+  if(y>PH-80){ doc.addPage(); y=20; }
+  doc.setFillColor(...BG); doc.roundedRect(mL,y,UW,6.5,2,2,'F');
+  doc.setFillColor(...ORG); doc.circle(mL+4,y+3.25,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT);
+  doc.text('CONDICIONES COMERCIALES',mL+9,y+4.2); y+=9;
+  const condG=[['FORMA DE PAGO',document.getElementById('cond_pago').value],['TIEMPO DE ENTREGA',document.getElementById('cond_entrega').value],['GARANTIA DEL EQUIPO',document.getElementById('cond_garantia').value],['INSTALACION',document.getElementById('cond_instalacion').value]];
+  const hw=UW/2-2;
+  condG.forEach(([lbl,val],i)=>{
+    const cx=mL+(i%2===0?0:hw+4),cy=y+Math.floor(i/2)*18;
+    doc.setFillColor(248,250,252); doc.roundedRect(cx,cy,hw,16,2,2,'F'); doc.setDrawColor(...BDR); doc.setLineWidth(0.2); doc.roundedRect(cx,cy,hw,16,2,2,'S');
+    doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...TXT2); doc.text(lbl,cx+5,cy+5.5);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...TXT); doc.text(val,cx+5,cy+12.5);
+  }); y+=40;
+  const obs=document.getElementById('cond_obs').value.trim();
+  if(obs){
+    doc.setFillColor(...BG); doc.roundedRect(mL,y,UW,6.5,2,2,'F');
+    doc.setFillColor(...ORG); doc.circle(mL+4,y+3.25,2,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT);
+    doc.text('OBSERVACIONES',mL+9,y+4.2); y+=9;
+    doc.setFillColor(248,250,252);
+    const obsLines=doc.splitTextToSize(obs,UW-10); const obsH=obsLines.length*5+10;
+    doc.roundedRect(mL,y,UW,obsH,2,2,'F'); doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...TXT);
+    doc.text(obsLines,mL+5,y+7); y+=obsH+6;
+  }
+  doc.setFillColor(...AMB);
+  const notaLines=doc.splitTextToSize('Nota: Esta cotizacion tiene vigencia de 15 dias calendario. Los precios estan en COP. Automatismos Arlenpav S.A.S no se hace responsable de danos causados por instalaciones de terceros no autorizados.',UW-10);
+  const notaH=notaLines.length*4.5+10;
+  doc.roundedRect(mL,y,UW,notaH,2,2,'F'); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...AMBT);
+  doc.text(notaLines,mL+5,y+7); y+=notaH+5;
+  const exoLines=doc.splitTextToSize('CONDICIONES DE GARANTIA: La garantia NO cubre danos causados por: instalacion electrica deficiente, voltaje inestable o fuera de especificacion, ausencia de polo a tierra, obras civiles inadecuadas, uso indebido del equipo o intervencion de terceros no autorizados. Las obras electricas y civiles son responsabilidad exclusiva del cliente.',UW-10);
+  const exoH=exoLines.length*4.5+12;
+  doc.setFillColor(255,248,225); doc.roundedRect(mL,y,UW,exoH,2,2,'F');
+  doc.setDrawColor(245,158,11); doc.setLineWidth(0.5); doc.roundedRect(mL,y,UW,exoH,2,2,'S');
+  doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,53,15);
+  doc.text(exoLines,mL+5,y+8); y+=exoH+8;
+  if(y>PH-60){ doc.addPage(); y=20; }
+  doc.setFillColor(...BG); doc.roundedRect(mL,y,UW,6.5,2,2,'F');
+  doc.setFillColor(...ORG); doc.circle(mL+4,y+3.25,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT);
+  doc.text('APROBACION',mL+9,y+4.2); y+=9;
+  const aprW=UW/2-3;
+  [[document.getElementById('apro_nombre').value||'_______________',document.getElementById('apro_cc').value||'CC / NIT','APROBADO POR (CLIENTE)'],['Arlen Pavon R.','300-568-3914','ELABORADO POR ARLENPAV']].forEach(([nom2,sub,lbl],i)=>{
+    const ax=mL+(i===0?0:aprW+6);
+    doc.setFillColor(248,250,252); doc.roundedRect(ax,y,aprW,38,2,2,'F'); doc.setDrawColor(...BDR); doc.setLineWidth(0.2); doc.roundedRect(ax,y,aprW,38,2,2,'S');
+    doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...TXT2); doc.text(lbl,ax+5,y+5.5);
+    doc.setFillColor(240,244,248); doc.roundedRect(ax+5,y+8,aprW-10,14,1,1,'F');
+    doc.setDrawColor(...BDR); doc.setLineWidth(0.5); doc.setLineDash([1.5,1.5],0);
+    doc.roundedRect(ax+5,y+8,aprW-10,14,1,1,'S'); doc.setLineDash([],0);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...TXT2);
+    doc.text('Firma aqui',ax+aprW/2,y+16,{align:'center'});
+    doc.setDrawColor(...BDR); doc.setLineWidth(0.3);
+    doc.line(ax+5,y+27,ax+aprW-5,y+27); doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...TXT); doc.text(nom2,ax+5,y+25);
+    doc.line(ax+5,y+34,ax+aprW-5,y+34); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...TXT2); doc.text(sub,ax+5,y+32);
+  });
+  doc.setFillColor(...NAVY); doc.rect(0,PH-10,PW,10,'F');
+  doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(180,200,230);
+  doc.text('Automatismos Arlenpav S.A.S  |  NIT 901.473.259-8  |  Tel 300-568-3914  |  www.automatismosarpa.com',PW/2,PH-4,{align:'center'});
+  const archivo=`Cotizacion_${numStr}_${nom.replace(/[^a-zA-Z0-9]/g,'_')}.pdf`;
+  doc.save(archivo);
+  toast(`Cotizacion #${numStr} generada`);
+}
+
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
+
+// ══════════════════════════════════════════
+// EQUIPOS — CASCADA MARCA → MODELO (v3.1)
+// ══════════════════════════════════════════
+let eqCnt = 0;
+const eqData = {};
+
+function addEquipo() {
+  const id = ++eqCnt;
+  eqData[id] = { cod:'', nom:'', marca:'', precio:0 };
+  const wrap = document.getElementById('eq-wrap');
+  const div = document.createElement('div');
+  div.className = 'eq-item';
+  div.id = `eq-item-${id}`;
+  const marcas = [...new Set(CATALOGO.map(p => p.marca))].sort();
+  div.innerHTML = `
+    <div class="eq-item-hdr">
+      <span class="eq-num">Equipo #${id}</span>
+      <button class="btn-del-eq" onclick="delEquipo(${id})">×</button>
+    </div>
+    <div id="badge-${id}" style="margin-bottom:6px"></div>
+    <div class="eq-details" style="margin-bottom:10px">
+      <div class="field">
+        <label>Marca</label>
+        <select id="eq-marca-${id}" onchange="cargarModelos(${id})">
+          <option value="">— Seleccionar marca —</option>
+          ${marcas.map(m => `<option value="${m}">${m}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field">
+        <label>Modelo / Referencia</label>
+        <select id="eq-modelo-${id}" onchange="selModelo(${id})" disabled style="opacity:0.5">
+          <option value="">— Primero elige marca —</option>
+        </select>
+      </div>
+    </div>
+    <div id="eq-sel-${id}" style="display:none;background:#FFFBF0;border:1.5px solid var(--gold);border-radius:8px;padding:10px 12px;margin-bottom:10px">
+      <div id="eq-sel-name-${id}" style="font-size:13px;font-weight:700;color:var(--navy)"></div>
+      <div id="eq-sel-cod-${id}" style="font-size:11px;color:var(--mid);font-family:monospace;margin-top:2px"></div>
+    </div>
+    <div class="eq-details">
+      <div class="field">
+        <label>Tipo de Puerta</label>
+        <select id="eq-tipo-${id}">
+          <option value="">— Seleccionar —</option>
+          <option>Corredera</option><option>Enrollable</option><option>Abatible</option>
+          <option>Seccional</option><option>Barrera</option><option>Techo corredizo</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Serial del equipo</label>
+        <input type="text" id="eq-serial-${id}" placeholder="Serial / N° de serie">
+      </div>
+      <div class="field">
+        <label>Ubicación / Zona</label>
+        <input type="text" id="eq-ubic-${id}" placeholder="Ej: Entrada principal">
+      </div>
+      <div class="field">
+        <label>Observación</label>
+        <input type="text" id="eq-obs-${id}" placeholder="Nota sobre este equipo">
+      </div>
+    </div>
+  `;
+  wrap.appendChild(div);
+}
+
+function cargarModelos(id) {
+  const marca = document.getElementById(`eq-marca-${id}`).value;
+  const sel = document.getElementById(`eq-modelo-${id}`);
+  eqData[id] = { cod:'', nom:'', marca:'', precio:0 };
+  document.getElementById(`eq-sel-${id}`).style.display = 'none';
+  document.getElementById(`badge-${id}`).innerHTML = '';
+  if (!marca) {
+    sel.innerHTML = '<option value="">— Primero elige marca —</option>';
+    sel.disabled = true; sel.style.opacity = '0.5'; return;
+  }
+  const modelos = CATALOGO.filter(p => p.marca === marca);
+  sel.innerHTML = '<option value="">— Seleccionar modelo —</option>' +
+    modelos.map(p => `<option value="${p.cod}">${p.nom}</option>`).join('');
+  sel.disabled = false; sel.style.opacity = '1';
+}
+
+function selModelo(id) {
+  const cod = document.getElementById(`eq-modelo-${id}`).value;
+  if (!cod) return;
+  const prod = CATALOGO.find(p => p.cod === cod);
+  if (!prod) return;
+  eqData[id] = { cod: prod.cod, nom: prod.nom, marca: prod.marca, precio: prod.precio };
+  const sel = document.getElementById(`eq-sel-${id}`);
+  sel.style.display = 'block';
+  document.getElementById(`eq-sel-name-${id}`).textContent = prod.nom;
+  document.getElementById(`eq-sel-cod-${id}`).textContent = prod.cod;
+  const bc = {'BFT':'badge-bft','Accessmatic':'badge-access','Elite':'badge-elite','NAS':'badge-nas'}[prod.marca]||'badge-otro';
+  document.getElementById(`badge-${id}`).innerHTML = `<span class="marca-badge ${bc}">${prod.marca}</span>`;
+}
+
+function delEquipo(id) {
+  const el = document.getElementById(`eq-item-${id}`);
+  if (el) el.remove();
+  delete eqData[id];
+}
+
+addEquipo();
+
+function genNum(){const d=new Date(),yy=String(d.getFullYear()).slice(2),mm=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');return `${yy}${mm}${dd}-${Math.floor(Math.random()*9000)+1000}`;}
+const NUM=genNum();
+document.getElementById('hnum').textContent='FMT '+NUM;
+const HOY=new Date().toISOString().split('T')[0];
+document.getElementById('fecha').value=HOY;
+const p6=new Date();p6.setMonth(p6.getMonth()+6);const PV=p6.toISOString().split('T')[0];
+document.getElementById('prox-mant').value=PV;
+document.getElementById('prox-mant-m').value=PV;
+
+let tipo='instalacion';
+function setTipo(t){
+  tipo=t;const inst=t==='instalacion';
+  document.getElementById('btn-inst').classList.toggle('active',inst);
+  document.getElementById('btn-mant').classList.toggle('active',!inst);
+  document.getElementById('lbl-fecha').textContent=inst?'Fecha Instalación':'Fecha Mantenimiento';
+  tog('s-equipos',inst);tog('s-eq-mant',!inst);
+  tog('s-check-inst',inst);tog('s-check-mant',!inst);
+  tog('s-fotos',true);
+  tog('gi',inst);tog('gm',!inst);
+  document.getElementById('title-garantia').textContent=inst?'Garantía y Observaciones':'Resultado del Servicio';
+}
+function tog(id,show){document.getElementById(id).classList.toggle('hidden',!show);}
+
+const CLI=["Motor instalado y fijado correctamente","Cremallera / riel alineado","Finales de carrera ajustados","Fuerza y velocidad calibradas","Fotocélulas funcionando","Borde sensitivo instalado (si aplica)","Mandos programados y entregados al cliente","Modo manual demostrado al cliente","Luz de cortesía funcionando","Sistema eléctrico en regla","Área de trabajo limpia","Cliente informado sobre mantenimiento"];
+const CLM=["Limpieza general del motor","Lubricación de cremallera / riel","Ajuste de finales de carrera","Revisión de fuerza y velocidad","Verificación de fotocélulas","Revisión del borde sensitivo","Revisión de tarjeta electrónica","Revisión de condensador","Verificación de mandos / controles","Revisión del sistema eléctrico","Revisión de tornillería y anclajes","Prueba de funcionamiento completa"];
+function buildCL(items,cid){const c=document.getElementById(cid);c.innerHTML='';items.forEach((item,i)=>{const d=document.createElement('div');d.className='ci';d.id=`${cid}-${i}`;d.innerHTML=`<input type="checkbox" id="${cid}c${i}" onchange="togCI('${cid}',${i})"><label for="${cid}c${i}">${item}</label>`;c.appendChild(d);});}
+function togCI(cid,i){document.getElementById(`${cid}-${i}`).classList.toggle('checked',document.getElementById(`${cid}c${i}`).checked);}
+buildCL(CLI,'cl-inst');buildCL(CLM,'cl-mant');
+
+const fA=[],fD=[];
+function addFoto(lado){const arr=lado==='antes'?fA:fD,idx=arr.length;arr.push(null);const c=document.getElementById(`fc-${lado}`),s=document.createElement('div');s.className='foto-slot';s.id=`fs-${lado}-${idx}`;s.innerHTML=`<input type="file" accept="image/*" class="foto-input" id="fi-${lado}-${idx}" onchange="loadF('${lado}',${idx},this)"><div class="foto-ph" onclick="document.getElementById('fi-${lado}-${idx}').click()"><div class="ico">📷</div><div>Tocar para agregar</div></div><img class="foto-prev" id="fp-${lado}-${idx}"><button class="foto-del" id="fd-${lado}-${idx}" onclick="delF('${lado}',${idx})">×</button>`;c.appendChild(s);}
+function loadF(lado,idx,inp){const file=inp.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{(lado==='antes'?fA:fD)[idx]=e.target.result;const p=document.getElementById(`fp-${lado}-${idx}`);p.src=e.target.result;p.style.display='block';document.querySelector(`#fs-${lado}-${idx} .foto-ph`).style.display='none';document.getElementById(`fd-${lado}-${idx}`).classList.add('vis');};r.readAsDataURL(file);}
+function delF(lado,idx){(lado==='antes'?fA:fD)[idx]=null;document.getElementById(`fp-${lado}-${idx}`).style.display='none';document.querySelector(`#fs-${lado}-${idx} .foto-ph`).style.display='flex';document.getElementById(`fd-${lado}-${idx}`).classList.remove('vis');}
+
+function initF(id){const cv=document.getElementById(id),ctx=cv.getContext('2d');let dr=false;function pos(e){const r=cv.getBoundingClientRect(),sx=cv.width/r.width,sy=cv.height/r.height,src=e.touches?e.touches[0]:e;return{x:(src.clientX-r.left)*sx,y:(src.clientY-r.top)*sy};}
+cv.addEventListener('mousedown',e=>{dr=true;ctx.beginPath();const p=pos(e);ctx.moveTo(p.x,p.y);});
+cv.addEventListener('mousemove',e=>{if(!dr)return;const p=pos(e);ctx.lineWidth=2;ctx.strokeStyle='#0D1B2A';ctx.lineCap='round';ctx.lineTo(p.x,p.y);ctx.stroke();});
+cv.addEventListener('mouseup',()=>dr=false);cv.addEventListener('mouseleave',()=>dr=false);
+cv.addEventListener('touchstart',e=>{e.preventDefault();dr=true;ctx.beginPath();const p=pos(e);ctx.moveTo(p.x,p.y);},{passive:false});
+cv.addEventListener('touchmove',e=>{e.preventDefault();if(!dr)return;const p=pos(e);ctx.lineWidth=2;ctx.strokeStyle='#0D1B2A';ctx.lineCap='round';ctx.lineTo(p.x,p.y);ctx.stroke();},{passive:false});
+cv.addEventListener('touchend',()=>dr=false);}
+function clearF(id){document.getElementById(id).getContext('2d').clearRect(0,0,280,85);}
+initF('fc');initF('ft');
+
+function generarCotPDF(){ toast('✅ Formato guardado'); }
+
+function enviarWA(){
+  const inst=tipo==='instalacion';
+  const nombre=document.getElementById('cli-nombre').value||'cliente';
+  const tel=document.getElementById('cli-tel').value.replace(/\D/g,'');
+  const fecha=document.getElementById('fecha').value;
+  let eqsText='';
+  Object.entries(eqData).forEach(([id,eq])=>{
+    if(eq.nom){const tipop=document.getElementById(`eq-tipo-${id}`)?.value||'';const ubic=document.getElementById(`eq-ubic-${id}`)?.value||'';eqsText+=`\n• ${eq.nom} (${tipop}${ubic?' – '+ubic:''})`;}}
+  let msg;
+  if(inst){msg=`✅ *AutomatismosARPA — Entrega Instalación*\n\nHola ${nombre}, tu instalación fue completada.\n\n📅 Fecha: ${fecha}\n🔧 Equipos instalados:${eqsText||' Ver formato'}\n\n🛡 Garantía MO: ${document.getElementById('garantia-mo').value}\n🛡 Garantía equipos: ${document.getElementById('garantia-eq').value}\n📆 Próx. mantenimiento: ${document.getElementById('prox-mant').value}\n\n📞 +57 300 568 3914 | automatismosarpa.com.co`;}
+  else{msg=`🛠 *AutomatismosARPA — Mantenimiento Realizado*\n\nHola ${nombre}, tu servicio fue completado.\n\n📅 Fecha: ${fecha}\n🔧 Trabajos: ${document.getElementById('trabajos').value||'Ver formato'}\n\n🛡 Garantía: ${document.getElementById('garantia-serv').value}\n📆 Próx. mantenimiento: ${document.getElementById('prox-mant-m').value}\n\n📞 +57 300 568 3914 | automatismosarpa.com.co`;}
+  const num=tel.startsWith('57')?tel:`57${tel}`;
+  window.open(`https://wa.me/${num||'57'}?text=${encodeURIComponent(msg)}`,'_blank');
+  toast('📲 Abriendo WhatsApp...');
+}
+
+function limpiar(){
+  if(!confirm('¿Limpiar todo?'))return;
+  document.querySelectorAll('input,select,textarea').forEach(el=>{if(el.type==='checkbox')el.checked=false;else if(el.id!=='cli-ciudad')el.value='';});
+  document.querySelectorAll('.ci').forEach(el=>el.classList.remove('checked'));
+  clearF('fc');clearF('ft');
+  document.getElementById('fc-antes').innerHTML='';
+  document.getElementById('fc-despues').innerHTML='';
+  fA.length=0;fD.length=0;
+  document.getElementById('fecha').value=HOY;
+  document.getElementById('cli-ciudad').value='Medellín';
+  document.getElementById('prox-mant').value=PV;
+  document.getElementById('prox-mant-m').value=PV;
+  document.getElementById('eq-wrap').innerHTML='';
+  Object.keys(eqData).forEach(k=>delete eqData[k]);
+  eqCnt=0;
+  addEquipo();
+  toast('🗑 Limpiado');
+}
+
+function validarYGenerarPDF() {
+  const nombre = document.getElementById('cli-nombre').value.trim();
+  if (!nombre) { toast('⚠️ Escribe el nombre del cliente'); document.getElementById('cli-nombre').focus(); return; }
+  const hayEquipo = Object.values(eqData).some(eq => eq.nom);
+  if (tipo === 'instalacion' && !hayEquipo) { toast('⚠️ Selecciona al menos un equipo'); return; }
+  generarCotPDF();
+}
+function validarYEnviarWA() {
+  const nombre = document.getElementById('cli-nombre').value.trim();
+  if (!nombre) { toast('⚠️ Escribe el nombre del cliente'); document.getElementById('cli-nombre').focus(); return; }
+  const tel = document.getElementById('cli-tel').value.trim();
+  if (!tel) { toast('⚠️ Escribe el teléfono del cliente'); document.getElementById('cli-tel').focus(); return; }
+  enviarWA();
+}
+
+</script>
+<script>
+const DB={
+  get:k=>JSON.parse(localStorage.getItem('arpa_'+k)||'[]'),
+  set:(k,v)=>localStorage.setItem('arpa_'+k,JSON.stringify(v))
+};
+function uid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,5);}
+function fmtM(n){if(!n||isNaN(n))return '$0';return n>=1000000?'$'+(n/1000000).toFixed(1)+'M':'$'+Math.round(n).toLocaleString('es-CO');}
+function statusBadge(s){var m={'Enviada':'s-enviada','Negociando':'s-negociando','Cerrada':'s-cerrada','Perdida':'s-perdida'};return '<span class="status-badge '+(m[s]||'')+'">'+s+'</span>';}
+function addActivity(msg,color){if(!color)color='#c9a84c';var a=DB.get('activity');a.unshift({msg:msg,color:color,time:new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'})});if(a.length>20)a.splice(20);DB.set('activity',a);}
+
+function showPage(id,el){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  document.getElementById('page-'+id).classList.add('active');
+  if(el)el.classList.add('active');
+  if(id==='dashboard')renderDashboard();
+  if(id==='cotizaciones')renderCots();
+  if(id==='obras')renderObras();
+  closeSidebar();
+}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay-bg').classList.toggle('open');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay-bg').classList.remove('open');}
+
+function renderDashboard(){
+  var now=new Date();
+  document.getElementById('dash-date').textContent=now.toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  var cots=DB.get('cots');
+  var obras=DB.get('obras');
+  var thisMonth=cots.filter(function(c){var d=new Date(c.ts||0);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  var cerradas=cots.filter(function(c){return c.estado==='Cerrada';});
+  var tasa=cots.length?Math.round(cerradas.length/cots.length*100):0;
+  var ingMes=thisMonth.filter(function(c){return c.estado==='Cerrada';}).reduce(function(a,c){return a+(c.total||0);},0);
+  document.getElementById('kpi-cot').textContent=thisMonth.length;
+  document.getElementById('kpi-tasa').textContent=tasa+'%';
+  document.getElementById('kpi-ing').textContent=fmtM(ingMes);
+  document.getElementById('kpi-obras').textContent=obras.length;
+  var meses=[];
+  for(var i=5;i>=0;i--){var d=new Date(now.getFullYear(),now.getMonth()-i,1);meses.push({label:d.toLocaleDateString('es-CO',{month:'short'}),y:d.getFullYear(),m:d.getMonth()});}
+  var counts=meses.map(function(m){return cots.filter(function(c){var d=new Date(c.ts||0);return d.getMonth()===m.m&&d.getFullYear()===m.y;}).length;});
+  var max=Math.max.apply(null,counts.concat([1]));
+  document.getElementById('chart-bars').innerHTML=meses.map(function(m,i){return '<div class="bar-wrap"><div class="bar-val">'+counts[i]+'</div><div class="bar" style="height:'+Math.max(counts[i]/max*100,4)+'%"></div><div class="bar-label">'+m.label+'</div></div>';}).join('');
+  var states=['Enviada','Negociando','Cerrada','Perdida'];
+  document.getElementById('pipeline-body').innerHTML=states.map(function(s){var it=cots.filter(function(c){return c.estado===s;});var mt=it.reduce(function(a,c){return a+(c.total||0);},0);return '<tr><td>'+statusBadge(s)+'</td><td>'+it.length+'</td><td>'+fmtM(mt)+'</td></tr>';}).join('');
+  var rc=cots.slice().reverse().slice(0,5);
+  document.getElementById('dash-recent-cots').innerHTML=rc.length?rc.map(function(c){return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><div><div style="font-size:13px;font-weight:500">'+c.cliente+'</div><div style="font-size:11px;color:#8a97b0">'+(c.ciudad||'Medellin')+'</div></div><div style="text-align:right">'+statusBadge(c.estado)+'<div style="font-size:12px;color:#c9a84c;margin-top:2px">'+fmtM(c.total||0)+'</div></div></div>';}).join(''):'<div style="color:#8a97b0;font-size:13px;padding:20px 0">Sin cotizaciones aun</div>';
+  var acts=DB.get('activity');
+  document.getElementById('activity-list').innerHTML=acts.length?acts.slice(0,8).map(function(a){return '<div class="activity-item"><div class="activity-dot" style="background:'+a.color+'"></div><div><div class="activity-text">'+a.msg+'</div><div class="activity-time">'+a.time+'</div></div></div>';}).join(''):'<div style="color:#8a97b0;font-size:13px">Sin actividad</div>';
+  document.getElementById('nb-cots').textContent=cots.filter(function(c){return c.estado==='Negociando';}).length||'';
+  document.getElementById('nb-obras').textContent=obras.length||'';
+}
+
+var cotFiltro='';
+function fcot(f,el){cotFiltro=f;document.querySelectorAll('#page-cotizaciones .filter-tab').forEach(function(t){t.classList.remove('active');});el.classList.add('active');renderCots();}
+function renderCots(){
+  var q=(document.getElementById('s_cots').value||'').toLowerCase();
+  var cots=DB.get('cots');
+  if(cotFiltro)cots=cots.filter(function(c){return c.estado===cotFiltro;});
+  if(q)cots=cots.filter(function(c){return c.cliente.toLowerCase().includes(q);});
+  cots=cots.slice().reverse();
+  var tb=document.getElementById('cots-tbody');
+  if(!cots.length){tb.innerHTML='<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">&#128203;</div><div class="empty-text">Sin cotizaciones</div></div></td></tr>';return;}
+  tb.innerHTML=cots.map(function(c,i){return '<tr><td style="color:#8a97b0;font-size:11px">#'+String(cots.length-i).padStart(3,'0')+'</td><td><div style="font-weight:500">'+c.cliente+'</div></td><td style="font-size:12px;color:#8a97b0">'+(c.fecha||'')+'</td><td style="font-size:12px">'+(c.ciudad||'')+'</td><td style="font-weight:600;color:#c9a84c">'+fmtM(c.total||0)+'</td><td>'+statusBadge(c.estado)+'</td><td><div class="col-ac"><button class="btn-tbl" onclick="cambiarEstCot('+c.id+')">&#128260;</button><button class="btn-tdel" onclick="delCot('+c.id+')">&#128465;</button></div></td></tr>';}).join('');
+}
+function cambiarEstCot(id){var estados=['Enviada','Negociando','Cerrada','Perdida'];var cots=DB.get('cots');var idx=cots.findIndex(function(c){return c.id===id;});if(idx<0)return;var cur=estados.indexOf(cots[idx].estado);cots[idx].estado=estados[(cur+1)%estados.length];DB.set('cots',cots);renderCots();toast('Estado actualizado');}
+function delCot(id){if(!confirm('Eliminar?'))return;DB.set('cots',DB.get('cots').filter(function(c){return c.id!==id;}));renderCots();}
+
+var obraFiltro='';
+function fobra(f,el){obraFiltro=f;document.querySelectorAll('#page-obras .filter-tab').forEach(function(t){t.classList.remove('active');});el.classList.add('active');renderObras();}
+function renderObras(){
+  var obras=DB.get('obras');
+  if(obraFiltro)obras=obras.filter(function(o){return o.tipo===obraFiltro;});
+  obras=obras.slice().reverse();
+  var el=document.getElementById('obras-list');
+  if(!obras.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">&#128295;</div><div class="empty-text">Sin obras registradas</div></div>';return;}
+  el.innerHTML=obras.map(function(o){return '<div class="obra-card"><div><div style="font-family:Syne,sans-serif;font-size:16px;font-weight:700;color:#f5f7fa;margin-bottom:4px">'+o.cliente+'</div><div style="font-size:12px;color:#8a97b0">'+(o.dir||'')+'</div><div style="margin-top:6px;font-size:12px;color:#8a97b0">Fecha: '+(o.fecha||'')+'  Tecnico: '+(o.tecnico||'Arlen')+'</div></div><div style="text-align:right"><span class="status-badge s-enviada">'+(o.tipo==='instalacion'?'Instalacion':'Mantenimiento')+'</span><br><button class="btn-tdel" style="margin-top:8px" onclick="delObra('+o.id+')">&#128465;</button></div></div>';}).join('');
+}
+function delObra(id){if(!confirm('Eliminar?'))return;DB.set('obras',DB.get('obras').filter(function(o){return o.id!==id;}));renderObras();}
+
+renderDashboard();
+</script>
+</body>
+</html>
