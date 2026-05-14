@@ -1249,8 +1249,7 @@ function delEquipo(id) {
   delete eqData[id];
 }
 
-addEquipo();
-
+// addEquipo() se llama al mostrar el formato, no al cargar
 function genNum(){const d=new Date(),yy=String(d.getFullYear()).slice(2),mm=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');return `${yy}${mm}${dd}-${Math.floor(Math.random()*9000)+1000}`;}
 const NUM=genNum();
 document.getElementById('hnum').textContent='FMT '+NUM;
@@ -1366,6 +1365,7 @@ function showPage(id,el){
   if(id==='dashboard')renderDashboard();
   if(id==='cotizaciones')renderCots();
   if(id==='obras')renderObras();
+  if(id==='formato'){var ew=document.getElementById('eq-wrap');if(ew&&!ew.children.length)addEquipo();}
   closeSidebar();
 }
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay-bg').classList.toggle('open');}
@@ -1427,6 +1427,7 @@ function renderObras(){
 function delObra(id){if(!confirm('Eliminar?'))return;DB.set('obras',DB.get('obras').filter(function(o){return o.id!==id;}));renderObras();}
 
 renderDashboard();
+window.addEventListener('load',function(){var ew=document.getElementById('eq-wrap');if(ew&&!ew.children.length)addEquipo();buildCL(CLI,'cl-inst');buildCL(CLM,'cl-mant');});
 </script>
 </body>
 </html>
