@@ -3,780 +3,781 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cuenta de Cobro – Automatismos ARPA</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<title>Cuenta de Cobro — Automatismos ARPA</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-  :root {
-    --navy: #0D1B2A;
-    --gold: #C9A84C;
-    --gold-light: #e8c96a;
-    --gold-dim: rgba(201,168,76,0.12);
-    --white: #FFFFFF;
-    --gray-50: #F8F9FA;
-    --gray-100: #F0F2F5;
-    --gray-200: #E2E5EA;
-    --gray-400: #9DA3AE;
-    --gray-600: #5A6070;
-    --gray-800: #2C3345;
-    --green: #1A7A4A;
-    --green-bg: #EAF7F1;
-    --red: #C0392B;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+:root{
+  --navy:#1a2a4a;--navy2:#0f1d35;--gold:#c9a84c;--gold2:#e8c97a;
+  --white:#ffffff;--gray:#8a9ab5;--surface:#1e3055;--card:#162340;
+  --green:#22c55e;--red:#ef4444;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--navy2);
+  font-family:'Barlow',sans-serif;
+  color:var(--white);
+  min-height:100vh;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:radial-gradient(ellipse 70% 40% at 15% 0%,rgba(201,168,76,0.07) 0%,transparent 60%);
+  pointer-events:none;z-index:0;
+}
 
-  body {
-    font-family: 'Barlow', sans-serif;
-    background: var(--gray-100);
-    color: var(--navy);
-    min-height: 100vh;
-    padding: 20px 16px 40px;
-  }
+.wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:28px 16px 60px;}
 
-  .page {
-    max-width: 760px;
-    margin: 0 auto;
-  }
+/* ── HEADER ── */
+.top-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:28px;padding-bottom:16px;
+  border-bottom:1px solid rgba(201,168,76,0.25);
+}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-icon{
+  width:46px;height:46px;background:var(--gold);border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:900;
+  color:var(--navy2);
+}
+.logo-text .name{
+  font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;
+  color:var(--white);letter-spacing:0.5px;
+}
+.logo-text .sub{font-size:10px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;}
+.back-btn{
+  background:transparent;border:1px solid rgba(255,255,255,0.15);
+  color:var(--gray);border-radius:8px;padding:7px 14px;
+  font-size:12px;cursor:pointer;transition:all 0.15s;text-decoration:none;
+  display:flex;align-items:center;gap:6px;
+}
+.back-btn:hover{border-color:var(--gold);color:var(--gold);}
 
-  /* TOOLBAR */
-  .toolbar {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-    margin-bottom: 14px;
-    flex-wrap: wrap;
-  }
-  .btn {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
-    padding: 9px 18px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: opacity .15s, transform .1s;
-  }
-  .btn:active { transform: scale(.97); }
-  .btn-gold  { background: var(--gold); color: var(--navy); }
-  .btn-gold:hover { background: var(--gold-light); }
-  .btn-navy  { background: var(--navy); color: var(--white); }
-  .btn-navy:hover { opacity: .85; }
-  .btn-danger { background: var(--red); color: var(--white); }
-  .btn-danger:hover { opacity: .85; }
+/* ── DOC HEADER ── */
+.doc-header{
+  background:var(--card);
+  border:1px solid rgba(201,168,76,0.2);
+  border-radius:14px;
+  padding:24px;
+  margin-bottom:20px;
+}
+.doc-title-row{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:20px;gap:16px;
+}
+.doc-title-block .doc-label{
+  font-size:10px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;color:var(--gray);margin-bottom:4px;
+}
+.doc-title-block .doc-name{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:28px;font-weight:900;color:var(--gold);letter-spacing:1px;
+  text-transform:uppercase;
+}
+.doc-num-block{text-align:right;}
+.doc-num-block .num-label{font-size:10px;color:var(--gray);letter-spacing:1px;text-transform:uppercase;}
+.doc-num-block .num-val{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:22px;font-weight:800;color:var(--white);
+}
+.gold-line{height:3px;background:linear-gradient(90deg,var(--gold),transparent);border-radius:2px;margin-bottom:20px;}
 
-  /* DOCUMENT CARD */
-  .doc {
-    background: var(--white);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 6px 32px rgba(13,27,42,.14);
-  }
+.meta-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.meta-field label{
+  display:block;font-size:10px;font-weight:600;letter-spacing:1px;
+  text-transform:uppercase;color:var(--gray);margin-bottom:4px;
+}
+.meta-field input,.meta-field select{
+  width:100%;background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:7px;padding:8px 10px;
+  color:var(--white);font-size:13px;
+  font-family:'Barlow',sans-serif;outline:none;
+  transition:border-color 0.15s;
+}
+.meta-field input:focus,.meta-field select:focus{border-color:var(--gold);}
+.meta-field select option{background:var(--navy2);}
 
-  /* HEADER */
-  .doc-header {
-    background: var(--navy);
-    padding: 26px 30px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-  }
-  .brand { display: flex; align-items: center; gap: 13px; }
-  .monogram {
-    width: 52px; height: 52px;
-    background: var(--gold);
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 800; font-size: 24px;
-    color: var(--navy);
-    flex-shrink: 0;
-  }
-  .brand-info { color: var(--white); }
-  .brand-name {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 18px; font-weight: 700;
-    letter-spacing: 1.2px; text-transform: uppercase;
-    line-height: 1.1;
-  }
-  .brand-sub {
-    font-size: 11px; color: var(--gold);
-    letter-spacing: 0.4px; margin-top: 3px;
-  }
-  .doc-id { text-align: right; }
-  .doc-type {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 22px; font-weight: 800;
-    color: var(--gold); letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-  .doc-num {
-    font-size: 12px; color: var(--gray-400);
-    margin-top: 4px;
-  }
-  .doc-num b { color: var(--white); }
+/* ── CLIENTE ── */
+.section-card{
+  background:var(--card);
+  border:1px solid rgba(201,168,76,0.15);
+  border-radius:14px;padding:20px;margin-bottom:16px;
+}
+.sec-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:11px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;color:var(--gold);
+  margin-bottom:14px;display:flex;align-items:center;gap:8px;
+}
+.sec-title::after{content:'';flex:1;height:1px;background:rgba(201,168,76,0.2);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.field-row.full{grid-template-columns:1fr;}
+.field-row:last-child{margin-bottom:0;}
+.f label{
+  display:block;font-size:10px;font-weight:600;letter-spacing:1px;
+  text-transform:uppercase;color:var(--gray);margin-bottom:4px;
+}
+.f input,.f textarea{
+  width:100%;background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:7px;padding:8px 10px;
+  color:var(--white);font-size:13px;
+  font-family:'Barlow',sans-serif;outline:none;
+  transition:border-color 0.15s;
+}
+.f input:focus,.f textarea:focus{border-color:var(--gold);}
+.f textarea{resize:vertical;min-height:56px;}
 
-  .gold-line { height: 4px; background: var(--gold); }
+/* ── SERVICIOS ── */
+.tabla-wrap{overflow-x:auto;margin-bottom:14px;}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:rgba(201,168,76,0.1);}
+th{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:11px;font-weight:700;letter-spacing:1px;
+  text-transform:uppercase;color:var(--gold);
+  padding:10px 10px;text-align:left;
+  border-bottom:1px solid rgba(201,168,76,0.2);
+}
+th:last-child,th:nth-last-child(2){text-align:right;}
+td{
+  padding:9px 10px;font-size:13px;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  vertical-align:middle;
+}
+td input{
+  background:transparent;border:none;outline:none;
+  color:var(--white);font-size:13px;font-family:'Barlow',sans-serif;
+  width:100%;
+}
+td input:focus{color:var(--gold2);}
+td.right{text-align:right;}
+td.cant input{width:50px;text-align:center;}
+td.precio input{text-align:right;}
+.td-total{
+  text-align:right;font-weight:600;color:var(--gold);
+  font-family:'Barlow Condensed',sans-serif;font-size:15px;
+}
+.btn-del-row{
+  background:transparent;border:none;color:var(--gray);
+  cursor:pointer;font-size:14px;padding:2px 4px;
+  transition:color 0.15s;
+}
+.btn-del-row:hover{color:var(--red);}
+.btn-add-row{
+  background:rgba(201,168,76,0.1);
+  border:1px dashed rgba(201,168,76,0.35);
+  color:var(--gold);border-radius:8px;
+  padding:8px 16px;font-size:12px;font-weight:600;
+  cursor:pointer;width:100%;transition:all 0.15s;
+  font-family:'Barlow',sans-serif;
+}
+.btn-add-row:hover{background:rgba(201,168,76,0.18);}
 
-  /* SECTIONS */
-  .section { padding: 20px 30px 0; }
-  .section:last-of-type { padding-bottom: 28px; }
+/* ── TOTALES ── */
+.totales-wrap{
+  background:rgba(201,168,76,0.05);
+  border:1px solid rgba(201,168,76,0.15);
+  border-radius:10px;padding:16px;margin-top:4px;
+}
+.tot-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:5px 0;font-size:13px;
+}
+.tot-row.main{
+  border-top:1px solid rgba(201,168,76,0.25);
+  margin-top:6px;padding-top:10px;
+}
+.tot-row.main .tot-label{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:17px;font-weight:800;color:var(--white);
+}
+.tot-row.main .tot-val{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:20px;font-weight:900;color:var(--gold);
+}
+.tot-label{color:var(--gray);}
+.tot-val{font-weight:600;color:var(--white);}
+.toggle-iva{
+  display:flex;align-items:center;gap:8px;cursor:pointer;
+  color:var(--gray);font-size:12px;
+}
+.toggle-iva input{
+  width:16px;height:16px;accent-color:var(--gold);cursor:pointer;
+}
 
-  .sec-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 10px; font-weight: 700;
-    letter-spacing: 2px; text-transform: uppercase;
-    color: var(--gold);
-    border-bottom: 1px solid var(--gold-dim);
-    padding-bottom: 6px;
-    margin-bottom: 14px;
-  }
+/* ── PAGO ── */
+.pago-info{
+  background:rgba(34,197,94,0.06);
+  border:1px solid rgba(34,197,94,0.2);
+  border-radius:10px;padding:14px 16px;
+  font-size:12px;color:#86efac;line-height:1.8;
+}
+.pago-info strong{color:var(--white);display:block;margin-bottom:4px;font-size:13px;}
 
-  /* GRID 2 COLS */
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; }
-  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px 20px; }
+/* ── FIRMAS ── */
+.firmas-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.firma-box{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:8px;padding:14px;text-align:center;
+}
+.firma-line{
+  width:100%;height:1px;background:rgba(255,255,255,0.2);
+  margin:32px 0 8px;
+}
+.firma-label{font-size:11px;color:var(--gray);letter-spacing:0.5px;}
+.firma-name{font-size:12px;color:var(--white);font-weight:600;margin-top:2px;}
 
-  /* FIELD */
-  .field label {
-    display: block;
-    font-size: 10px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.8px;
-    color: var(--gray-400);
-    margin-bottom: 4px;
-  }
-  .field input, .field textarea, .field select {
-    width: 100%;
-    font-family: 'Barlow', sans-serif;
-    font-size: 13.5px;
-    color: var(--navy);
-    background: var(--gray-50);
-    border: 1.5px solid var(--gray-200);
-    border-radius: 6px;
-    padding: 8px 11px;
-    outline: none;
-    transition: border-color .15s;
-    resize: none;
-  }
-  .field input:focus, .field textarea:focus, .field select:focus {
-    border-color: var(--gold);
-    background: var(--white);
-  }
-  .field textarea { min-height: 60px; }
-  .field.full { grid-column: 1 / -1; }
+/* ── ACCIONES ── */
+.acciones{
+  display:flex;gap:10px;justify-content:flex-end;
+  margin-top:20px;flex-wrap:wrap;
+}
+.btn-pdf{
+  background:var(--gold);color:var(--navy2);
+  border:none;border-radius:9px;
+  padding:11px 24px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:15px;font-weight:800;letter-spacing:0.5px;
+  cursor:pointer;transition:all 0.15s;
+  display:flex;align-items:center;gap:8px;
+}
+.btn-pdf:hover{background:var(--gold2);transform:translateY(-1px);}
+.btn-wa{
+  background:rgba(34,197,94,0.15);
+  border:1px solid rgba(34,197,94,0.35);
+  color:#4ade80;border-radius:9px;
+  padding:11px 20px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:15px;font-weight:800;
+  cursor:pointer;transition:all 0.15s;
+  display:flex;align-items:center;gap:8px;
+}
+.btn-wa:hover{background:rgba(34,197,94,0.25);}
+.btn-clear{
+  background:transparent;
+  border:1px solid rgba(255,255,255,0.12);
+  color:var(--gray);border-radius:9px;
+  padding:11px 16px;font-size:13px;
+  cursor:pointer;transition:all 0.15s;
+}
+.btn-clear:hover{border-color:var(--red);color:var(--red);}
 
-  /* ITEMS TABLE */
-  .items-section { padding: 20px 30px 0; }
-  .items-header {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 10px; font-weight: 700;
-    letter-spacing: 2px; text-transform: uppercase;
-    color: var(--gold);
-    border-bottom: 1px solid var(--gold-dim);
-    padding-bottom: 6px;
-    margin-bottom: 10px;
-  }
-  .items-table { width: 100%; border-collapse: collapse; }
-  .items-table thead tr {
-    background: var(--navy);
-  }
-  .items-table thead th {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px; font-weight: 700;
-    letter-spacing: 0.8px; text-transform: uppercase;
-    color: var(--gold);
-    padding: 9px 10px;
-    text-align: left;
-  }
-  .items-table thead th:last-child { text-align: right; }
-  .items-table tbody tr { border-bottom: 1px solid var(--gray-200); }
-  .items-table tbody tr:hover { background: var(--gray-50); }
-  .items-table tbody td {
-    padding: 6px 4px;
-    vertical-align: middle;
-  }
-  .items-table tbody td input {
-    width: 100%;
-    font-family: 'Barlow', sans-serif;
-    font-size: 13px;
-    color: var(--navy);
-    background: transparent;
-    border: 1.5px solid transparent;
-    border-radius: 5px;
-    padding: 5px 7px;
-    outline: none;
-    transition: border-color .15s, background .15s;
-  }
-  .items-table tbody td input:focus {
-    border-color: var(--gold);
-    background: var(--white);
-  }
-  .items-table tbody td input.right { text-align: right; }
-  .items-table tbody td.total-cell {
-    font-weight: 600; font-size: 13px;
-    text-align: right; padding-right: 8px;
-    color: var(--navy);
-    white-space: nowrap;
-  }
-  .btn-remove {
-    background: none; border: none;
-    color: var(--gray-400); cursor: pointer;
-    font-size: 16px; line-height: 1;
-    padding: 4px 6px;
-    border-radius: 4px;
-    transition: color .15s, background .15s;
-  }
-  .btn-remove:hover { color: var(--red); background: #fdecea; }
+/* OBSERVACIONES */
+.f textarea.obs{min-height:70px;}
 
-  .add-row-wrap { padding: 10px 30px 0; }
-  .btn-add-row {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 12px; font-weight: 700;
-    letter-spacing: 0.5px; text-transform: uppercase;
-    background: var(--gold-dim);
-    color: var(--gold);
-    border: 1.5px dashed var(--gold);
-    border-radius: 6px;
-    padding: 7px 16px;
-    cursor: pointer;
-    transition: background .15s;
-  }
-  .btn-add-row:hover { background: rgba(201,168,76,.22); }
-
-  /* TOTALES */
-  .totals-section {
-    padding: 16px 30px 0;
-    display: flex;
-    justify-content: flex-end;
-  }
-  .totals-box {
-    background: var(--gray-50);
-    border: 1.5px solid var(--gray-200);
-    border-radius: 8px;
-    overflow: hidden;
-    min-width: 280px;
-  }
-  .totals-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 9px 16px;
-    border-bottom: 1px solid var(--gray-200);
-    font-size: 13px;
-  }
-  .totals-row:last-child { border-bottom: none; }
-  .totals-row .t-label { color: var(--gray-600); font-weight: 500; }
-  .totals-row .t-value { font-weight: 600; }
-  .totals-row.grand {
-    background: var(--navy);
-    padding: 12px 16px;
-  }
-  .totals-row.grand .t-label {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 14px; font-weight: 700;
-    letter-spacing: 0.5px; text-transform: uppercase;
-    color: var(--gold);
-  }
-  .totals-row.grand .t-value {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 18px; font-weight: 800;
-    color: var(--white);
-  }
-  .iva-toggle-row {
-    display: flex; align-items: center;
-    justify-content: space-between;
-    padding: 8px 16px;
-    border-bottom: 1px solid var(--gray-200);
-    font-size: 13px;
-  }
-  .iva-toggle-row .t-label { color: var(--gray-600); font-weight: 500; }
-  .toggle-wrap { display: flex; align-items: center; gap: 8px; }
-  .toggle {
-    position: relative; width: 36px; height: 20px;
-    cursor: pointer;
-  }
-  .toggle input { opacity: 0; width: 0; height: 0; }
-  .toggle-slider {
-    position: absolute; inset: 0;
-    background: var(--gray-200);
-    border-radius: 20px;
-    transition: background .2s;
-  }
-  .toggle-slider:before {
-    content: '';
-    position: absolute;
-    width: 14px; height: 14px;
-    left: 3px; top: 3px;
-    background: white;
-    border-radius: 50%;
-    transition: transform .2s;
-  }
-  .toggle input:checked + .toggle-slider { background: var(--gold); }
-  .toggle input:checked + .toggle-slider:before { transform: translateX(16px); }
-  .toggle-label { font-size: 12px; color: var(--gray-600); }
-
-  /* PAGO */
-  .pago-section { padding: 18px 30px 0; }
-  .pago-box {
-    background: var(--green-bg);
-    border: 1.5px solid #a3d9bc;
-    border-radius: 8px;
-    padding: 14px 18px;
-  }
-  .pago-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px; font-weight: 700;
-    letter-spacing: 1.5px; text-transform: uppercase;
-    color: var(--green);
-    margin-bottom: 10px;
-  }
-  .pago-grid { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 13px; }
-  .pago-key { color: var(--gray-600); font-weight: 500; }
-  .pago-val { color: var(--navy); font-weight: 600; }
-
-  /* FIRMA */
-  .firma-section { padding: 22px 30px 28px; }
-  .firma-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .firma-box {
-    border-top: 2px solid var(--gray-200);
-    padding-top: 8px;
-  }
-  .firma-label { font-size: 11px; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.8px; }
-  .firma-name { font-weight: 600; font-size: 13px; margin-top: 4px; }
-  .firma-role { font-size: 12px; color: var(--gray-400); }
-
-  /* FOOTER */
-  .doc-footer {
-    background: var(--navy);
-    padding: 12px 30px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .footer-info { font-size: 11px; color: var(--gray-400); }
-  .footer-info span { color: var(--gold); font-weight: 600; }
-
-  /* NUMERO CONSECUTIVO */
-  #doc-number-display {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 14px; font-weight: 700;
-    color: var(--white);
-  }
-
-  /* PRINT */
-  @media print {
-    body { background: white; padding: 0; }
-    .toolbar { display: none; }
-    .doc { box-shadow: none; border-radius: 0; }
-    .btn-remove { display: none; }
-    .add-row-wrap { display: none; }
-    .field input, .field textarea, .field select,
-    .items-table tbody td input {
-      background: transparent !important;
-      border-color: transparent !important;
-    }
-  }
-
-  @media (max-width: 540px) {
-    .doc-header { flex-direction: column; align-items: flex-start; }
-    .doc-id { text-align: left; }
-    .grid2, .grid3 { grid-template-columns: 1fr; }
-    .firma-grid { grid-template-columns: 1fr; }
-    .totals-box { min-width: unset; width: 100%; }
-    .totals-section { justify-content: stretch; }
-    .section, .items-section, .add-row-wrap,
-    .pago-section, .firma-section { padding-left: 16px; padding-right: 16px; }
-    .doc-footer { padding: 12px 16px; }
-  }
+@media(max-width:580px){
+  .meta-grid{grid-template-columns:1fr 1fr;}
+  .field-row{grid-template-columns:1fr;}
+  .firmas-grid{grid-template-columns:1fr;}
+  .doc-title-row{flex-direction:column;}
+  .doc-num-block{text-align:left;}
+}
 </style>
 </head>
 <body>
+<div class="wrap">
 
-<div class="page">
-
-  <!-- TOOLBAR -->
-  <div class="toolbar">
-    <button class="btn btn-danger" onclick="limpiarTodo()">🗑 Limpiar</button>
-    <button class="btn btn-navy" onclick="window.print()">🖨 Imprimir / PDF</button>
-    <button class="btn btn-gold" onclick="guardarLocal()">💾 Guardar</button>
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="logo">
+      <div class="logo-icon">AR</div>
+      <div class="logo-text">
+        <div class="name">Automatismos ARPA</div>
+        <div class="sub">Cuenta de Cobro</div>
+      </div>
+    </div>
+    <a class="back-btn" href="index.html">← Panel</a>
   </div>
 
-  <!-- DOCUMENTO -->
-  <div class="doc">
-
-    <!-- HEADER -->
-    <div class="doc-header">
-      <div class="brand">
-        <div class="monogram">AP</div>
-        <div class="brand-info">
-          <div class="brand-name">Automatismos Arlenpav S.A.S.</div>
-          <div class="brand-sub">NIT 901.473.259-8 &nbsp;·&nbsp; Medellín, Colombia</div>
-          <div class="brand-sub" style="margin-top:2px;">automatismosarpa.com.co &nbsp;·&nbsp; +57 300 568 3914</div>
-        </div>
+  <!-- DOC HEADER -->
+  <div class="doc-header">
+    <div class="doc-title-row">
+      <div class="doc-title-block">
+        <div class="doc-label">Documento</div>
+        <div class="doc-name">Cuenta de Cobro</div>
       </div>
-      <div class="doc-id">
-        <div class="doc-type">Cuenta de Cobro</div>
-        <div class="doc-num">No. <b id="doc-number-display">CC-001</b></div>
+      <div class="doc-num-block">
+        <div class="num-label">No.</div>
+        <div class="num-val" id="num-display">CC-001</div>
       </div>
     </div>
     <div class="gold-line"></div>
-
-    <!-- DATOS DEL DOCUMENTO -->
-    <div class="section">
-      <div class="sec-title">Datos del Documento</div>
-      <div class="grid3">
-        <div class="field">
-          <label>Número</label>
-          <input type="text" id="numero" value="CC-001" oninput="document.getElementById('doc-number-display').textContent=this.value">
-        </div>
-        <div class="field">
-          <label>Fecha de emisión</label>
-          <input type="date" id="fecha_emision">
-        </div>
-        <div class="field">
-          <label>Fecha de vencimiento</label>
-          <input type="date" id="fecha_vencimiento">
-        </div>
+    <div class="meta-grid">
+      <div class="meta-field">
+        <label>Ciudad</label>
+        <input type="text" id="m-ciudad" value="Medellín">
+      </div>
+      <div class="meta-field">
+        <label>Fecha emisión</label>
+        <input type="date" id="m-fecha">
+      </div>
+      <div class="meta-field">
+        <label>Fecha vencimiento</label>
+        <input type="date" id="m-vence">
       </div>
     </div>
+  </div>
 
-    <!-- DATOS DEL CLIENTE -->
-    <div class="section" style="margin-top:16px;">
-      <div class="sec-title">Facturar a / Cliente</div>
-      <div class="grid2">
-        <div class="field">
-          <label>Nombre / Razón Social</label>
-          <input type="text" id="cliente_nombre" placeholder="Nombre completo o empresa">
-        </div>
-        <div class="field">
-          <label>NIT / Cédula</label>
-          <input type="text" id="cliente_nit" placeholder="000.000.000-0">
-        </div>
-        <div class="field">
-          <label>Dirección</label>
-          <input type="text" id="cliente_dir" placeholder="Calle, barrio, ciudad">
-        </div>
-        <div class="field">
-          <label>Teléfono / WhatsApp</label>
-          <input type="text" id="cliente_tel" placeholder="+57 300 000 0000">
-        </div>
-        <div class="field full">
-          <label>Email</label>
-          <input type="email" id="cliente_email" placeholder="correo@ejemplo.com">
-        </div>
+  <!-- REMITENTE -->
+  <div class="section-card">
+    <div class="sec-title">Cobrador</div>
+    <div class="field-row">
+      <div class="f">
+        <label>Nombre completo</label>
+        <input type="text" id="r-nombre" value="Arlen Pavón Restrepo">
+      </div>
+      <div class="f">
+        <label>C.C. / NIT</label>
+        <input type="text" id="r-nit" value="98.514.826">
       </div>
     </div>
-
-    <!-- DESCRIPCION SERVICIO -->
-    <div class="section" style="margin-top:16px;">
-      <div class="sec-title">Concepto General</div>
-      <div class="field">
-        <textarea id="concepto" placeholder="Ej: Servicios de instalación y puesta en marcha de motores para puertas automáticas en instalaciones de la empresa..."></textarea>
+    <div class="field-row">
+      <div class="f">
+        <label>Empresa</label>
+        <input type="text" id="r-empresa" value="Automatismos Arlenpav S.A.S.">
+      </div>
+      <div class="f">
+        <label>NIT Empresa</label>
+        <input type="text" id="r-nitemp" value="901.473.259-8">
       </div>
     </div>
+  </div>
 
-    <!-- ITEMS -->
-    <div class="items-section" style="margin-top:16px;">
-      <div class="items-header">Detalle de Servicios / Productos</div>
-      <table class="items-table">
+  <!-- CLIENTE -->
+  <div class="section-card">
+    <div class="sec-title">Señor(es) — Debe a</div>
+    <div class="field-row">
+      <div class="f">
+        <label>Nombre / Empresa</label>
+        <input type="text" id="c-nombre" placeholder="Nombre del cliente">
+      </div>
+      <div class="f">
+        <label>NIT / C.C.</label>
+        <input type="text" id="c-nit" placeholder="000.000.000-0">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="f">
+        <label>Dirección</label>
+        <input type="text" id="c-dir" placeholder="Dirección del cliente">
+      </div>
+      <div class="f">
+        <label>Teléfono</label>
+        <input type="tel" id="c-tel" placeholder="300 000 0000">
+      </div>
+    </div>
+  </div>
+
+  <!-- SERVICIOS -->
+  <div class="section-card">
+    <div class="sec-title">Servicios / Conceptos</div>
+    <div class="tabla-wrap">
+      <table id="tabla-servicios">
         <thead>
           <tr>
-            <th style="width:36px;">#</th>
-            <th>Descripción</th>
-            <th style="width:72px;">Cant.</th>
-            <th style="width:120px;">Valor Unit.</th>
-            <th style="width:120px; text-align:right;">Total</th>
-            <th style="width:36px;"></th>
+            <th>Descripción del servicio</th>
+            <th style="width:60px">Cant.</th>
+            <th style="width:120px;text-align:right">Valor unit.</th>
+            <th style="width:120px;text-align:right">Total</th>
+            <th style="width:30px"></th>
           </tr>
         </thead>
-        <tbody id="items-body">
-          <!-- filas dinámicas -->
-        </tbody>
+        <tbody id="tbody-servicios"></tbody>
       </table>
     </div>
-
-    <!-- AGREGAR FILA -->
-    <div class="add-row-wrap" style="margin-top:8px;">
-      <button class="btn-add-row" onclick="agregarFila()">+ Agregar ítem</button>
-    </div>
+    <button class="btn-add-row" onclick="addFila()">+ Agregar servicio</button>
 
     <!-- TOTALES -->
-    <div class="totals-section" style="margin-top:16px;">
-      <div class="totals-box">
-        <div class="totals-row">
-          <span class="t-label">Subtotal</span>
-          <span class="t-value" id="subtotal-display">$ 0</span>
-        </div>
-        <div class="iva-toggle-row">
-          <span class="t-label">IVA (19%)</span>
-          <div class="toggle-wrap">
-            <label class="toggle">
-              <input type="checkbox" id="iva-toggle" onchange="calcularTotales()">
-              <span class="toggle-slider"></span>
-            </label>
-            <span class="toggle-label" id="iva-label">No aplica</span>
-          </div>
-        </div>
-        <div class="totals-row" id="iva-row" style="display:none;">
-          <span class="t-label">Valor IVA</span>
-          <span class="t-value" id="iva-display">$ 0</span>
-        </div>
-        <div class="totals-row" id="rete-row" style="display:none;">
-          <span class="t-label">Retención en la fuente</span>
-          <span class="t-value">
-            <input type="number" id="retefuente" placeholder="%" min="0" max="100" step="0.5"
-              style="width:54px; font-size:13px; border:1.5px solid var(--gray-200); border-radius:5px; padding:4px 6px; text-align:center;"
-              oninput="calcularTotales()"> %
-          </span>
-        </div>
-        <div class="totals-row">
-          <span class="t-label" style="font-size:12px; cursor:pointer; color:var(--gold);" onclick="document.getElementById('rete-row').style.display = document.getElementById('rete-row').style.display==='none' ? 'flex':'none'">
-            ± Retención en la fuente
-          </span>
-          <span class="t-value" id="rete-display" style="color:var(--red);">– $ 0</span>
-        </div>
-        <div class="totals-row grand">
-          <span class="t-label">TOTAL A PAGAR</span>
-          <span class="t-value" id="total-display">$ 0</span>
+    <div class="totales-wrap" style="margin-top:16px">
+      <div class="tot-row">
+        <span class="tot-label">Subtotal</span>
+        <span class="tot-val" id="t-subtotal">$ 0</span>
+      </div>
+      <div class="tot-row" id="row-iva" style="display:none">
+        <span class="tot-label">IVA 19%</span>
+        <span class="tot-val" id="t-iva">$ 0</span>
+      </div>
+      <div class="tot-row" id="row-rte" style="display:none">
+        <span class="tot-label">Retención <span id="rte-pct-label">3.5</span>%</span>
+        <span class="tot-val" id="t-rte" style="color:#f87171">- $ 0</span>
+      </div>
+      <div class="tot-row main">
+        <span class="tot-label">TOTAL A COBRAR</span>
+        <span class="tot-val" id="t-total">$ 0</span>
+      </div>
+      <div style="display:flex;gap:20px;margin-top:12px;flex-wrap:wrap">
+        <label class="toggle-iva">
+          <input type="checkbox" id="chk-iva" onchange="calcTotales()">
+          Incluir IVA 19%
+        </label>
+        <label class="toggle-iva">
+          <input type="checkbox" id="chk-rte" onchange="toggleRte()">
+          Retención en la fuente
+        </label>
+        <div id="rte-field" style="display:none;align-items:center;gap:6px;" class="toggle-iva">
+          <input type="number" id="rte-pct" value="3.5" step="0.1" min="0" max="100"
+            style="width:55px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:5px;padding:3px 6px;color:var(--white);font-size:12px;outline:none;"
+            oninput="calcTotales()">
+          <span>%</span>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- DATOS DE PAGO -->
-    <div class="pago-section" style="margin-top:20px;">
-      <div class="pago-box">
-        <div class="pago-title">📲 Datos para el Pago</div>
-        <div class="pago-grid">
-          <span class="pago-key">Banco:</span>        <span class="pago-val">Bancolombia</span>
-          <span class="pago-key">Tipo de cuenta:</span> <span class="pago-val">Ahorros</span>
-          <span class="pago-key">No. de cuenta:</span>  <span class="pago-val" id="nro-cuenta">— agregar número —</span>
-          <span class="pago-key">Titular:</span>       <span class="pago-val">Automatismos Arlenpav S.A.S.</span>
-          <span class="pago-key">NIT:</span>           <span class="pago-val">901.473.259-8</span>
-        </div>
-        <div style="margin-top:10px; display:flex; align-items:center; gap:8px;">
-          <span style="font-size:12px; color:var(--gray-600);">No. cuenta:</span>
-          <input type="text" id="cuenta-input"
-            style="font-size:13px; padding:5px 9px; border:1.5px solid #a3d9bc; border-radius:5px; width:180px; font-family:'Barlow',sans-serif;"
-            placeholder="Número de cuenta"
-            oninput="document.getElementById('nro-cuenta').textContent=this.value||'— agregar número —'">
-        </div>
+  <!-- PAGO -->
+  <div class="section-card">
+    <div class="sec-title">Datos de Pago</div>
+    <div class="pago-info">
+      <strong>💳 Consignación / Transferencia Bancolombia</strong>
+      Nombre: Automatismos Arlenpav S.A.S.<br>
+      Tipo: Cuenta de Ahorros<br>
+      No. Cuenta: <input type="text" id="banco-cuenta"
+        style="background:transparent;border:none;border-bottom:1px solid rgba(34,197,94,0.4);color:#86efac;font-size:12px;font-family:'Barlow',sans-serif;outline:none;width:160px;padding:0 2px;"
+        placeholder="000-000000-00"><br>
+      NIT: 901.473.259-8
+    </div>
+  </div>
+
+  <!-- OBSERVACIONES -->
+  <div class="section-card">
+    <div class="sec-title">Observaciones</div>
+    <div class="f">
+      <textarea class="obs" id="obs" placeholder="Notas adicionales, condiciones especiales, detalles del servicio prestado..."></textarea>
+    </div>
+  </div>
+
+  <!-- FIRMAS -->
+  <div class="section-card">
+    <div class="sec-title">Firmas</div>
+    <div class="firmas-grid">
+      <div class="firma-box">
+        <div class="firma-line"></div>
+        <div class="firma-label">Firma del cobrador</div>
+        <div class="firma-name">Arlen Pavón Restrepo</div>
+      </div>
+      <div class="firma-box">
+        <div class="firma-line"></div>
+        <div class="firma-label">Firma y sello del cliente</div>
+        <div class="firma-name" id="firma-cliente-name" style="color:var(--gray)">—</div>
       </div>
     </div>
+  </div>
 
-    <!-- OBSERVACIONES -->
-    <div class="section" style="margin-top:18px;">
-      <div class="sec-title">Observaciones</div>
-      <div class="field">
-        <textarea id="observaciones" placeholder="Ej: Esta cuenta de cobro no genera IVA según Art. 476 E.T. / Plazo de pago: 8 días hábiles..."></textarea>
-      </div>
-    </div>
+  <!-- ACCIONES -->
+  <div class="acciones">
+    <button class="btn-clear" onclick="limpiar()">🗑 Limpiar</button>
+    <button class="btn-wa" onclick="enviarWA()">💬 WhatsApp</button>
+    <button class="btn-pdf" onclick="generarPDF()">📄 Generar PDF</button>
+  </div>
 
-    <!-- FIRMAS -->
-    <div class="firma-section">
-      <div class="sec-title" style="margin-bottom:18px;">Firmas</div>
-      <div class="firma-grid">
-        <div class="firma-box">
-          <div class="firma-label">Elaborado por</div>
-          <div class="firma-name">Arlen Pavón</div>
-          <div class="firma-role">Representante Legal · Automatismos Arlenpav S.A.S.</div>
-        </div>
-        <div class="firma-box">
-          <div class="firma-label">Recibido por</div>
-          <div class="field" style="margin-top:6px;">
-            <input type="text" id="recibido_por" placeholder="Nombre y cargo">
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- FOOTER -->
-    <div class="gold-line"></div>
-    <div class="doc-footer">
-      <div class="footer-info">
-        <span>automatismosarpa.com.co</span> &nbsp;·&nbsp; automatismosarlenpav@gmail.com
-      </div>
-      <div class="footer-info">
-        <span>+57 300 568 3914</span> &nbsp;·&nbsp; Medellín, Colombia
-      </div>
-    </div>
-
-  </div><!-- /doc -->
-</div><!-- /page -->
+</div>
 
 <script>
-  // ── CONSECUTIVO ──
-  let consecutivo = parseInt(localStorage.getItem('arpa_cc_consec') || '1');
-  function padNum(n){ return 'CC-' + String(n).padStart(3,'0'); }
+// ── CONSECUTIVO ──
+function getNextNum(){
+  const n=parseInt(localStorage.getItem('arpa_cc_num')||'0')+1;
+  return n;
+}
+function saveNum(n){localStorage.setItem('arpa_cc_num',n);}
+function padNum(n){return 'CC-'+String(n).padStart(3,'0');}
 
-  // ── FECHA HOY ──
-  function hoy(){ return new Date().toISOString().split('T')[0]; }
-  function enDias(d){ const f=new Date(); f.setDate(f.getDate()+d); return f.toISOString().split('T')[0]; }
+let currentNum=getNextNum();
+document.getElementById('num-display').textContent=padNum(currentNum);
 
-  // ── INIT ──
-  window.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('fecha_emision').value   = hoy();
-    document.getElementById('fecha_vencimiento').value = enDias(30);
-    cargarGuardado();
-    if(document.getElementById('items-body').children.length === 0) agregarFila();
+// ── FECHAS ──
+const hoy=new Date();
+const fmt=d=>{const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${dd}`;};
+document.getElementById('m-fecha').value=fmt(hoy);
+const vence=new Date(hoy);vence.setDate(vence.getDate()+15);
+document.getElementById('m-vence').value=fmt(vence);
+
+// sincronizar nombre firma
+document.getElementById('c-nombre').addEventListener('input',function(){
+  document.getElementById('firma-cliente-name').textContent=this.value||'—';
+  document.getElementById('firma-cliente-name').style.color=this.value?'var(--white)':'var(--gray)';
+});
+
+// ── FILAS ──
+let filaCnt=0;
+function addFila(desc='',cant=1,precio=0){
+  filaCnt++;
+  const id=filaCnt;
+  const tr=document.createElement('tr');
+  tr.id='fila-'+id;
+  tr.innerHTML=`
+    <td><input type="text" placeholder="Descripción del servicio..." value="${desc}" oninput="calcTotales()"></td>
+    <td class="cant"><input type="number" value="${cant}" min="1" oninput="calcTotales()"></td>
+    <td class="precio"><input type="number" value="${precio}" min="0" placeholder="0" oninput="calcTotales()"></td>
+    <td class="td-total" id="tot-${id}">$ 0</td>
+    <td><button class="btn-del-row" onclick="delFila(${id})">✕</button></td>
+  `;
+  document.getElementById('tbody-servicios').appendChild(tr);
+  calcTotales();
+}
+function delFila(id){
+  const el=document.getElementById('fila-'+id);
+  if(el)el.remove();
+  calcTotales();
+}
+
+// ── CALCULAR ──
+const fmt$=v=>'$ '+Math.round(v).toLocaleString('es-CO');
+function calcTotales(){
+  let sub=0;
+  document.querySelectorAll('#tbody-servicios tr').forEach(tr=>{
+    const ins=tr.querySelectorAll('input');
+    if(ins.length<3)return;
+    const cant=parseFloat(ins[1].value)||0;
+    const prec=parseFloat(ins[2].value)||0;
+    const tot=cant*prec;
+    sub+=tot;
+    const id=tr.id.replace('fila-','');
+    const totEl=document.getElementById('tot-'+id);
+    if(totEl)totEl.textContent=fmt$(tot);
+  });
+  const iva=document.getElementById('chk-iva').checked?sub*0.19:0;
+  const rtePct=parseFloat(document.getElementById('rte-pct').value)||0;
+  const rte=document.getElementById('chk-rte').checked?sub*(rtePct/100):0;
+  document.getElementById('t-subtotal').textContent=fmt$(sub);
+  document.getElementById('t-iva').textContent=fmt$(iva);
+  document.getElementById('t-rte').textContent='- '+fmt$(rte);
+  document.getElementById('rte-pct-label').textContent=rtePct;
+  document.getElementById('t-total').textContent=fmt$(sub+iva-rte);
+  document.getElementById('row-iva').style.display=iva?'flex':'none';
+  document.getElementById('row-rte').style.display=rte?'flex':'none';
+}
+function toggleRte(){
+  document.getElementById('rte-field').style.display=
+    document.getElementById('chk-rte').checked?'flex':'none';
+  calcTotales();
+}
+
+// ── LIMPIAR ──
+function limpiar(){
+  if(!confirm('¿Limpiar el formulario para una nueva cuenta de cobro?'))return;
+  currentNum=getNextNum();
+  saveNum(currentNum);
+  document.getElementById('num-display').textContent=padNum(currentNum);
+  document.getElementById('c-nombre').value='';
+  document.getElementById('c-nit').value='';
+  document.getElementById('c-dir').value='';
+  document.getElementById('c-tel').value='';
+  document.getElementById('obs').value='';
+  document.getElementById('tbody-servicios').innerHTML='';
+  document.getElementById('chk-iva').checked=false;
+  document.getElementById('chk-rte').checked=false;
+  document.getElementById('rte-field').style.display='none';
+  document.getElementById('firma-cliente-name').textContent='—';
+  document.getElementById('firma-cliente-name').style.color='var(--gray)';
+  filaCnt=0;
+  calcTotales();
+  // fecha
+  const n=new Date();document.getElementById('m-fecha').value=fmt(n);
+  const v=new Date(n);v.setDate(v.getDate()+15);document.getElementById('m-vence').value=fmt(v);
+}
+
+// ── WHATSAPP ──
+function enviarWA(){
+  const cli=document.getElementById('c-nombre').value||'Cliente';
+  const tel=(document.getElementById('c-tel').value||'').replace(/\D/g,'');
+  const total=document.getElementById('t-total').textContent;
+  const num=document.getElementById('num-display').textContent;
+  const msg=`Hola ${cli}, le compartimos la *${num}* de Automatismos ARPA por un valor de *${total}*.\n\nQuedamos atentos para cualquier consulta.\n\n*Automatismos Arlenpav S.A.S.*\n📞 300-568-3914`;
+  const url=`https://wa.me/57${tel||'3005683914'}?text=${encodeURIComponent(msg)}`;
+  window.open(url,'_blank');
+}
+
+// ── PDF ──
+function generarPDF(){
+  const cli=document.getElementById('c-nombre').value.trim();
+  if(!cli){alert('Por favor ingresa el nombre del cliente.');document.getElementById('c-nombre').focus();return;}
+  saveNum(currentNum);
+
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const W=210,M=18;
+  let y=18;
+
+  // Fondo header
+  doc.setFillColor(26,42,74);
+  doc.rect(0,0,W,42,'F');
+  // Línea dorada
+  doc.setFillColor(201,168,76);
+  doc.rect(0,42,W,2,'F');
+
+  // Logo box
+  doc.setFillColor(201,168,76);
+  doc.roundedRect(M,9,16,16,2,2,'F');
+  doc.setTextColor(26,42,74);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9);
+  doc.text('AR',M+8,19.5,{align:'center'});
+
+  // Nombre empresa
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(14);doc.setFont('helvetica','bold');
+  doc.text('AUTOMATISMOS ARPA',M+20,15);
+  doc.setFontSize(7);doc.setFont('helvetica','normal');
+  doc.setTextColor(201,168,76);
+  doc.text('AUTOMATISMOS ARLENPAV S.A.S.  •  NIT 901.473.259-8',M+20,20);
+  doc.setTextColor(180,190,200);
+  doc.text('Medellín, Colombia  •  300-568-3914  •  automatismosarlenpav@gmail.com',M+20,25);
+
+  // Título doc
+  doc.setTextColor(201,168,76);
+  doc.setFontSize(16);doc.setFont('helvetica','bold');
+  doc.text('CUENTA DE COBRO',W-M,13,{align:'right'});
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(11);
+  doc.text(document.getElementById('num-display').textContent,W-M,21,{align:'right'});
+
+  // Meta info
+  const ciudad=document.getElementById('m-ciudad').value;
+  const fecha=document.getElementById('m-fecha').value;
+  const vence=document.getElementById('m-vence').value;
+  doc.setFontSize(7);doc.setTextColor(200,210,220);
+  doc.text(`${ciudad}  •  Emisión: ${fecha}  •  Vence: ${vence}`,W-M,29,{align:'right'});
+
+  y=52;
+
+  // Sección cobrador + cliente
+  const boxH=30;
+  doc.setFillColor(240,244,248);
+  doc.rect(M,y,82,boxH,'F');
+  doc.setFillColor(248,250,252);
+  doc.rect(M+86,y,82,boxH,'F');
+
+  doc.setTextColor(100,120,150);
+  doc.setFontSize(7);doc.setFont('helvetica','bold');
+  doc.text('COBRADOR',M+4,y+6);
+  doc.text('CLIENTE',M+90,y+6);
+
+  doc.setTextColor(26,42,74);
+  doc.setFontSize(9);doc.setFont('helvetica','bold');
+  doc.text(document.getElementById('r-nombre').value,M+4,y+12);
+  doc.text(cli,M+90,y+12);
+
+  doc.setFont('helvetica','normal');doc.setFontSize(8);
+  doc.setTextColor(80,100,120);
+  doc.text(`C.C. ${document.getElementById('r-nit').value}`,M+4,y+17);
+  doc.text(`C.C./NIT: ${document.getElementById('c-nit').value||'—'}`,M+90,y+17);
+  doc.text(document.getElementById('r-empresa').value,M+4,y+22);
+  doc.text(document.getElementById('c-dir').value||'—',M+90,y+22);
+  doc.text(`NIT ${document.getElementById('r-nitemp').value}`,M+4,y+27);
+  doc.text(`Tel: ${document.getElementById('c-tel').value||'—'}`,M+90,y+27);
+
+  y+=boxH+8;
+
+  // Tabla servicios
+  doc.setFillColor(26,42,74);
+  doc.rect(M,y,W-2*M,8,'F');
+  doc.setTextColor(201,168,76);
+  doc.setFontSize(7.5);doc.setFont('helvetica','bold');
+  doc.text('DESCRIPCIÓN DEL SERVICIO',M+3,y+5.5);
+  doc.text('CANT.',M+100,y+5.5,{align:'center'});
+  doc.text('VALOR UNIT.',M+128,y+5.5,{align:'right'});
+  doc.text('TOTAL',W-M-3,y+5.5,{align:'right'});
+  y+=8;
+
+  const filas=document.querySelectorAll('#tbody-servicios tr');
+  let rowIdx=0;
+  filas.forEach(tr=>{
+    const ins=tr.querySelectorAll('input');
+    if(ins.length<3)return;
+    const desc=ins[0].value||'—';
+    const cant=ins[1].value||'1';
+    const prec=parseFloat(ins[2].value)||0;
+    const tot=parseFloat(cant)*prec;
+    const bg=rowIdx%2===0?[250,252,255]:[242,246,250];
+    doc.setFillColor(...bg);
+    doc.rect(M,y,W-2*M,7,'F');
+    doc.setTextColor(30,50,70);
+    doc.setFontSize(8);doc.setFont('helvetica','normal');
+    doc.text(desc.substring(0,55),M+3,y+5);
+    doc.text(String(cant),M+100,y+5,{align:'center'});
+    doc.text('$ '+Math.round(prec).toLocaleString('es-CO'),M+128,y+5,{align:'right'});
+    doc.setFont('helvetica','bold');
+    doc.text('$ '+Math.round(tot).toLocaleString('es-CO'),W-M-3,y+5,{align:'right'});
+    y+=7;rowIdx++;
   });
 
-  // ── FILAS ──
-  let filaId = 0;
-  function agregarFila(desc='', cant=1, valor=0){
-    filaId++;
-    const id = filaId;
-    const tr = document.createElement('tr');
-    tr.id = 'fila-' + id;
-    tr.innerHTML = `
-      <td style="padding:6px 8px; font-size:12px; color:var(--gray-400); text-align:center;">${document.getElementById('items-body').children.length + 1}</td>
-      <td><input type="text" class="desc" placeholder="Descripción del servicio o producto" value="${desc}"></td>
-      <td><input type="number" class="cant right" min="1" value="${cant}" oninput="calcularTotales()"></td>
-      <td><input type="number" class="valor right" min="0" step="1000" value="${valor}" placeholder="0" oninput="calcularTotales()"></td>
-      <td class="total-cell" id="row-total-${id}">$ 0</td>
-      <td><button class="btn-remove" onclick="eliminarFila(${id})" title="Eliminar">✕</button></td>
-    `;
-    document.getElementById('items-body').appendChild(tr);
-    calcularTotales();
-  }
+  // Totales
+  y+=4;
+  const sub=parseFloat(document.getElementById('t-subtotal').textContent.replace(/[^0-9]/g,''));
+  const hasIva=document.getElementById('chk-iva').checked;
+  const hasRte=document.getElementById('chk-rte').checked;
+  const ivaVal=hasIva?sub*0.19:0;
+  const rtePct2=parseFloat(document.getElementById('rte-pct').value)||0;
+  const rteVal=hasRte?sub*(rtePct2/100):0;
+  const totalVal=sub+ivaVal-rteVal;
 
-  function eliminarFila(id){
-    const el = document.getElementById('fila-' + id);
-    if(el) el.remove();
-    renumerarFilas();
-    calcularTotales();
-  }
+  const totRows=[['Subtotal','$ '+Math.round(sub).toLocaleString('es-CO'),false]];
+  if(hasIva) totRows.push(['IVA 19%','$ '+Math.round(ivaVal).toLocaleString('es-CO'),false]);
+  if(hasRte) totRows.push([`Retención ${rtePct2}%','- $ ${Math.round(rteVal).toLocaleString('es-CO')}`,false]);
+  totRows.push(['TOTAL A COBRAR','$ '+Math.round(totalVal).toLocaleString('es-CO'),true]);
 
-  function renumerarFilas(){
-    const filas = document.getElementById('items-body').querySelectorAll('tr');
-    filas.forEach((tr, i) => {
-      const numCell = tr.querySelector('td:first-child');
-      if(numCell) numCell.textContent = i + 1;
-    });
-  }
-
-  // ── CÁLCULOS ──
-  function fmt(n){ return '$ ' + Math.round(n).toLocaleString('es-CO'); }
-
-  function calcularTotales(){
-    let sub = 0;
-    document.getElementById('items-body').querySelectorAll('tr').forEach(tr => {
-      const cant  = parseFloat(tr.querySelector('.cant')?.value) || 0;
-      const valor = parseFloat(tr.querySelector('.valor')?.value) || 0;
-      const tot   = cant * valor;
-      const tdId  = tr.querySelector('.total-cell')?.id;
-      if(tdId) document.getElementById(tdId).textContent = fmt(tot);
-      sub += tot;
-    });
-
-    const ivaOn = document.getElementById('iva-toggle').checked;
-    const iva   = ivaOn ? sub * 0.19 : 0;
-    const reteP = parseFloat(document.getElementById('retefuente')?.value) || 0;
-    const rete  = sub * (reteP / 100);
-    const total = sub + iva - rete;
-
-    document.getElementById('subtotal-display').textContent = fmt(sub);
-    document.getElementById('iva-display').textContent      = fmt(iva);
-    document.getElementById('rete-display').textContent     = '– ' + fmt(rete);
-    document.getElementById('total-display').textContent    = fmt(total);
-    document.getElementById('iva-row').style.display        = ivaOn ? 'flex' : 'none';
-    document.getElementById('iva-label').textContent        = ivaOn ? '19% incluido' : 'No aplica';
-  }
-
-  // ── GUARDAR LOCAL ──
-  function guardarLocal(){
-    const filas = [];
-    document.getElementById('items-body').querySelectorAll('tr').forEach(tr => {
-      filas.push({
-        desc:  tr.querySelector('.desc')?.value  || '',
-        cant:  tr.querySelector('.cant')?.value  || 1,
-        valor: tr.querySelector('.valor')?.value || 0,
-      });
-    });
-    const data = {
-      numero:              document.getElementById('numero').value,
-      fecha_emision:       document.getElementById('fecha_emision').value,
-      fecha_vencimiento:   document.getElementById('fecha_vencimiento').value,
-      cliente_nombre:      document.getElementById('cliente_nombre').value,
-      cliente_nit:         document.getElementById('cliente_nit').value,
-      cliente_dir:         document.getElementById('cliente_dir').value,
-      cliente_tel:         document.getElementById('cliente_tel').value,
-      cliente_email:       document.getElementById('cliente_email').value,
-      concepto:            document.getElementById('concepto').value,
-      observaciones:       document.getElementById('observaciones').value,
-      recibido_por:        document.getElementById('recibido_por').value,
-      cuenta:              document.getElementById('cuenta-input').value,
-      iva:                 document.getElementById('iva-toggle').checked,
-      retefuente:          document.getElementById('retefuente').value,
-      filas,
-    };
-    localStorage.setItem('arpa_cc_data', JSON.stringify(data));
-    // subir consecutivo para próximo doc
-    consecutivo++;
-    localStorage.setItem('arpa_cc_consec', consecutivo);
-    alert('✅ Guardado correctamente. Próximo número: ' + padNum(consecutivo));
-  }
-
-  function cargarGuardado(){
-    const raw = localStorage.getItem('arpa_cc_data');
-    if(!raw) {
-      // poner número por defecto
-      const num = padNum(consecutivo);
-      document.getElementById('numero').value = num;
-      document.getElementById('doc-number-display').textContent = num;
-      return;
-    }
-    const d = JSON.parse(raw);
-    // número: usar el consecutivo actual (nuevo doc)
-    const num = padNum(consecutivo);
-    document.getElementById('numero').value = num;
-    document.getElementById('doc-number-display').textContent = num;
-
-    document.getElementById('fecha_emision').value     = d.fecha_emision     || hoy();
-    document.getElementById('fecha_vencimiento').value = d.fecha_vencimiento || enDias(30);
-    document.getElementById('cliente_nombre').value    = d.cliente_nombre    || '';
-    document.getElementById('cliente_nit').value       = d.cliente_nit       || '';
-    document.getElementById('cliente_dir').value       = d.cliente_dir       || '';
-    document.getElementById('cliente_tel').value       = d.cliente_tel       || '';
-    document.getElementById('cliente_email').value     = d.cliente_email     || '';
-    document.getElementById('concepto').value          = d.concepto          || '';
-    document.getElementById('observaciones').value     = d.observaciones     || '';
-    document.getElementById('recibido_por').value      = d.recibido_por      || '';
-    document.getElementById('cuenta-input').value      = d.cuenta            || '';
-    document.getElementById('nro-cuenta').textContent  = d.cuenta            || '— agregar número —';
-    document.getElementById('iva-toggle').checked      = d.iva               || false;
-    document.getElementById('retefuente').value        = d.retefuente        || '';
-
-    if(d.filas && d.filas.length){
-      d.filas.forEach(f => agregarFila(f.desc, f.cant, f.valor));
+  totRows.forEach(([lbl,val,bold])=>{
+    if(bold){
+      doc.setFillColor(26,42,74);
+      doc.rect(W-M-80,y-1,80,10,'F');
+      doc.setTextColor(201,168,76);
+      doc.setFontSize(10);doc.setFont('helvetica','bold');
+      doc.text(lbl,W-M-42,y+6,{align:'center'});
+      doc.text(val,W-M-3,y+6,{align:'right'});
+      y+=11;
     } else {
-      agregarFila();
+      doc.setTextColor(80,100,130);
+      doc.setFontSize(8.5);doc.setFont('helvetica','normal');
+      doc.text(lbl,W-M-42,y+5);
+      doc.setFont('helvetica','bold');doc.setTextColor(30,50,70);
+      doc.text(val,W-M-3,y+5,{align:'right'});
+      y+=7;
     }
-    calcularTotales();
-  }
+  });
 
-  function limpiarTodo(){
-    if(!confirm('¿Limpiar todos los datos para un nuevo documento?')) return;
-    localStorage.removeItem('arpa_cc_data');
-    document.getElementById('items-body').innerHTML = '';
-    filaId = 0;
-    // resetear campos
-    ['cliente_nombre','cliente_nit','cliente_dir','cliente_tel','cliente_email',
-     'concepto','observaciones','recibido_por','cuenta-input'].forEach(id => {
-      document.getElementById(id).value = '';
-    });
-    document.getElementById('nro-cuenta').textContent = '— agregar número —';
-    document.getElementById('iva-toggle').checked = false;
-    document.getElementById('retefuente').value = '';
-    const num = padNum(consecutivo);
-    document.getElementById('numero').value = num;
-    document.getElementById('doc-number-display').textContent = num;
-    document.getElementById('fecha_emision').value   = hoy();
-    document.getElementById('fecha_vencimiento').value = enDias(30);
-    agregarFila();
-    calcularTotales();
-  }
+  // Datos bancarios
+  y+=6;
+  doc.setFillColor(235,250,240);
+  doc.rect(M,y,W-2*M,20,'F');
+  doc.setTextColor(20,120,60);
+  doc.setFontSize(7.5);doc.setFont('helvetica','bold');
+  doc.text('DATOS DE PAGO — BANCOLOMBIA',M+3,y+6);
+  doc.setFont('helvetica','normal');doc.setTextColor(40,80,60);
+  const cta=document.getElementById('banco-cuenta').value||'—';
+  doc.text(`Automatismos Arlenpav S.A.S.  •  Cuenta Ahorros No. ${cta}  •  NIT 901.473.259-8`,M+3,y+12);
+  const obs=document.getElementById('obs').value;
+  if(obs) doc.text(`Obs: ${obs.substring(0,90)}`,M+3,y+17);
+  y+=24;
+
+  // Firmas
+  doc.setDrawColor(180,190,210);
+  doc.setLineWidth(0.3);
+  doc.line(M,y+16,M+70,y+16);
+  doc.line(W-M-70,y+16,W-M,y+16);
+  doc.setTextColor(100,120,150);
+  doc.setFontSize(7.5);
+  doc.text('Firma del cobrador',M+35,y+20,{align:'center'});
+  doc.text('Arlen Pavón Restrepo',M+35,y+24,{align:'center'});
+  doc.text('Firma y sello del cliente',W-M-35,y+20,{align:'center'});
+  doc.text(cli,W-M-35,y+24,{align:'center'});
+
+  // Footer
+  doc.setFillColor(26,42,74);
+  doc.rect(0,287,W,10,'F');
+  doc.setTextColor(201,168,76);
+  doc.setFontSize(6.5);
+  doc.text('Automatismos Arlenpav S.A.S.  •  NIT 901.473.259-8  •  Medellín, Colombia  •  300-568-3914',W/2,293,{align:'center'});
+
+  const fname=`CuentaCobro_${document.getElementById('num-display').textContent}_${cli.replace(/\s/g,'_')}.pdf`;
+  doc.save(fname);
+}
+
+// ── INIT ──
+addFila('',1,0);
+calcTotales();
 </script>
 </body>
 </html>

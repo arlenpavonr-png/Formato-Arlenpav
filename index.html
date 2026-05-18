@@ -1,7 +1,557 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-<meta http-equiv="refresh" content="0; url=Landing.html">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARPA — Panel de Control</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:    #1a2a4a;
+  --navy2:   #0f1d35;
+  --gold:    #c9a84c;
+  --gold2:   #e8c97a;
+  --white:   #ffffff;
+  --gray:    #8a9ab5;
+  --surface: #1e3055;
+  --card:    #162340;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--navy2);
+  font-family:'Barlow',sans-serif;
+  color:var(--white);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── FONDO ── */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 0%,rgba(201,168,76,0.08) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 100%,rgba(26,42,74,0.9) 0%,transparent 70%);
+  pointer-events:none;z-index:0;
+}
+
+.wrap{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:32px 20px 60px;}
+
+/* ── HEADER ── */
+.header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:40px;padding-bottom:20px;
+  border-bottom:1px solid rgba(201,168,76,0.25);
+}
+.logo{display:flex;align-items:center;gap:14px;}
+.logo-icon{
+  width:52px;height:52px;
+  background:var(--gold);
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:22px;font-weight:900;
+  color:var(--navy2);letter-spacing:-1px;
+}
+.logo-text{
+  font-family:'Barlow Condensed',sans-serif;
+  line-height:1;
+}
+.logo-name{font-size:26px;font-weight:800;color:var(--white);letter-spacing:1px;}
+.logo-sub{font-size:11px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-top:2px;}
+.header-date{
+  font-size:12px;color:var(--gray);
+  text-align:right;line-height:1.6;
+}
+.header-date strong{color:var(--white);display:block;font-size:14px;}
+
+/* ── SECCIÓN TÍTULO ── */
+.section-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:11px;font-weight:700;
+  letter-spacing:3px;text-transform:uppercase;
+  color:var(--gold);margin-bottom:16px;
+  display:flex;align-items:center;gap:10px;
+}
+.section-title::after{content:'';flex:1;height:1px;background:rgba(201,168,76,0.2);}
+
+/* ── HERRAMIENTAS GRID ── */
+.tools-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:16px;
+  margin-bottom:40px;
+}
+.tool-card{
+  background:var(--card);
+  border:1px solid rgba(201,168,76,0.15);
+  border-radius:14px;
+  padding:24px 20px;
+  cursor:pointer;
+  transition:all 0.2s;
+  text-decoration:none;
+  display:block;
+  position:relative;
+  overflow:hidden;
+}
+.tool-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(201,168,76,0.05) 0%,transparent 60%);
+  opacity:0;transition:opacity 0.2s;
+}
+.tool-card:hover{
+  border-color:var(--gold);
+  transform:translateY(-3px);
+  box-shadow:0 12px 40px rgba(0,0,0,0.4),0 0 0 1px rgba(201,168,76,0.3);
+}
+.tool-card:hover::before{opacity:1;}
+.tool-card:active{transform:translateY(-1px);}
+
+.tool-icon{
+  font-size:32px;margin-bottom:14px;
+  display:block;line-height:1;
+}
+.tool-name{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:18px;font-weight:800;
+  color:var(--white);letter-spacing:0.5px;
+  margin-bottom:4px;
+}
+.tool-desc{font-size:12px;color:var(--gray);line-height:1.4;}
+.tool-badge{
+  position:absolute;top:12px;right:12px;
+  background:rgba(201,168,76,0.15);
+  border:1px solid rgba(201,168,76,0.3);
+  color:var(--gold);
+  font-size:9px;font-weight:700;letter-spacing:1px;
+  padding:2px 7px;border-radius:20px;
+  text-transform:uppercase;
+}
+
+/* ── CLIENTES ── */
+.clientes-section{
+  background:var(--card);
+  border:1px solid rgba(201,168,76,0.15);
+  border-radius:14px;
+  overflow:hidden;
+  margin-bottom:32px;
+}
+.clientes-header{
+  background:var(--surface);
+  padding:16px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.clientes-header h3{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:16px;font-weight:800;
+  color:var(--white);letter-spacing:0.5px;
+}
+.btn-nuevo{
+  background:var(--gold);color:var(--navy2);
+  border:none;border-radius:8px;
+  padding:7px 16px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;font-weight:800;
+  cursor:pointer;letter-spacing:0.5px;
+  transition:all 0.15s;
+}
+.btn-nuevo:hover{background:var(--gold2);}
+
+.clientes-body{padding:16px 20px;}
+
+/* Formulario nuevo cliente */
+.form-nuevo{
+  display:none;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(201,168,76,0.2);
+  border-radius:10px;
+  padding:16px;
+  margin-bottom:16px;
+  animation:fadeIn 0.2s ease;
+}
+.form-nuevo.show{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.form-row.full{grid-template-columns:1fr;}
+.field-g label{
+  display:block;font-size:10px;font-weight:600;
+  letter-spacing:1px;text-transform:uppercase;
+  color:var(--gray);margin-bottom:4px;
+}
+.field-g input,.field-g select,.field-g textarea{
+  width:100%;background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:7px;padding:8px 10px;
+  color:var(--white);font-size:13px;
+  font-family:'Barlow',sans-serif;
+  transition:border-color 0.15s;
+  outline:none;
+}
+.field-g input:focus,.field-g select:focus,.field-g textarea:focus{
+  border-color:var(--gold);
+}
+.field-g select option{background:var(--navy2);}
+.field-g textarea{resize:vertical;min-height:60px;}
+
+.form-acciones{display:flex;gap:8px;justify-content:flex-end;margin-top:4px;}
+.btn-guardar{
+  background:var(--gold);color:var(--navy2);
+  border:none;border-radius:7px;
+  padding:8px 18px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;font-weight:800;
+  cursor:pointer;transition:all 0.15s;
+}
+.btn-guardar:hover{background:var(--gold2);}
+.btn-cancelar{
+  background:transparent;
+  border:1px solid rgba(255,255,255,0.15);
+  color:var(--gray);border-radius:7px;
+  padding:8px 14px;font-size:13px;
+  cursor:pointer;transition:all 0.15s;
+}
+.btn-cancelar:hover{border-color:var(--gray);color:var(--white);}
+
+/* Lista clientes */
+.cliente-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 0;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  gap:10px;
+}
+.cliente-item:last-child{border-bottom:none;}
+.cliente-info{flex:1;min-width:0;}
+.cliente-nombre{
+  font-weight:600;font-size:14px;color:var(--white);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.cliente-meta{
+  font-size:11px;color:var(--gray);margin-top:2px;
+  display:flex;gap:10px;flex-wrap:wrap;
+}
+.cliente-estado{
+  font-size:10px;font-weight:700;letter-spacing:1px;
+  padding:2px 8px;border-radius:20px;text-transform:uppercase;
+  white-space:nowrap;flex-shrink:0;
+}
+.est-prosp{background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.3);}
+.est-seg{background:rgba(234,179,8,0.15);color:#fbbf24;border:1px solid rgba(234,179,8,0.3);}
+.est-cerr{background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.3);}
+.est-perd{background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);}
+
+.cliente-acciones{display:flex;gap:6px;}
+.btn-wa{
+  background:rgba(34,197,94,0.15);
+  border:1px solid rgba(34,197,94,0.3);
+  color:#4ade80;border-radius:6px;
+  padding:5px 9px;font-size:12px;
+  cursor:pointer;transition:all 0.15s;text-decoration:none;
+  display:flex;align-items:center;
+}
+.btn-wa:hover{background:rgba(34,197,94,0.25);}
+.btn-del{
+  background:transparent;
+  border:1px solid rgba(255,255,255,0.1);
+  color:var(--gray);border-radius:6px;
+  padding:5px 8px;font-size:12px;
+  cursor:pointer;transition:all 0.15s;
+}
+.btn-del:hover{border-color:#f87171;color:#f87171;}
+
+.lista-vacia{
+  text-align:center;padding:30px 20px;
+  color:var(--gray);font-size:13px;
+}
+.lista-vacia span{font-size:28px;display:block;margin-bottom:8px;}
+
+/* Buscador */
+.search-bar{
+  display:flex;gap:8px;margin-bottom:12px;
+}
+.search-bar input{
+  flex:1;background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:8px;padding:8px 12px;
+  color:var(--white);font-size:13px;
+  font-family:'Barlow',sans-serif;outline:none;
+  transition:border-color 0.15s;
+}
+.search-bar input:focus{border-color:var(--gold);}
+.search-bar input::placeholder{color:var(--gray);}
+
+/* ── STATS ── */
+.stats-row{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:12px;margin-bottom:32px;
+}
+.stat-card{
+  background:var(--card);
+  border:1px solid rgba(201,168,76,0.1);
+  border-radius:10px;
+  padding:16px;text-align:center;
+}
+.stat-num{
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:28px;font-weight:900;
+  color:var(--gold);line-height:1;
+}
+.stat-label{font-size:10px;color:var(--gray);margin-top:4px;letter-spacing:0.5px;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  .header{flex-direction:column;align-items:flex-start;gap:12px;}
+  .header-date{text-align:left;}
+  .tools-grid{grid-template-columns:1fr 1fr;}
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+  .form-row{grid-template-columns:1fr;}
+}
+</style>
 </head>
-<body></body>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">AR</div>
+      <div class="logo-text">
+        <div class="logo-name">Automatismos ARPA</div>
+        <div class="logo-sub">Panel de Control</div>
+      </div>
+    </div>
+    <div class="header-date">
+      <strong id="fecha-hoy"></strong>
+      Medellín, Colombia
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="section-title">Resumen</div>
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-num" id="st-total">0</div>
+      <div class="stat-label">Clientes</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="st-prosp">0</div>
+      <div class="stat-label">Prospectos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="st-seg">0</div>
+      <div class="stat-label">Seguimiento</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="st-cerr">0</div>
+      <div class="stat-label">Cerrados</div>
+    </div>
+  </div>
+
+  <!-- HERRAMIENTAS -->
+  <div class="section-title">Herramientas</div>
+  <div class="tools-grid">
+    <a class="tool-card" href="cotizador_arpa_v2_1.html" target="_blank">
+      <span class="tool-badge">PDF</span>
+      <span class="tool-icon">💰</span>
+      <div class="tool-name">Cotizador</div>
+      <div class="tool-desc">Genera cotizaciones con precios y catálogo completo</div>
+    </a>
+    <a class="tool-card" href="Formato-entrega-obra.html" target="_blank">
+      <span class="tool-badge">PDF</span>
+      <span class="tool-icon">📋</span>
+      <div class="tool-name">Entrega de Obra</div>
+      <div class="tool-desc">Formato de instalación y mantenimiento con fotos</div>
+    </a>
+    <a class="tool-card" href="cuenta-cobro-arpa.html" target="_blank">
+      <span class="tool-badge">PDF</span>
+      <span class="tool-icon">🧾</span>
+      <div class="tool-name">Cuenta de Cobro</div>
+      <div class="tool-desc">Genera cuentas de cobro numeradas para tus servicios</div>
+    </a>
+    <a class="tool-card" href="https://wa.me/573005683914" target="_blank" style="border-color:rgba(34,197,94,0.2)">
+      <span class="tool-badge" style="background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.3);color:#4ade80;">WA</span>
+      <span class="tool-icon">📱</span>
+      <div class="tool-name">WhatsApp</div>
+      <div class="tool-desc">Abrir chat directo con clientes desde aquí</div>
+    </a>
+  </div>
+
+  <!-- CLIENTES -->
+  <div class="section-title">Clientes & Seguimiento</div>
+  <div class="clientes-section">
+    <div class="clientes-header">
+      <h3>📇 Base de Clientes</h3>
+      <button class="btn-nuevo" onclick="toggleForm()">+ Nuevo</button>
+    </div>
+    <div class="clientes-body">
+
+      <!-- Formulario -->
+      <div class="form-nuevo" id="form-nuevo">
+        <div class="form-row">
+          <div class="field-g">
+            <label>Nombre / Empresa</label>
+            <input type="text" id="f-nombre" placeholder="Ej: Juan García">
+          </div>
+          <div class="field-g">
+            <label>Teléfono</label>
+            <input type="tel" id="f-tel" placeholder="300 000 0000">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field-g">
+            <label>Tipo de puerta</label>
+            <select id="f-tipo">
+              <option value="">— Seleccionar —</option>
+              <option>Corrediza</option>
+              <option>Batiente</option>
+              <option>Levadiza / Seccional</option>
+              <option>Enrollable</option>
+              <option>Barrera</option>
+              <option>Techo corredizo</option>
+            </select>
+          </div>
+          <div class="field-g">
+            <label>Estado</label>
+            <select id="f-estado">
+              <option value="prosp">🔵 Prospecto</option>
+              <option value="seg">🟡 En seguimiento</option>
+              <option value="cerr">🟢 Cerrado</option>
+              <option value="perd">🔴 Perdido</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="field-g">
+            <label>Notas</label>
+            <textarea id="f-notas" placeholder="Marca preferida, presupuesto, detalles del proyecto..."></textarea>
+          </div>
+        </div>
+        <div class="form-acciones">
+          <button class="btn-cancelar" onclick="toggleForm()">Cancelar</button>
+          <button class="btn-guardar" onclick="guardarCliente()">Guardar Cliente</button>
+        </div>
+      </div>
+
+      <!-- Buscador -->
+      <div class="search-bar">
+        <input type="text" id="buscador" placeholder="🔍 Buscar por nombre o teléfono..." oninput="renderClientes()">
+      </div>
+
+      <!-- Lista -->
+      <div id="lista-clientes"></div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── FECHA ──
+const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const h=new Date();
+document.getElementById('fecha-hoy').textContent=`${h.getDate()} de ${meses[h.getMonth()]} ${h.getFullYear()}`;
+
+// ── STORAGE ──
+function getClientes(){return JSON.parse(localStorage.getItem('arpa_clientes')||'[]');}
+function setClientes(d){localStorage.setItem('arpa_clientes',JSON.stringify(d));}
+
+// ── STATS ──
+function updateStats(){
+  const c=getClientes();
+  document.getElementById('st-total').textContent=c.length;
+  document.getElementById('st-prosp').textContent=c.filter(x=>x.estado==='prosp').length;
+  document.getElementById('st-seg').textContent=c.filter(x=>x.estado==='seg').length;
+  document.getElementById('st-cerr').textContent=c.filter(x=>x.estado==='cerr').length;
+}
+
+// ── TOGGLE FORM ──
+function toggleForm(){
+  const f=document.getElementById('form-nuevo');
+  f.classList.toggle('show');
+  if(f.classList.contains('show')) document.getElementById('f-nombre').focus();
+}
+
+// ── GUARDAR ──
+function guardarCliente(){
+  const nom=document.getElementById('f-nombre').value.trim();
+  const tel=document.getElementById('f-tel').value.trim();
+  if(!nom){alert('El nombre es requerido');return;}
+  const c=getClientes();
+  c.unshift({
+    id:Date.now(),
+    nombre:nom,
+    tel:tel,
+    tipo:document.getElementById('f-tipo').value,
+    estado:document.getElementById('f-estado').value,
+    notas:document.getElementById('f-notas').value.trim(),
+    fecha:new Date().toLocaleDateString('es-CO')
+  });
+  setClientes(c);
+  // limpiar
+  ['f-nombre','f-tel','f-notas'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-tipo').value='';
+  document.getElementById('f-estado').value='prosp';
+  document.getElementById('form-nuevo').classList.remove('show');
+  renderClientes();updateStats();
+}
+
+// ── ELIMINAR ──
+function eliminarCliente(id){
+  if(!confirm('¿Eliminar este cliente?')) return;
+  setClientes(getClientes().filter(c=>c.id!==id));
+  renderClientes();updateStats();
+}
+
+// ── CAMBIAR ESTADO ──
+function cambiarEstado(id,est){
+  const c=getClientes().map(x=>x.id===id?{...x,estado:est}:x);
+  setClientes(c);renderClientes();updateStats();
+}
+
+// ── RENDER ──
+const estLabels={prosp:'Prospecto',seg:'Seguimiento',cerr:'Cerrado',perd:'Perdido'};
+const estClasses={prosp:'est-prosp',seg:'est-seg',cerr:'est-cerr',perd:'est-perd'};
+
+function renderClientes(){
+  const q=(document.getElementById('buscador').value||'').toLowerCase();
+  let data=getClientes();
+  if(q) data=data.filter(c=>c.nombre.toLowerCase().includes(q)||(c.tel&&c.tel.includes(q)));
+  const el=document.getElementById('lista-clientes');
+  if(!data.length){
+    el.innerHTML=`<div class="lista-vacia"><span>📭</span>${q?'Sin resultados para "'+q+'"':'Agrega tu primer cliente con el botón + Nuevo'}</div>`;
+    return;
+  }
+  el.innerHTML=data.map(c=>`
+    <div class="cliente-item">
+      <div class="cliente-info">
+        <div class="cliente-nombre">${c.nombre}</div>
+        <div class="cliente-meta">
+          ${c.tel?`📞 ${c.tel}`:''}
+          ${c.tipo?`• ${c.tipo}`:''}
+          ${c.fecha?`• ${c.fecha}`:''}
+          ${c.notas?`<br>💬 ${c.notas.substring(0,60)}${c.notas.length>60?'...':''}`:''}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+        <select class="cliente-estado ${estClasses[c.estado]||'est-prosp'}"
+          onchange="cambiarEstado(${c.id},this.value)"
+          style="background:transparent;border:none;cursor:pointer;font-size:10px;font-weight:700;letter-spacing:1px;padding:2px 8px;border-radius:20px;text-transform:uppercase;outline:none;">
+          <option value="prosp" ${c.estado==='prosp'?'selected':''}>Prospecto</option>
+          <option value="seg" ${c.estado==='seg'?'selected':''}>Seguimiento</option>
+          <option value="cerr" ${c.estado==='cerr'?'selected':''}>Cerrado</option>
+          <option value="perd" ${c.estado==='perd'?'selected':''}>Perdido</option>
+        </select>
+        <div class="cliente-acciones">
+          ${c.tel?`<a class="btn-wa" href="https://wa.me/57${c.tel.replace(/\D/g,'')}" target="_blank">💬</a>`:''}
+          <button class="btn-del" onclick="eliminarCliente(${c.id})">🗑</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+renderClientes();
+updateStats();
+</script>
+</body>
 </html>
