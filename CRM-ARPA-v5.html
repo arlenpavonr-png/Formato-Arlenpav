@@ -1856,7 +1856,22 @@ buildCL(CLI,'cl-inst');buildCL(CLM,'cl-mant');
 
 const fA=[],fD=[];
 function addFoto(lado){const arr=lado==='antes'?fA:fD,idx=arr.length;arr.push(null);const c=document.getElementById(`fc-${lado}`),s=document.createElement('div');s.className='foto-slot';s.id=`fs-${lado}-${idx}`;s.innerHTML=`<input type="file" accept="image/*" class="foto-input" id="fi-${lado}-${idx}" onchange="loadF('${lado}',${idx},this)"><div class="foto-ph" onclick="document.getElementById('fi-${lado}-${idx}').click()"><div class="ico">📷</div><div>Tocar para agregar</div></div><img class="foto-prev" id="fp-${lado}-${idx}"><button class="foto-del" id="fd-${lado}-${idx}" onclick="delF('${lado}',${idx})">×</button>`;c.appendChild(s);}
-function loadF(lado,idx,inp){const file=inp.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{(lado==='antes'?fA:fD)[idx]=e.target.result;const p=document.getElementById(`fp-${lado}-${idx}`);p.src=e.target.result;p.style.display='block';document.querySelector(`#fs-${lado}-${idx} .foto-ph`).style.display='none';document.getElementById(`fd-${lado}-${idx}`).classList.add('vis');};r.readAsDataURL(file);}
+function compressImg(file,cb,maxW=800,quality=0.72){
+  const r=new FileReader();
+  r.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const scale=Math.min(1,maxW/img.width);
+      const w=Math.round(img.width*scale),h=Math.round(img.height*scale);
+      const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+      cv.getContext('2d').drawImage(img,0,0,w,h);
+      cb(cv.toDataURL('image/jpeg',quality));
+    };
+    img.src=e.target.result;
+  };
+  r.readAsDataURL(file);
+}
+function loadF(lado,idx,inp){const file=inp.files[0];if(!file)return;compressImg(file,compressed=>{(lado==='antes'?fA:fD)[idx]=compressed;const p=document.getElementById(`fp-${lado}-${idx}`);p.src=compressed;p.style.display='block';document.querySelector(`#fs-${lado}-${idx} .foto-ph`).style.display='none';document.getElementById(`fd-${lado}-${idx}`).classList.add('vis');});}
 function delF(lado,idx){(lado==='antes'?fA:fD)[idx]=null;document.getElementById(`fp-${lado}-${idx}`).style.display='none';document.querySelector(`#fs-${lado}-${idx} .foto-ph`).style.display='flex';document.getElementById(`fd-${lado}-${idx}`).classList.remove('vis');}
 
 function initF(id){const cv=document.getElementById(id),ctx=cv.getContext('2d');let dr=false;function pos(e){const r=cv.getBoundingClientRect(),sx=cv.width/r.width,sy=cv.height/r.height,src=e.touches?e.touches[0]:e;return{x:(src.clientX-r.left)*sx,y:(src.clientY-r.top)*sy};}
@@ -2092,7 +2107,7 @@ function toggleDano(id,texto){const el=document.getElementById('di-'+id);if(!el)
 
 const fDg=[];
 function addFotoDiag(){const idx=fDg.length;fDg.push(null);const c=document.getElementById('fc-diag');const s=document.createElement('div');s.className='foto-slot';s.id='fsd-'+idx;s.innerHTML='<input type="file" accept="image/*" class="foto-input" id="fid-'+idx+'" onchange="loadFDiag('+idx+',this)"><div class="foto-ph" onclick="document.getElementById(\'fid-'+idx+'\').click()"><div class="ico">&#128247;</div><div>Tocar para agregar</div></div><img class="foto-prev" id="fpd-'+idx+'"><button class="foto-del" id="fdd-'+idx+'" onclick="delFDiag('+idx+')">&times;</button>';c.appendChild(s);}
-function loadFDiag(idx,inp){const file=inp.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{fDg[idx]=e.target.result;const p=document.getElementById('fpd-'+idx);p.src=e.target.result;p.style.display='block';document.querySelector('#fsd-'+idx+' .foto-ph').style.display='none';document.getElementById('fdd-'+idx).classList.add('vis');};r.readAsDataURL(file);}
+function loadFDiag(idx,inp){const file=inp.files[0];if(!file)return;compressImg(file,compressed=>{fDg[idx]=compressed;const p=document.getElementById('fpd-'+idx);p.src=compressed;p.style.display='block';document.querySelector('#fsd-'+idx+' .foto-ph').style.display='none';document.getElementById('fdd-'+idx).classList.add('vis');});}
 function delFDiag(idx){fDg[idx]=null;document.getElementById('fpd-'+idx).style.display='none';document.querySelector('#fsd-'+idx+' .foto-ph').style.display='flex';document.getElementById('fdd-'+idx).classList.remove('vis');}
 
 let diagNum='';
@@ -2355,7 +2370,7 @@ function addFila(desc='',cant=1,precio=0){
   tr.innerHTML=`
     <td><input type="text" placeholder="Descripción del servicio..." value="${desc}" oninput="calcTotales()"></td>
     <td class="cant"><input type="number" value="${cant}" min="1" oninput="calcTotales()"></td>
-    <td class="precio"><input type="text" inputmode="numeric" value="${precio}" placeholder="0" oninput="calcTotales()"></td>
+    <td class="precio"><input type="number" step="1" value="${precio}" placeholder="0" oninput="calcTotales()"></td>
     <td class="td-total" id="tot-${id}">$ 0</td>
     <td><button class="btn-del-row" onclick="delFila(${id})">✕</button></td>
   `;
@@ -2376,7 +2391,7 @@ function calcTotales(){
     const ins=tr.querySelectorAll('input');
     if(ins.length<3)return;
     const cant=parseFloat(ins[1].value)||0;
-    const prec=parseInt(String(ins[2].value).replace(/[^0-9]/g,''),10)||0;
+    const prec=parseFloat(ins[2].value)||0;
     const tot=cant*prec;
     sub+=tot;
     const id=tr.id.replace('fila-','');
@@ -2529,13 +2544,15 @@ function generarCCPDF(){
 
   const filas=document.querySelectorAll('#tbody-servicios tr');
   let rowIdx=0;
+  let sub=0;
   filas.forEach(tr=>{
     const ins=tr.querySelectorAll('input');
     if(ins.length<3)return;
     const desc=ins[0].value||'—';
-    const cant=ins[1].value||'1';
-    const prec=parseInt(String(ins[2].value).replace(/[^0-9]/g,''),10)||0;
-    const tot=parseFloat(cant)*prec;
+    const cant=parseFloat(ins[1].value)||0;
+    const prec=parseFloat(ins[2].value)||0;
+    const tot=cant*prec;
+    sub+=tot;
     const bg=rowIdx%2===0?[250,252,255]:[242,246,250];
     doc.setFillColor(...bg);
     doc.rect(M,y,W-2*M,7,'F');
@@ -2551,7 +2568,7 @@ function generarCCPDF(){
 
   // Totales
   y+=4;
-  const sub=parseFloat(document.getElementById('t-subtotal').textContent.replace(/[^0-9]/g,''));
+  // sub already computed from rows above
   const hasIva=document.getElementById('chk-iva').checked;
   const hasRte=document.getElementById('chk-rte').checked;
   const ivaVal=hasIva?sub*0.19:0;
@@ -2643,3 +2660,4 @@ calcTotales();
 </script>
 </body>
 </html>
+
