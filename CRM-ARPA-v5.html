@@ -2034,13 +2034,13 @@ function enviarWA(){
   const inst=tipo==='instalacion';
   const nombre=document.getElementById('cli-nombre').value||'cliente';
   const tel=document.getElementById('cli-tel').value.replace(/\D/g,'');
-  const fecha=document.getElementById('fecha').value;
+  const fecha=fmtFecha(document.getElementById('fecha').value);
   let eqsText='';
   Object.entries(eqData).forEach(([id,eq])=>{
-    if(eq.nom){const tipop=document.getElementById(`eq-tipo-${id}`)?.value||'';const ubic=document.getElementById(`eq-ubic-${id}`)?.value||'';eqsText+=`\n• ${eq.nom} (${tipop}${ubic?' – '+ubic:''})`;}});
+    if(eq.nom){const tipop=document.getElementById(`eq-tipo-${id}`)?.value||'';const ubic=document.getElementById(`eq-ubic-${id}`)?.value||'';const extra=tipop||ubic?` (${tipop}${ubic?' – '+ubic:''})`:'';;eqsText+=`\n• ${eq.nom}${extra}`;}});
   let msg;
-  if(inst){msg=`✅ *AutomatismosARPA — Entrega Instalación*\n\nHola ${nombre}, tu instalación fue completada.\n\n📅 Fecha: ${fecha}\n🔧 Equipos instalados:${eqsText||' Ver formato'}\n\n🛡 Garantía MO: ${document.getElementById('garantia-mo').value}\n🛡 Garantía equipos: ${document.getElementById('garantia-eq').value}\n📆 Próx. mantenimiento: ${document.getElementById('prox-mant').value}\n\n📞 +57 300 568 3914 | automatismosarpa.com.co`;}
-  else{msg=`🛠 *AutomatismosARPA — Mantenimiento Realizado*\n\nHola ${nombre}, tu servicio fue completado.\n\n📅 Fecha: ${fecha}\n🔧 Trabajos: ${document.getElementById('trabajos').value||'Ver formato'}\n\n🛡 Garantía: ${document.getElementById('garantia-serv').value}\n📆 Próx. mantenimiento: ${document.getElementById('prox-mant-m').value}\n\n📞 +57 300 568 3914 | automatismosarpa.com.co`;}
+  if(inst){msg=`✅ *AutomatismosARPA — Entrega Instalación*\n\nHola ${nombre}, tu instalación fue completada.\n\n📅 Fecha: ${fecha}\n🔧 Equipos instalados:${eqsText||' Ver formato'}\n\n🛡 Garantía MO: ${document.getElementById('garantia-mo').value}\n🛡 Garantía equipos: ${document.getElementById('garantia-eq').value}\n📆 Próx. mantenimiento: ${fmtFecha(document.getElementById('prox-mant').value)}\n\n📞 +57 300 568 3914 | automatismosarpa.com.co`;}
+  else{msg=`🛠 *AutomatismosARPA — Mantenimiento Realizado*\n\nHola ${nombre}, tu servicio fue completado.\n\n📅 Fecha: ${fecha}\n🔧 Trabajos: ${document.getElementById('trabajos').value||'Ver formato'}\n\n🛡 Garantía: ${document.getElementById('garantia-serv').value}\n📆 Próx. mantenimiento: ${fmtFecha(document.getElementById('prox-mant-m').value)}\n\n📞 +57 300 568 3914 | automatismosarpa.com.co`;}
   const num=tel.startsWith('57')?tel:`57${tel}`;
   window.open(`https://wa.me/${num||'57'}?text=${encodeURIComponent(msg)}`,'_blank');
   toast('📲 Abriendo WhatsApp...');
