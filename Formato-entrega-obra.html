@@ -1014,6 +1014,22 @@ async function generarPDF(){
   doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT);
   doc.text('APROBACIÓN',mL+9,y+4); y+=8;
   const aprW=UW/2-3;
+
+  // ── Captura de firmas desde canvas ──────────────────────────────
+  const canvasIds = ['fc', 'ft'];
+  const firmaImgs = canvasIds.map(id => {
+    try {
+      const cv = document.getElementById(id);
+      if (!cv) return null;
+      // Detectar si el canvas está limpio (sin trazos)
+      const ctx = cv.getContext('2d');
+      const px = ctx.getImageData(0, 0, cv.width, cv.height).data;
+      const tieneFirma = px.some((v, idx) => idx % 4 === 3 && v > 10); // canal alpha > 10
+      if (!tieneFirma) return null;
+      return cv.toDataURL('image/png');
+    } catch(e) { return null; }
+  });
+
   [['FIRMA DEL CLIENTE','Recibido a satisfacción',nombre||'_______________'],['FIRMA DEL TÉCNICO','AutomatismosARPA','Arlen Pavón R.']].forEach(([lbl,sub,nom2],i)=>{
     const ax=mL+(i===0?0:aprW+6);
     doc.setFillColor(248,250,252); doc.roundedRect(ax,y,aprW,36,2,2,'F');
@@ -1022,8 +1038,21 @@ async function generarPDF(){
     doc.setFillColor(240,243,248); doc.roundedRect(ax+5,y+8,aprW-10,14,1,1,'F');
     doc.setDrawColor(...BDR); doc.setLineWidth(0.4); doc.setLineDash([1.5,1.5],0);
     doc.roundedRect(ax+5,y+8,aprW-10,14,1,1,'S'); doc.setLineDash([],0);
-    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...TXT2);
-    doc.text('Firma aquí',ax+aprW/2,y+16,{align:'center'});
+
+    // ── Inyección de firma real o placeholder ────────────────────
+    if (firmaImgs[i]) {
+      try {
+        // Estampar la firma centrada dentro del cuadro (ax+5, y+8, aprW-10, 14)
+        doc.addImage(firmaImgs[i], 'PNG', ax+5, y+8, aprW-10, 14, undefined, 'FAST');
+      } catch(e) {
+        doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...TXT2);
+        doc.text('Firma aquí',ax+aprW/2,y+16,{align:'center'});
+      }
+    } else {
+      doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...TXT2);
+      doc.text('Firma aquí',ax+aprW/2,y+16,{align:'center'});
+    }
+
     doc.setDrawColor(...BDR); doc.setLineWidth(0.3);
     doc.line(ax+5,y+26,ax+aprW-5,y+26);
     doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...TXT); doc.text(nom2,ax+5,y+24.5);
@@ -1094,3 +1123,4 @@ function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t
 </script>
 </body>
 </html>
+
