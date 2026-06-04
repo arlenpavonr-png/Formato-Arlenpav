@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ARPA Technology Global — Gestión de Operaciones en Campo</title>
-<meta name="description" content="Ecosistema digital todo-en-uno para administrar, reportar y prefacturar servicios técnicos desde el celular. Sin servidores. Sin mensualidades.">
+<title>ARPA Technology Global — Suite Digital de Gestión en Campo</title>
+<meta name="description" content="Ecosistema descentralizado para el control de operaciones, presupuestos y órdenes de servicio en campo. Sin mensualidades.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -48,6 +48,7 @@ a{text-decoration:none;color:inherit;}
 img{max-width:100%;display:block;}
 button{font-family:var(--font-body);cursor:pointer;border:none;background:none;}
 
+/* BACKGROUND EFFECTS */
 body::before {
   content:'';
   position:fixed;inset:0;z-index:0;pointer-events:none;
@@ -62,6 +63,7 @@ body::before {
     linear-gradient(90deg, rgba(201,168,76,1) 1px, transparent 1px);
   background-size:60px 60px;
 }
+
 .wrap { max-width:1140px;margin:0 auto;padding:0 24px;position:relative;z-index:1; }
 section { position:relative;z-index:1; }
 
@@ -87,21 +89,22 @@ nav {
   width:34px;height:34px;border-radius:8px;
   background:linear-gradient(135deg,var(--gold),var(--gold2));
   display:flex;align-items:center;justify-content:center;
-  font-size:14px;font-weight:900;color:#07090F;
+  font-size:14px;font-weight:900;color:#07090F;letter-spacing:-0.5px;
 }
 .nav-links { display:flex;align-items:center;gap:28px; }
 .nav-links a {
   font-size:13.5px;font-weight:500;color:var(--gray);
-  transition:color 0.2s;
+  transition:color 0.2s;letter-spacing:0.2px;
 }
 .nav-links a:hover{color:var(--white);}
 .nav-cta {
   background:linear-gradient(135deg,var(--gold),var(--gold2));
   color:#07090F;font-weight:700;font-size:13.5px;
   padding:9px 20px;border-radius:8px;
-  transition:opacity 0.2s;
+  transition:opacity 0.2s,transform 0.15s;letter-spacing:0.3px;
   white-space:nowrap;
 }
+.nav-cta:hover{opacity:0.9;transform:translateY(-1px);}
 @media(max-width:640px){.nav-links{display:none;}}
 
 /* HERO */
@@ -124,9 +127,17 @@ nav {
   letter-spacing:1.5px;text-transform:uppercase;
   margin-bottom:24px;
 }
+.hero-eyebrow::before {
+  content:'';width:6px;height:6px;border-radius:50%;
+  background:var(--gold);animation:pulse 2s infinite;
+}
+@keyframes pulse {
+  0%,100%{opacity:1;transform:scale(1);}
+  50%{opacity:0.5;transform:scale(0.8);}
+}
 .hero h1 {
   font-family:var(--font-display);
-  font-size:clamp(36px,5.2vw,60px);
+  font-size:clamp(34px,5vw,56px);
   font-weight:800;line-height:1.15;
   letter-spacing:-1.5px;
   margin-bottom:24px;
@@ -138,29 +149,27 @@ nav {
   background-clip:text;
 }
 .hero-sub {
-  font-size:18px;font-weight:400;color:rgba(238,241,250,0.7);
+  font-size:17px;font-weight:400;color:rgba(238,241,250,0.7);
   line-height:1.7;max-width:540px;margin-bottom:40px;
 }
 .hero-sub strong{color:var(--white);font-weight:600;}
-.hero-btns { display:flex;gap:14px;flex-wrap:wrap; }
+
+/* CORRECCIÓN DE BOTONES DEL HERO */
+.hero-btns { display:flex;gap:14px;flex-wrap:wrap;align-items:center; }
 .btn-primary {
-  display:inline-flex;align-items:center;gap:8px;
   background:linear-gradient(135deg,var(--gold),var(--gold2));
   color:#07090F;font-weight:700;font-size:15px;
-  padding:15px 28px;border-radius:var(--r);
-  transition:all 0.2s;
-  box-shadow:0 8px 32px rgba(201,168,76,0.25);
+  padding:14px 28px;border-radius:var(--r);
+  transition:all 0.2s;box-shadow:0 4px 20px rgba(201,168,76,0.2);
 }
-.btn-primary:hover{transform:translateY(-2px);}
+.btn-primary:hover { opacity:0.95;transform:translateY(-1px);box-shadow:0 6px 24px rgba(201,168,76,0.3); }
 .btn-secondary {
-  display:inline-flex;align-items:center;gap:8px;
-  background:transparent;
   border:1px solid var(--border);
   color:var(--white);font-weight:600;font-size:15px;
-  padding:15px 28px;border-radius:var(--r);
+  padding:14px 28px;border-radius:var(--r);
   transition:all 0.2s;
 }
-.btn-secondary:hover{border-color:var(--gold);color:var(--gold);}
+.btn-secondary:hover { border-color:var(--white);background:rgba(255,255,255,0.02); }
 
 .hero-stats {
   display:flex;gap:32px;margin-top:48px;
@@ -170,245 +179,151 @@ nav {
 .hero-stat-num {
   font-family:var(--font-display);
   font-size:28px;font-weight:800;
-  color:var(--gold);line-height:1;margin-bottom:4px;
+  background:linear-gradient(90deg,var(--gold),var(--gold2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;line-height:1;margin-bottom:4px;
 }
-.hero-stat-lbl { font-size:12px;color:var(--gray); }
+.hero-stat-lbl { font-size:12px;color:var(--gray);letter-spacing:0.3px; }
 
 /* Phone mockup */
 .hero-visual { display:flex;justify-content:center;align-items:center; }
-.phone-wrap { position:relative; }
+.phone-wrap { position:relative;animation:float 4s ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-14px);} }
+.phone-wrap::after {
+  content:'';position:absolute;bottom:-30px;left:50%;transform:translateX(-50%);
+  width:160px;height:20px;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(201,168,76,0.2) 0%,transparent 70%);
+}
 .phone {
-  width:240px;
-  background:linear-gradient(160deg,#1A2235,#0C1018);
-  border-radius:36px;
-  border:1.5px solid rgba(201,168,76,0.25);
-  padding:14px;overflow:hidden;
+  width:240px;background:linear-gradient(160deg,#1A2235,#0C1018);
+  border-radius:36px;border:1.5px solid rgba(201,168,76,0.25);
+  box-shadow:0 40px 80px rgba(0,0,0,0.6);padding:14px;position:relative;overflow:hidden;
 }
-.phone-screen {
-  background:var(--bg-900);
-  border-radius:26px;overflow:hidden;
-  padding:30px 10px 10px;min-height:440px;
+.phone::before {
+  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:80px;height:24px;background:#07090F;border-radius:0 0 18px 18px;z-index:2;
 }
-.phone-header {
-  background:linear-gradient(135deg,#1A2B4A,#0F1D35);
-  margin:-30px -10px 12px;padding:12px 14px;
-  border-bottom:1px solid rgba(201,168,76,0.15);
-}
+.phone-screen { background:var(--bg-900);border-radius:26px;overflow:hidden;padding:30px 10px 10px;min-height:440px; }
+.phone-header { background:linear-gradient(135deg,#1A2B4A,#0F1D35);margin:-30px -10px 12px;padding:12px 14px;border-bottom:1px solid rgba(201,168,76,0.15); }
 .phone-header-top { display:flex;align-items:center;justify-content:space-between; }
 .ph-logo { font-family:var(--font-display);font-weight:800;font-size:11px;color:var(--gold); }
 .ph-badge { background:var(--gold);color:#07090F;font-size:8px;font-weight:800;padding:2px 7px;border-radius:10px; }
 .ph-client { font-size:9px;color:rgba(238,241,250,0.5);margin-top:4px; }
-.ph-row {
-  display:flex;justify-content:space-between;align-items:center;
-  padding:7px 4px;border-bottom:1px solid rgba(255,255,255,0.04);
-  font-size:9.5px;
-}
+.ph-row { display:flex;justify-content:space-between;align-items:center;padding:7px 4px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:9.5px; }
 .ph-label{color:rgba(238,241,250,0.45);font-size:8.5px;text-transform:uppercase;}
 .ph-val{color:var(--white);font-weight:600;}
 .ph-total-row {
-  background:rgba(201,168,76,0.08);border-radius:8px;
-  padding:9px 8px;margin:10px 0 8px;
-  display:flex;justify-content:space-between;align-items:center;
-  border:1px solid rgba(201,168,76,0.2);
+  background:rgba(201,168,76,0.08);border-radius:8px;padding:9px 8px;margin:10px 0 8px;
+  display:flex;justify-content:space-between;align-items:center;border:1px solid rgba(201,168,76,0.2);
 }
-.ph-total-val { font-size:13px;font-weight:800;color:var(--gold); }
-.ph-btn {
-  width:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));
-  border-radius:8px;padding:8px;text-align:center;
-  font-size:9px;font-weight:800;color:#07090F;margin-top:4px;
-}
+.ph-btn { width:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:8px;padding:8px;text-align:center;font-size:9px;font-weight:800;color:#07090F;margin-top:4px; }
 
-/* HEADERS */
-.sec-label { font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:12px; }
-.sec-title { font-family:var(--font-display);font-size:clamp(28px,4vw,44px);font-weight:800;line-height:1.15;margin-bottom:16px; }
-.sec-sub { font-size:17px;color:rgba(238,241,250,0.6);line-height:1.7;max-width:560px; }
-
-/* INTERACTIVE TABS — CAMALEÓN */
-.tabs-section {
-  padding:100px 0;
-  background:linear-gradient(180deg,var(--bg-900) 0%,var(--bg-800) 50%,var(--bg-900) 100%);
-}
-.tabs-header { margin-bottom:56px; }
-.tab-nav {
-  display:inline-flex;
-  background:var(--bg-700);
-  border:1px solid var(--border);
-  border-radius:12px;padding:5px;margin-top:32px;
-}
-.tab-btn {
-  padding:10px 22px;border-radius:9px;
-  font-size:14px;font-weight:600;
-  color:var(--gray);transition:all 0.25s;
-}
-.tab-btn.active {
-  background:linear-gradient(135deg,var(--gold),var(--gold2));
-  color:#07090F;
-  box-shadow:0 4px 16px rgba(201,168,76,0.25);
-}
+/* TABS SECTION */
+.tabs-section { padding:100px 0;background:linear-gradient(180deg,var(--bg-900) 0%,var(--bg-800) 50%,var(--bg-900) 100%); }
+.sec-label { font-size:12px;font-weight:700;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px; }
+.sec-title { font-family:var(--font-display);font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-1px;margin-bottom:16px; }
+.sec-sub { color:var(--gray);max-width:540px;font-size:15px;margin-bottom:24px; }
+.tab-nav { display:inline-flex;background:var(--bg-700);border:1px solid var(--border);border-radius:12px;padding:5px;margin-bottom:40px; }
+.tab-btn { padding:10px 22px;border-radius:9px;font-size:14px;font-weight:600;color:var(--gray);transition:all 0.25s; }
+.tab-btn.active { background:linear-gradient(135deg,var(--gold),var(--gold2));color:#07090F;box-shadow:0 4px 16px rgba(201,168,76,0.25); }
 .tabs-body { display:grid;grid-template-columns:1fr 400px;gap:64px;align-items:center; }
 .tab-content { display:none; }
 .tab-content.active { display:block;animation:tabFade 0.3s ease; }
 @keyframes tabFade{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
-.tab-badge {
-  display:inline-block;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);
-  color:var(--gold);font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:18px;
-}
-.tab-content h3 { font-family:var(--font-display);font-size:28px;font-weight:800;margin-bottom:14px; }
-.tab-content p { color:rgba(238,241,250,0.65);font-size:16px;margin-bottom:20px; }
-.tab-items { display:flex;flex-direction:column;gap:10px; }
-.tab-item {
-  display:flex;align-items:center;gap:12px;padding:10px 14px;
-  background:var(--bg-700);border:1px solid var(--border2);border-radius:10px;
-  font-size:14px;color:rgba(238,241,250,0.8);
-}
-.tab-item-icon { width:28px;height:28px;border-radius:7px;background:rgba(201,168,76,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+.tab-badge { display:inline-block;background:rgba(255,255,255,0.04);border:1px solid var(--border2);padding:4px 12px;border-radius:30px;font-size:12px;font-weight:600;color:var(--gold2);margin-bottom:14px; }
+.tab-content h3 { font-family:var(--font-display);font-size:24px;font-weight:700;margin-bottom:14px;letter-spacing:-0.5px; }
+.tab-content p { color:var(--gray);font-size:15px;margin-bottom:24px; }
+.tab-items { display:flex;flex-direction:column;gap:12px; }
+.tab-item { display:flex;align-items:flex-start;gap:12px;padding:12px 16px;background:var(--bg-700);border:1px solid var(--border2);border-radius:10px;font-size:13.5px;color:rgba(238,241,250,0.8); }
+.tab-item-icon { font-size:16px;margin-top:2px; }
 
-/* Tablet mockup */
-.tablet-wrap { display:flex;justify-content:center; }
-.tablet {
-  width:360px;background:linear-gradient(160deg,#1A2235,#0C1018);
-  border-radius:22px;border:1.5px solid rgba(201,168,76,0.2);
-  padding:12px;box-shadow:0 32px 64px rgba(0,0,0,0.5);
-}
-.tablet-screen { background:var(--bg-900);border-radius:14px;overflow:hidden; }
-.tablet-hdr {
-  background:linear-gradient(135deg,#1A2B4A,#0F1D35);padding:10px 14px;
-  display:flex;align-items:center;justify-content:space-between;
-  border-bottom:1px solid rgba(201,168,76,0.12);
-}
-.tablet-logo{font-family:var(--font-display);font-weight:800;font-size:11px;color:var(--gold);}
-.tablet-num{font-size:9px;font-weight:700;background:var(--gold);color:#07090F;padding:2px 7px;border-radius:8px;}
-.tab-screen-body { padding:12px; }
-.ts-title { font-size:10px;font-weight:700;text-transform:uppercase;color:var(--gold);margin-bottom:8px; }
+.tablet { width:100%;max-width:400px;background:linear-gradient(160deg,#1A2235,#0C1018);border-radius:22px;border:1.5px solid rgba(201,168,76,0.2);box-shadow:0 32px 64px rgba(0,0,0,0.5);padding:12px; }
+.tablet-screen { background:var(--bg-900);border-radius:14px;overflow:hidden;min-height:280px; }
+.tablet-hdr { background:linear-gradient(135deg,#1A2B4A,#0F1D35);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(201,168,76,0.12); }
+.tablet-logo { font-family:var(--font-display);font-weight:800;font-size:11px;color:var(--white);letter-spacing:0.5px; }
+.tablet-num { font-size:10px;color:var(--gold);font-weight:700; }
+.tab-screen-body { padding:16px; }
+.ts-title { font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;margin-bottom:12px;letter-spacing:0.5px; }
 .ts-table { width:100%;border-collapse:collapse; }
-.ts-table th { font-size:8px;text-transform:uppercase;color:var(--gray);text-align:left;padding:5px 6px;border-bottom:1px solid var(--border); }
-.ts-table td { font-size:10px;padding:6px 6px;border-bottom:1px solid rgba(255,255,255,0.04);color:rgba(238,241,250,0.85); }
-.ts-amt{text-align:right;font-weight:700;}
-.ts-total-row {
-  display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:8px 10px;
-  background:rgba(201,168,76,0.08);border-radius:8px;border:1px solid rgba(201,168,76,0.2);
-}
-.ts-total-val{font-size:14px;font-weight:800;color:var(--gold);}
+.ts-table th { font-size:9px;color:var(--gray2);padding:6px;text-align:left;border-bottom:1px solid var(--border);text-transform:uppercase; }
+.ts-table td { font-size:11px;padding:8px 6px;border-bottom:1px solid rgba(255,255,255,0.03);color:rgba(238,241,250,0.9); }
+.ts-amt { text-align:right; }
+.ts-total-row { display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding:10px 12px;background:rgba(201,168,76,0.06);border-radius:8px;border:1px solid rgba(201,168,76,0.15); }
+.ts-total-lbl { font-size:10px;text-transform:uppercase;color:var(--gray);font-weight:600; }
+.ts-total-val { font-size:13px;font-weight:700;color:var(--gold2); }
 
-/* FEATURES — LOS 4 PILARES */
+/* FEATURES */
 .features-section { padding:100px 0; }
 .features-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:56px; }
-.feat-card {
-  background:var(--bg-card);border:1px solid var(--border2);border-radius:var(--r2);
-  padding:32px 28px;transition:all 0.3s;position:relative;overflow:hidden;
-}
-.feat-card:hover { border-color:rgba(201,168,76,0.25);transform:translateY(-4px); }
-.feat-icon {
-  width:52px;height:52px;border-radius:14px;background:rgba(201,168,76,0.08);
-  border:1px solid rgba(201,168,76,0.15);display:flex;align-items:center;justify-content:center;
-  font-size:24px;margin-bottom:22px;
-}
-.feat-num { font-size:11px;font-weight:700;color:rgba(201,168,76,0.4);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px; }
-.feat-title { font-family:var(--font-display);font-size:20px;font-weight:700;margin-bottom:10px;line-height:1.25; }
-.feat-desc { font-size:14.5px;color:rgba(238,241,250,0.55);line-height:1.7; }
-.feat-tag {
-  display:inline-block;margin-top:16px;font-size:11px;font-weight:600;color:var(--gold);
-  padding:3px 10px;background:rgba(201,168,76,0.08);border-radius:20px;border:1px solid rgba(201,168,76,0.2);
-}
+.feat-card { background:var(--bg-card);border:1px solid var(--border2);border-radius:var(--r2);padding:32px 28px;transition:all 0.3s;position:relative;overflow:hidden; }
+.feat-card:hover{ border-color:rgba(201,168,76,0.25);transform:translateY(-4px); }
+.feat-icon { width:52px;height:52px;border-radius:14px;background:rgba(201,168,76,0.08);display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:22px; }
+.feat-num { font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px; }
+.feat-title { font-family:var(--font-display);font-size:19px;font-weight:700;margin-bottom:12px;letter-spacing:-0.3px; }
+.feat-desc { font-size:14px;color:var(--gray);line-height:1.6; }
 
-/* CARD ESPECIAL BRillante PARA EL PILAR 4 SERVERLESS */
-.feat-card.premium-shield {
-  border: 1px solid rgba(201,168,76,0.35);
-  box-shadow: inset 0 0 15px rgba(201,168,76,0.05);
+/* ESTILO ESPECIAL DE SEGURIDAD PARA EL PILAR 4 (SERVERLESS) */
+.feat-card.serverless-pilar {
+  border: 1px solid rgba(201,168,76,0.25);
+  box-shadow: inset 0 0 12px rgba(201,168,76,0.05);
 }
-.feat-card.premium-shield:hover {
-  border-color: var(--gold2);
-  box-shadow: 0 20px 50px rgba(201,168,76,0.15), inset 0 0 20px rgba(201,168,76,0.1);
+.feat-card.serverless-pilar::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  border-radius: var(--r2); border: 1px solid transparent;
+  background: linear-gradient(135deg, rgba(201,168,76,0.4), transparent 60%) border-box;
+  -webkit-mask: linear-gradient(#fff #fff) padding-box, linear-gradient(#fff #fff);
+  mask: linear-gradient(#fff #fff) padding-box, linear-gradient(#fff #fff);
+  -webkit-mask-composite: destination-out; mask-composite: exclude;
 }
 
 /* PRICING */
-.pricing-section {
-  padding:100px 0;
-  background:radial-gradient(ellipse 80% 50% at 50% 50%,rgba(201,168,76,0.04) 0%,transparent 70%);
-}
-.pricing-header { text-align:center;margin-bottom:60px; }
+.pricing-section { padding:100px 0; background:radial-gradient(ellipse 80% 50% at 50% 50%,rgba(201,168,76,0.04) 0%,transparent 70%); }
+.pricing-header { text-align:center; display:flex; flex-direction:column; align-items:center; margin-bottom:60px; }
 .pricing-grid { display:grid;grid-template-columns:1fr 1fr;gap:30px;max-width:960px;margin:0 auto;align-items:stretch; }
-.pricing-card {
-  background:var(--bg-card);border:1px solid var(--border2);border-radius:var(--r2);
-  padding:40px 36px;display:flex;flex-direction:column;height:100%;
-}
-.pricing-card.good:hover { border-color:rgba(201,168,76,0.3); }
-.pricing-card.featured { border-color:rgba(201,168,76,0.4);box-shadow:0 32px 64px rgba(0,0,0,0.6);position:relative; }
-.pricing-best {
-  position:absolute;top:-14px;left:50%;transform:translateX(-50%);
-  background:linear-gradient(90deg,var(--gold),var(--gold2));color:#07090F;
-  font-size:11px;font-weight:800;padding:4px 16px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;
-}
-.pricing-type { font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px; }
-.pricing-type.good{color:var(--gray);}
-.pricing-type.premium{color:var(--gold);}
-.pricing-name { font-family:var(--font-display);font-size:25px;font-weight:800;margin-bottom:6px; }
-.pricing-tagline { font-size:13.5px;color:var(--gray);margin-bottom:24px;line-height:1.45;min-height:60px; }
+.pricing-card { background:var(--bg-card);border:1px solid var(--border2);border-radius:var(--r2);padding:40px 36px;display:flex;flex-direction:column;height:100%;transition:all 0.3s ease; }
+.pricing-card:hover { border-color:rgba(201,168,76,0.2);box-shadow:0 24px 48px rgba(0,0,0,0.4); }
+.pricing-card.featured { border-color:rgba(201,168,76,0.45);box-shadow:0 32px 64px rgba(0,0,0,0.6);position:relative; }
+.pricing-best { position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,var(--gold),var(--gold2));color:#07090F;font-size:11px;font-weight:800;padding:4px 16px;border-radius:20px;text-transform:uppercase;white-space:nowrap;letter-spacing:0.5px; }
+.pricing-type { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
+.pricing-name { font-family:var(--font-display); font-size:26px; font-weight:700; margin-bottom:12px; }
+.pricing-tagline { font-size:13.5px; color:var(--gray); margin-bottom:28px; line-height:1.5; }
 .pricing-amount { font-family:var(--font-display);font-size:54px;font-weight:800;line-height:1;margin-bottom:6px;letter-spacing:-2px; }
-.pricing-amount.good { color:var(--white); }
-.pricing-amount.premium { background:linear-gradient(90deg,var(--gold),var(--gold3)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-.pricing-period { font-size:13px;color:var(--gray);margin-bottom:28px; }
+.pricing-amount.premium { background:linear-gradient(90deg,var(--gold),var(--gold3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+.pricing-period { font-size:12px; color:var(--gray); margin-bottom:32px; padding-bottom:24px; border-bottom:1px solid var(--border2); }
 .pricing-list { list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:32px;flex-grow:1; }
-.pricing-list li { display:flex;align-items:flex-start;gap:10px;font-size:14px;color:rgba(238,241,250,0.75);line-height:1.4; }
+.pricing-list li { display:flex;align-items:flex-start;gap:10px;font-size:14px;color:rgba(238,241,250,0.75); }
 .pricing-list li::before {
-  content:'';width:18px;height:18px;border-radius:50%;flex-shrink:0;margin-top:1px;
-  background-size:10px;background-position:center;background-repeat:no-repeat;background-color:rgba(201,168,76,0.12);
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1.5 5.5l2.5 2.5 4.5-5' stroke='%23C9A84C' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+  content:'';width:18px;height:18px;border-radius:50%;flex-shrink:0;margin-top:1px;background-size:10px;background-position:center;background-repeat:no-repeat;
+  background-color:rgba(201,168,76,0.12);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1.5 5.5l2.5 2.5 4.5-5' stroke='%23C9A84C' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
 }
 .pricing-cta { width:100%;padding:15px;border-radius:var(--r);font-size:15px;font-weight:700;text-align:center;display:block;transition:all 0.2s; }
-.pricing-cta.standard { background:transparent;border:1px solid var(--border);color:var(--white); }
+.pricing-cta.standard { border:1px solid var(--border);color:var(--white); }
 .pricing-cta.standard:hover { border-color:var(--white);background:rgba(255,255,255,0.02); }
 .pricing-cta.gold-btn { background:linear-gradient(135deg,var(--gold),var(--gold2));color:#07090F;box-shadow:0 8px 28px rgba(201,168,76,0.25); }
-.pricing-cta.gold-btn:hover{transform:translateY(-2px);}
-
-.pricing-includes {
-  max-width:960px;margin:40px auto 0;background:rgba(201,168,76,0.04);
-  border:1px solid rgba(201,168,76,0.15);border-radius:var(--r);padding:22px 28px;
-  display:flex;align-items:center;gap:20px;flex-wrap:wrap;
-}
-.pi-title{font-size:13px;font-weight:700;color:var(--gold);}
-.pi-items{display:flex;gap:16px;flex-wrap:wrap;}
-.pi-item{display:flex;align-items:center;gap:6px;font-size:13px;color:rgba(238,241,250,0.65);}
-.pi-item::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--gold);}
+.pricing-cta.gold-btn:hover{ transform:translateY(-2px);box-shadow:0 12px 36px rgba(201,168,76,0.35); }
 
 /* FOOTER */
-footer { padding:64px 0 40px;border-top:1px solid var(--border2); }
-.footer-top { display:flex;align-items:flex-start;justify-content:space-between;gap:40px;flex-wrap:wrap;margin-bottom:48px; }
-.footer-brand { max-width:340px; }
-.footer-logo { display:flex;align-items:center;gap:10px;margin-bottom:14px;font-family:var(--font-display);font-weight:800;font-size:17px; }
-.footer-logo-icon { width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#07090F; }
-.footer-tagline { font-size:14px;color:var(--gray);line-height:1.65; }
-.footer-links-col h4 { font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--white);margin-bottom:16px; }
-.footer-links-col a { display:block;font-size:13.5px;color:var(--gray);margin-bottom:10px; }
-.footer-links-col a:hover{color:var(--gold);}
-.footer-bottom { display:flex;align-items:center;justify-content:space-between;padding-top:28px;border-top:1px solid var(--border2);flex-wrap:wrap;gap:12px; }
-.footer-copy{font-size:12.5px;color:var(--gray);}
-.footer-copy strong{color:var(--gold);}
+footer { padding:64px 0 40px;border-top:1px solid var(--border2); background: #05070a; }
+.footer-top { display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap;margin-bottom:48px; }
+.footer-brand { max-width:320px; }
+.footer-logo { display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:800;font-size:16px;margin-bottom:14px; }
+.footer-logo-icon { width:28px;height:28px;border-radius:6px;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#07090F; }
+.footer-tagline { font-size:13px; color:var(--gray); line-height:1.6; }
+.footer-links-col { display:flex; flex-direction:column; gap:10px; }
+.footer-links-col h4 { font-size:12px; font-weight:700; text-transform:uppercase; color:var(--white); letter-spacing:0.5px; margin-bottom:6px; }
+.footer-links-col a { font-size:13px; color:var(--gray); transition:color 0.2s; }
+.footer-links-col a:hover { color:var(--white); }
+.footer-bottom { display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap; padding-top:24px; border-top:1px solid rgba(255,255,255,0.02); font-size:12px; color:var(--gray2); }
 
-.reveal { opacity:0;transform:translateY(28px);transition:opacity 0.7s ease,transform 0.7s ease; }
-.reveal.visible{opacity:1;transform:translateY(0);}
-.reveal-delay-1{transition-delay:0.1s;}
-.reveal-delay-2{transition-delay:0.2s;}
-.reveal-delay-3{transition-delay:0.3s;}
-.reveal-delay-4{transition-delay:0.4s;}
-
-@media(max-width:900px){
-  .hero-inner{grid-template-columns:1fr;text-align:center;}
-  .hero-sub{max-width:100%;}
+@media(max-width:900px) {
+  .hero-inner{grid-template-columns:1fr;text-align:center; padding-top:40px;}
   .hero-btns{justify-content:center;}
   .hero-stats{justify-content:center;}
   .hero-visual{order:-1;margin-bottom:20px;}
-  .tabs-body{grid-template-columns:1fr;}
-  .tablet-wrap{order:-1;}
-  .tablet{width:100%;max-width:360px;}
-  .features-grid{grid-template-columns:1fr;}
+  .tabs-body{grid-template-columns:1fr; gap:40px;}
+  .tablet-wrap{display:flex; justify-content:center;}
   .pricing-grid{grid-template-columns:1fr;max-width:440px;}
-  .footer-top{flex-direction:column;}
-}
-@media(max-width:480px){
-  .wrap{padding:0 18px;}
-  .tab-nav{flex-wrap:wrap;gap:6px;}
-  .pricing-includes{flex-direction:column;gap:12px;}
+  .features-grid{grid-template-columns:1fr;}
 }
 </style>
 </head>
@@ -423,11 +338,11 @@ footer { padding:64px 0 40px;border-top:1px solid var(--border2); }
       ARPA Technology Global
     </a>
     <div class="nav-links">
-      <a href="#como-funciona">Infraestructura</a>
+      <a href="#como-funciona">Cómo funciona</a>
       <a href="#caracteristicas">Características</a>
-      <a href="#precio">Planes Corporativos</a>
+      <a href="#precio">Precios Corporativos</a>
     </div>
-    <a href="#precio" class="nav-cta">Adquirir Ecosistema →</a>
+    <a href="#precio" class="nav-cta">Ver Planes →</a>
   </div>
 </nav>
 
@@ -435,33 +350,31 @@ footer { padding:64px 0 40px;border-top:1px solid var(--border2); }
   <div class="wrap">
     <div class="hero-inner">
       <div>
-        <div class="hero-eyebrow">Ecosistema Corporativo v5.0 · Edge Local</div>
+        <div class="hero-eyebrow">Suite Operativa Empresarial v5.0</div>
         <h1>
-          Profesionalice la gestión de sus
-          <em>operaciones en campo.</em>
+          Estandarizá tu operación en campo y
+          <em>protegé la rentabilidad.</em>
         </h1>
         <p class="hero-sub">
-          Administre, reporte y liquide servicios técnicos sin depender de internet. PDFs corporativos automáticos con captura de firmas, fotos optimizadas y control financiero. 
-          <strong>Sin servidores. Sin mensualidades. Un solo pago único de por vida.</strong>
+          El ecosistema digital descentralizado para <strong>gestionar, auditar y liquidar</strong> servicios desde el celular. Diseñado exclusivamente para PYMES de ingeniería y especialistas técnicos. 
+          <strong>Sin servidores centralizados. Sin mensualidades fijas. Un solo pago de por vida.</strong>
         </p>
         <div class="hero-btns">
-          <a href="#precio" class="btn-primary">
-            Ver Modelos de Licenciamiento
-          </a>
-          <a href="#como-funciona" class="btn-secondary">Ver entornos de gremio →</a>
+          <a href="#precio" class="btn-primary">Ver Planes de Lanzamiento</a>
+          <a href="#como-funciona" class="btn-secondary">Ver cómo funciona →</a>
         </div>
         <div class="hero-stats">
           <div class="hero-stat">
-            <div class="hero-stat-num">4 Módulos</div>
-            <div class="hero-stat-lbl">De control integrados</div>
+            <div class="hero-stat-num">4</div>
+            <div class="hero-stat-lbl">Módulos de Control</div>
           </div>
           <div class="hero-stat">
-            <div class="hero-stat-num">100% Privado</div>
-            <div class="hero-stat-lbl">Sin nubes de terceros</div>
+            <div class="hero-stat-num">$0</div>
+            <div class="hero-stat-lbl">Costos de Suscripción</div>
           </div>
           <div class="hero-stat">
-            <div class="hero-stat-num">$0 Costo</div>
-            <div class="hero-stat-lbl">En suscripciones mensuales</div>
+            <div class="hero-stat-num">∞</div>
+            <div class="hero-stat-lbl">Reportes de Campo</div>
           </div>
         </div>
       </div>
@@ -471,21 +384,21 @@ footer { padding:64px 0 40px;border-top:1px solid var(--border2); }
             <div class="phone-screen">
               <div class="phone-header">
                 <div class="phone-header-top">
-                  <span class="ph-logo">ARPA CORE</span>
-                  <span class="ph-badge">OS-0042</span>
+                  <span class="ph-logo">ARPA ENTERPRISE</span>
+                  <span class="ph-badge">OS-942</span>
                 </div>
-                <div class="ph-client">Orden: Mantenimiento Preventivo</div>
+                <div class="ph-client">Cliente: Central de Operaciones</div>
               </div>
               <div style="padding:10px 4px 0;">
-                <div class="ph-row"><span class="ph-label">Concepto Técnico</span><span class="ph-label">Liquidación</span></div>
-                <div class="ph-row"><span>Suministro e Ingeniería</span><span class="ph-val">$1.599.900</span></div>
-                <div class="ph-row"><span>Logística de Cuadrilla</span><span class="ph-val">$350.000</span></div>
-                <div class="ph-row"><span>Amortización Anticipo</span><span style="color:#E05C5C;font-weight:600;">-$500.000</span></div>
+                <div class="ph-row"><span class="ph-label">Concepto</span><span class="ph-label">Liquidación</span></div>
+                <div class="ph-row"><span>Auditoría de Sistemas</span><span class="ph-val">$1.599.900</span></div>
+                <div class="ph-row"><span>Suministros Base Maestra</span><span class="ph-val">$350.000</span></div>
+                <div class="ph-row"><span>Anticipo en Negativo</span><span style="color:#E05C5C;font-weight:600;">-$500.000</span></div>
                 <div class="ph-total-row">
                   <span class="ph-total-lbl">Saldo Neto a Cobrar</span>
                   <span class="ph-total-val">$1.449.900</span>
                 </div>
-                <div class="ph-btn">📄 Generar Reporte · Enviar Central</div>
+                <div class="ph-btn">📄 Validar Acta · Despachar PDF</div>
               </div>
             </div>
           </div>
@@ -497,52 +410,38 @@ footer { padding:64px 0 40px;border-top:1px solid var(--border2); }
 
 <section class="tabs-section" id="como-funciona">
   <div class="wrap">
-    <div class="tabs-header reveal">
-      <div class="sec-label">Adaptabilidad Estructurada</div>
-      <h2 class="sec-title">Estandarización absoluta para <em style="font-style:normal;color:var(--gold)">su industria.</em></h2>
-      <p class="sec-sub">El entorno operativo se ajusta a las necesidades críticas de control de su empresa, blindando el flujo de información desde la calle.</p>
+    <div class="tabs-header" style="display:flex; flex-direction:column; align-items:center; text-align:center; margin-bottom:20px;">
+      <div class="sec-label">Ecosistema Camaleón</div>
+      <h2 class="sec-title">Estructura global que se acopla a <em style="font-style:normal;color:var(--gold)">tu modelo.</em></h2>
+      <p class="sec-sub">El flujo semántico se adapta automáticamente dependiendo de las necesidades tácticas de tu negocio o marca personal.</p>
       <div class="tab-nav">
-        <button class="tab-btn active" onclick="switchTab('tecnicos')">🔧 Ingenierías y Servicios</button>
-        <button class="tab-btn" onclick="switchTab('reformas')">🏗 Contratistas y Reformas</button>
-        <button class="tab-btn" onclick="switchTab('profesionales')">💼 Consultores y Autónomos</button>
+        <button class="tab-btn active" onclick="switchTab('pymes')">🏢 Gestión de PYMES</button>
+        <button class="tab-btn" onclick="switchTab('independientes')">💼 Especialistas Autónomos</button>
       </div>
     </div>
 
     <div class="tabs-body">
-      <div class="tab-content active" id="tab-tecnicos">
-        <div class="tab-badge">🔧 Operaciones Técnicas</div>
-        <h3>Control de repuestos, mano de obra y activos en campo</h3>
-        <p>Estructure presupuestos oficiales y órdenes de servicio ligadas a su base maestra de datos. Asegure que sus cuadrillas cumplan con los protocolos técnicos y capture validaciones en tiempo real sin salir del sitio.</p>
+      <div class="tab-content active" id="tab-pymes">
+        <div class="tab-badge">Estructura Corporativa</div>
+        <h3>Control absoluto sobre las cuadrillas técnicas en la calle</h3>
+        <p>Monitorea el uso de materiales, estandariza las tarifas de mano de obra y asegura la recolección inmediata de información contable sin errores humanos.</p>
         <div class="tab-items">
-          <div class="tab-item"><div class="tab-item-icon">📦</div><strong>Base de Datos Maestra de Suministros:</strong> Precios oficiales unificados.</div>
-          <div class="tab-item"><div class="tab-item-icon">📸</div><strong>Auditoría Fotográfica Asíncrona:</strong> Registro visual antes y después.</div>
-          <div class="tab-item"><div class="tab-item-icon">✍️</div><strong>Validación Táctil de Consentimiento:</strong> Firma legal del cliente en sitio.</div>
-          <div class="tab-item"><div class="tab-item-icon">💬</div><strong>Despacho de Reportes:</strong> Envío inmediato por redes corporativas.</div>
+          <div class="tab-item"><div class="tab-item-icon">📊</div><div><strong>Base de Datos Maestra de Suministros:</strong> Tarifas unificadas inmodificables por el operario.</div></div>
+          <div class="tab-item"><div class="tab-item-icon">📉</div><div><strong>Blindaje de Saldos:</strong> Liquidación matemática local estricta con anticipos automáticos.</div></div>
+          <div class="tab-item"><div class="tab-item-icon">✍️</div><div><strong>Validación en Campo:</strong> Actas de entrega firmadas por el cliente final en la pantalla.</div></div>
         </div>
       </div>
-      <div class="tab-content" id="tab-reformas">
-        <div class="tab-badge">🏗 Contratistas Generales</div>
-        <h3>Cálculo de insumos, administración de mano de obra y saldos</h3>
-        <p>Monitoree las cantidades de materiales cargados y el avance de obra por días. Gestione los anticipos recibidos con afectación financiera negativa automática para evitar pérdidas por descuido administrativo.</p>
+      <div class="tab-content" id="tab-independientes">
+        <div class="tab-badge">Marca Personal</div>
+        <h3>Estatus premium para cerrar propuestas de alto valor</h3>
+        <p>Deja atrás los mensajes de texto desordenados y los formatos genéricos. Proyecta una imagen corporativa sólida y automatiza tu administración en un minuto desde el celular.</p>
         <div class="tab-items">
-          <div class="tab-item"><div class="tab-item-icon">🧱</div>Control estricto de insumos y mano de obra ejecutada.</div>
-          <div class="tab-item"><div class="tab-item-icon">➖</div>Cálculo automatizado de amortización y saldos netos.</div>
-          <div class="tab-item"><div class="tab-item-icon">📋</div>Actas de entrega con checklists técnicos de conformidad.</div>
-          <div class="tab-item"><div class="tab-item-icon">🏦</div>Integración de instrucciones de transferencia centralizadas.</div>
+          <div class="tab-item"><div class="tab-item-icon">⚡</div><div><strong>Velocidad de Cierre:</strong> Ofertas comerciales estructuradas listas antes de salir del sitio.</div></div>
+          <div class="tab-item"><div class="tab-item-icon">🔢</div><div><strong>Prefacturación Express:</strong> Cuentas ordenadas con o sin retenciones fiscales aplicadas.</div></div>
+          <div class="tab-item"><div class="tab-item-icon">📸</div><div><strong>Portafolio Integrado:</strong> Evidencias fotográficas optimizadas que no saturan el WhatsApp.</div></div>
         </div>
       </div>
-      <div class="tab-content" id="tab-profesionales">
-        <div class="tab-badge">💼 Consultores Especialistas</div>
-        <h3>Propuestas de alto nivel, informes ejecutivos y prefacturación</h3>
-        <p>Gestione cotizaciones de servicios profesionales, cuentas de cobro estandarizadas y memorias técnicas numeradas secuencialmente. Proyecte una imagen corporativa robusta desde el primer contacto comercial.</p>
-        <div class="tab-items">
-          <div class="tab-item"><div class="tab-item-icon">🔢</div>Numeración correlativa automática de documentos.</div>
-          <div class="tab-item"><div class="tab-item-icon">⚖️</div>Estructuración opcional de retenciones tributarias e impuestos locales.</div>
-          <div class="tab-item"><div class="tab-item-icon">🎨</div>Estandarización de identidad visual de marca en reportes.</div>
-          <div class="tab-item"><div class="tab-item-icon">📱</div>Autonomía total desde dispositivos móviles, sin software pesado.</div>
-        </div>
-      </div>
-      <div class="tablet-wrap reveal reveal-delay-2">
+      <div class="tablet-wrap">
         <div class="tablet">
           <div class="tablet-screen">
             <div class="tablet-hdr">
@@ -550,7 +449,7 @@ footer { padding:64px 0 40px;border-top:1px solid var(--border2); }
               <span class="tablet-num" id="tablet-num">OS-0042</span>
             </div>
             <div class="tab-screen-body">
-              <div class="ts-title" id="ts-title">Oferta Comercial y Presupuesto</div>
+              <div class="ts-title" id="ts-title">Órdenes de Servicio y Presupuestos</div>
               <table class="ts-table">
                 <thead>
                   <tr>
@@ -560,13 +459,13 @@ footer { padding:64px 0 40px;border-top:1px solid var(--border2); }
                   </tr>
                 </thead>
                 <tbody id="ts-body">
-                  <tr><td>Ingeniería de automatización integral</td><td class="ts-amt">1</td><td class="ts-amt">$1.599.900</td></tr>
-                  <tr><td>Logística de Cuadrilla + Configuración</td><td class="ts-amt">1</td><td class="ts-amt">$350.000</td></tr>
-                  <tr><td>Respaldo técnico de fábrica (12 meses)</td><td class="ts-amt">—</td><td class="ts-amt">$0</td></tr>
+                  <tr><td>Auditoría y Reporte de Campo Integral</td><td class="ts-amt">1</td><td class="ts-amt">$1.599.900</td></tr>
+                  <tr><td>Suministros Básicos Autorizados</td><td class="ts-amt">1</td><td class="ts-amt">$350.000</td></tr>
+                  <tr><td>Garantía de Respaldo Técnico</td><td class="ts-amt">—</td><td class="ts-amt">$0</td></tr>
                 </tbody>
               </table>
               <div class="ts-total-row">
-                <span class="ts-total-lbl" id="ts-total-lbl">Total Presupuesto</span>
+                <span class="ts-total-lbl" id="ts-total-lbl">Liquidación Total</span>
                 <span class="ts-total-val" id="ts-total-val">$1.949.900</span>
               </div>
             </div>
@@ -579,39 +478,37 @@ footer { padding:64px 0 40px;border-top:1px solid var(--border2); }
 
 <section class="features-section" id="caracteristicas">
   <div class="wrap">
-    <div class="reveal">
-      <div class="sec-label">Ingeniería de Software</div>
-      <h2 class="sec-title">Estructura tecnológica adaptada <em style="color:var(--gold);font-style:normal">al trabajo de campo real.</em></h2>
-      <p class="sec-sub">Módulos desarrollados para solucionar ineficiencias de control operativo, eliminando la pérdida de datos financieros.</p>
+    <div style="text-align:center; display:flex; flex-direction:column; align-items:center;">
+      <div class="sec-label">Ingeniería Operativa</div>
+      <h2 class="sec-title">Infraestructura blindada para el mundo real.</h2>
     </div>
     <div class="features-grid">
-      <div class="feat-card reveal reveal-delay-1">
+      <div class="feat-card">
         <div class="feat-icon">📸</div>
         <div class="feat-num">Pilar 01</div>
-        <div class="feat-title">Motor de Optimización y Compresión Asíncrona</div>
-        <p class="feat-desc">Las imágenes capturadas en campo por sus operarios se procesan localmente a resoluciones máximas de 800px y 72% de calidad JPEG antes de integrarse al PDF. Reduce archivos de 10MB a solo 200KB en milisegundos, optimizando el ancho de banda y agilizando las descargas de forma masiva.</p>
-        <span class="feat-tag">✓ Procesamiento nativo Android / iOS</span>
+        <div class="feat-title">Compresión de Imágenes Inteligente</div>
+        <p class="feat-desc">Las evidencias fotográficas tomadas en campo se procesan localmente a nivel de código comprimiéndose a formato JPEG óptimo. Reduce reportes masivos de 12MB a menos de 250KB en milisegundos, agilizando el envío de reportes y ahorrando almacenamiento de forma drástica.</p>
       </div>
-      <div class="feat-card reveal reveal-delay-2">
+      <div class="feat-card">
         <div class="feat-icon">🧮</div>
         <div class="feat-num">Pilar 02</div>
         <div class="feat-title">Núcleo de Cálculo Financiero Automatizado</div>
-        <p class="feat-desc">Blindaje absoluto contra errores matemáticos en calle. El núcleo gestiona subtotales, cálculo de IVA e impacto negativo de anticipos en tiempo real. Al ingresar un valor como saldo negativo, el sistema reajusta la liquidación neta de inmediato. Cero pérdidas por errores de cálculo de operarios.</p>
-        <span class="feat-tag">✓ Automatización Tributaria y Saldos</span>
+        <p class="feat-desc">Control exacto de flujos monetarios. El sistema gestiona subtotales, IVA y retenciones impositivas de forma local. Al ingresar anticipos como valores negativos, el saldo neto real a cobrar se recalcula automáticamente sin errores humanos.</p>
       </div>
-      <div class="feat-card reveal reveal-delay-3">
+      <div class="feat-card">
         <div class="feat-icon">✍️</div>
         <div class="feat-num">Pilar 03</div>
-        <div class="feat-title">Módulo de Validación Digital de Consentimiento</div>
-        <p class="feat-desc">El cliente valida y firma con el dedo directamente sobre la pantalla táctil de cualquier dispositivo. El trazo vectorial se incrusta de forma inmodificable en el PDF del reporte técnico o acta de entrega. Blinde a su empresa contra reclamos posteriores con firmas capturadas en el sitio de operaciones.</p>
-        <span class="feat-tag">✓ Autenticación y Cierre Oficial en Sitio</span>
+        <div class="feat-title">Validación y Captura Digital de Consentimiento</div>
+        <p class="feat-desc">Lienzo interactivo de alta sensibilidad para firmas digitales directas en pantallas táctiles. Las firmas quedan incrustadas de forma inmodificable directamente dentro de las actas de entrega o reportes técnicos, blindando legalmente el cierre del servicio frente al cliente.</p>
       </div>
-      <div class="feat-card premium-shield reveal reveal-delay-4">
-        <div class="feat-icon" style="background:rgba(201,168,76,0.15); border-color:var(--gold);">🔒</div>
-        <div class="feat-num" style="color:var(--gold);">Pilar 04 · Núcleo Estrella</div>
+      
+      <div class="feat-card serverless-pilar">
+        <div class="feat-icon" style="background:rgba(201,168,76,0.18); border-color:var(--gold);">🔒</div>
+        <div class="feat-num" style="color:var(--gold);">Pilar 04 · Núcleo Vital</div>
         <div class="feat-title" style="color:var(--gold2);">Arquitectura Serverless Descentralizada (Edge Computing Local)</div>
-        <p class="feat-desc" style="color:rgba(238,241,250,0.85);"><strong>Control total privado y operación continua sin internet.</strong> Olvídese de softwares en la nube que se caen y detienen la operación de sus técnicos. Con nuestro sistema ligero, el núcleo matemático, el compresor y las firmas se ejecutan localmente en la memoria del dispositivo. Sus datos comerciales jamás tocan servidores de terceros. Funciona en sótanos o zonas rurales. Un archivo indestructible: si el dispositivo tiene batería, su empresa está operativa.</p>
-        <span class="feat-tag" style="color:var(--gold3); border-color:var(--gold2);">✓ Privacidad Absoluta · Inmune a Caídas</span>
+        <p class="feat-desc" style="color:rgba(238,241,250,0.85);">
+          <strong>Control Total Privado y Operación Continua sin Internet.</strong> Olvídate de softwares en la nube centralizados que sufren caídas de red e interrumpen la productividad de tus cuadrillas. Todo el procesamiento matemático, el motor de compresión y la captura de firmas se ejecutan de forma local usando la memoria del dispositivo del técnico. <strong>Los datos comerciales e inventarios de tu empresa son estrictamente confidenciales y jamás tocan servidores de terceros.</strong> Funciona en sótanos, zonas rurales o áreas sin cobertura. Si el celular está encendido, tu empresa sigue operando.
+        </p>
       </div>
     </div>
   </div>
@@ -619,25 +516,25 @@ footer { padding:64px 0 40px;border-top:1px solid var(--border2); }
 
 <section class="pricing-section" id="precio">
   <div class="wrap">
-    <div class="pricing-header reveal">
-      <div class="sec-label">Modelos de Licenciamiento</div>
-      <h2 class="sec-title">Una inversión táctica de por vida.</h2>
-      <p class="sec-sub">Invierta una sola vez en la infraestructura tecnológica de su negocio. Elimine las suscripciones que cargan los costos fijos de su contabilidad.</p>
+    <div class="pricing-header">
+      <div class="sec-label">Modelos de Adquisición</div>
+      <h2 class="sec-title">Inversión única de por vida.</h2>
+      <p class="sec-sub">Sin cargos recurrentes ocultos, sin mensualidades obligatorias. Elige el esquema que mejor se acople a tu estructura comercial.</p>
     </div>
     <div class="pricing-grid">
       
-      <div class="pricing-card good reveal">
-        <div class="pricing-type good">Profesional Autónomo</div>
+      <div class="pricing-card">
+        <div class="pricing-type" style="color:var(--gray);">Profesional Autónomo</div>
         <div class="pricing-name">Plan Independiente</div>
-        <p class="pricing-tagline">Diseñado para el especialista independiente que busca profesionalizar su marca, ahorrar tiempo en papeleo y cerrar tratos con propuestas de alto nivel.</p>
-        <div class="pricing-amount good">$39</div>
-        <div class="pricing-period">Pago único · Acceso permanente · Cero mensualidades</div>
+        <p class="pricing-tagline">Optimizado para el especialista independiente que busca proyectar alto estatus y automatizar su administración diaria.</p>
+        <div class="pricing-amount" style="color:var(--white);">$39</div>
+        <div class="pricing-period">Pago único integral · Licencia de por vida</div>
         <ul class="pricing-list">
           <li>Licencia autorizada para <strong>1 dispositivo activo</strong></li>
-          <li>Archivo maestro estructurado, limpio y optimizado</li>
-          <li>4 Módulos esenciales de administración y reportes</li>
-          <li>Búsqueda ágil sobre catálogo de servicios personalizable</li>
-          <li>Manual Express de despliegue local en 5 minutos</li>
+          <li>Archivo Maestro HTML optimizado y ultra ligero</li>
+          <li>4 Módulos Esenciales: Ofertas Comerciales, Actas de Entrega, Prefacturación y Reportes de Campo</li>
+          <li>Acceso completo a la Base de Datos Maestra de Suministros</li>
+          <li>Guía Express de despliegue en 5 minutos</li>
           <li>Actualizaciones de núcleo incluidas para siempre</li>
         </ul>
         <a href="#" target="_blank" class="pricing-cta standard">
@@ -645,36 +542,26 @@ footer { padding:64px 0 40px;border-top:1px solid var(--border2); }
         </a>
       </div>
 
-      <div class="pricing-card featured reveal reveal-delay-2">
+      <div class="pricing-card featured">
         <div class="pricing-best">🚀 RECOMENDADO EMPRESAS</div>
-        <div class="pricing-type premium">Licencia Corporativa</div>
+        <div class="pricing-type" style="color:var(--gold);">Licencia Corporativa</div>
         <div class="pricing-name">Plan Corporativo PYME</div>
-        <p class="pricing-tagline">Optimice la gestión de sus cuadrillas en campo. Centralice tarifas, blinde sus datos comerciales frente a terceros y recupere el control total de sus operaciones.</p>
+        <p class="pricing-tagline">Diseñado para administradores, contratistas o pequeñas empresas que coordinan equipos y exigen control absoluto de campo.</p>
         <div class="pricing-amount premium">$69</div>
-        <div class="pricing-period">Pago único · Licencia libre multidispositivo · Control total</div>
+        <div class="pricing-period">Pago único corporativo · Control total del equipo</div>
         <ul class="pricing-list">
-          <li><strong>Licencia libre para múltiples dispositivos</strong> (Toda su cuadrilla)</li>
-          <li>Estructura optimizada para **Base de Datos Maestra de Suministros**</li>
-          <li>Guía corporativa express para <strong>integrar su logotipo y colores</strong></li>
-          <li>Módulo de exportación manual de respaldo (Inmune a saturación)</li>
-          <li>Estandarización de Actas de Entrega y Órdenes de Servicio</li>
-          <li><strong>Soporte de canal prioritario</strong> directo vía correo electrónico</li>
+          <li><strong>Licencia Libre Multidispositivo</strong> (Todo tu equipo técnico)</li>
+          <li>Guía de Personalización Estructural de Marca Corporativa</li>
+          <li>Fácil integración autónoma de <strong>tu logotipo y colores de empresa</strong></li>
+          <li>Botón Salvavidas de Respaldo Local para dispositivos de gama baja</li>
+          <li>Estructura optimizada para el despacho contable masivo por WhatsApp</li>
+          <li><strong>Soporte prioritario</strong> vía canal de soporte oficial</li>
         </ul>
         <a href="#" target="_blank" class="pricing-cta gold-btn">
-          Adquirir Licencia Corporativa ($69 USD) →
+          Adquirir Plan Corporativo PYME ($69 USD) →
         </a>
       </div>
 
-    </div>
-    
-    <div class="pricing-includes reveal">
-      <span class="pi-title">📦 Componentes de Entrega Inmediata:</span>
-      <div class="pi-items">
-        <span class="pi-item">Código Maestro HTML unificado</span>
-        <span class="pi-item">Manual de despliegue local rápido</span>
-        <span class="pi-item">Estructura de catálogo inmodificable</span>
-        <span class="pi-item">Cero costos fijos o recurrencias</span>
-      </div>
     </div>
   </div>
 </section>
@@ -682,72 +569,56 @@ footer { padding:64px 0 40px;border-top:1px solid var(--border2); }
 <footer>
   <div class="wrap">
     <div class="footer-top">
-      <div class="footer-brand reveal">
+      <div class="footer-brand">
         <div class="footer-logo">
           <div class="footer-logo-icon">AR</div>
           ARPA Technology Global
         </div>
         <p class="footer-tagline">
-          Desarrollado bajo validación de campo real para resolver fallas de control y estandarización en la prestación de servicios. Software descentralizado enfocado en la privacidad de datos.
+          Diseñado por profesionales de campo con experiencia en operaciones reales. Código ligero, autónomo y privado para proteger el rendimiento comercial de tu negocio.
         </p>
       </div>
-      <div class="footer-links-col reveal reveal-delay-1">
+      <div class="footer-links-col">
         <h4>Ecosistema</h4>
-        <a href="#como-funciona">Infraestructura</a>
-        <a href="#caracteristicas">Características</a>
-        <a href="#precio">Precios y Licencias</a>
+        <a href="#como-funciona">Modelos</a>
+        <a href="#caracteristicas">Pilares Técnicos</a>
+        <a href="#precio">Planes</a>
       </div>
-      <div class="footer-links-col reveal reveal-delay-2">
-        <h4>Canales Oficiales</h4>
+      <div class="footer-links-col">
+        <h4>Infraestructura</h4>
+        <a href="mailto:support@arpatechnologyglobal.com">Email de Soporte</a>
         <a href="https://arpatechnologyglobal.com" target="_blank">arpatechnologyglobal.com</a>
-        <a href="mailto:support@arpatechnologyglobal.com">Soporte Corporativo</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <p class="footer-copy">
-        © 2026 <strong>ARPA Technology Global</strong> · Todos los derechos reservados.
-      </p>
-      <p class="footer-built">Engineered for the field. Managed locally.</p>
+      <p>© 2026 <strong>ARPA Technology Global</strong> · Todos los derechos reservados.</p>
+      <p>Construido desde el campo. Para el campo.</p>
     </div>
   </div>
 </footer>
 
 <script>
-// ── INTERACTIVE TABS DATA (Nomenclatura Corporativa) ──
 const tabData = {
-  tecnicos: {
+  pymes: {
     num: 'OS-0042',
-    title: 'Oferta Comercial y Presupuesto',
-    totalLbl: 'Total Presupuesto',
+    title: 'Órdenes de Servicio y Presupuestos',
+    totalLbl: 'Liquidación Total',
     totalVal: '$1.949.900',
     rows: [
-      ['Ingeniería de automatización integral','1','$1.599.900'],
-      ['Logística de Cuadrilla + Configuración','1','$350.000'],
-      ['Respaldo técnico de fábrica (12 meses)','—','$0'],
+      ['Auditoría y Reporte de Campo Integral','1','$1.599.900'],
+      ['Suministros Básicos Autorizados','1','$350.000'],
+      ['Garantía de Respaldo Técnico','—','$0'],
     ]
   },
-  reformas: {
-    num: 'OS-0119',
-    title: 'Acta de Ejecución y Obra',
+  independientes: {
+    num: 'PRE-019',
+    title: 'Presupuesto Técnico Propuesta',
     totalLbl: 'Saldo Neto a Cobrar',
-    totalVal: '$2.150.000',
+    totalVal: '$1.650.000',
     rows: [
-      ['Suministro de Revestimiento + Insumos','18m²','$1.200.000'],
-      ['Mano de Obra Calificada (4 Operarios)','4','$800.000'],
-      ['Amortización de Anticipo Recibido','—','-$350.000 ↓'],
-      ['Logística de Transporte de Carga','1','$500.000'],
-    ]
-  },
-  profesionales: {
-    num: 'PF-0033',
-    title: 'Prefacturación de Servicios',
-    totalLbl: 'Total Liquidación',
-    totalVal: '$3.200.000',
-    rows: [
-      ['Auditoría de Procesos Q2','1','$1.500.000'],
-      ['Informe Ejecutivo de Campo en PDF','1','$500.000'],
-      ['Asesoría Técnica Especializada','4 hrs','$800.000'],
-      ['Cálculo Impositivo IVA 19%','—','$400.000'],
+      ['Instalación y Configuración Avanzada','1','$1.200.000'],
+      ['Mano de Obra Logística Directa','1','$800.000'],
+      ['Descuento Comercial / Anticipo','—','-$350.000 ↓'],
     ]
   }
 };
@@ -757,11 +628,20 @@ function switchTab(id) {
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   event.target.classList.add('active');
   document.getElementById('tab-'+id).classList.add('active');
-  // Update tablet mockup view
+  
   const d = tabData[id];
   document.getElementById('tablet-num').textContent = d.num;
   document.getElementById('ts-title').textContent = d.title;
   document.getElementById('ts-total-lbl').textContent = d.totalLbl;
   document.getElementById('ts-total-val').textContent = d.totalVal;
   const tbody = document.getElementById('ts-body');
-  tbody.innerHTML = d.rows
+  tbody.innerHTML = d.rows.map(r => `
+    <tr>
+      <td>${r[0]}</td>
+      <td class="ts-amt">${r[1]}</td>
+      <td class="ts-amt" style="${r[2].includes('-')?'color:#E05C5C;font-weight:700;':''}">${r[2]}</td>
+    </tr>`).join('');
+}
+</script>
+</body>
+</html>
