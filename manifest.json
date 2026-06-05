@@ -1,99 +1,22 @@
 {
-  "name": "Suite CRM ARPA",
-  "short_name": "CRM ARPA",
-  "description": "Sistema de gestión integral para Automatismos Arlenpav - Cotizaciones, obras, diagnósticos y cuentas de cobro 100% offline",
-  "start_url": "./CRM-ARPA-v5.html",
+  "name": "ARPA Suite",
+  "short_name": "ARPA Suite",
+  "description": "Dashboard y Herramientas Oficiales de Automatismos Arpa",
+  "start_url": "arpa-suite.html",
   "display": "standalone",
-  "background_color": "#1A2B4A",
-  "theme_color": "#E8820C",
-  "orientation": "portrait-primary",
-  "scope": "./",
-  "lang": "es-CO",
-  "dir": "ltr",
-  "categories": ["business", "productivity", "utilities"],
+  "background_color": "#121212",
+  "theme_color": "#1e1e1e",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%231A2B4A' width='192' height='192'/%3E%3Ccircle cx='96' cy='70' r='42' fill='%23FFFFFF'/%3E%3Ctext x='96' y='80' font-family='Arial,sans-serif' font-size='36' font-weight='bold' fill='%231A2B4A' text-anchor='middle'%3EARPA%3C/text%3E%3Ctext x='96' y='100' font-family='Arial,sans-serif' font-size='11' fill='%231A2B4A' text-anchor='middle'%3EAUTOMATISMOS%3C/text%3E%3Crect x='48' y='128' width='96' height='28' rx='6' fill='%23E8820C'/%3E%3Ctext x='96' y='148' font-family='Arial,sans-serif' font-size='14' font-weight='bold' fill='%23FFFFFF' text-anchor='middle'%3ECRM%3C/text%3E%3C/svg%3E",
+      "src": "Escudo.jpg",
       "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any"
+      "type": "image/jpeg"
     },
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect fill='%231A2B4A' width='512' height='512'/%3E%3Ccircle cx='256' cy='190' r='110' fill='%23FFFFFF'/%3E%3Ctext x='256' y='215' font-family='Arial,sans-serif' font-size='90' font-weight='bold' fill='%231A2B4A' text-anchor='middle'%3EARPA%3C/text%3E%3Ctext x='256' y='255' font-family='Arial,sans-serif' font-size='28' fill='%231A2B4A' text-anchor='middle'%3EAUTOMATISMOS%3C/text%3E%3Crect x='128' y='340' width='256' height='72' rx='16' fill='%23E8820C'/%3E%3Ctext x='256' y='390' font-family='Arial,sans-serif' font-size='38' font-weight='bold' fill='%23FFFFFF' text-anchor='middle'%3ECRM%3C/text%3E%3C/svg%3E",
+      "src": "Escudo.jpg",
       "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/jpeg"
     }
-  ],
-  "screenshots": [
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'%3E%3Crect fill='%23F2F4F8' width='540' height='720'/%3E%3Crect fill='%231A2B4A' width='540' height='80'/%3E%3Ccircle cx='50' cy='40' r='18' fill='%23FFFFFF'/%3E%3Ctext x='50' y='48' font-family='Arial' font-size='16' font-weight='bold' fill='%231A2B4A' text-anchor='middle'%3EA%3C/text%3E%3Ctext x='90' y='50' font-family='Arial' font-size='20' font-weight='bold' fill='%23FFFFFF'%3ECRM ARPA%3C/text%3E%3Crect x='30' y='100' width='480' height='100' rx='12' fill='%23FFFFFF'/%3E%3Ctext x='50' y='130' font-family='Arial' font-size='16' fill='%2364748B'%3ECotizaciones%3C/text%3E%3Ctext x='50' y='170' font-family='Arial' font-size='24' font-weight='bold' fill='%231A2B4A'%3E247%3C/text%3E%3Crect x='30' y='220' width='480' height='100' rx='12' fill='%23FFFFFF'/%3E%3Ctext x='50' y='250' font-family='Arial' font-size='16' fill='%2364748B'%3EObras%3C/text%3E%3Ctext x='50' y='290' font-family='Arial' font-size='24' font-weight='bold' fill='%231A2B4A'%3E89%3C/text%3E%3Crect x='30' y='340' width='480' height='100' rx='12' fill='%23FFFFFF'/%3E%3Ctext x='50' y='370' font-family='Arial' font-size='16' fill='%2364748B'%3EDiagn%C3%B3sticos%3C/text%3E%3Ctext x='50' y='410' font-family='Arial' font-size='24' font-weight='bold' fill='%231A2B4A'%3E34%3C/text%3E%3C/svg%3E",
-      "sizes": "540x720",
-      "type": "image/svg+xml",
-      "form_factor": "narrow",
-      "label": "Dashboard principal"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Nueva Cotización",
-      "short_name": "Cotización",
-      "description": "Crear nueva cotización rápidamente",
-      "url": "./CRM-ARPA-v5.html#cotizacion",
-      "icons": [
-        {
-          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect fill='%23E8820C' width='96' height='96' rx='20'/%3E%3Ctext x='48' y='65' font-family='Arial' font-size='48' fill='%23FFFFFF' text-anchor='middle'%3E📄%3C/text%3E%3C/svg%3E",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "Formato Técnico",
-      "short_name": "Formato",
-      "description": "Generar formato de instalación/mantenimiento",
-      "url": "./CRM-ARPA-v5.html#formato",
-      "icons": [
-        {
-          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect fill='%2310B981' width='96' height='96' rx='20'/%3E%3Ctext x='48' y='65' font-family='Arial' font-size='48' fill='%23FFFFFF' text-anchor='middle'%3E🔧%3C/text%3E%3C/svg%3E",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "Diagnóstico",
-      "short_name": "Diagnóstico",
-      "description": "Realizar diagnóstico técnico",
-      "url": "./CRM-ARPA-v5.html#diagnostico",
-      "icons": [
-        {
-          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect fill='%23E53E3E' width='96' height='96' rx='20'/%3E%3Ctext x='48' y='65' font-family='Arial' font-size='48' fill='%23FFFFFF' text-anchor='middle'%3E🔍%3C/text%3E%3C/svg%3E",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "Cuenta de Cobro",
-      "short_name": "Cobro",
-      "description": "Generar cuenta de cobro",
-      "url": "./CRM-ARPA-v5.html#cuentacobro",
-      "icons": [
-        {
-          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect fill='%2322C55E' width='96' height='96' rx='20'/%3E%3Ctext x='48' y='65' font-family='Arial' font-size='48' fill='%23FFFFFF' text-anchor='middle'%3E💰%3C/text%3E%3C/svg%3E",
-          "sizes": "96x96"
-        }
-      ]
-    }
-  ],
-  "prefer_related_applications": false,
-  "related_applications": [],
-  "share_target": {
-    "action": "./share-handler.html",
-    "method": "GET",
-    "enctype": "application/x-www-form-urlencoded",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url"
-    }
-  }
+  ]
 }
