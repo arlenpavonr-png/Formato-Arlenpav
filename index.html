@@ -469,7 +469,139 @@
     -webkit-tap-highlight-color: transparent;
   }
   .main-menu-btn.active { color: #fff; }
-  .main-menu-icon { font-size: 20px; line-height: 1; }
+  .main-menu-icon { font-size: 18px; line-height: 1; }
+
+  /* ── HISTORIAL ── */
+  .historial-actions {
+    padding: 16px 24px;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+  }
+  .historial-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .historial-empty {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .historial-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: 0 1px 3px rgba(15, 32, 68, 0.06);
+  }
+  .historial-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--light);
+  }
+  .historial-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navy);
+  }
+  .historial-tipo {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    background: #eff6ff;
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+  .historial-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .historial-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12px;
+  }
+  .historial-row span { color: var(--muted); }
+  .historial-row strong { color: var(--text); text-align: right; font-weight: 600; }
+  .historial-delete {
+    margin-top: 12px;
+    width: 100%;
+    min-height: 40px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #b91c1c;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-export-csv {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px;
+    border-radius: 10px;
+    background: var(--gold);
+    color: #fff;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+  }
+  .pdf-actions-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .btn-pdf-primary {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    background: var(--navy);
+    color: #fff;
+    border: none;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 0.5px;
+    min-height: 48px;
+  }
+  .btn-pdf-whatsapp {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 0.5px;
+    min-height: 48px;
+  }
 
   /* ── AJUSTES (MODAL) ── */
   .settings-btn {
@@ -885,6 +1017,7 @@
       font-size: 8pt;
     }
     .cobros-editor, .cobros-editor .field label, .cobro-remove, #cobros-actions-cot, .btn-firma-clear { display: none !important; }
+    .historial-actions, .historial-delete { display: none !important; }
     .firma-canvas-hidden-print { display: none !important; }
     .firma-print-img { display: block !important; }
     .header {
@@ -993,11 +1126,11 @@
     <div class="section">
       <div class="section-title"><span class="dot"></span>Datos del Cliente</div>
       <div class="grid g2">
-        <div class="field span2"><label>Nombre / Empresa</label><input type="text" placeholder="Nombre completo o razón social"></div>
+        <div class="field span2"><label>Nombre / Empresa</label><input type="text" id="formato-cliente-nombre" placeholder="Nombre completo o razón social"></div>
         <div class="field"><label>NIT / Cédula</label><input type="text" placeholder="000.000.000-0"></div>
-        <div class="field"><label>Teléfono</label><input type="tel" placeholder="+57 300 000 0000"></div>
+        <div class="field"><label>Teléfono</label><input type="tel" id="formato-cliente-tel" placeholder="+57 300 000 0000"></div>
         <div class="field span2"><label>Dirección de instalación</label><input type="text" placeholder="Calle, carrera, barrio..."></div>
-        <div class="field"><label>Ciudad</label><input type="text" placeholder="Medellín"></div>
+        <div class="field"><label>Ciudad</label><input type="text" id="formato-cliente-ciudad" placeholder="Medellín"></div>
         <div class="field"><label>Fecha</label><input type="date" id="formato-fecha"></div>
       </div>
     </div>
@@ -1339,16 +1472,32 @@
 
   </div><!-- /view-cotizacion -->
 
+  <div id="view-historial" class="suite-view body" hidden>
+    <div class="section">
+      <div class="section-title"><span class="dot"></span>Historial de Servicios</div>
+      <p style="font-size:12px;color:var(--muted);margin:-4px 0 12px;line-height:1.5;">
+        Registros guardados al exportar PDF desde Formato. Máximo 200 servicios.
+      </p>
+      <div id="historial-empty" class="historial-empty">
+        Aún no hay servicios en el historial.<br>Guarde un formato como PDF para registrar el primer servicio.
+      </div>
+      <div id="historial-list" class="historial-list"></div>
+    </div>
+    <div class="historial-actions">
+      <button type="button" class="btn-export-csv" id="btn-exportar-historial">Exportar Historial CSV</button>
+    </div>
+  </div>
+
   <!-- BOTÓN GUARDAR PDF -->
   <div id="pdf-actions-formato" style="padding: 16px 24px; background: var(--bg); border-top: 1px solid var(--border);">
-    <button onclick="guardarPDF()" style="
-      width:100%; padding:14px; border-radius:10px;
-      background: var(--navy); color: white; border: none;
-      font-size:15px; font-weight:700; cursor:pointer;
-      display:flex; align-items:center; justify-content:center; gap:10px;
-      font-family:'DM Sans',sans-serif; letter-spacing:.5px;">
-      📄 Guardar como PDF
-    </button>
+    <div class="pdf-actions-stack">
+      <button type="button" class="btn-pdf-primary" onclick="guardarPDFYHistorial()">
+        📄 Guardar como PDF
+      </button>
+      <button type="button" class="btn-pdf-whatsapp" onclick="guardarPDFYWhatsApp()">
+        📲 Enviar por WhatsApp
+      </button>
+    </div>
   </div>
   <div id="pdf-actions-cot" hidden style="padding: 16px 24px; background: var(--bg); border-top: 1px solid var(--border);">
     <button type="button" onclick="guardarCotPDF()" style="
@@ -1387,6 +1536,10 @@
   <button type="button" class="main-menu-btn" onclick="openCotizacionView(this)">
     <span class="main-menu-icon" aria-hidden="true">💰</span>
     <span>Cotización</span>
+  </button>
+  <button type="button" class="main-menu-btn" onclick="openHistorialView(this)">
+    <span class="main-menu-icon" aria-hidden="true">🗂️</span>
+    <span>Historial</span>
   </button>
   <button type="button" class="main-menu-btn" onclick="openSettingsModal(this)">
     <span class="main-menu-icon" aria-hidden="true">⚙️</span>
@@ -1838,6 +1991,8 @@ if ('serviceWorker' in navigator) {
 <script src="./js/arpa-signature.js"></script>
 <script src="./js/arpa-cotizacion.js"></script>
 <script src="./js/arpa-views.js"></script>
+<script src="./js/arpa-historial.js"></script>
+<script src="./js/arpa-whatsapp.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   if (window.ArpaCotizacion) window.ArpaCotizacion.initCotizacion();
