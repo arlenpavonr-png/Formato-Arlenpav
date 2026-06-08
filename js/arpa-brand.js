@@ -84,6 +84,7 @@
     const set = (id, fn) => { const el = document.getElementById(id); if (el) fn(el); };
 
     set('brand-logo', (el) => { el.src = logo; el.alt = company + ' – Logo'; });
+    set('settings-logo-preview', (el) => { el.src = logo; el.alt = 'Vista previa del logo'; });
     set('brand-company-name', (el) => { el.textContent = companyUpper; });
     set('brand-company-contact', (el) => {
       let html = `NIT: ${val(s.nit, DEFAULTS.nit)} &nbsp;|&nbsp; Tel: ${val(s.phone, DEFAULTS.phone)}<br>${val(s.address, DEFAULTS.address)}`;
@@ -175,8 +176,10 @@
     if (logoInput) logoInput.value = '';
     global.ArpaPricing?.renderPriceListSettings?.();
     document.getElementById('settings-modal')?.classList.add('open');
-    document.querySelectorAll('.main-menu-btn').forEach((b) => b.classList.remove('active'));
-    menuBtn?.classList.add('active');
+    if (menuBtn) {
+      document.querySelectorAll('.main-menu-btn').forEach((b) => b.classList.remove('active'));
+      menuBtn.classList.add('active');
+    }
   }
 
   function closeSettings() {

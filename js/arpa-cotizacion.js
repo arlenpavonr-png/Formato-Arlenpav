@@ -288,6 +288,22 @@
   function initCotizacion() {
     global.ArpaCobros?.init('cot');
     global.ArpaCobros?.seedFromPriceList('cot');
+
+    const hoy = new Date();
+    const fecha = document.getElementById('cot-fecha');
+    const validez = document.getElementById('cot-validez');
+    if (fecha && !fecha.value) fecha.value = hoy.toISOString().split('T')[0];
+    if (validez && !validez.value) {
+      const v = new Date(hoy);
+      v.setDate(v.getDate() + 15);
+      validez.value = v.toISOString().split('T')[0];
+    }
+    const numField = document.getElementById('numero-cot');
+    const ultimo = getUltimoCot();
+    if (numField && !numField.value) {
+      numField.placeholder = ultimo > 0 ? `Último: ${String(ultimo).padStart(4, '0')}` : '← Toca NUEVO N°';
+    }
+
     document.getElementById('buscador-cot')?.addEventListener('input', buscarProductoCot);
     document.getElementById('iva-check-cot')?.addEventListener('change', recalcularCotizacion);
     document.addEventListener('click', (e) => {

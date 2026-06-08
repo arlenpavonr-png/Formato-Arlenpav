@@ -1,16 +1,17 @@
-const CACHE_NAME = 'arpa-suite-cache-v3';
+const CACHE_NAME = 'arpa-suite-cache-v4';
+const BASE = self.location.pathname.replace(/service-worker\.js$/, '');
 const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-  './js/arpa-brand.js',
-  './js/arpa-pricing.js',
-  './js/arpa-cobros.js',
-  './js/arpa-signature.js',
-  './js/arpa-cotizacion.js',
-  './js/arpa-views.js',
-  './icon-192.png',
-  './icon-512.png',
+  BASE,
+  BASE + 'index.html',
+  BASE + 'manifest.json',
+  BASE + 'js/arpa-brand.js',
+  BASE + 'js/arpa-pricing.js',
+  BASE + 'js/arpa-cobros.js',
+  BASE + 'js/arpa-signature.js',
+  BASE + 'js/arpa-cotizacion.js',
+  BASE + 'js/arpa-views.js',
+  BASE + 'icon-192.png',
+  BASE + 'icon-512.png',
   'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap'
 ];
 
@@ -61,7 +62,7 @@ self.addEventListener('fetch', (event) => {
       }).catch(() => {
         const accept = event.request.headers.get('accept') || '';
         if (accept.includes('text/html')) {
-          return caches.match('./index.html');
+          return caches.match(BASE + 'index.html');
         }
       });
     })

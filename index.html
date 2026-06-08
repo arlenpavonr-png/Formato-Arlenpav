@@ -854,7 +854,7 @@
 
   <!-- HEADER -->
   <div class="header">
-    <img id="brand-logo" src="" alt="">
+    <img id="brand-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='16' fill='%230f2044'/%3E%3Ccircle cx='60' cy='54' r='28' fill='%23ffffff' opacity='0.95'/%3E%3Ctext x='60' y='62' text-anchor='middle' fill='%23d97706' font-size='20' font-weight='bold' font-family='Arial,sans-serif'%3ELOGO%3C/text%3E%3C/svg%3E" alt="Logo empresa">
     <div class="header-info">
       <h1 id="brand-company-name">&nbsp;</h1>
       <p id="brand-company-contact">&nbsp;</p>
@@ -922,7 +922,7 @@
         <div class="field"><label>Teléfono</label><input type="tel" placeholder="+57 300 000 0000"></div>
         <div class="field span2"><label>Dirección de instalación</label><input type="text" placeholder="Calle, carrera, barrio..."></div>
         <div class="field"><label>Ciudad</label><input type="text" placeholder="Medellín"></div>
-        <div class="field"><label>Fecha</label><input type="date"></div>
+        <div class="field"><label>Fecha</label><input type="date" id="formato-fecha"></div>
       </div>
     </div>
 
@@ -1361,7 +1361,7 @@
       <div class="field">
         <label for="settings-logo">Logo de su empresa</label>
         <div class="logo-upload-box">
-          <img id="settings-logo-preview" class="logo-upload-preview" src="" alt="Vista previa del logo">
+          <img id="settings-logo-preview" class="logo-upload-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' rx='16' fill='%230f2044'/%3E%3Ccircle cx='60' cy='54' r='28' fill='%23ffffff' opacity='0.95'/%3E%3Ctext x='60' y='62' text-anchor='middle' fill='%23d97706' font-size='20' font-weight='bold' font-family='Arial,sans-serif'%3ELOGO%3C/text%3E%3C/svg%3E" alt="Vista previa del logo">
           <p class="logo-upload-hint">Suba su logo (PNG, JPG o WebP). Si no carga uno, se usará un logo genérico.</p>
           <input type="file" id="settings-logo" class="logo-upload-input" accept="image/png,image/jpeg,image/webp,image/gif" onchange="previewLogoUpload(this)">
         </div>
@@ -1605,8 +1605,8 @@ function guardarPDF() {
   });
 
   // Oculta el botón de PDF para que no salga impreso
-  const btnPDF = document.querySelector('button[onclick="guardarPDF()"]').parentElement;
-  btnPDF.style.display = 'none';
+  const btnPDF = document.querySelector('#pdf-actions-formato button');
+  if (btnPDF) btnPDF.parentElement.style.display = 'none';
   const settingsModal = document.getElementById('settings-modal');
   if (settingsModal) settingsModal.classList.remove('open');
 
@@ -1629,7 +1629,7 @@ function guardarPDF() {
       const lbl = document.querySelector(`label[for="${ch.id}"]`);
       if (lbl) lbl.style.fontWeight = '';
     });
-    btnPDF.style.display = '';
+    if (btnPDF) btnPDF.parentElement.style.display = '';
   }, 1000);
 }
 function getUltimoNumero() {
@@ -1660,6 +1660,10 @@ function nuevoNumero() {
 window.addEventListener('DOMContentLoaded', () => {
   const ultimo = getUltimoNumero();
   const campo = document.getElementById('numero-formato');
+  const fechaFormato = document.getElementById('formato-fecha');
+  if (fechaFormato && !fechaFormato.value) {
+    fechaFormato.value = new Date().toISOString().slice(0, 10);
+  }
   if (ultimo === 0) {
     campo.placeholder = '← Toca NUEVO N°';
   } else {

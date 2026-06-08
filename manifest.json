@@ -1,9 +1,10 @@
 {
+  "id": "/Formato-Arlenpav/",
   "name": "ARPA Suite",
   "short_name": "ARPA Suite",
   "description": "PWA de gestión profesional — formatos, cotizaciones y reportes en campo",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "/Formato-Arlenpav/index.html",
+  "scope": "/Formato-Arlenpav/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0f2044",
@@ -13,25 +14,25 @@
   "categories": ["business", "productivity"],
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "/Formato-Arlenpav/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icon-512.png",
+      "src": "/Formato-Arlenpav/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icon-192.png",
+      "src": "/Formato-Arlenpav/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "/Formato-Arlenpav/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
