@@ -15,6 +15,7 @@ manifest.json       Configuración PWA
 service-worker.js   Caché offline
 icon-192.png        Icono PWA
 icon-512.png        Icono PWA
+logo-arpa-suite.png Logo oficial ARPA Suite
 js/                 Módulos de la suite
 ```
 

@@ -18,13 +18,7 @@
     logoBase64: ''
   };
 
-  const DEFAULT_LOGO = 'data:image/svg+xml,' + encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">' +
-    '<rect width="120" height="120" rx="16" fill="#0f2044"/>' +
-    '<circle cx="60" cy="54" r="28" fill="#ffffff" opacity="0.95"/>' +
-    '<text x="60" y="62" text-anchor="middle" fill="#d97706" font-size="20" font-weight="bold" font-family="Arial,sans-serif">LOGO</text>' +
-    '</svg>'
-  );
+  const DEFAULT_LOGO = './logo-arpa-suite.png';
 
   let pendingLogoBase64 = null;
 
