@@ -1,8 +1,8 @@
 {
   "name": "ARPA Suite",
   "short_name": "ARPA Suite",
-  "description": "PWA de gestión profesional para Automatismos Arlenpav S.A.S.",
-  "start_url": "arpa-suite.html",
+  "description": "PWA de gestión profesional — formatos, cotizaciones y reportes en campo",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
