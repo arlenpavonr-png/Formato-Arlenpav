@@ -9,7 +9,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ARPA Suite">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
@@ -57,11 +59,27 @@
     align-items: center;
     gap: 16px;
   }
-  .header img { width: 68px; height: 68px; border-radius: 50%; background: white; object-fit: contain; flex-shrink: 0; }
+  .brand-logo-wrap {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 10px 14px;
+    min-width: 88px;
+    max-width: 200px;
+    min-height: 80px;
+    box-sizing: border-box;
+  }
   .header #brand-logo {
     width: auto;
-    height: 76px;
-    max-width: 160px;
+    height: auto;
+    max-width: 100%;
+    max-height: 72px;
+    object-fit: contain;
+    object-position: center;
+    display: block;
     border-radius: 0;
     background: transparent;
   }
@@ -530,14 +548,30 @@
     gap: 10px;
     text-align: center;
   }
+  .logo-upload-preview-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 16px;
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    max-width: 220px;
+    min-height: 96px;
+    box-sizing: border-box;
+    width: 100%;
+  }
   .logo-upload-preview {
     width: auto;
-    height: 88px;
-    max-width: 180px;
-    border-radius: 8px;
-    background: #fff;
+    height: auto;
+    max-width: 100%;
+    max-height: 88px;
     object-fit: contain;
-    border: 2px solid var(--border);
+    object-position: center;
+    display: block;
+    border-radius: 0;
+    background: transparent;
+    border: none;
   }
   .logo-upload-hint {
     font-size: 11px;
@@ -832,12 +866,15 @@
       gap: 10px;
       padding: 16px 24px 12px;
     }
-    .header #brand-logo {
-      width: auto;
-      height: 64px;
-      max-width: 140px;
+    .brand-logo-wrap {
       margin: 0 auto;
       order: -1;
+      max-width: 180px;
+      min-height: 72px;
+      padding: 8px 12px;
+    }
+    .header #brand-logo {
+      max-height: 64px;
     }
     .header-info, .header-meta {
       flex: none;
@@ -863,7 +900,9 @@
 
   <!-- HEADER -->
   <div class="header">
-    <img id="brand-logo" src="./logo-arpa-suite.png" alt="ARPA Suite">
+    <div class="brand-logo-wrap">
+      <img id="brand-logo" src="./logo-arpa-suite.png" alt="ARPA Suite">
+    </div>
     <div class="header-info">
       <h1 id="brand-company-name">&nbsp;</h1>
       <p id="brand-company-contact">&nbsp;</p>
@@ -1370,7 +1409,9 @@
       <div class="field">
         <label for="settings-logo">Logo de su empresa</label>
         <div class="logo-upload-box">
-          <img id="settings-logo-preview" class="logo-upload-preview" src="./logo-arpa-suite.png" alt="Vista previa del logo">
+          <div class="logo-upload-preview-wrap">
+            <img id="settings-logo-preview" class="logo-upload-preview" src="./logo-arpa-suite.png" alt="Vista previa del logo">
+          </div>
           <p class="logo-upload-hint">Suba su logo (PNG, JPG o WebP). Si no carga uno, se usará el logo oficial de ARPA Suite.</p>
           <input type="file" id="settings-logo" class="logo-upload-input" accept="image/png,image/jpeg,image/webp,image/gif" onchange="previewLogoUpload(this)">
         </div>
@@ -1745,6 +1786,7 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./service-worker.js')
       .then((reg) => {
         console.log('Service Worker registrado con éxito en scope:', reg.scope);
+        reg.update();
       })
       .catch((err) => {
         console.warn('Error al registrar el Service Worker:', err);

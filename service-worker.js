@@ -1,4 +1,4 @@
-const CACHE_NAME = 'arpa-suite-cache-v5';
+const CACHE_NAME = 'arpa-suite-cache-v6';
 const BASE = self.location.pathname.replace(/service-worker\.js$/, '');
 const ASSETS = [
   BASE,
@@ -13,6 +13,9 @@ const ASSETS = [
   BASE + 'js/arpa-views.js',
   BASE + 'icon-192.png',
   BASE + 'icon-512.png',
+  BASE + 'icon-maskable-192.png',
+  BASE + 'icon-maskable-512.png',
+  BASE + 'apple-touch-icon.png',
   'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap'
 ];
 
@@ -27,9 +30,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((names) =>
-      Promise.all(
-        names.filter((n) => n.startsWith('arpa-suite-cache-') && n !== CACHE_NAME).map((n) => caches.delete(n))
-      )
+      Promise.all(names.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n)))
     ).then(() => self.clients.claim())
   );
 });
@@ -68,4 +69,12 @@ self.addEventListener('fetch', (event) => {
       });
     })
   );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'CLEAR_CACHE') {
+    event.waitUntil(
+      caches.keys().then((names) => Promise.all(names.map((n) => caches.delete(n))))
+    );
+  }
 });
