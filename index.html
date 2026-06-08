@@ -66,7 +66,7 @@
     justify-content: center;
     background: rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 10px 14px;
+    padding: 12px 16px;
     min-width: 88px;
     max-width: 200px;
     min-height: 80px;
@@ -377,36 +377,46 @@
   }
   .firma-name { border: none; border-bottom: 1px solid var(--border); font-size: 12px; font-family: 'DM Sans', sans-serif; background: transparent; outline: none; padding: 4px 2px; color: var(--text); width: 100%; }
 
-  /* ── FOOTER ── */
-  .footer {
+  /* ── FOOTER SUITE ── */
+  .suite-footer {
     background: var(--navy);
-    padding: 12px 24px;
+    margin-top: 4px;
+  }
+  .suite-footer-local {
+    padding: 14px 24px 10px;
     text-align: center;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: #c8d9f0;
+    line-height: 1.55;
+    letter-spacing: 0.02em;
+  }
+  .suite-footer-divider {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    margin: 0 20px;
+  }
+  .suite-footer-global {
+    padding: 10px 24px 16px;
+    text-align: center;
+  }
+  .suite-footer-global-text {
+    margin: 0;
+    font-family: 'DM Sans', sans-serif;
     font-size: 10px;
-    color: #7090b8;
+    font-weight: 400;
+    color: #64748b;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
   }
-  .viral-footer {
-    display: none;
-    background: #fff;
-    padding: 10px 20px 12px;
-    text-align: center;
-    border-top: 1px solid var(--border);
-  }
-  .viral-footer-link {
-    display: block;
-    color: #94a3b8;
+  .suite-footer-global-link {
+    color: #64748b;
     text-decoration: none;
-    line-height: 1.4;
-    font-size: 7pt;
-    text-align: center;
   }
-  .viral-footer-link:hover { color: #64748b; }
-  .brand-screen-footer {
-    background: var(--navy);
-    padding: 10px 24px;
-    text-align: center;
-    font-size: 10px;
-    color: #7090b8;
+  .suite-footer-global-link:hover {
+    color: #475569;
+    text-decoration: underline;
   }
   .brand-bank-info {
     background: var(--light);
@@ -842,20 +852,38 @@
 
   /* ── PRINT ── */
   @media print {
-    body { background: white; padding: 0; padding-bottom: 0; margin-bottom: 22mm; }
+    body { background: white; padding: 0; padding-bottom: 0; margin-bottom: 28mm; }
     .page { box-shadow: none; border-radius: 0; }
     .photo-box input[type=file] { display: none; }
     button { display: none !important; }
     .settings-overlay, .main-menu { display: none !important; }
-    .viral-footer {
-      display: block;
+    .suite-footer {
+      display: block !important;
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
       z-index: 9999;
+      background: #fff;
+      border-top: 1px solid #e2e8f0;
     }
-    .brand-screen-footer { display: none !important; }
+    .suite-footer-local {
+      color: #334155;
+      font-size: 10px;
+      padding: 8px 24px 6px;
+    }
+    .suite-footer-divider {
+      border-top-color: #e2e8f0;
+      margin: 0 24px;
+    }
+    .suite-footer-global {
+      padding: 6px 24px 10px;
+    }
+    .suite-footer-global-text,
+    .suite-footer-global-link {
+      color: #475569;
+      font-size: 8pt;
+    }
     .cobros-editor, .cobros-editor .field label, .cobro-remove, #cobros-actions-cot, .btn-firma-clear { display: none !important; }
     .firma-canvas-hidden-print { display: none !important; }
     .firma-print-img { display: block !important; }
@@ -1333,12 +1361,21 @@
     </button>
   </div>
 
-  <div class="brand-screen-footer" id="brand-screen-footer">&nbsp;</div>
-  <div class="viral-footer" id="viral-footer">
-    <a href="https://globaltechnology.com" class="viral-footer-link" target="_blank" rel="noopener noreferrer">
-      Arpa Suite | Powered by Global Technology
-    </a>
-  </div>
+  <footer class="suite-footer" id="suite-footer" aria-label="Pie de página">
+    <div class="suite-footer-local" id="brand-screen-footer" data-editable="true">
+      Su Empresa S.A.S. &nbsp;|&nbsp; NIT 000.000.000-0 &nbsp;|&nbsp; Tel 000-000-0000
+    </div>
+    <hr class="suite-footer-divider" aria-hidden="true">
+    <div class="suite-footer-global" id="arpa-global-seal" data-arpa-core="immutable">
+      <p class="suite-footer-global-text">
+        © 2026
+        <a href="https://arpatechnologyglobal.com" class="suite-footer-global-link" target="_blank" rel="noopener noreferrer">ARPA Technology Global</a>
+        ·
+        <a href="https://arpatechnologyglobal.com" class="suite-footer-global-link" target="_blank" rel="noopener noreferrer">arpatechnologyglobal.com</a>
+        · Todos los derechos reservados.
+      </p>
+    </div>
+  </footer>
 </div>
 
 <!-- MENÚ PRINCIPAL -->

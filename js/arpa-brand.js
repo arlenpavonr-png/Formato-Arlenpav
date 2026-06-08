@@ -3,7 +3,7 @@
  */
 (function (global) {
   const SETTINGS_KEY = 'arpa_suite_user_settings';
-  const VIRAL_URL = 'https://globaltechnology.com';
+  const GLOBAL_BRAND_URL = 'https://arpatechnologyglobal.com';
 
   const DEFAULTS = {
     companyName: 'Su Empresa S.A.S.',
@@ -86,6 +86,7 @@
       el.innerHTML = html;
     });
     set('brand-screen-footer', (el) => {
+      if (el.dataset.editable !== 'true') return;
       el.innerHTML = `${company} &nbsp;|&nbsp; NIT ${val(s.nit, DEFAULTS.nit)} &nbsp;|&nbsp; Tel ${val(s.phone, DEFAULTS.phone)}`;
     });
     set('brand-bank-block', (el) => { el.innerHTML = formatBankBlock(s); });
@@ -228,9 +229,21 @@
     closeSettings();
   }
 
+  function protectGlobalSeal() {
+    const seal = document.getElementById('arpa-global-seal');
+    if (!seal || seal.dataset.arpaCore !== 'immutable') return;
+    const snapshot = seal.innerHTML;
+    new MutationObserver(() => {
+      const text = seal.textContent.replace(/\s+/g, ' ').trim();
+      if (!text.includes('ARPA Technology Global') || !text.includes('arpatechnologyglobal.com')) {
+        seal.innerHTML = snapshot;
+      }
+    }).observe(seal, { childList: true, subtree: true, characterData: true });
+  }
+
   global.ArpaBrand = {
     SETTINGS_KEY,
-    VIRAL_URL,
+    GLOBAL_BRAND_URL,
     DEFAULTS,
     DEFAULT_LOGO,
     getSettings,
@@ -250,7 +263,10 @@
   global.saveSettingsFromModal = saveFromModal;
   global.previewLogoUpload = previewLogo;
 
-  document.addEventListener('DOMContentLoaded', applyToUI);
+  document.addEventListener('DOMContentLoaded', () => {
+    applyToUI();
+    protectGlobalSeal();
+  });
   document.getElementById('settings-modal')?.addEventListener('click', (e) => {
     if (e.target.id === 'settings-modal') closeSettings();
   });
