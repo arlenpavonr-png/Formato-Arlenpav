@@ -1,0 +1,96 @@
+/**
+ * Módulo: Lista de precios (localStorage)
+ */
+(function (global) {
+  const PRICE_LIST_KEY = 'arpa_suite_price_list';
+
+  const DEFAULT_PRICE_LIST = {
+    instalacion: { label: 'Instalación', value: 350000 },
+    visitaTecnica: { label: 'Visita Técnica', value: 85000 },
+    mantenimiento: { label: 'Mantenimiento Preventivo', value: 120000 },
+    reparacion: { label: 'Reparación', value: 150000 },
+    manoObra: { label: 'Mano de Obra (hora)', value: 65000 }
+  };
+
+  function getPriceList() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(PRICE_LIST_KEY) || '{}');
+      const merged = {};
+      Object.keys(DEFAULT_PRICE_LIST).forEach((key) => {
+        merged[key] = {
+          label: saved[key]?.label || DEFAULT_PRICE_LIST[key].label,
+          value: Number(saved[key]?.value ?? DEFAULT_PRICE_LIST[key].value) || 0
+        };
+      });
+      return merged;
+    } catch (e) {
+      return { ...DEFAULT_PRICE_LIST };
+    }
+  }
+
+  function savePriceList(list) {
+    localStorage.setItem(PRICE_LIST_KEY, JSON.stringify(list));
+  }
+
+  function readPriceListFromSettingsForm() {
+    const list = {};
+    document.querySelectorAll('[data-price-key]').forEach((input) => {
+      const key = input.dataset.priceKey;
+      const labelInput = document.querySelector(`[data-price-label="${key}"]`);
+      list[key] = {
+        label: labelInput?.value.trim() || DEFAULT_PRICE_LIST[key]?.label || key,
+        value: Number(String(input.value).replace(/\D/g, '')) || 0
+      };
+    });
+    return list;
+  }
+
+  function renderPriceListSettings() {
+    const container = document.getElementById('settings-price-list');
+    if (!container) return;
+    const list = getPriceList();
+    container.innerHTML = Object.entries(list).map(([key, item]) => `
+      <div class="price-list-row">
+        <input type="text" class="price-label-input" data-price-label="${key}" value="${escapeHtml(item.label)}" placeholder="Nombre del servicio">
+        <input type="number" class="price-value-input" data-price-key="${key}" min="0" step="1000" value="${item.value}" inputmode="numeric" placeholder="0">
+      </div>
+    `).join('');
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function applyServicePriceToFormato() {
+    const tipoEl = document.querySelector('#view-formato input[name="tipo"]:checked');
+    const field = document.getElementById('formato-valor-servicio');
+    if (!tipoEl || !field) return;
+    const list = getPriceList();
+    const map = {
+      instalacion: 'instalacion',
+      mantenimiento: 'mantenimiento',
+      reparacion: 'reparacion'
+    };
+    const key = map[tipoEl.value];
+    if (key && list[key]) field.value = list[key].value;
+  }
+
+  function formatoPesos(n) {
+    return '$ ' + (Number(n) || 0).toLocaleString('es-CO');
+  }
+
+  global.ArpaPricing = {
+    PRICE_LIST_KEY,
+    DEFAULT_PRICE_LIST,
+    getPriceList,
+    savePriceList,
+    readPriceListFromSettingsForm,
+    renderPriceListSettings,
+    applyServicePriceToFormato,
+    formatoPesos
+  };
+})(window);

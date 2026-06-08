@@ -1,0 +1,49 @@
+{
+  "id": "arlenpav",
+  "company": {
+    "legalName": "AUTOMATISMOS ARLENPAV S.A.S",
+    "displayName": "Automatismos Arlenpav S.A.S.",
+    "nit": "901.473.259-8",
+    "phone": "300-568-3914",
+    "address": "CL 77C C 86A 38 – Medellín, Colombia",
+    "website": "https://www.automatismosarpa.com",
+    "websiteDisplay": "www.automatismosarpa.com",
+    "contactPerson": "Arlen Pavón R."
+  },
+  "app": {
+    "name": "ARPA Suite",
+    "shortName": "ARPA Suite",
+    "description": "PWA de gestión profesional para Automatismos Arlenpav S.A.S.",
+    "tagline": "Infraestructura Global ARPA Suite"
+  },
+  "assets": {
+    "logo": "Logo oficial 1.png",
+    "logoAlt": "Logo ARPA",
+    "icon192": "../../icon-192.png",
+    "icon512": "../../icon-512.png"
+  },
+  "theme": {
+    "navy": "#0f2044",
+    "blue": "#1a3a6e",
+    "accent": "#2563eb",
+    "gold": "#d97706",
+    "background": "#f5f6fa",
+    "themeColor": "#0f2044"
+  },
+  "copy": {
+    "documentTitleFormat": "Formato Instalación / Mantenimiento – Automatismos Arlenpav",
+    "documentTitleQuote": "Cotización – Automatismos Arlenpav",
+    "warrantyHeader": "Garantía – Automatismos Arlenpav S.A.S",
+    "technicianSignatureLabel": "Firma Técnico Arlenpav",
+    "quoteSignatureLabel": "Elaborado por Arlenpav",
+    "whatsappSenderName": "Arlen",
+    "verificationSealText": "Este reporte está firmado digitalmente y respaldado por la infraestructura tecnológica global de Automatismos Arpa."
+  },
+  "urls": {
+    "licenseCheck": "https://www.automatismosarpa.com/license.json",
+    "qrVerification": "https://www.automatismosarpa.com",
+    "shareBaseUrl": "https://arlenpavonr-png.github.io/Formato-Arlenpav/",
+    "logoFallbackUrl": "https://arlenpavonr-png.github.io/Formato-Arlenpav/Logo%20oficial%201.png"
+  },
+  "storagePrefix": "arlenpav"
+}

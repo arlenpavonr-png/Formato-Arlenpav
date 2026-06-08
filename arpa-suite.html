@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Formato Instalación / Mantenimiento – Automatismos Arlenpav</title>
+<title>Arpa Suite – Plataforma Profesional</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f2044">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -37,6 +37,7 @@
     font-size: 14px;
     min-height: 100vh;
     padding: 16px;
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   }
 
   .page {
@@ -316,11 +317,38 @@
     padding: 10px; display: flex; flex-direction: column; gap: 6px;
   }
   .firma-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
-  .firma-area {
-    height: 64px; border: 1px dashed var(--border);
-    border-radius: 6px; background: var(--bg);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; color: #cbd5e1;
+  .firma-canvas-wrap { display: flex; flex-direction: column; gap: 6px; }
+  .firma-canvas {
+    width: 100%;
+    height: 110px;
+    touch-action: none;
+    cursor: crosshair;
+    display: block;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg);
+  }
+  .btn-firma-clear {
+    align-self: flex-end;
+    background: var(--light);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 40px;
+  }
+  .firma-print-img {
+    width: 100%;
+    height: 110px;
+    object-fit: contain;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    display: none;
   }
   .firma-name { border: none; border-bottom: 1px solid var(--border); font-size: 12px; font-family: 'DM Sans', sans-serif; background: transparent; outline: none; padding: 4px 2px; color: var(--text); width: 100%; }
 
@@ -332,13 +360,483 @@
     font-size: 10px;
     color: #7090b8;
   }
+  .viral-footer {
+    display: none;
+    background: #fff;
+    padding: 10px 20px 12px;
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+  .viral-footer-link {
+    display: block;
+    color: #94a3b8;
+    text-decoration: none;
+    line-height: 1.4;
+    font-size: 7pt;
+    text-align: center;
+  }
+  .viral-footer-link:hover { color: #64748b; }
+  .brand-screen-footer {
+    background: var(--navy);
+    padding: 10px 24px;
+    text-align: center;
+    font-size: 10px;
+    color: #7090b8;
+  }
+  .brand-bank-info {
+    background: var(--light);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--navy);
+  }
+  .cobro-row {
+    display: grid;
+    grid-template-columns: 1fr 120px auto;
+    gap: 10px;
+    align-items: end;
+    background: var(--light);
+    border-radius: 10px;
+    padding: 12px;
+  }
+  .cobros-editor { display: flex; flex-direction: column; gap: 10px; }
+
+  /* ── MENÚ PRINCIPAL ── */
+  .main-menu {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 900;
+    display: flex;
+    background: var(--navy);
+    border-top: 3px solid var(--gold);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .main-menu-btn {
+    flex: 1;
+    min-height: 56px;
+    padding: 8px 6px;
+    background: none;
+    border: none;
+    color: #7090b8;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .main-menu-btn.active { color: #fff; }
+  .main-menu-icon { font-size: 20px; line-height: 1; }
+
+  /* ── AJUSTES (MODAL) ── */
+  .settings-btn {
+    background: rgba(255,255,255,.12);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 7px;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .settings-btn:hover { background: rgba(255,255,255,.2); }
+  .settings-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,32,68,.55);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .settings-overlay.open { display: flex; }
+  .settings-modal {
+    background: var(--card);
+    border-radius: 14px;
+    width: 100%;
+    max-width: 420px;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,.25);
+    display: flex;
+    flex-direction: column;
+  }
+  .settings-modal-header {
+    background: var(--navy);
+    color: #fff;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid var(--gold);
+  }
+  .settings-modal-header h2 {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .3px;
+  }
+  .settings-modal-close {
+    background: none;
+    border: none;
+    color: #a8c0e8;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+  }
+  .settings-modal-body {
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+  }
+  .settings-modal-body .field input,
+  .settings-modal-body .field select,
+  .settings-modal-body .field input[type="file"] {
+    background: var(--bg);
+    font-size: 16px;
+    min-height: 44px;
+  }
+  .settings-modal-body .field label .req {
+    color: #dc2626;
+    font-weight: 700;
+  }
+  .logo-upload-box {
+    border: 1.5px dashed var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+  }
+  .logo-upload-preview {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #fff;
+    object-fit: contain;
+    border: 2px solid var(--border);
+  }
+  .logo-upload-hint {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .logo-upload-input {
+    width: 100%;
+    padding: 10px !important;
+    font-size: 14px !important;
+  }
+  .settings-error {
+    display: none;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    font-size: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    line-height: 1.4;
+  }
+  .settings-error.visible { display: block; }
+
+  /* ── LISTA DE PRECIOS (AJUSTES) ── */
+  .settings-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--blue);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    margin: 8px 0 4px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+  .price-list-row {
+    display: grid;
+    grid-template-columns: 1fr 110px;
+    gap: 8px;
+    align-items: center;
+  }
+  .price-label-input, .price-value-input {
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    padding: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    background: var(--bg);
+    width: 100%;
+    min-height: 44px;
+  }
+
+  /* ── VISTAS SUITE ── */
+  .suite-view[hidden] { display: none !important; }
+
+  /* ── COTIZACIÓN ── */
+  .buscador-wrap-cot {
+    background: var(--light);
+    border-radius: 10px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .buscador-row-cot { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+  .buscador-input-cot {
+    flex: 1;
+    min-width: 180px;
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    padding: 10px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    background: white;
+    outline: none;
+  }
+  .resultados-cot {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+  }
+  .resultado-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+  }
+  .resultado-item:hover { background: #eff6ff; }
+  .resultado-cod { color: var(--muted); font-size: 10px; font-family: 'DM Mono', monospace; flex-shrink: 0; }
+  .resultado-nom { color: var(--text); flex: 1; }
+  .resultado-pvp { color: var(--green); font-weight: 700; flex-shrink: 0; font-family: 'DM Mono', monospace; }
+  .tabla-cot-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tabla-productos {
+    width: 100%;
+    min-width: 520px;
+    border-collapse: collapse;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    table-layout: fixed;
+  }
+  .tabla-productos thead tr { background: var(--navy); }
+  .tabla-productos thead th {
+    padding: 9px 8px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+  }
+  .tabla-productos tbody tr { border-bottom: 1px solid var(--border); }
+  .tabla-productos tbody tr:nth-child(even) { background: #f8fafc; }
+  .tabla-productos tbody tr.row-cobro { background: #fffbeb; }
+  .tabla-productos tbody tr.row-servicio { background: #eff6ff; }
+  .tabla-productos td {
+    padding: 8px;
+    font-size: 12px;
+    color: var(--text);
+    vertical-align: middle;
+    word-wrap: break-word;
+  }
+  .td-cod { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); width: 12%; }
+  .td-desc { width: 38%; }
+  .td-cant { width: 10%; text-align: center; }
+  .td-precio, .td-total { width: 18%; text-align: right; font-family: 'DM Mono', monospace; font-weight: 600; }
+  .td-total { color: var(--green); font-weight: 700; }
+  .td-action { width: 4%; text-align: center; }
+  .cot-cant-input {
+    width: 56px;
+    border: 1.5px solid var(--border);
+    border-radius: 5px;
+    padding: 4px 6px;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    background: white;
+  }
+  .btn-quitar, .btn-quitar-extra {
+    background: #fee2e2;
+    color: #dc2626;
+    border: none;
+    border-radius: 5px;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 36px;
+  }
+  .totales-box {
+    background: var(--light);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+  }
+  .total-row { display: flex; gap: 16px; align-items: center; justify-content: flex-end; width: 100%; }
+  .total-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; min-width: 120px; text-align: right; }
+  .total-val { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 700; color: var(--blue); min-width: 130px; text-align: right; }
+  .total-row.grand { border-top: 2px solid var(--border); padding-top: 10px; margin-top: 4px; }
+  .total-row.grand .total-val { font-size: 18px; color: var(--navy); }
+  .iva-toggle { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; align-self: flex-end; }
+  .servicios-grid { display: flex; flex-direction: column; gap: 8px; }
+  .servicio-row {
+    display: grid;
+    grid-template-columns: auto 1fr 120px;
+    gap: 10px;
+    align-items: center;
+    background: var(--light);
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+  }
+  .servicio-name { font-size: 13px; font-weight: 600; color: var(--navy); }
+  .cot-servicio-valor {
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    padding: 8px 10px;
+    font-size: 16px;
+    text-align: right;
+    background: white;
+    width: 100%;
+    min-height: 44px;
+  }
+  .extra-items-editor { display: flex; flex-direction: column; gap: 10px; }
+  .extra-item-row {
+    display: grid;
+    grid-template-columns: 1fr 120px auto;
+    gap: 10px;
+    align-items: end;
+    background: var(--light);
+    border-radius: 10px;
+    padding: 12px;
+  }
+  .extra-items-empty { font-size: 12px; color: var(--muted); font-style: italic; padding: 8px 0; }
+  .btn-add-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: var(--gold);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 44px;
+    width: 100%;
+  }
+  .nota-cot {
+    background: #fefce8;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 11px;
+    color: #92400e;
+    line-height: 1.6;
+  }
+  @media (max-width: 520px) {
+    .extra-item-row { grid-template-columns: 1fr; }
+    .price-list-row { grid-template-columns: 1fr; }
+    .servicio-row { grid-template-columns: auto 1fr; }
+    .servicio-row .cot-servicio-valor { grid-column: span 2; }
+  }
+  @media print {
+    .tabla-productos { min-width: 0; table-layout: auto; }
+    .tabla-cot-wrap { overflow: visible; }
+    .btn-quitar, .btn-add-item, .extra-items-editor .field label { display: none !important; }
+    .extra-item-row { display: none !important; }
+  }
+  .settings-modal-footer {
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    background: var(--bg);
+  }
+  .settings-modal-footer button {
+    flex: 1;
+    padding: 11px;
+    border-radius: 8px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .btn-settings-save {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-settings-cancel {
+    background: var(--light);
+    color: var(--text);
+  }
 
   /* ── PRINT ── */
   @media print {
-    body { background: white; padding: 0; }
+    body { background: white; padding: 0; padding-bottom: 0; margin-bottom: 22mm; }
     .page { box-shadow: none; border-radius: 0; }
     .photo-box input[type=file] { display: none; }
     button { display: none !important; }
+    .settings-overlay, .main-menu { display: none !important; }
+    .viral-footer {
+      display: block;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 9999;
+    }
+    .brand-screen-footer { display: none !important; }
+    .cobros-editor, .cobros-editor .field label, .cobro-remove, #cobros-actions-cot, .btn-firma-clear { display: none !important; }
+    .firma-canvas-hidden-print { display: none !important; }
+    .firma-print-img { display: block !important; }
+    .header {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 10px;
+      padding: 16px 24px 12px;
+    }
+    .header #brand-logo {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto;
+      order: -1;
+    }
+    .header-info, .header-meta {
+      flex: none;
+      width: 100%;
+      text-align: center;
+    }
+    .header-meta .no-field { justify-content: center; }
+    #validation-badge { display: none !important; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
   @media (max-width: 520px) {
@@ -358,29 +856,39 @@
   <div class="header">
     <img id="brand-logo" src="" alt="">
     <div class="header-info">
-      <h1 id="brand-company-name">AUTOMATISMOS ARLENPAV S.A.S</h1>
-      <p>NIT: 901.473.259-8 &nbsp;|&nbsp; Tel: 300-568-3914<br>
-         CL 77C C 86A 38 – Medellín, Colombia<br>
-         www.automatismosarpa.com</p>
+      <h1 id="brand-company-name">&nbsp;</h1>
+      <p id="brand-company-contact">&nbsp;</p>
       <div id="validation-badge" style="display:inline-flex; align-items:center; gap:6px; margin-top:8px; padding:4px 8px; border-radius:4px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);">
-        <span id="validation-dot" style="width:6px; height:6px; border-radius:50%; background:#94a3b8; display:inline-block;"></span>
-        <span id="validation-text" style="color:#a8c0e8;">Verificando Licencia...</span>
+        <span id="validation-dot" style="width:6px; height:6px; border-radius:50%; background:#16a34a; display:inline-block;"></span>
+        <span id="validation-text" style="color:#a8c0e8;">Arpa Suite</span>
       </div>
     </div>
     <div class="header-meta">
-      <div class="doc-type">Formato de Servicio</div>
-      <div class="no-field">
-        <label>N°</label>
-        <input type="text" id="numero-formato" placeholder="0001" style="cursor:pointer;" title="Toca para generar nuevo número">
+      <button type="button" class="settings-btn" onclick="openSettingsModal()" title="Ajustes de empresa" aria-label="Ajustes de empresa">⚙️</button>
+      <div class="doc-type" id="doc-type-label">Formato de Servicio</div>
+      <div id="header-meta-formato">
+        <div class="no-field">
+          <label>N°</label>
+          <input type="text" id="numero-formato" placeholder="0001" style="cursor:pointer;" title="Toca para generar nuevo número">
+        </div>
+        <div style="margin-top:5px;">
+          <button onclick="nuevoNumero()" style="background:var(--gold);color:white;border:none;border-radius:5px;padding:4px 9px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.5px;">+ NUEVO N°</button>
+        </div>
       </div>
-      <div style="margin-top:5px;">
-        <button onclick="nuevoNumero()" style="background:var(--gold);color:white;border:none;border-radius:5px;padding:4px 9px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.5px;">+ NUEVO N°</button>
+      <div id="header-meta-cot" hidden>
+        <div class="no-field">
+          <label>N°</label>
+          <input type="text" id="numero-cot" placeholder="0001">
+        </div>
+        <div style="margin-top:5px;">
+          <button type="button" onclick="nuevoCotNumero()" style="background:var(--gold);color:white;border:none;border-radius:5px;padding:4px 9px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.5px;">+ NUEVO N°</button>
+        </div>
       </div>
     </div>
   </div>
   <div class="gold-bar"></div>
 
-  <div class="body">
+  <div id="view-formato" class="suite-view body">
 
     <!-- 1. TIPO DE SERVICIO -->
     <div class="section">
@@ -392,6 +900,16 @@
         <label for="t2">🔧 Mantenimiento</label>
         <input type="radio" name="tipo" id="t3" value="reparacion">
         <label for="t3">🛠 Reparación</label>
+      </div>
+      <div class="grid g2" style="margin-top:12px;">
+        <div class="field">
+          <label>Valor referencial del servicio (COP)</label>
+          <input type="number" id="formato-valor-servicio" min="0" step="1000" inputmode="numeric" placeholder="Según lista de precios">
+        </div>
+        <div class="field" style="justify-content:flex-end;">
+          <label>&nbsp;</label>
+          <p style="font-size:11px;color:var(--muted);line-height:1.4;padding:8px 0;">Precio sugerido desde Configuración. Editable antes del PDF.</p>
+        </div>
       </div>
     </div>
 
@@ -412,7 +930,7 @@
     <div class="section">
       <div class="section-title"><span class="dot"></span>Técnico Responsable</div>
       <div class="grid g2">
-        <div class="field"><label>Técnico</label><input type="text" placeholder="Nombre del técnico"></div>
+        <div class="field"><label>Técnico</label><input type="text" id="campo-tecnico-responsable" placeholder="Nombre del técnico"></div>
         <div class="field"><label>Auxiliar (si aplica)</label><input type="text" placeholder="Nombre del auxiliar"></div>
       </div>
     </div>
@@ -458,7 +976,7 @@
 
             <option value="Liftmaster">Liftmaster</option>
             <option value="Beninca">Beninca</option>
-            <option value="NAS">NAS Automatismos</option>
+            <option value="NAS">NAS</option>
             <option value="Otra">Otra</option>
           </select>
         </div>
@@ -564,8 +1082,8 @@
     <div class="section">
       <div class="section-title"><span class="dot"></span>Términos de Garantía</div>
       <div class="garantia">
-        <div class="garantia-header">
-          <span class="shield">🛡️</span> Garantía – Automatismos Arlenpav S.A.S
+        <div class="garantia-header" id="brand-warranty-header">
+          <span class="shield">🛡️</span> Términos de Garantía
         </div>
         <div class="garantia-body">
           <div class="garantia-item">
@@ -578,7 +1096,7 @@
           </div>
           <div class="garantia-item">
             <div class="gi-icon gi-warn">⚠️</div>
-            <div><strong>Exclusiones de garantía:</strong> La garantía no aplica sobre daños causados por descargas eléctricas, sobretensiones, rayos u otras causas externas. Tampoco aplica cuando el equipo ha sido intervenido o ajustado por <strong>personal diferente al de Automatismos Arlenpav S.A.S</strong>, ya que esto puede comprometer su correcto funcionamiento.</div>
+            <div id="brand-warranty-exclusion"><strong>Exclusiones de garantía:</strong> La garantía no aplica sobre daños por causas externas, descargas eléctricas o intervención de personal no autorizado.</div>
           </div>
         </div>
       </div>
@@ -590,39 +1108,163 @@
       <div class="firmas">
         <div class="firma-box">
           <div class="firma-label">Firma Cliente</div>
-          <div class="firma-area">Firma aquí</div>
+          <div class="firma-canvas-wrap">
+            <canvas id="canvas-firma-cliente" class="firma-canvas" width="600" height="200" aria-label="Lienzo firma cliente"></canvas>
+            <button type="button" class="btn-firma-clear no-print" onclick="limpiarFirma('canvas-firma-cliente')">Borrar</button>
+          </div>
           <input class="firma-name" type="text" placeholder="Nombre completo">
           <input class="firma-name" type="text" placeholder="CC / NIT">
         </div>
         <div class="firma-box">
-          <div class="firma-label">Firma Técnico Arlenpav</div>
-          <div class="firma-area">Firma aquí</div>
-          <input class="firma-name" type="text" placeholder="Nombre del técnico">
+          <div class="firma-label" id="brand-technician-signature-label">Firma Técnico</div>
+          <div class="firma-canvas-wrap">
+            <canvas id="canvas-firma-tecnico" class="firma-canvas" width="600" height="200" aria-label="Lienzo firma técnico"></canvas>
+            <button type="button" class="btn-firma-clear no-print" onclick="limpiarFirma('canvas-firma-tecnico')">Borrar</button>
+          </div>
+          <input class="firma-name" id="campo-tecnico-firma" type="text" placeholder="Nombre del técnico">
           <input class="firma-name" type="text" placeholder="ID técnico">
         </div>
       </div>
     </div>
 
-    <!-- SELLO DE VERIFICACIÓN INFRAESTRUCTURA GLOBAL -->
-    <div class="verification-seal" style="margin-top: 20px; padding: 14px; border: 1.5px solid var(--border); border-radius: 10px; background: linear-gradient(135deg, var(--light), #ffffff); display: flex; align-items: center; gap: 16px;">
-      <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
-        <div style="display: flex; align-items: center; gap: 6px;">
-          <span style="font-size: 14px;">🔒</span>
-          <strong style="font-size: 11px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.5px;">Infraestructura Global ARPA Suite</strong>
-        </div>
-        <p style="font-size: 10.5px; color: var(--muted); line-height: 1.4; margin: 0;">
-          Este reporte está firmado digitalmente y respaldado por la infraestructura tecnológica global de <strong>Automatismos Arpa</strong>. Escanee el código QR para verificar la autenticidad de esta certificación técnica directamente en nuestro sitio web oficial.
-        </p>
-      </div>
-      <div style="width: 80px; height: 80px; flex-shrink: 0; background: white; border: 1px solid var(--border); border-radius: 6px; padding: 4px; display: flex; align-items: center; justify-content: center;">
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.automatismosarpa.com" alt="QR Autenticidad" style="width: 100%; height: 100%; object-fit: contain;">
+    <div class="verification-seal" style="margin-top: 20px; padding: 14px; border: 1.5px solid var(--border); border-radius: 10px; background: linear-gradient(135deg, var(--light), #ffffff);">
+      <p style="font-size: 10.5px; color: var(--muted); line-height: 1.4; margin: 0;">
+        Documento emitido por <strong id="brand-verification-company">Su Empresa</strong> a través de <strong>Arpa Suite</strong>.
+      </p>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="dot"></span>Datos Bancarios</div>
+      <div class="brand-bank-info" id="brand-bank-block-formato">&nbsp;</div>
+    </div>
+
+  </div><!-- /view-formato -->
+
+  <div id="view-cotizacion" class="suite-view body" hidden>
+
+    <div class="section">
+      <div class="section-title"><span class="dot"></span>Datos del Cliente</div>
+      <div class="grid g2">
+        <div class="field span2"><label>Nombre / Empresa</label><input id="cot-nombre" type="text" placeholder="Nombre completo o razón social"></div>
+        <div class="field"><label>NIT / Cédula</label><input id="cot-nit" type="text" placeholder="000.000.000-0"></div>
+        <div class="field"><label>Teléfono</label><input id="cot-tel" type="tel" placeholder="+57 300 000 0000"></div>
+        <div class="field"><label>Correo electrónico</label><input id="cot-email" type="email" placeholder="correo@ejemplo.com"></div>
+        <div class="field"><label>Ciudad</label><input id="cot-ciudad" type="text" placeholder="Medellín"></div>
+        <div class="field"><label>Fecha</label><input id="cot-fecha" type="date"></div>
+        <div class="field"><label>Válida hasta</label><input id="cot-validez" type="date"></div>
       </div>
     </div>
 
-  </div><!-- /body -->
+    <div class="section">
+      <div class="section-title"><span class="dot"></span>Cobros</div>
+      <p style="font-size:11px;color:var(--muted);margin:-4px 0 8px;">Todos los ítems son editables. Los valores iniciales provienen de su Lista de Precios en Configuración.</p>
+      <div id="cobros-editor-cot" class="cobros-editor"></div>
+      <div id="cobros-actions-cot" style="margin-top:10px;">
+        <button type="button" class="btn-add-item" id="btn-cobros-add-cot">+ Agregar ítem adicional</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="dot"></span>Buscar y Agregar Productos</div>
+      <div class="buscador-wrap-cot">
+        <div class="buscador-row-cot">
+          <div class="field" style="flex:1;min-width:180px;">
+            <label>Producto</label>
+            <input type="text" class="buscador-input-cot" id="buscador-cot" placeholder="🔍 Buscar por nombre o código..." autocomplete="off">
+          </div>
+          <div class="field" style="min-width:72px;">
+            <label>Cant.</label>
+            <input type="number" id="cant-input-cot" min="1" value="1" style="width:72px;text-align:center;min-height:44px;font-size:16px;">
+          </div>
+        </div>
+        <div class="resultados-cot" id="resultados-cot"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="dot"></span>Productos y Servicios Cotizados</div>
+      <div class="tabla-cot-wrap">
+        <table class="tabla-productos">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Descripción</th>
+              <th style="text-align:center;">Cant.</th>
+              <th style="text-align:right;">P.V.P Unit.</th>
+              <th style="text-align:right;">Total</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="cot-tabla-body">
+            <tr class="empty-row"><td colspan="6">Agregue productos, servicios o ítems adicionales</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="dot"></span>Datos Bancarios</div>
+      <div class="brand-bank-info" id="brand-bank-block">&nbsp;</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="dot"></span>Resumen de Cotización</div>
+      <div class="totales-box">
+        <label class="iva-toggle">
+          <input type="checkbox" id="iva-check-cot">
+          Incluir IVA 19%
+        </label>
+        <div class="total-row">
+          <span class="total-label">Subtotal</span>
+          <span class="total-val" id="subtotal-val-cot">$ 0</span>
+        </div>
+        <div class="total-row" id="iva-row-cot" style="display:none;">
+          <span class="total-label">IVA (19%)</span>
+          <span class="total-val" id="iva-val-cot">$ 0</span>
+        </div>
+        <div class="total-row grand">
+          <span class="total-label" style="font-weight:700;color:var(--navy);">TOTAL</span>
+          <span class="total-val" id="total-val-cot">$ 0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title"><span class="dot"></span>Observaciones</div>
+      <div class="field">
+        <textarea id="cot-obs" placeholder="Especificaciones adicionales, notas para el cliente..."></textarea>
+      </div>
+    </div>
+
+    <div class="nota-cot" id="cot-nota-legal">&nbsp;</div>
+
+    <div class="section">
+      <div class="section-title"><span class="dot"></span>Aprobación</div>
+      <div class="firmas">
+        <div class="firma-box">
+          <div class="firma-label">Aprobado por (Cliente)</div>
+          <div class="firma-canvas-wrap">
+            <canvas id="canvas-cot-cliente" class="firma-canvas" width="600" height="200" aria-label="Firma cliente cotización"></canvas>
+            <button type="button" class="btn-firma-clear no-print" onclick="limpiarFirma('canvas-cot-cliente')">Borrar</button>
+          </div>
+          <input class="firma-name" type="text" placeholder="Nombre completo">
+        </div>
+        <div class="firma-box">
+          <div class="firma-label" id="cot-elaborado-label">Elaborado por</div>
+          <div class="firma-canvas-wrap">
+            <canvas id="canvas-cot-elaborado" class="firma-canvas" width="600" height="200" aria-label="Firma elaborado cotización"></canvas>
+            <button type="button" class="btn-firma-clear no-print" onclick="limpiarFirma('canvas-cot-elaborado')">Borrar</button>
+          </div>
+          <input class="firma-name" id="cot-elaborado-nombre" type="text" placeholder="Nombre del técnico">
+          <input class="firma-name" id="cot-elaborado-tel" type="text" placeholder="Teléfono">
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /view-cotizacion -->
 
   <!-- BOTÓN GUARDAR PDF -->
-  <div style="padding: 16px 24px; background: var(--bg); border-top: 1px solid var(--border);">
+  <div id="pdf-actions-formato" style="padding: 16px 24px; background: var(--bg); border-top: 1px solid var(--border);">
     <button onclick="guardarPDF()" style="
       width:100%; padding:14px; border-radius:10px;
       background: var(--navy); color: white; border: none;
@@ -632,9 +1274,106 @@
       📄 Guardar como PDF
     </button>
   </div>
+  <div id="pdf-actions-cot" hidden style="padding: 16px 24px; background: var(--bg); border-top: 1px solid var(--border);">
+    <button type="button" onclick="guardarCotPDF()" style="
+      width:100%; padding:14px; border-radius:10px;
+      background: var(--navy); color: white; border: none;
+      font-size:15px; font-weight:700; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      font-family:'DM Sans',sans-serif; letter-spacing:.5px;">
+      📄 Guardar Cotización PDF
+    </button>
+  </div>
 
-  <div class="footer">
-    Automatismos Arlenpav S.A.S &nbsp;|&nbsp; NIT 901.473.259-8 &nbsp;|&nbsp; Tel 300-568-3914 &nbsp;|&nbsp; www.automatismosarpa.com
+  <div class="brand-screen-footer" id="brand-screen-footer">&nbsp;</div>
+  <div class="viral-footer" id="viral-footer">
+    <a href="https://globaltechnology.com" class="viral-footer-link" target="_blank" rel="noopener noreferrer">
+      Arpa Suite | Powered by Global Technology
+    </a>
+  </div>
+</div>
+
+<!-- MENÚ PRINCIPAL -->
+<nav class="main-menu" aria-label="Menú principal">
+  <button type="button" class="main-menu-btn active" onclick="scrollToTopMenu(this)">
+    <span class="main-menu-icon" aria-hidden="true">📋</span>
+    <span>Formato</span>
+  </button>
+  <button type="button" class="main-menu-btn" onclick="openCotizacionView(this)">
+    <span class="main-menu-icon" aria-hidden="true">💰</span>
+    <span>Cotización</span>
+  </button>
+  <button type="button" class="main-menu-btn" onclick="openSettingsModal(this)">
+    <span class="main-menu-icon" aria-hidden="true">⚙️</span>
+    <span>Configuración</span>
+  </button>
+</nav>
+
+<!-- MODAL AJUSTES DE EMPRESA -->
+<div class="settings-overlay" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
+  <div class="settings-modal">
+    <div class="settings-modal-header">
+      <h2 id="settings-modal-title">⚙️ Configuración de Empresa</h2>
+      <button type="button" class="settings-modal-close" onclick="closeSettingsModal()" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="settings-modal-body">
+      <p id="settings-error" class="settings-error" role="alert"></p>
+      <div class="field">
+        <label for="settings-company">Nombre Empresa <span class="req">*</span></label>
+        <input type="text" id="settings-company" required autocomplete="organization" placeholder="Nombre de su empresa">
+      </div>
+      <div class="field">
+        <label for="settings-nit">NIT <span class="req">*</span></label>
+        <input type="text" id="settings-nit" required inputmode="numeric" placeholder="000.000.000-0">
+      </div>
+      <div class="field">
+        <label for="settings-address">Dirección <span class="req">*</span></label>
+        <input type="text" id="settings-address" required autocomplete="street-address" placeholder="Dirección comercial">
+      </div>
+      <div class="field">
+        <label for="settings-phone">Teléfono <span class="req">*</span></label>
+        <input type="tel" id="settings-phone" required autocomplete="tel" inputmode="tel" placeholder="Teléfono de contacto">
+      </div>
+      <div class="field">
+        <label for="settings-website">Sitio web (opcional)</label>
+        <input type="url" id="settings-website" autocomplete="url" placeholder="https://su-empresa.com">
+      </div>
+      <div class="settings-section-title">Datos Bancarios</div>
+      <div class="field">
+        <label for="settings-bank">Banco <span class="req">*</span></label>
+        <input type="text" id="settings-bank" required placeholder="Nombre del banco">
+      </div>
+      <div class="field">
+        <label for="settings-account-type">Tipo de cuenta <span class="req">*</span></label>
+        <select id="settings-account-type" required>
+          <option value="Ahorros">Ahorros</option>
+          <option value="Corriente">Corriente</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="settings-account-number">Número de cuenta <span class="req">*</span></label>
+        <input type="text" id="settings-account-number" required inputmode="numeric" placeholder="Número de cuenta">
+      </div>
+      <div class="field">
+        <label for="settings-technician">Nombre del técnico (opcional)</label>
+        <input type="text" id="settings-technician" autocomplete="name" placeholder="Nombre del técnico responsable">
+      </div>
+      <div class="field">
+        <label for="settings-logo">Logo de su empresa</label>
+        <div class="logo-upload-box">
+          <img id="settings-logo-preview" class="logo-upload-preview" src="" alt="Vista previa del logo">
+          <p class="logo-upload-hint">Suba su logo (PNG, JPG o WebP). Si no carga uno, se usará un logo genérico.</p>
+          <input type="file" id="settings-logo" class="logo-upload-input" accept="image/png,image/jpeg,image/webp,image/gif" onchange="previewLogoUpload(this)">
+        </div>
+      </div>
+      <div class="settings-section-title">Lista de Precios</div>
+      <p style="font-size:11px;color:var(--muted);line-height:1.4;margin-bottom:4px;">Valores base para servicios recurrentes. Se aplican en Formato y Cotización (editables antes del PDF).</p>
+      <div id="settings-price-list" class="servicios-grid"></div>
+    </div>
+    <div class="settings-modal-footer">
+      <button type="button" class="btn-settings-cancel" onclick="closeSettingsModal()">Cancelar</button>
+      <button type="button" class="btn-settings-save" onclick="saveSettingsFromModal()">Guardar</button>
+    </div>
   </div>
 </div>
 
@@ -831,9 +1570,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // ── GUARDAR PDF ─────────────────────────────────────────────────────────────
 function guardarPDF() {
-  // Convierte cada input/select/textarea en un span con su valor
-  // para que el PDF los capture correctamente
-  const elementos = document.querySelectorAll('input:not([type=file]):not([type=radio]):not([type=checkbox]), select, textarea');
+  applyUserSettingsToUI();
+  document.body.classList.add('is-printing');
+
+  const viewRoot = document.getElementById('view-formato');
+  const elementos = viewRoot.querySelectorAll('input:not([type=file]):not([type=radio]):not([type=checkbox]), select, textarea');
   const respaldos = [];
 
   elementos.forEach(el => {
@@ -855,7 +1596,7 @@ function guardarPDF() {
   });
 
   // Radios y checkboxes — marca visualmente
-  const checks = document.querySelectorAll('input[type=checkbox], input[type=radio]');
+  const checks = viewRoot.querySelectorAll('input[type=checkbox], input[type=radio]');
   checks.forEach(ch => {
     if (ch.checked) {
       const lbl = document.querySelector(`label[for="${ch.id}"]`);
@@ -866,11 +1607,20 @@ function guardarPDF() {
   // Oculta el botón de PDF para que no salga impreso
   const btnPDF = document.querySelector('button[onclick="guardarPDF()"]').parentElement;
   btnPDF.style.display = 'none';
+  const settingsModal = document.getElementById('settings-modal');
+  if (settingsModal) settingsModal.classList.remove('open');
+
+  window.ArpaSignature?.prepareForPrint?.([
+    'canvas-firma-cliente',
+    'canvas-firma-tecnico'
+  ]);
 
   window.print();
 
   // Restaura todo después de imprimir
   setTimeout(() => {
+    document.body.classList.remove('is-printing');
+    window.ArpaSignature?.restoreAfterPrint?.();
     respaldos.forEach(({ el, parent, next }) => {
       const span = parent.querySelector('.pdf-valor');
       if (span) parent.replaceChild(el, span);
@@ -968,36 +1718,13 @@ function loadPhotos(input, previewId) {
   });
 }
 
-// ── VALIDACIÓN DE INFRAESTRUCTURA GLOBAL ──────────────────────────────────────
-function validarInfraestructura() {
-  const badge = document.getElementById("validation-badge");
-  const dot = document.getElementById("validation-dot");
-  const txt = document.getElementById("validation-text");
-  
-  if (!badge || !dot || !txt) return;
-
-  fetch('https://www.automatismosarpa.com/license.json', { mode: 'cors', cache: 'no-store' })
-    .then(res => {
-      if (res.ok) {
-        dot.style.backgroundColor = '#16a34a';
-        badge.style.backgroundColor = 'rgba(22, 163, 74, 0.2)';
-        badge.style.borderColor = 'rgba(34, 197, 94, 0.3)';
-        txt.style.color = '#4ade80';
-        txt.textContent = 'Infraestructura Global Conectada';
-      } else {
-        throw new Error('No validado');
-      }
-    })
-    .catch(() => {
-      dot.style.backgroundColor = '#d97706';
-      badge.style.backgroundColor = 'rgba(217, 119, 6, 0.2)';
-      badge.style.borderColor = 'rgba(217, 119, 6, 0.3)';
-      txt.style.color = '#fcd34d';
-      txt.textContent = 'Infraestructura Global Protegida (Offline)';
-    });
-}
-
-window.addEventListener('DOMContentLoaded', validarInfraestructura);
+// Badge de suite (sin llamadas externas)
+window.addEventListener('DOMContentLoaded', () => {
+  const txt = document.getElementById('validation-text');
+  const dot = document.getElementById('validation-dot');
+  if (txt) txt.textContent = 'Arpa Suite · Listo';
+  if (dot) dot.style.backgroundColor = '#16a34a';
+});
 
 // Registrar el Service Worker
 if ('serviceWorker' in navigator) {
@@ -1013,6 +1740,23 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 
-  <script src="./brand-loader.js"></script>
+<script src="./js/arpa-brand.js"></script>
+<script src="./js/arpa-pricing.js"></script>
+<script src="./js/arpa-cobros.js"></script>
+<script src="./js/arpa-signature.js"></script>
+<script src="./js/arpa-cotizacion.js"></script>
+<script src="./js/arpa-views.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.ArpaCotizacion) window.ArpaCotizacion.initCotizacion();
+  document.querySelectorAll('#view-formato input[name="tipo"]').forEach((radio) => {
+    radio.addEventListener('change', () => {
+      if (window.ArpaPricing) window.ArpaPricing.applyServicePriceToFormato();
+    });
+  });
+  if (window.ArpaPricing) window.ArpaPricing.applyServicePriceToFormato();
+});
+</script>
+
 </body>
 </html>
