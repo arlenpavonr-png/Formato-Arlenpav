@@ -220,7 +220,6 @@
     if (!saveSettings(settings)) return;
 
     global.ArpaPricing?.savePriceList?.(global.ArpaPricing.readPriceListFromSettingsForm());
-    global.ArpaPricing?.applyServicePriceToFormato?.();
     global.ArpaCobros?.seedFromPriceList?.('cot');
     global.ArpaCotizacion?.refreshCobros?.();
 

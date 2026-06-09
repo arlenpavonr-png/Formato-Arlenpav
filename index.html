@@ -1153,16 +1153,6 @@
         <input type="radio" name="tipo" id="t3" value="reparacion">
         <label for="t3">🛠 Reparación</label>
       </div>
-      <div class="grid g2" style="margin-top:12px;">
-        <div class="field">
-          <label>Valor referencial del servicio (COP)</label>
-          <input type="number" id="formato-valor-servicio" min="0" step="1000" inputmode="numeric" placeholder="Según lista de precios">
-        </div>
-        <div class="field" style="justify-content:flex-end;">
-          <label>&nbsp;</label>
-          <p style="font-size:11px;color:var(--muted);line-height:1.4;padding:8px 0;">Precio sugerido desde Configuración. Editable antes del PDF.</p>
-        </div>
-      </div>
     </div>
 
     <!-- 2. DATOS DEL CLIENTE -->
@@ -1652,7 +1642,7 @@
         </div>
       </div>
       <div class="settings-section-title">Lista de Precios</div>
-      <p style="font-size:11px;color:var(--muted);line-height:1.4;margin-bottom:4px;">Valores base para servicios recurrentes. Se aplican en Formato y Cotización (editables antes del PDF).</p>
+      <p style="font-size:11px;color:var(--muted);line-height:1.4;margin-bottom:4px;">Valores base para servicios recurrentes. Se aplican en Cotización (editables antes del PDF).</p>
       <div id="settings-price-list" class="servicios-grid"></div>
     </div>
     <div class="settings-modal-footer">
@@ -1907,12 +1897,6 @@ if ('serviceWorker' in navigator) {
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   if (window.ArpaCotizacion) window.ArpaCotizacion.initCotizacion();
-  document.querySelectorAll('#view-formato input[name="tipo"]').forEach((radio) => {
-    radio.addEventListener('change', () => {
-      if (window.ArpaPricing) window.ArpaPricing.applyServicePriceToFormato();
-    });
-  });
-  if (window.ArpaPricing) window.ArpaPricing.applyServicePriceToFormato();
 });
 </script>
 

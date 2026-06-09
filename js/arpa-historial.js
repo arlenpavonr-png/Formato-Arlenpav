@@ -37,8 +37,7 @@
       cliente: clienteEl?.value.trim() || '',
       tipo: TIPO_LABEL[tipoKey] || 'Instalación',
       ciudad: ciudadEl?.value.trim() || '',
-      fecha: document.getElementById('formato-fecha')?.value || '',
-      valor: Number(document.getElementById('formato-valor-servicio')?.value) || 0
+      fecha: document.getElementById('formato-fecha')?.value || ''
     };
   }
 
@@ -95,7 +94,6 @@
           <div class="historial-row"><span>Cliente</span><strong>${escapeHtml(r.cliente || '—')}</strong></div>
           <div class="historial-row"><span>Ciudad</span><strong>${escapeHtml(r.ciudad || '—')}</strong></div>
           <div class="historial-row"><span>Fecha</span><strong>${escapeHtml(r.fecha || '—')}</strong></div>
-          <div class="historial-row"><span>Valor</span><strong>${formatoPesos(r.valor)}</strong></div>
         </div>
         <button type="button" class="historial-delete" data-id="${escapeHtml(r.id)}" aria-label="Eliminar registro">Eliminar</button>
       </article>
@@ -117,14 +115,13 @@
       return;
     }
 
-    const header = ['Numero', 'Cliente', 'Tipo', 'Ciudad', 'Fecha', 'Valor COP', 'Guardado'];
+    const header = ['Numero', 'Cliente', 'Tipo', 'Ciudad', 'Fecha', 'Guardado'];
     const rows = records.map((r) => [
       r.numero,
       r.cliente,
       r.tipo,
       r.ciudad,
       r.fecha,
-      r.valor,
       r.savedAt
     ]);
 

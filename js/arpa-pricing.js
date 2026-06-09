@@ -65,20 +65,6 @@
       .replace(/>/g, '&gt;');
   }
 
-  function applyServicePriceToFormato() {
-    const tipoEl = document.querySelector('#view-formato input[name="tipo"]:checked');
-    const field = document.getElementById('formato-valor-servicio');
-    if (!tipoEl || !field) return;
-    const list = getPriceList();
-    const map = {
-      instalacion: 'instalacion',
-      mantenimiento: 'mantenimiento',
-      reparacion: 'reparacion'
-    };
-    const key = map[tipoEl.value];
-    if (key && list[key]) field.value = list[key].value;
-  }
-
   function formatoPesos(n) {
     return '$ ' + (Number(n) || 0).toLocaleString('es-CO');
   }
@@ -90,7 +76,6 @@
     savePriceList,
     readPriceListFromSettingsForm,
     renderPriceListSettings,
-    applyServicePriceToFormato,
     formatoPesos
   };
 })(window);
