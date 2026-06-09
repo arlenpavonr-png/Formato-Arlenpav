@@ -140,7 +140,69 @@
     },
   };
 
+  /** Precios de venta (PVP) por código — misma fuente para Cotización */
+  const PRECIOS_PVP = {
+    AUACSC901: 999900,
+    AUACFX1000: 799900,
+    AUACKFOX1000C: 1049900,
+    AUACKFOX1000T: 1149900,
+    AUACFX1100WS: 1119900,
+    AUACKFOX1050HS: 1219900,
+    AUACKFOX1100WS: 1399900,
+    AUACSH1000: 1095900,
+    AUACRP120: 1399900,
+    AUACPUMA1200: 1369900,
+    AUACKSC1800C: 1999900,
+    AUACKSC1800T: 1999900,
+    AUACKPB400: 1099900,
+    AUACKBD850: 1599900,
+    AUACKBD1100: 1999900,
+    AUACKBD1024BL: 3399900,
+    AUACKBD1522: 2629900,
+    AUACKBD1824BL: 3999900,
+    AUACKBD2024: 3599900,
+    AUACEG250: 2519900,
+    AUACFC300: 2199900,
+    AUACFC350: 3749900,
+    AUACEG500: 3889900,
+    AUACFENIX600: 6719900,
+    AUACFC351: 2719900,
+    AUACEG501: 2729900,
+    AUACFENIX601: 4159900,
+    AUACKAR201B: 1249900,
+    AUACKAR382B: 1699900,
+    AUACKAR201F: 1349900,
+    AUACKAR382F: 1889900,
+    AUACKHULK500S: 1399900,
+    AUACKHULK624DC: 1729900,
+    AUACKHULK750: 1999900,
+    AUACKHULK950: 2249900,
+    AUACKHULK1024DC: 2699900,
+    AUACKHULK1500: 4249900,
+    AUACMTD224: 2999900,
+    AUCKMTD224: 3499900,
+    AUACMTD624: 4599900,
+    AUACKMTD624: 5399900,
+    AUACKMTD624ART: 6199900,
+    AUELMG750: 939900,
+    AUELMC4: 1069900,
+    AUELMC5: 1199900,
+    AUELMC8: 1549900,
+    AUELMC8FV: 1899900,
+    AUELMC12: 1999900,
+    AUELTW25: 1799900,
+    AUELKME611: 1169900,
+    AUELKME624DC: 1649900,
+    AUELKME8511: 1759900,
+    AUELKME824DC: 2469900,
+  };
+
   let listaPlanaCache = null;
+
+  function getPrecioVenta(cod, item) {
+    if (item?.pvp != null && item.pvp > 0) return item.pvp;
+    return PRECIOS_PVP[cod] || 0;
+  }
 
   function getCatalogoMarcas() {
     return CATALOGO_MARCAS;
@@ -157,7 +219,7 @@
             nom: `${marca} – ${item.nom}`,
             marca,
             categoria,
-            pvp: item.pvp || 0,
+            pvp: getPrecioVenta(item.cod, item),
           });
         });
       });
@@ -174,5 +236,6 @@
     getCatalogoMarcas,
     getListaProductos,
     findByCod,
+    getPrecioVenta,
   };
 })(window);

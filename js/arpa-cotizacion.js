@@ -22,6 +22,19 @@
     return global.ArpaCobros?.getLines('cot') || [];
   }
 
+  function parsePvp(value) {
+    const n = Number(value);
+    return Number.isFinite(n) && n >= 0 ? n : 0;
+  }
+
+  function actualizarTotalFila(idx) {
+    const f = filas[idx];
+    if (!f) return;
+    const tr = document.querySelector(`#cot-tabla-body tr[data-fila="${idx}"]`);
+    const totalCell = tr?.querySelector('.td-total');
+    if (totalCell) totalCell.textContent = formatoPesos(f.pvp * f.cant);
+  }
+
   function buscarProductoCot() {
     const q = document.getElementById('buscador-cot')?.value.toLowerCase().trim();
     const res = document.getElementById('resultados-cot');
@@ -65,8 +78,17 @@
     if (!prod) return;
     const cant = parseInt(document.getElementById('cant-input-cot')?.value, 10) || 1;
     const existente = filas.find((f) => f.cod === prod.cod);
-    if (existente) existente.cant += cant;
-    else filas.push({ cod: prod.cod, nom: prod.nom, pvp: prod.pvp, cant, tipo: 'producto' });
+    if (existente) {
+      existente.cant += cant;
+    } else {
+      filas.push({
+        cod: prod.cod,
+        nom: prod.nom,
+        pvp: parsePvp(prod.pvp),
+        cant,
+        tipo: 'producto',
+      });
+    }
     document.getElementById('buscador-cot').value = '';
     document.getElementById('resultados-cot').style.display = 'none';
     document.getElementById('cant-input-cot').value = '1';
@@ -88,11 +110,11 @@
 
     let html = '';
     filas.forEach((f, idx) => {
-      html += `<tr>
+      html += `<tr data-fila="${idx}">
         <td class="td-cod">${f.cod}</td>
         <td class="td-desc">${f.nom}</td>
         <td class="td-cant"><input type="number" class="cot-cant-input" min="1" value="${f.cant}" data-fila="${idx}"></td>
-        <td class="td-precio">${formatoPesos(f.pvp)}</td>
+        <td class="td-precio"><input type="number" class="cot-pvp-input" min="0" step="1000" value="${f.pvp}" data-fila="${idx}" inputmode="numeric"></td>
         <td class="td-total">${formatoPesos(f.pvp * f.cant)}</td>
         <td class="td-action"><button type="button" class="btn-quitar no-print" data-quitar="${idx}">✕</button></td>
       </tr>`;
@@ -113,8 +135,19 @@
       input.addEventListener('change', () => {
         const idx = Number(input.dataset.fila);
         filas[idx].cant = parseInt(input.value, 10) || 1;
-        renderTablaCot();
+        actualizarTotalFila(idx);
+        recalcularCotizacion();
       });
+    });
+    tbody.querySelectorAll('.cot-pvp-input').forEach((input) => {
+      const syncPvp = () => {
+        const idx = Number(input.dataset.fila);
+        filas[idx].pvp = parsePvp(input.value);
+        actualizarTotalFila(idx);
+        recalcularCotizacion();
+      };
+      input.addEventListener('change', syncPvp);
+      input.addEventListener('input', syncPvp);
     });
     tbody.querySelectorAll('[data-quitar]').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -191,7 +224,7 @@
 
     const viewRoot = document.getElementById('view-cotizacion');
     const elementos = viewRoot.querySelectorAll(
-      'input:not([type=file]):not([type=checkbox]):not(.cot-cant-input):not(.cobro-desc):not(.cobro-valor), select, textarea'
+      'input:not([type=file]):not([type=checkbox]):not(.cot-cant-input):not(.cot-pvp-input):not(.cobro-desc):not(.cobro-valor), select, textarea'
     );
     const respaldos = [];
     elementos.forEach((el) => {
@@ -211,6 +244,15 @@
       span.className = 'pdf-valor';
       span.textContent = input.value;
       span.style.cssText = 'display:inline-block;width:100%;text-align:center;font-size:13px;padding:4px;';
+      respaldos.push({ el: input, parent: input.parentNode });
+      input.parentNode.replaceChild(span, input);
+    });
+
+    viewRoot.querySelectorAll('.cot-pvp-input').forEach((input) => {
+      const span = document.createElement('span');
+      span.className = 'pdf-valor';
+      span.textContent = formatoPesos(parsePvp(input.value));
+      span.style.cssText = 'display:inline-block;width:100%;text-align:right;font-size:13px;padding:4px;font-family:\'DM Mono\',monospace;font-weight:600;';
       respaldos.push({ el: input, parent: input.parentNode });
       input.parentNode.replaceChild(span, input);
     });
