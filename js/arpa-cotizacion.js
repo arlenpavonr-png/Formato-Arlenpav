@@ -2,10 +2,31 @@
  * Módulo: Cotización, ítems dinámicos y PDF
  */
 (function (global) {
-  const { formatoPesos } = global.ArpaPricing;
+  const PRODUCT_CATALOG_KEY = 'arpa_suite_product_catalog';
+
+  function formatoPesos(n) {
+    return global.ArpaPricing?.formatoPesos(n) || ('$ ' + (Number(n) || 0).toLocaleString('es-CO'));
+  }
+
+  function getCatalogoConfigurado() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(PRODUCT_CATALOG_KEY) || 'null');
+      if (Array.isArray(saved) && saved.length) return saved;
+    } catch (e) { /* usar catálogo integrado */ }
+    return null;
+  }
+
+  function getCatalogoActivo() {
+    return getCatalogoConfigurado() || COT_CATALOGO;
+  }
+
+  function updateCatalogHint() {
+    const hint = document.getElementById('cot-catalog-hint');
+    if (!hint) return;
+    hint.hidden = getCatalogoActivo().length > 0;
+  }
 
   const COT_CATALOGO = [
-    { cod: 'AUELMG750', nom: 'Motor Elite MG 750 – ½ HP Silencioso 110V', pvp: 939900 },
     { cod: 'AUACSC901', nom: 'Accessmatic Scorpion 901 – ½ HP 24V 110V', pvp: 999900 },
     { cod: 'AUACFX1000', nom: 'Accessmatic Fox 1000 Pro – ¾ HP 110V (sin riel)', pvp: 799900 },
     { cod: 'AUACKFOX1000C', nom: 'Accessmatic Fox 1000 Pro + Riel C correa – ¾ HP', pvp: 1049900 },
@@ -94,9 +115,16 @@
     if (!res) return;
     if (!q || q.length < 2) {
       res.style.display = 'none';
+      updateCatalogHint();
       return;
     }
-    const encontrados = COT_CATALOGO.filter((p) =>
+    const catalogo = getCatalogoActivo();
+    if (!catalogo.length) {
+      res.style.display = 'none';
+      updateCatalogHint();
+      return;
+    }
+    const encontrados = catalogo.filter((p) =>
       p.nom.toLowerCase().includes(q) || p.cod.toLowerCase().includes(q)
     ).slice(0, 10);
     if (!encontrados.length) {
@@ -118,7 +146,7 @@
   }
 
   function seleccionarProductoCot(cod) {
-    const prod = COT_CATALOGO.find((p) => p.cod === cod);
+    const prod = getCatalogoActivo().find((p) => p.cod === cod);
     if (!prod) return;
     const cant = parseInt(document.getElementById('cant-input-cot')?.value, 10) || 1;
     const existente = filas.find((f) => f.cod === prod.cod);
@@ -199,15 +227,27 @@
     if (ivaRow) ivaRow.style.display = conIva ? 'flex' : 'none';
   }
 
+  function formatCotNumero(n) {
+    return 'COT-' + String(n).padStart(3, '0');
+  }
+
+  function parseCotNumero(value) {
+    const match = String(value || '').match(/(\d+)/);
+    return match ? parseInt(match[1], 10) : 0;
+  }
+
   function getUltimoCot() {
-    try { return parseInt(localStorage.getItem('arpa_ultimo_cot') || '0', 10); }
-    catch (e) { return 0; }
+    try {
+      const stored = parseInt(localStorage.getItem('arpa_ultimo_cot') || '0', 10);
+      const fieldNum = parseCotNumero(document.getElementById('numero-cot')?.value);
+      return Math.max(stored, fieldNum);
+    } catch (e) { return 0; }
   }
 
   function nuevoCotNumero() {
     const nuevo = getUltimoCot() + 1;
     try { localStorage.setItem('arpa_ultimo_cot', String(nuevo)); } catch (e) {}
-    const num = String(nuevo).padStart(4, '0');
+    const num = formatCotNumero(nuevo);
     const numField = document.getElementById('numero-cot');
     if (numField) numField.value = num;
     const hoy = new Date();
@@ -221,7 +261,12 @@
     }
     const cliente = document.getElementById('cot-nombre')?.value || '';
     const nc = cliente ? '-' + cliente.replace(/\s+/g, '-').substring(0, 20) : '';
-    document.title = `COT-${num}${nc}-${hoy.toISOString().slice(0, 10)}`;
+    document.title = `${num}${nc}-${hoy.toISOString().slice(0, 10)}`;
+  }
+
+  function ensureCotNumero() {
+    const numField = document.getElementById('numero-cot');
+    if (numField && !numField.value.trim()) nuevoCotNumero();
   }
 
   function guardarCotPDF() {
@@ -299,12 +344,12 @@
       validez.value = v.toISOString().split('T')[0];
     }
     const numField = document.getElementById('numero-cot');
-    const ultimo = getUltimoCot();
-    if (numField && !numField.value) {
-      numField.placeholder = ultimo > 0 ? `Último: ${String(ultimo).padStart(4, '0')}` : '← Toca NUEVO N°';
+    if (numField && !numField.value.trim()) {
+      ensureCotNumero();
     }
 
     document.getElementById('buscador-cot')?.addEventListener('input', buscarProductoCot);
+    document.getElementById('buscador-cot')?.addEventListener('focus', updateCatalogHint);
     document.getElementById('iva-check-cot')?.addEventListener('change', recalcularCotizacion);
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.buscador-wrap-cot')) {
@@ -313,6 +358,7 @@
       }
     });
     renderTablaCot();
+    updateCatalogHint();
   }
 
   global.ArpaCotizacion = {
@@ -320,9 +366,14 @@
     refreshCobros,
     renderTablaCot,
     nuevoCotNumero,
-    guardarCotPDF
+    ensureCotNumero,
+    guardarCotPDF,
+    getCatalogoActivo,
+    updateCatalogHint,
+    PRODUCT_CATALOG_KEY
   };
 
   global.guardarCotPDF = guardarCotPDF;
   global.nuevoCotNumero = nuevoCotNumero;
+  global.ensureCotNumero = ensureCotNumero;
 })(window);

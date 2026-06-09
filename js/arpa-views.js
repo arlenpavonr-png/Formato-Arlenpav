@@ -28,6 +28,8 @@
       global.ArpaCobros?.seedFromPriceList('cot');
       global.ArpaCotizacion?.refreshCobros?.();
       global.ArpaCotizacion?.renderTablaCot?.();
+      global.ArpaCotizacion?.ensureCotNumero?.();
+      global.ArpaCotizacion?.updateCatalogHint?.();
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }

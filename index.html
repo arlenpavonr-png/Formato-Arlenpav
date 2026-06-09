@@ -812,6 +812,22 @@
   .resultado-nom { color: var(--text); flex: 1; }
   .resultado-pvp { color: var(--green); font-weight: 700; flex-shrink: 0; font-family: 'DM Mono', monospace; }
   .tabla-cot-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .cot-catalog-hint {
+    margin: 8px 0 0;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.4;
+    text-align: center;
+    padding: 10px;
+    background: var(--light);
+    border-radius: 8px;
+    border: 1px dashed var(--border);
+  }
+  .cot-cierre-block {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
   .tabla-productos {
     width: 100%;
     min-width: 520px;
@@ -955,6 +971,19 @@
     .tabla-cot-wrap { overflow: visible; }
     .btn-quitar, .btn-add-item, .extra-items-editor .field label { display: none !important; }
     .extra-item-row { display: none !important; }
+    .cot-cierre-block {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .cot-bank-section {
+      page-break-before: avoid;
+      break-before: avoid;
+    }
+    .totales-box {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .cot-catalog-hint { display: none !important; }
   }
   .settings-modal-footer {
     padding: 14px 20px;
@@ -1087,7 +1116,7 @@
       <div id="header-meta-cot" hidden>
         <div class="no-field">
           <label>N°</label>
-          <input type="text" id="numero-cot" placeholder="0001">
+          <input type="text" id="numero-cot" placeholder="COT-001">
         </div>
         <div style="margin-top:5px;">
           <button type="button" onclick="nuevoCotNumero()" style="background:var(--gold);color:white;border:none;border-radius:5px;padding:4px 9px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.5px;">+ NUEVO N°</button>
@@ -1366,7 +1395,6 @@
 
     <div class="section">
       <div class="section-title"><span class="dot"></span>Cobros</div>
-      <p style="font-size:11px;color:var(--muted);margin:-4px 0 8px;">Todos los ítems son editables. Los valores iniciales provienen de su Lista de Precios en Configuración.</p>
       <div id="cobros-editor-cot" class="cobros-editor"></div>
       <div id="cobros-actions-cot" style="margin-top:10px;">
         <button type="button" class="btn-add-item" id="btn-cobros-add-cot">+ Agregar ítem adicional</button>
@@ -1387,6 +1415,7 @@
           </div>
         </div>
         <div class="resultados-cot" id="resultados-cot"></div>
+        <p id="cot-catalog-hint" class="cot-catalog-hint" hidden>Ve a Configuración para agregar tu lista de productos</p>
       </div>
     </div>
 
@@ -1411,30 +1440,32 @@
       </div>
     </div>
 
-    <div class="section">
-      <div class="section-title"><span class="dot"></span>Datos Bancarios</div>
-      <div class="brand-bank-info" id="brand-bank-block">&nbsp;</div>
-    </div>
+    <div class="cot-cierre-block">
+      <div class="section">
+        <div class="section-title"><span class="dot"></span>Resumen de Cotización</div>
+        <div class="totales-box">
+          <label class="iva-toggle">
+            <input type="checkbox" id="iva-check-cot">
+            Incluir IVA 19%
+          </label>
+          <div class="total-row">
+            <span class="total-label">Subtotal</span>
+            <span class="total-val" id="subtotal-val-cot">$ 0</span>
+          </div>
+          <div class="total-row" id="iva-row-cot" style="display:none;">
+            <span class="total-label">IVA (19%)</span>
+            <span class="total-val" id="iva-val-cot">$ 0</span>
+          </div>
+          <div class="total-row grand">
+            <span class="total-label" style="font-weight:700;color:var(--navy);">TOTAL</span>
+            <span class="total-val" id="total-val-cot">$ 0</span>
+          </div>
+        </div>
+      </div>
 
-    <div class="section">
-      <div class="section-title"><span class="dot"></span>Resumen de Cotización</div>
-      <div class="totales-box">
-        <label class="iva-toggle">
-          <input type="checkbox" id="iva-check-cot">
-          Incluir IVA 19%
-        </label>
-        <div class="total-row">
-          <span class="total-label">Subtotal</span>
-          <span class="total-val" id="subtotal-val-cot">$ 0</span>
-        </div>
-        <div class="total-row" id="iva-row-cot" style="display:none;">
-          <span class="total-label">IVA (19%)</span>
-          <span class="total-val" id="iva-val-cot">$ 0</span>
-        </div>
-        <div class="total-row grand">
-          <span class="total-label" style="font-weight:700;color:var(--navy);">TOTAL</span>
-          <span class="total-val" id="total-val-cot">$ 0</span>
-        </div>
+      <div class="section cot-bank-section">
+        <div class="section-title"><span class="dot"></span>Datos Bancarios</div>
+        <div class="brand-bank-info" id="brand-bank-block">&nbsp;</div>
       </div>
     </div>
 
