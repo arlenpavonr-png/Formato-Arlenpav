@@ -62,22 +62,52 @@
     },
     BFT: {
       Corrediza: [
-        { cod: 'BFT-600', nom: 'BFT 600 – motor corrediza' },
-        { cod: 'BFT-1000', nom: 'BFT 1000 – motor corrediza' },
-        { cod: 'BFT-1500', nom: 'BFT 1500 – motor corrediza' },
-        { cod: 'BFT-2000', nom: 'BFT 2000 – motor corrediza' },
+        { cod: 'KDEIMOSBTA400-1', nom: 'Deimos BT A400 – Corredizo 400kg 110V (Kit)', pvp: 1948900 },
+        { cod: 'KDEIMOSBTA600-1', nom: 'Deimos BT A600 – Corredizo 600kg 110V (Kit)', pvp: 2391900 },
+        { cod: 'KDEIMOSACA600-1', nom: 'Deimos AC A600 – Corredizo 600kg 110V (Kit)', pvp: 2960900 },
+        { cod: 'KDEIMOSACA600-2', nom: 'Deimos AC A600 – Corredizo 600kg 220V (Kit)', pvp: 2960900 },
+        { cod: 'KDEIMOSACA800SLDN-1', nom: 'Deimos AC A800 SL DN – Corredizo 800kg 110V (Kit)', pvp: 3728900 },
+        { cod: 'KDEIMOSACA800SLDN-2', nom: 'Deimos AC A800 SL DN – Corredizo 800kg 220V (Kit)', pvp: 3728900 },
+        { cod: 'KARESBTA1000Z18-2', nom: 'Ares BTA 1000 – Corredizo 1000kg 220V Piñón 18 (Kit)', pvp: 3539900 },
+        { cod: 'KARESBTA1000Z25-2', nom: 'Ares BTA 1000 – Corredizo 500kg 220V Piñón 25 (Kit)', pvp: 3539000 },
+        { cod: 'KARESBTA1500Z18-2', nom: 'Ares BTA 1500 – Corredizo 1500kg 220V Piñón 18 (Kit)', pvp: 4209900 },
+        { cod: 'KARESBTA1500Z25-2', nom: 'Ares BTA 1500 – Corredizo 750kg 220V Piñón 25 (Kit)', pvp: 4402900 },
+        { cod: 'KICAROSMARTACA2000V', nom: 'Icaro Smart AC A2000 – Corredizo 1000kg 220V (Kit)', pvp: 5522900 },
+        { cod: 'KICAROSMARTACA2000', nom: 'Icaro Smart AC A2000 – Corredizo 2000kg uso continuo (Kit)', pvp: 5522900 },
       ],
       'Batiente 1 hoja': [
-        { cod: 'BFT-BTA25', nom: 'BFT BTA 25 – brazo batiente 1 hoja' },
-        { cod: 'BFT-BTA40', nom: 'BFT BTA 40 – brazo batiente 1 hoja' },
-        { cod: 'BFT-LUX2B', nom: 'BFT Lux 2B – barrera vehicular' },
+        { cod: 'K1PHOBOBTA25-1', nom: 'Phobos BT A25 – Batiente 400kg 2.5m 110V (Kit 1 brazo)', pvp: 2663900 },
+        { cod: 'K1PHOBOBTA40-1', nom: 'Phobos BT A40 – Batiente 500kg 4m 110V (Kit 1 brazo)', pvp: 2995900 },
+        { cod: 'K1PHOBOSACA25-AL', nom: 'Phobos AC A25 – Batiente 400kg 2.5m tarjeta Alena (Kit 1 brazo)', pvp: 2844900 },
+        { cod: 'K1PHOBOSACA25-R', nom: 'Phobos AC A25 – Batiente 400kg 2.5m tarjeta Rigel (Kit 1 brazo)', pvp: 3170900 },
+        { cod: 'K1LUX2B-1', nom: 'Lux 2B Hidráulico – Batiente 300kg 3.5m (Kit 1 brazo)', pvp: 3875900 },
+        { cod: 'K1LUXGV2B-1', nom: 'Lux GV 2B Hidráulico – Batiente 300kg 3.5m (Kit 1 brazo)', pvp: 4923900 },
+        { cod: 'K1GIUNO-BTA20-1', nom: 'Giuno Ultra BT A20 Hidráulico – Batiente 300kg 2.5m uso continuo (Kit 1 brazo)', pvp: 6096900 },
+        { cod: 'K1GIUNO-BTA50-1', nom: 'Giuno Ultra BT A50 Hidráulico – Batiente 800kg 5m uso intensivo (Kit 1 brazo)', pvp: 7024900 },
       ],
       'Batiente 2 hojas': [
-        { cod: 'BFT-BTA25', nom: 'BFT BTA 25 – brazos batiente 2 hojas' },
-        { cod: 'BFT-BTA40', nom: 'BFT BTA 40 – brazos batiente 2 hojas' },
+        { cod: 'KPHOBOBTA25-1', nom: 'Phobos BT A25 – Batiente 400kg 2.5m 110V (Kit 2 brazos)', pvp: 3278900 },
+        { cod: 'KPHOBOBTA40-1', nom: 'Phobos BT A40 – Batiente 500kg 4m 110V (Kit 2 brazos)', pvp: 3498900 },
+        { cod: 'K2PHOBOSACA25-AL', nom: 'Phobos AC A25 – Batiente 400kg 2.5m tarjeta Alena (Kit 2 brazos)', pvp: 3253900 },
+        { cod: 'K2PHOBOSACA25-R', nom: 'Phobos AC A25 – Batiente 400kg 2.5m tarjeta Rigel (Kit 2 brazos)', pvp: 3823900 },
+        { cod: 'K2LUX2B-1', nom: 'Lux 2B Hidráulico – Batiente 300kg 3.5m (Kit 2 brazos)', pvp: 6413900 },
+        { cod: 'K2LUXGV2B-1', nom: 'Lux GV 2B Hidráulico – Batiente 300kg 3.5m (Kit 2 brazos)', pvp: 8407900 },
+        { cod: 'K2GIUNO-BTA20-1', nom: 'Giuno Ultra BT A20 Hidráulico – Batiente 300kg 2.5m uso continuo (Kit 2 brazos)', pvp: 9709900 },
+        { cod: 'K2GIUNO-BTA50-1', nom: 'Giuno Ultra BT A50 Hidráulico – Batiente 800kg 5m uso intensivo (Kit 2 brazos)', pvp: 10394900 },
       ],
       'Barrera vehicular': [
-        { cod: 'BFT-LUX2B', nom: 'BFT Lux 2B – barrera vehicular' },
+        { cod: 'KMOOVI30', nom: 'Moovi 30 – Barrera 3m 220V apertura 4seg (Kit)', pvp: 5383900 },
+        { cod: 'KMOOVI60', nom: 'Moovi 60 – Barrera 6m 220V apertura 8.5seg (Kit)', pvp: 6587900 },
+        { cod: 'KGIOTTOBTA30U', nom: 'Giotto BT A30 – Barrera 3m 220V/24V uso muy intensivo (Kit)', pvp: 6670900 },
+        { cod: 'KGIOTTOBTA60U', nom: 'Giotto BT A60 – Barrera 6m 220V/24V uso muy intensivo (Kit)', pvp: 7862900 },
+        { cod: 'KMICHELANGELO30', nom: 'Michelangelo – Barrera 3m 220V apertura 1.3seg (Kit)', pvp: 12890900 },
+      ],
+      Accesorios: [
+        { cod: 'D112306', nom: 'Control Remoto Mitto Cool C2 – 2 canales 433MHz', pvp: 89000 },
+        { cod: 'D112318', nom: 'Control Remoto Mitto Cool C4 – 4 canales 433MHz', pvp: 124000 },
+        { cod: 'KCMC-10', nom: 'Caja x10 Controles Mitto Cool C2', pvp: 740000 },
+        { cod: 'P111526', nom: 'Par Fotoceldas Desme A15 Exterior 30m 24V', pvp: 251000 },
+        { cod: 'P111827', nom: 'Fotoceldas Reflecta Reflexión Exterior 12m 24V', pvp: 705000 },
       ],
     },
     NAS: {
@@ -195,13 +225,44 @@
     AUELKME624DC: 1649900,
     AUELKME8511: 1759900,
     AUELKME824DC: 2469900,
-    'BFT-600': 1199900,
-    'BFT-1000': 1999900,
-    'BFT-1500': 2629900,
-    'BFT-2000': 3599900,
-    'BFT-BTA25': 2199900,
-    'BFT-BTA40': 3749900,
-    'BFT-LUX2B': 2999900,
+    'KDEIMOSBTA400-1': 1948900,
+    'KDEIMOSBTA600-1': 2391900,
+    'KDEIMOSACA600-1': 2960900,
+    'KDEIMOSACA600-2': 2960900,
+    'KDEIMOSACA800SLDN-1': 3728900,
+    'KDEIMOSACA800SLDN-2': 3728900,
+    'KARESBTA1000Z18-2': 3539900,
+    'KARESBTA1000Z25-2': 3539000,
+    'KARESBTA1500Z18-2': 4209900,
+    'KARESBTA1500Z25-2': 4402900,
+    KICAROSMARTACA2000V: 5522900,
+    KICAROSMARTACA2000: 5522900,
+    'KPHOBOBTA25-1': 3278900,
+    'KPHOBOBTA40-1': 3498900,
+    'K1PHOBOBTA25-1': 2663900,
+    'K1PHOBOBTA40-1': 2995900,
+    'K2PHOBOSACA25-AL': 3253900,
+    'K2PHOBOSACA25-R': 3823900,
+    'K1PHOBOSACA25-AL': 2844900,
+    'K1PHOBOSACA25-R': 3170900,
+    'K2LUX2B-1': 6413900,
+    'K1LUX2B-1': 3875900,
+    'K2LUXGV2B-1': 8407900,
+    'K1LUXGV2B-1': 4923900,
+    'K2GIUNO-BTA20-1': 9709900,
+    'K1GIUNO-BTA20-1': 6096900,
+    'K2GIUNO-BTA50-1': 10394900,
+    'K1GIUNO-BTA50-1': 7024900,
+    KMOOVI30: 5383900,
+    KMOOVI60: 6587900,
+    KGIOTTOBTA30U: 6670900,
+    KGIOTTOBTA60U: 7862900,
+    KMICHELANGELO30: 12890900,
+    D112306: 89000,
+    D112318: 124000,
+    'KCMC-10': 740000,
+    P111526: 251000,
+    P111827: 705000,
     KPOWER700: 939900,
     KPOWER1000: 999900,
     KPOWER1200: 1095900,
@@ -276,8 +337,39 @@
     return list;
   }
 
+  function findRawItem(cod) {
+    for (const categorias of Object.values(CATALOGO_MARCAS)) {
+      for (const items of Object.values(categorias)) {
+        const item = items.find((i) => i.cod === cod);
+        if (item) return item;
+      }
+    }
+    return null;
+  }
+
+  function getPrecioByCod(cod) {
+    const item = findRawItem(cod);
+    return getPrecioVenta(cod, item || { cod });
+  }
+
   function findByCod(cod) {
-    return getListaProductos().find((p) => p.cod === cod) || null;
+    let found = null;
+    Object.entries(CATALOGO_MARCAS).forEach(([marca, categorias]) => {
+      Object.entries(categorias).forEach(([categoria, items]) => {
+        items.forEach((item) => {
+          if (item.cod === cod && !found) {
+            found = {
+              cod: item.cod,
+              nom: `${marca} – ${item.nom}`,
+              marca,
+              categoria,
+              pvp: getPrecioVenta(item.cod, item),
+            };
+          }
+        });
+      });
+    });
+    return found;
   }
 
   global.ArpaCatalogo = {
@@ -285,5 +377,6 @@
     getListaProductos,
     findByCod,
     getPrecioVenta,
+    getPrecioByCod,
   };
 })(window);

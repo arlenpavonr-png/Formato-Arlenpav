@@ -1,4 +1,4 @@
-const CACHE_NAME = 'arpa-suite-cache-v11';
+const CACHE_NAME = 'arpa-suite-cache-v12';
 const BASE = self.location.pathname.replace(/service-worker\.js$/, '');
 const ASSETS = [
   BASE,
@@ -22,6 +22,10 @@ const ASSETS = [
   'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap'
 ];
 
+function isNetworkFirst(url) {
+  return url.includes('/js/') || url.endsWith('.html') || url.endsWith('/');
+}
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -41,6 +45,28 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
+  const url = event.request.url;
+
+  if (isNetworkFirst(url)) {
+    event.respondWith(
+      fetch(event.request)
+        .then((res) => {
+          if (res && res.status === 200 && url.startsWith(self.location.origin)) {
+            const clone = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return res;
+        })
+        .catch(() => caches.match(event.request).then((cached) => {
+          if (cached) return cached;
+          if ((event.request.headers.get('accept') || '').includes('text/html')) {
+            return caches.match(BASE + 'index.html');
+          }
+        }))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) {
@@ -56,9 +82,9 @@ self.addEventListener('fetch', (event) => {
         if (
           res &&
           res.status === 200 &&
-          (event.request.url.startsWith(self.location.origin) ||
-            event.request.url.includes('fonts.googleapis.com') ||
-            event.request.url.includes('fonts.gstatic.com'))
+          (url.startsWith(self.location.origin) ||
+            url.includes('fonts.googleapis.com') ||
+            url.includes('fonts.gstatic.com'))
         ) {
           const clone = res.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));

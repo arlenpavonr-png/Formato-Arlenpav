@@ -61,7 +61,7 @@
       return;
     }
     res.innerHTML = encontrados.map((p) =>
-      `<div class="resultado-item" data-cod="${p.cod}">
+      `<div class="resultado-item" data-cod="${p.cod}" data-pvp="${p.pvp || 0}">
         <span class="resultado-cod">${p.cod}</span>
         <span class="resultado-nom">${p.nom}</span>
         <span class="resultado-pvp">${formatoPesos(p.pvp)}</span>
@@ -69,20 +69,24 @@
     ).join('');
     res.style.display = 'block';
     res.querySelectorAll('.resultado-item[data-cod]').forEach((el) => {
-      el.addEventListener('click', () => seleccionarProductoCot(el.dataset.cod));
+      el.addEventListener('click', () => seleccionarProductoCot(el.dataset.cod, el.dataset.pvp));
     });
   }
 
-  function resolveProductPvp(prod) {
-    const pvp = global.ArpaCatalogo?.getPrecioVenta?.(prod.cod, prod);
-    return parsePvp(pvp != null ? pvp : prod.pvp);
+  function resolveProductPvp(prod, cod, pvpHint) {
+    const code = cod || prod?.cod;
+    let pvp = global.ArpaCatalogo?.getPrecioByCod?.(code);
+    if (!pvp) pvp = global.ArpaCatalogo?.getPrecioVenta?.(code, prod);
+    if (!pvp && pvpHint != null) pvp = parsePvp(pvpHint);
+    if (!pvp && prod?.pvp) pvp = prod.pvp;
+    return parsePvp(pvp);
   }
 
-  function seleccionarProductoCot(cod) {
+  function seleccionarProductoCot(cod, pvpHint) {
     const prod = global.ArpaCatalogo?.findByCod?.(cod) || getCatalogoActivo().find((p) => p.cod === cod);
     if (!prod) return;
     const cant = parseInt(document.getElementById('cant-input-cot')?.value, 10) || 1;
-    const pvpCatalogo = resolveProductPvp(prod);
+    const pvpCatalogo = resolveProductPvp(prod, cod, pvpHint);
     const existente = filas.find((f) => f.cod === prod.cod);
     if (existente) {
       existente.cant += cant;
