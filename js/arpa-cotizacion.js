@@ -73,18 +73,25 @@
     });
   }
 
+  function resolveProductPvp(prod) {
+    const pvp = global.ArpaCatalogo?.getPrecioVenta?.(prod.cod, prod);
+    return parsePvp(pvp != null ? pvp : prod.pvp);
+  }
+
   function seleccionarProductoCot(cod) {
     const prod = global.ArpaCatalogo?.findByCod?.(cod) || getCatalogoActivo().find((p) => p.cod === cod);
     if (!prod) return;
     const cant = parseInt(document.getElementById('cant-input-cot')?.value, 10) || 1;
+    const pvpCatalogo = resolveProductPvp(prod);
     const existente = filas.find((f) => f.cod === prod.cod);
     if (existente) {
       existente.cant += cant;
+      if (!existente.pvp && pvpCatalogo) existente.pvp = pvpCatalogo;
     } else {
       filas.push({
         cod: prod.cod,
         nom: prod.nom,
-        pvp: parsePvp(prod.pvp),
+        pvp: pvpCatalogo,
         cant,
         tipo: 'producto',
       });

@@ -195,9 +195,57 @@
     AUELKME624DC: 1649900,
     AUELKME8511: 1759900,
     AUELKME824DC: 2469900,
+    'BFT-600': 1199900,
+    'BFT-1000': 1999900,
+    'BFT-1500': 2629900,
+    'BFT-2000': 3599900,
+    'BFT-BTA25': 2199900,
+    'BFT-BTA40': 3749900,
+    'BFT-LUX2B': 2999900,
+    KPOWER700: 939900,
+    KPOWER1000: 999900,
+    KPOWER1200: 1095900,
+    FORZA500: 1199900,
+    FORZA800: 1549900,
+    FORTE800: 1549900,
+    FORTE1200: 1999900,
+    FORTE1500: 2629900,
+    FORTE800DC: 1649900,
+    'FORTE800+': 1699900,
+    'APOLO200-1': 1799900,
+    'APOLO300-1': 2199900,
+    'MAGNO200-1': 2519900,
+    'POTENZA400-1': 2719900,
+    APOLO200: 2519900,
+    APOLO300: 3889900,
+    MAGNO200: 2719900,
+    POTENZA400: 4159900,
+    'ELECTRA-DC421': 4599900,
+    'ELECTRA-DC656': 5399900,
+    THOR: 4249900,
+    ODIN: 3999900,
+    HERCULES: 2699900,
   };
 
+  function enrichCatalogoPrecios() {
+    Object.values(CATALOGO_MARCAS).forEach((categorias) => {
+      Object.values(categorias).forEach((items) => {
+        items.forEach((item) => {
+          if (item.pvp == null || item.pvp === 0) {
+            item.pvp = PRECIOS_PVP[item.cod] || 0;
+          }
+        });
+      });
+    });
+  }
+
+  enrichCatalogoPrecios();
+
   let listaPlanaCache = null;
+
+  function invalidateListaCache() {
+    listaPlanaCache = null;
+  }
 
   function getPrecioVenta(cod, item) {
     if (item?.pvp != null && item.pvp > 0) return item.pvp;
