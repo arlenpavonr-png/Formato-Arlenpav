@@ -69,6 +69,13 @@
     ['AUELEP100240', 'Modulo WiFi Elite-Pulse Tuya Alexa', 199900, 'unidad', 'Elite', 'Accesorios']
   ];
 
+  const RUBRO_BUTTON_IDS = {
+    automatizacion: 'btn-onboarding-rubro-automatizacion',
+    'aire-acondicionado': 'btn-onboarding-rubro-aire',
+    electricidad: 'btn-onboarding-rubro-electricidad',
+    otro: 'btn-onboarding-rubro-otro'
+  };
+
   function newId() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   }
@@ -94,23 +101,30 @@
     document.getElementById('onboarding-gate')?.classList.add('open');
   }
 
+  function closeStepModals() {
+    document.getElementById('onboarding-demo-modal')?.classList.remove('open');
+    document.getElementById('onboarding-otro-modal')?.classList.remove('open');
+  }
+
   function hideGate() {
     document.getElementById('onboarding-gate')?.classList.remove('open');
-    document.getElementById('onboarding-demo-modal')?.classList.remove('open');
+    closeStepModals();
     setOnboardingActive(false);
   }
 
   function openDemoModal() {
     const count = DEMO_PRODUCTS.length;
+    const title = document.getElementById('onboarding-demo-title');
     const text = document.getElementById('onboarding-demo-text');
-    if (text) {
-      text.textContent = `¿Deseas cargar el catálogo demo Accessmatic (${count} productos)?`;
-    }
+    if (title) title.textContent = 'Catálogo Demo Accessmatic';
+    if (text) text.textContent = `¿Deseas precargar ${count} productos?`;
+    closeStepModals();
     document.getElementById('onboarding-demo-modal')?.classList.add('open');
   }
 
-  function closeDemoModal() {
-    document.getElementById('onboarding-demo-modal')?.classList.remove('open');
+  function openOtroModal() {
+    closeStepModals();
+    document.getElementById('onboarding-otro-modal')?.classList.add('open');
   }
 
   function loadDemoCatalog() {
@@ -154,10 +168,15 @@
     }
 
     if (opts?.goToCatalog) {
-      const btn = document.querySelector('.main-menu-btn[onclick*="openCatalogoView"]');
+      const btn = document.getElementById('btn-onboarding-rubro-automatizacion')
+        || document.querySelector('.main-menu-btn[onclick*="openCatalogoView"]');
       global.openCatalogoView?.(btn);
       global.ArpaMiCatalogo?.refreshView?.();
     }
+  }
+
+  function getRubroFromButton(btn) {
+    return btn?.getAttribute('data-onboarding-rubro') || btn?.dataset?.onboardingRubro || '';
   }
 
   function onRubroSelected(rubro) {
@@ -165,23 +184,37 @@
       openDemoModal();
       return;
     }
+    if (rubro === 'otro') {
+      openOtroModal();
+      return;
+    }
     finishOnboarding(rubro);
   }
 
-  function initOnboarding() {
-    document.querySelectorAll('[data-onboarding-rubro]').forEach((btn) => {
-      btn.addEventListener('click', () => onRubroSelected(btn.dataset.onboardingRubro));
+  function bindRubroButtons() {
+    Object.entries(RUBRO_BUTTON_IDS).forEach(([rubro, id]) => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        onRubroSelected(getRubroFromButton(btn) || rubro);
+      });
     });
+  }
+
+  function initOnboarding() {
+    bindRubroButtons();
+
     document.getElementById('btn-onboarding-demo-yes')?.addEventListener('click', () => {
-      closeDemoModal();
       finishOnboarding('automatizacion', { loadDemo: true, goToCatalog: true });
     });
+
     document.getElementById('btn-onboarding-demo-skip')?.addEventListener('click', () => {
-      closeDemoModal();
       finishOnboarding('automatizacion');
     });
-    document.getElementById('onboarding-demo-modal')?.addEventListener('click', (e) => {
-      if (e.target.id === 'onboarding-demo-modal') closeDemoModal();
+
+    document.getElementById('btn-onboarding-otro-continue')?.addEventListener('click', () => {
+      finishOnboarding('otro');
     });
   }
 
