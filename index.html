@@ -1699,6 +1699,13 @@
     opacity: 0.65;
     cursor: wait;
   }
+  .license-renew-btn {
+    background: #25d366 !important;
+    margin-top: 4px;
+  }
+  .license-renew-btn:hover { background: #1fb855 !important; }
+  #license-gate-expired[hidden],
+  #license-gate-activate[hidden] { display: none !important; }
   @media print {
     .license-gate { display: none !important; }
   }
@@ -1865,13 +1872,19 @@ try {
       <img src="./logo-arpa-suite.png" alt="ARPA Suite">
     </div>
     <h1 id="license-gate-title" class="license-gate-title">ARPA Suite</h1>
-    <p class="license-gate-sub">Ingrese su código de licencia para activar la plataforma.</p>
-    <div class="license-gate-field">
-      <label for="license-code-input">Código de licencia</label>
-      <input type="text" id="license-code-input" autocomplete="off" spellcheck="false" placeholder="Su código de licencia" inputmode="text">
+    <div id="license-gate-activate">
+      <p id="license-gate-sub" class="license-gate-sub">Ingrese su código de licencia para activar la plataforma.</p>
+      <div class="license-gate-field">
+        <label for="license-code-input">Código de licencia</label>
+        <input type="text" id="license-code-input" autocomplete="off" spellcheck="false" placeholder="Su código de licencia" inputmode="text">
+      </div>
+      <p id="license-error" class="license-gate-error" role="alert"></p>
+      <button type="button" id="license-activate-btn" class="license-gate-btn">Activar</button>
     </div>
-    <p id="license-error" class="license-gate-error" role="alert"></p>
-    <button type="button" id="license-activate-btn" class="license-gate-btn">Activar</button>
+    <div id="license-gate-expired" hidden>
+      <p class="license-gate-sub">Tu licencia ha vencido. Contáctanos para renovar.</p>
+      <button type="button" id="license-renew-btn" class="license-gate-btn license-renew-btn">Renovar licencia</button>
+    </div>
   </div>
 </div>
 
