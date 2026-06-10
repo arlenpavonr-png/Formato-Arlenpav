@@ -1105,9 +1105,154 @@
     .header { flex-wrap: wrap; }
     .header-meta { width: 100%; text-align: left; }
   }
+
+  /* ── ACTIVACIÓN DE LICENCIA ── */
+  .license-gate {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    background: #ffffff;
+  }
+  html:not(.license-ok) .license-gate { display: flex; }
+  html:not(.license-ok) .page,
+  html:not(.license-ok) .main-menu,
+  html:not(.license-ok) .settings-overlay { visibility: hidden; }
+  .license-gate-card {
+    width: 100%;
+    max-width: 400px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 28px 28px;
+    box-shadow: 0 8px 32px rgba(15, 32, 68, 0.12);
+    text-align: center;
+  }
+  .license-gate-logo-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 10px;
+    width: 120px;
+    height: 120px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+  .license-gate-logo-wrap img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+  .license-gate-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 6px;
+    letter-spacing: 0.02em;
+  }
+  .license-gate-sub {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 24px;
+  }
+  .license-gate-field {
+    text-align: left;
+    margin-bottom: 12px;
+  }
+  .license-gate-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
+  .license-gate-field input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: center;
+    min-height: 48px;
+  }
+  .license-gate-field input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  }
+  .license-gate-error {
+    display: none;
+    font-size: 12px;
+    color: #b91c1c;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    line-height: 1.45;
+    text-align: left;
+  }
+  .license-gate-error.visible { display: block; }
+  .license-gate-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: var(--navy);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 48px;
+    letter-spacing: 0.02em;
+  }
+  .license-gate-btn:hover { background: var(--blue); }
+  .license-gate-btn:disabled {
+    opacity: 0.65;
+    cursor: wait;
+  }
+  @media print {
+    .license-gate { display: none !important; }
+  }
 </style>
+<script>
+try {
+  if ((localStorage.getItem('arpa_suite_license_code') || '').trim()) {
+    document.documentElement.classList.add('license-ok');
+  }
+} catch (e) {}
+</script>
 </head>
 <body>
+
+<div id="license-gate" class="license-gate" role="dialog" aria-modal="true" aria-labelledby="license-gate-title">
+  <div class="license-gate-card">
+    <div class="license-gate-logo-wrap">
+      <img src="./logo-arpa-suite.png" alt="ARPA Suite">
+    </div>
+    <h1 id="license-gate-title" class="license-gate-title">ARPA Suite</h1>
+    <p class="license-gate-sub">Ingrese su código de licencia para activar la plataforma.</p>
+    <div class="license-gate-field">
+      <label for="license-code-input">Código de licencia</label>
+      <input type="text" id="license-code-input" autocomplete="off" spellcheck="false" placeholder="Su código de licencia" inputmode="text">
+    </div>
+    <p id="license-error" class="license-gate-error" role="alert"></p>
+    <button type="button" id="license-activate-btn" class="license-gate-btn">Activar</button>
+  </div>
+</div>
+
 <div class="page">
 
   <!-- HEADER -->
@@ -1894,6 +2039,7 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 
+<script src="./js/arpa-license.js"></script>
 <script src="./js/arpa-brand.js"></script>
 <script src="./js/arpa-pricing.js"></script>
 <script src="./js/arpa-cobros.js"></script>
