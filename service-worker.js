@@ -1,11 +1,10 @@
-const CACHE_NAME = 'arpa-suite-cache-v25';
+const CACHE_NAME = 'arpa-suite-cache-v30';
 const BASE = self.location.pathname.replace(/service-worker\.js$/, '');
 const ASSETS = [
   BASE,
   BASE + 'index.html',
   BASE + 'manifest.json',
   BASE + 'logo-arpa-suite.png',
-  BASE + 'js/arpa-license.js',
   BASE + 'js/arpa-brand.js',
   BASE + 'js/arpa-catalogo.js',
   BASE + 'js/arpa-pricing.js',
@@ -50,6 +49,15 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   const url = event.request.url;
+
+  if (
+    url.includes('script.google.com') ||
+    url.includes('googleusercontent.com') ||
+    url.includes('cdnjs.cloudflare.com') ||
+    url.includes('arpa-license.js')
+  ) {
+    return;
+  }
 
   if (isNetworkFirst(url)) {
     event.respondWith(

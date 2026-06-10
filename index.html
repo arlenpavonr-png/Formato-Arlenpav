@@ -1591,7 +1591,7 @@
     align-items: center;
     justify-content: center;
     padding: 24px 16px;
-    background: #ffffff;
+    background: #1a2a4a;
   }
   html:not(.license-ok) .license-gate { display: flex; }
   html:not(.license-ok) .page,
@@ -1600,11 +1600,11 @@
   .license-gate-card {
     width: 100%;
     max-width: 400px;
-    background: var(--card);
-    border: 1px solid var(--border);
+    background: #ffffff;
+    border: 2px solid #c9a84c;
     border-radius: 16px;
     padding: 32px 28px 28px;
-    box-shadow: 0 8px 32px rgba(15, 32, 68, 0.12);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
     text-align: center;
   }
   .license-gate-logo-wrap {
@@ -1612,12 +1612,12 @@
     align-items: center;
     justify-content: center;
     margin: 0 auto 20px;
-    background: #ffffff;
+    background: #1a2a4a;
     border-radius: 12px;
     padding: 10px;
     width: 120px;
     height: 120px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   }
   .license-gate-logo-wrap img {
     max-width: 100%;
@@ -1625,15 +1625,17 @@
     object-fit: contain;
   }
   .license-gate-title {
-    font-size: 20px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 26px;
     font-weight: 700;
-    color: var(--navy);
+    color: #1a2a4a;
     margin-bottom: 6px;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
   .license-gate-sub {
     font-size: 13px;
-    color: var(--muted);
+    color: #5a6478;
     line-height: 1.5;
     margin-bottom: 24px;
   }
@@ -1645,7 +1647,7 @@
     display: block;
     font-size: 11px;
     font-weight: 700;
-    color: var(--muted);
+    color: #1a2a4a;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     margin-bottom: 6px;
@@ -1653,7 +1655,7 @@
   .license-gate-field input {
     width: 100%;
     padding: 12px 14px;
-    border: 1.5px solid var(--border);
+    border: 1.5px solid #c9a84c;
     border-radius: 8px;
     font-family: 'DM Mono', monospace;
     font-size: 15px;
@@ -1661,16 +1663,17 @@
     text-transform: uppercase;
     text-align: center;
     min-height: 48px;
+    color: #1a2a4a;
   }
   .license-gate-field input:focus {
     outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    border-color: #1a2a4a;
+    box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.35);
   }
   .license-gate-error {
     display: none;
     font-size: 12px;
-    color: #b91c1c;
+    color: #991b1b;
     background: #fef2f2;
     border: 1px solid #fecaca;
     border-radius: 8px;
@@ -1685,27 +1688,21 @@
     padding: 14px;
     border: none;
     border-radius: 10px;
-    background: var(--navy);
-    color: #fff;
+    background: #c9a84c;
+    color: #1a2a4a;
     font-family: 'DM Sans', sans-serif;
     font-size: 15px;
     font-weight: 700;
     cursor: pointer;
     min-height: 48px;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
-  .license-gate-btn:hover { background: var(--blue); }
+  .license-gate-btn:hover { background: #d4b86a; }
   .license-gate-btn:disabled {
     opacity: 0.65;
     cursor: wait;
   }
-  .license-renew-btn {
-    background: #25d366 !important;
-    margin-top: 4px;
-  }
-  .license-renew-btn:hover { background: #1fb855 !important; }
-  #license-gate-expired[hidden],
-  #license-gate-activate[hidden] { display: none !important; }
   @media print {
     .license-gate { display: none !important; }
   }
@@ -1879,11 +1876,7 @@ try {
         <input type="text" id="license-code-input" autocomplete="off" spellcheck="false" placeholder="Su código de licencia" inputmode="text">
       </div>
       <p id="license-error" class="license-gate-error" role="alert"></p>
-      <button type="button" id="license-activate-btn" class="license-gate-btn">Activar</button>
-    </div>
-    <div id="license-gate-expired" hidden>
-      <p class="license-gate-sub">Tu licencia ha vencido. Contáctanos para renovar.</p>
-      <button type="button" id="license-renew-btn" class="license-gate-btn license-renew-btn">Renovar licencia</button>
+      <button type="button" id="license-activate-btn" class="license-gate-btn">Verificar</button>
     </div>
   </div>
 </div>
@@ -3024,9 +3017,143 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 
+<!-- Validación de licencia: 100% inline (sin arpa-license.js ni loaders externos) -->
+<script data-cfasync="false" type="text/javascript" charset="utf-8">
+(function () {
+  var LICENSE_API = 'https://script.google.com/macros/s/AKfycbx4pOeZNxpA5T9hrZNaJgkB9BCEC2DbVjdHfOu0wmMV5RJsGfQAbiCldD3pPa43kuEw/exec';
+  var LICENSE_STORAGE_KEY = 'arpa_suite_license_code';
+  var JSONP_SCRIPT_ID = 'suite-license-jsonp';
+
+  function unlockApp() {
+    document.documentElement.classList.add('license-ok');
+  }
+
+  function showLicenseError(message) {
+    var el = document.getElementById('license-error');
+    if (!el) return;
+    el.textContent = message || 'Código de licencia inválido.';
+    el.classList.add('visible');
+  }
+
+  function hideLicenseError() {
+    var el = document.getElementById('license-error');
+    if (!el) return;
+    el.textContent = '';
+    el.classList.remove('visible');
+  }
+
+  function removeJsonpScript() {
+    var old = document.getElementById(JSONP_SCRIPT_ID);
+    if (old && old.parentNode) old.parentNode.removeChild(old);
+  }
+
+  function validarLicenciaJsonp(codigo) {
+    return new Promise(function (resolve, reject) {
+      removeJsonpScript();
+
+      window.validarLicencia = function (data) {
+        try { delete window.validarLicencia; } catch (e) { window.validarLicencia = undefined; }
+        removeJsonpScript();
+        resolve(data);
+      };
+
+      var script = document.createElement('script');
+      script.id = JSONP_SCRIPT_ID;
+      script.type = 'text/javascript';
+      script.charset = 'UTF-8';
+      script.onerror = function () {
+        try { delete window.validarLicencia; } catch (e) { window.validarLicencia = undefined; }
+        removeJsonpScript();
+        reject(new Error('network'));
+      };
+
+      script.src = LICENSE_API
+        + '?codigo=' + encodeURIComponent(String(codigo).trim())
+        + '&callback=validarLicencia';
+
+      (document.body || document.head).appendChild(script);
+    });
+  }
+
+  function tryOnboarding() {
+    if (window.ArpaOnboarding && typeof window.ArpaOnboarding.tryShow === 'function') {
+      window.ArpaOnboarding.tryShow();
+    }
+  }
+
+  function initLicenseGate() {
+    var input = document.getElementById('license-code-input');
+    var btn = document.getElementById('license-activate-btn');
+    var saved = '';
+
+    try {
+      saved = (localStorage.getItem(LICENSE_STORAGE_KEY) || '').trim();
+    } catch (e) {}
+
+    if (saved) {
+      unlockApp();
+      tryOnboarding();
+      return;
+    }
+
+    if (input) input.focus();
+
+    function resetBtn() {
+      if (!btn) return;
+      btn.disabled = false;
+      btn.textContent = 'Verificar';
+    }
+
+    function verifyLicense() {
+      var code = (input && input.value || '').trim();
+      if (!code) {
+        showLicenseError('Ingrese su código de licencia.');
+        if (input) input.focus();
+        return;
+      }
+
+      hideLicenseError();
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Verificando…';
+      }
+
+      validarLicenciaJsonp(code)
+        .then(function (data) {
+          if (data && data.valido === true) {
+            try { localStorage.setItem(LICENSE_STORAGE_KEY, code); } catch (e) {}
+            unlockApp();
+            tryOnboarding();
+          } else {
+            showLicenseError((data && data.mensaje) || 'Código de licencia inválido.');
+            if (input) input.focus();
+          }
+          resetBtn();
+        })
+        .catch(function () {
+          showLicenseError('No se pudo verificar la licencia. Compruebe su conexión e intente de nuevo.');
+          resetBtn();
+        });
+    }
+
+    if (btn) btn.addEventListener('click', verifyLicense);
+    if (input) {
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') verifyLicense();
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLicenseGate);
+  } else {
+    initLicenseGate();
+  }
+})();
+</script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" crossorigin="anonymous"></script>
-<script src="./js/arpa-license.js"></script>
 <script src="./js/arpa-brand.js"></script>
 <script src="./js/arpa-pricing.js"></script>
 <script src="./js/arpa-cobros.js"></script>
