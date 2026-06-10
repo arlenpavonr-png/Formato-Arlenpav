@@ -84,11 +84,57 @@
     return { ok: data.valido === true, reason: data.valido === true ? 'ok' : 'invalid' };
   }
 
+  function fetchViaJsonp(code) {
+    return new Promise((resolve, reject) => {
+      const trimmed = code.trim();
+      const cb = '_arpaLic_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+      let settled = false;
+      const script = document.createElement('script');
+      const timer = setTimeout(() => finish(reject, new Error('network')), 15000);
+
+      function finish(fn, val) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        delete global[cb];
+        script.remove();
+        fn(val);
+      }
+
+      global[cb] = (data) => finish(resolve, data);
+      script.onerror = () => finish(reject, new Error('network'));
+      script.src = `${API_URL}?codigo=${encodeURIComponent(trimmed)}&callback=${cb}`;
+      document.head.appendChild(script);
+    });
+  }
+
   async function fetchLicenseStatus(code) {
-    const url = `${API_URL}?codigo=${encodeURIComponent(code.trim())}`;
-    const res = await fetch(url, { method: 'GET', cache: 'no-store' });
-    if (!res.ok) throw new Error('network');
-    return res.json();
+    const trimmed = code.trim();
+    const url = `${API_URL}?codigo=${encodeURIComponent(trimmed)}`;
+
+    try {
+      const res = await fetch(url, {
+        method: 'GET',
+        mode: 'no-cors',
+        cache: 'no-store',
+        redirect: 'follow'
+      });
+
+      // no-cors devuelve respuesta opaca (sin lectura del cuerpo); JSONP lee valido
+      if (res.type === 'opaque') {
+        return fetchViaJsonp(trimmed);
+      }
+
+      if (!res.ok) throw new Error('network');
+      return res.json();
+    } catch (e) {
+      if (e instanceof Error && e.message === 'network') throw e;
+      try {
+        return await fetchViaJsonp(trimmed);
+      } catch (jsonpErr) {
+        throw new Error('network');
+      }
+    }
   }
 
   async function validateLicenseOnline(code) {
