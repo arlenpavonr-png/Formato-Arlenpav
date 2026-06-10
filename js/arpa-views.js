@@ -35,6 +35,7 @@
     document.querySelectorAll('.main-menu-btn').forEach((b) => b.classList.remove('active'));
     menuBtn?.classList.add('active');
     setHeaderActions(view);
+    global.ArpaMiCatalogo?.setFabVisible?.(view === 'catalogo');
 
     if (view === 'cotizacion') {
       global.ArpaCobros?.seedFromPriceList('cot');
@@ -71,6 +72,7 @@
 
   function openHistorialView(menuBtn) {
     currentView = 'historial';
+    global.ArpaMiCatalogo?.setFabVisible?.(false);
     document.querySelectorAll('.suite-view').forEach((el) => {
       el.hidden = el.id !== 'view-historial';
     });

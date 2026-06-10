@@ -477,10 +477,100 @@
   .main-menu-icon { font-size: 16px; line-height: 1; }
 
   /* ── MI CATÁLOGO ── */
+  #view-catalogo {
+    --catalogo-navy: #1a2a4a;
+    --catalogo-gold: #c9a84c;
+  }
   #view-catalogo .section-title,
-  #view-catalogo .catalogo-nom {
+  #view-catalogo .catalogo-nom,
+  #view-catalogo .catalogo-grupo-title {
     font-family: 'Barlow Condensed', sans-serif;
     letter-spacing: 0.02em;
+  }
+  #view-catalogo .section-title { color: var(--catalogo-navy); }
+  .catalogo-categorias-block {
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .catalogo-categorias-block .section-title {
+    margin-bottom: 10px;
+  }
+  .catalogo-cat-empty {
+    text-align: center;
+    padding: 16px 12px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--muted);
+    background: var(--light);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+  }
+  .catalogo-cat-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .catalogo-cat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px 6px 12px;
+    background: var(--light);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 12px;
+  }
+  .catalogo-cat-chip-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    color: var(--catalogo-navy);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .catalogo-cat-chip-count {
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--catalogo-gold);
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+  }
+  .btn-cat-edit,
+  .btn-cat-del {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn-cat-del { color: #dc2626; }
+  .btn-catalogo-add-cat {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px dashed var(--catalogo-gold);
+    border-radius: 10px;
+    background: #fffbeb;
+    color: var(--catalogo-navy);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    min-height: 44px;
   }
   .catalogo-toolbar {
     display: flex;
@@ -505,8 +595,33 @@
   .catalogo-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 18px;
     padding-bottom: 88px;
+  }
+  .catalogo-grupo-title {
+    margin: 0 0 10px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--catalogo-navy);
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--catalogo-gold);
+  }
+  .catalogo-grupo-dot { font-size: 12px; line-height: 1; }
+  .catalogo-grupo-count {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .catalogo-grupo-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
   .catalogo-empty,
   .catalogo-no-results {
@@ -602,24 +717,27 @@
     position: fixed;
     right: 16px;
     bottom: calc(68px + env(safe-area-inset-bottom, 0px) + 12px);
-    z-index: 850;
+    z-index: 950;
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: var(--gold);
+    background: #c9a84c;
     color: #fff;
     border: none;
-    box-shadow: 0 4px 16px rgba(217, 119, 6, 0.45);
-    font-size: 28px;
+    box-shadow: 0 4px 18px rgba(201, 168, 76, 0.55);
+    font-size: 32px;
     font-weight: 300;
     line-height: 1;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    -webkit-tap-highlight-color: transparent;
   }
+  .catalogo-fab[hidden] { display: none !important; }
   .catalogo-fab:active { transform: scale(0.96); }
-  #catalogo-form-modal .settings-modal-header h2 {
+  #catalogo-form-modal .settings-modal-header h2,
+  #catalogo-cat-modal .settings-modal-header h2 {
     font-family: 'Barlow Condensed', sans-serif;
     font-size: 18px;
     letter-spacing: 0.03em;
@@ -1928,21 +2046,24 @@ try {
   </div><!-- /view-cotizacion -->
 
   <div id="view-catalogo" class="suite-view body" hidden>
+    <div class="section catalogo-categorias-block">
+      <div class="section-title"><span class="dot"></span>Categorías</div>
+      <div id="catalogo-categorias-panel"></div>
+    </div>
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Mi Catálogo</div>
+      <div class="section-title"><span class="dot"></span>Productos</div>
       <p style="font-size:12px;color:var(--muted);margin:-4px 0 10px;line-height:1.5;">
-        Administre sus productos y servicios. Al agregar ítems aquí, Cotización usará su catálogo personalizado.
+        Sus productos se agrupan por categoría. Cotización usará este catálogo cuando tenga ítems cargados.
       </p>
       <div class="catalogo-toolbar">
         <input type="search" id="catalogo-buscar" placeholder="🔍 Buscar por nombre o referencia…" autocomplete="off" inputmode="search">
         <span id="catalogo-count" class="catalogo-count"></span>
       </div>
-      <div id="catalogo-empty" class="catalogo-empty">
-        Aún no hay productos en su catálogo.<br>Pulse <strong>+</strong> para agregar el primero.
+      <div id="catalogo-empty" class="catalogo-empty" hidden>
+        Aún no hay productos.<br>Pulse <strong>+</strong> para agregar el primero.
       </div>
       <div id="catalogo-list" class="catalogo-list"></div>
     </div>
-    <button type="button" class="catalogo-fab" id="btn-catalogo-fab" aria-label="Agregar producto">+</button>
   </div>
 
   <div id="view-cuenta-cobro" class="suite-view body" hidden>
@@ -2168,6 +2289,29 @@ try {
   </button>
 </nav>
 
+<button type="button" class="catalogo-fab" id="btn-catalogo-fab" hidden aria-label="Agregar">+</button>
+
+<!-- MODAL CATEGORÍA (MI CATÁLOGO) -->
+<div class="settings-overlay" id="catalogo-cat-modal" role="dialog" aria-modal="true" aria-labelledby="catalogo-cat-title">
+  <div class="settings-modal">
+    <div class="settings-modal-header">
+      <h2 id="catalogo-cat-title">Nueva categoría</h2>
+      <button type="button" class="settings-modal-close" id="catalogo-cat-close" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="settings-modal-body">
+      <p id="catalogo-cat-error" class="settings-error" role="alert" hidden></p>
+      <div class="field">
+        <label for="cat-cat-nombre">Nombre de la categoría <span class="req">*</span></label>
+        <input type="text" id="cat-cat-nombre" required placeholder="Ej. Motores, Repuestos, Servicios…">
+      </div>
+    </div>
+    <div class="settings-modal-footer">
+      <button type="button" id="btn-catalogo-cat-cancel">Cancelar</button>
+      <button type="button" id="btn-catalogo-cat-save" style="background:#1a2a4a;color:#fff;font-weight:700;">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL PRODUCTO (MI CATÁLOGO) -->
 <div class="settings-overlay" id="catalogo-form-modal" role="dialog" aria-modal="true" aria-labelledby="catalogo-form-title">
   <div class="settings-modal">
@@ -2205,8 +2349,8 @@ try {
         <input type="text" id="cat-form-marca" placeholder="Marca del producto">
       </div>
       <div class="field">
-        <label for="cat-form-categoria">Categoría (opcional)</label>
-        <input type="text" id="cat-form-categoria" placeholder="Ej. Motores, Accesorios…">
+        <label for="cat-form-categoria">Categoría <span class="req">*</span></label>
+        <select id="cat-form-categoria" required></select>
       </div>
     </div>
     <div class="settings-modal-footer">

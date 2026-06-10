@@ -301,6 +301,24 @@
   }
 
   const USER_CATALOG_KEY = 'arpa_catalogo_usuario';
+  const USER_CATEGORIES_KEY = 'arpa_categorias_usuario';
+
+  function getUserCategoriesRaw() {
+    try {
+      const data = JSON.parse(localStorage.getItem(USER_CATEGORIES_KEY) || '[]');
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function resolveUserCategoryName(product) {
+    if (product.categoriaId) {
+      const cat = getUserCategoriesRaw().find((c) => c.id === product.categoriaId);
+      if (cat) return cat.name;
+    }
+    return (product.categoria || '').trim();
+  }
 
   function getUserProductsRaw() {
     try {
@@ -321,7 +339,7 @@
           cod: (p.cod || '').trim(),
           nom: marca ? `${marca} – ${nom}` : nom,
           marca,
-          categoria: (p.categoria || '').trim(),
+          categoria: resolveUserCategoryName(p),
           pvp: Number(p.pvp) || 0,
           unidad: p.unidad || 'unidad',
         };
