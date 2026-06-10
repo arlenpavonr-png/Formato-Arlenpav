@@ -1,8 +1,30 @@
 /**
- * Módulo: Navegación entre vistas (Formato / Cotización)
+ * Módulo: Navegación entre vistas
  */
 (function (global) {
   let currentView = 'formato';
+
+  function setHeaderActions(view) {
+    const docType = document.getElementById('doc-type-label');
+    const metaFormato = document.getElementById('header-meta-formato');
+    const metaCot = document.getElementById('header-meta-cot');
+    const metaCc = document.getElementById('header-meta-cc');
+    const pdfFormato = document.getElementById('pdf-actions-formato');
+    const pdfCot = document.getElementById('pdf-actions-cot');
+
+    const labels = {
+      formato: 'Formato de Servicio',
+      cotizacion: '💰 Cotización',
+      'cuenta-cobro': '🧾 Cuenta de Cobro',
+      historial: '📋 Historial de Servicios'
+    };
+    if (docType) docType.textContent = labels[view] || labels.formato;
+    if (metaFormato) metaFormato.hidden = view !== 'formato';
+    if (metaCot) metaCot.hidden = view !== 'cotizacion';
+    if (metaCc) metaCc.hidden = view !== 'cuenta-cobro';
+    if (pdfFormato) pdfFormato.hidden = view !== 'formato';
+    if (pdfCot) pdfCot.hidden = view !== 'cotizacion';
+  }
 
   function showView(view, menuBtn) {
     currentView = view;
@@ -11,18 +33,7 @@
     });
     document.querySelectorAll('.main-menu-btn').forEach((b) => b.classList.remove('active'));
     menuBtn?.classList.add('active');
-
-    const docType = document.getElementById('doc-type-label');
-    const metaFormato = document.getElementById('header-meta-formato');
-    const metaCot = document.getElementById('header-meta-cot');
-    const pdfFormato = document.getElementById('pdf-actions-formato');
-    const pdfCot = document.getElementById('pdf-actions-cot');
-
-    if (docType) docType.textContent = view === 'cotizacion' ? '💰 Cotización' : 'Formato de Servicio';
-    if (metaFormato) metaFormato.hidden = view !== 'formato';
-    if (metaCot) metaCot.hidden = view !== 'cotizacion';
-    if (pdfFormato) pdfFormato.hidden = view !== 'formato';
-    if (pdfCot) pdfCot.hidden = view !== 'cotizacion';
+    setHeaderActions(view);
 
     if (view === 'cotizacion') {
       global.ArpaCobros?.seedFromPriceList('cot');
@@ -30,6 +41,10 @@
       global.ArpaCotizacion?.renderTablaCot?.();
       global.ArpaCotizacion?.ensureCotNumero?.();
       global.ArpaCotizacion?.updateCatalogHint?.();
+    }
+    if (view === 'cuenta-cobro') {
+      global.ArpaCuentaCobro?.refreshView?.();
+      global.ArpaCuentaCobro?.ensureCcNumero?.();
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -42,6 +57,10 @@
     showView('cotizacion', btn);
   }
 
+  function openCuentaCobroView(btn) {
+    showView('cuenta-cobro', btn);
+  }
+
   function openHistorialView(menuBtn) {
     currentView = 'historial';
     document.querySelectorAll('.suite-view').forEach((el) => {
@@ -49,25 +68,21 @@
     });
     document.querySelectorAll('.main-menu-btn').forEach((b) => b.classList.remove('active'));
     menuBtn?.classList.add('active');
-
-    const docType = document.getElementById('doc-type-label');
-    const metaFormato = document.getElementById('header-meta-formato');
-    const metaCot = document.getElementById('header-meta-cot');
-    const pdfFormato = document.getElementById('pdf-actions-formato');
-    const pdfCot = document.getElementById('pdf-actions-cot');
-
-    if (docType) docType.textContent = '📋 Historial de Servicios';
-    if (metaFormato) metaFormato.hidden = true;
-    if (metaCot) metaCot.hidden = true;
-    if (pdfFormato) pdfFormato.hidden = true;
-    if (pdfCot) pdfCot.hidden = true;
-
+    setHeaderActions('historial');
     global.ArpaHistorial?.render?.();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  global.ArpaViews = { showView, scrollToTopMenu, openCotizacionView, openHistorialView, getCurrentView: () => currentView };
+  global.ArpaViews = {
+    showView,
+    scrollToTopMenu,
+    openCotizacionView,
+    openCuentaCobroView,
+    openHistorialView,
+    getCurrentView: () => currentView
+  };
   global.scrollToTopMenu = scrollToTopMenu;
   global.openCotizacionView = openCotizacionView;
+  global.openCuentaCobroView = openCuentaCobroView;
   global.openHistorialView = openHistorialView;
 })(window);

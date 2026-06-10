@@ -14,7 +14,10 @@
     bankName: 'Nombre del banco',
     accountType: 'Ahorros',
     accountNumber: '00000000000',
+    accountHolder: '',
+    accountHolderDocument: '',
     technicianName: '',
+    technicianDocument: '',
     logoBase64: ''
   };
 
@@ -159,7 +162,10 @@
       'settings-bank': s.bankName,
       'settings-account-type': s.accountType,
       'settings-account-number': s.accountNumber,
-      'settings-technician': s.technicianName
+      'settings-account-holder': s.accountHolder,
+      'settings-account-holder-doc': s.accountHolderDocument,
+      'settings-technician': s.technicianName,
+      'settings-technician-doc': s.technicianDocument
     };
     Object.entries(fields).forEach(([id, v]) => {
       const el = document.getElementById(id);
@@ -184,6 +190,10 @@
     document.querySelectorAll('.main-menu-btn').forEach((b) => b.classList.remove('active'));
     const sel = view === 'cotizacion'
       ? '.main-menu-btn[onclick*="openCotizacionView"]'
+      : view === 'cuenta-cobro'
+      ? '.main-menu-btn[onclick*="openCuentaCobroView"]'
+      : view === 'historial'
+      ? '.main-menu-btn[onclick*="openHistorialView"]'
       : '.main-menu-btn[onclick*="scrollToTopMenu"]';
     document.querySelector(sel)?.classList.add('active');
   }
@@ -213,7 +223,10 @@
       bankName,
       accountType,
       accountNumber,
+      accountHolder: document.getElementById('settings-account-holder')?.value.trim() || '',
+      accountHolderDocument: document.getElementById('settings-account-holder-doc')?.value.trim() || '',
       technicianName: document.getElementById('settings-technician')?.value.trim() || '',
+      technicianDocument: document.getElementById('settings-technician-doc')?.value.trim() || '',
       logoBase64: pendingLogoBase64 !== null ? pendingLogoBase64 : (current.logoBase64 || '')
     };
 
@@ -222,6 +235,8 @@
     global.ArpaPricing?.savePriceList?.(global.ArpaPricing.readPriceListFromSettingsForm());
     global.ArpaCobros?.seedFromPriceList?.('cot');
     global.ArpaCotizacion?.refreshCobros?.();
+    global.ArpaCuentaCobro?.refreshView?.();
+    global.ArpaCuentaCobro?.refreshView?.();
 
     pendingLogoBase64 = null;
     applyToUI();

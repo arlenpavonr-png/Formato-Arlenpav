@@ -1,0 +1,589 @@
+/**
+ * Módulo: Cuenta de Cobro (formulario, PDF jsPDF, WhatsApp)
+ */
+(function (global) {
+  const CC_NUM_KEY = 'arpa_cc_num';
+  const SETTINGS_KEY = 'arpa_suite_user_settings';
+  const NAVY = [15, 32, 68];
+  const GOLD = [217, 119, 6];
+  const MUTED = [100, 116, 139];
+
+  let servicios = [{ desc: '', cant: 1, unit: 0 }];
+
+  function getRawSettings() {
+    try {
+      return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function cfgDisplay(key) {
+    const v = (getRawSettings()[key] || '').trim();
+    return v || '—';
+  }
+
+  function formatoPesos(n) {
+    return global.ArpaPricing?.formatoPesos(n) || ('$ ' + (Number(n) || 0).toLocaleString('es-CO'));
+  }
+
+  function parseNum(v) {
+    const n = Number(String(v).replace(/[^\d.-]/g, ''));
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function formatCcNumero(n) {
+    return 'CC-' + String(n).padStart(3, '0');
+  }
+
+  function getUltimoCc() {
+    try {
+      const stored = parseInt(localStorage.getItem(CC_NUM_KEY) || '0', 10);
+      const field = document.getElementById('cc-numero')?.value || '';
+      const m = field.match(/(\d+)/);
+      const fromField = m ? parseInt(m[1], 10) : 0;
+      return Math.max(stored, fromField);
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  function nuevoCcNumero() {
+    const nuevo = getUltimoCc() + 1;
+    try { localStorage.setItem(CC_NUM_KEY, String(nuevo)); } catch (e) {}
+    const el = document.getElementById('cc-numero');
+    if (el) el.value = formatCcNumero(nuevo);
+  }
+
+  function ensureCcNumero() {
+    const el = document.getElementById('cc-numero');
+    if (el && !el.value.trim()) nuevoCcNumero();
+  }
+
+  function hasBankFromConfig() {
+    const r = getRawSettings();
+    return !!(String(r.bankName || '').trim() && String(r.accountNumber || '').trim());
+  }
+
+  function renderCobrador() {
+    const r = getRawSettings();
+    const map = {
+      'cc-cobrador-nombre': r.technicianName,
+      'cc-cobrador-doc': r.technicianDocument,
+      'cc-cobrador-empresa': r.companyName,
+      'cc-cobrador-nit': r.nit,
+      'cc-cobrador-tel': r.phone,
+      'cc-cobrador-dir': r.address
+    };
+    Object.entries(map).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = (val || '').trim() || '—';
+    });
+    const firmaNom = document.getElementById('cc-firma-cobrador-nombre');
+    if (firmaNom) firmaNom.textContent = (r.technicianName || '').trim() || '—';
+  }
+
+  function renderPagoSection() {
+    const readonly = document.getElementById('cc-pago-readonly');
+    const editable = document.getElementById('cc-pago-editable');
+    if (!readonly || !editable) return;
+
+    if (hasBankFromConfig()) {
+      readonly.hidden = false;
+      editable.hidden = true;
+      const r = getRawSettings();
+      readonly.innerHTML = `
+        <div class="cc-info-row"><span>Banco</span><strong>${cfgDisplay('bankName')}</strong></div>
+        <div class="cc-info-row"><span>Tipo de cuenta</span><strong>${cfgDisplay('accountType')}</strong></div>
+        <div class="cc-info-row"><span>Número de cuenta</span><strong>${cfgDisplay('accountNumber')}</strong></div>
+        <div class="cc-info-row"><span>Titular</span><strong>${cfgDisplay('accountHolder')}</strong></div>
+        <div class="cc-info-row"><span>NIT / Cédula titular</span><strong>${cfgDisplay('accountHolderDocument')}</strong></div>
+      `;
+    } else {
+      readonly.hidden = true;
+      editable.hidden = false;
+    }
+  }
+
+  function renderServicios() {
+    const tbody = document.getElementById('cc-servicios-body');
+    if (!tbody) return;
+
+    tbody.innerHTML = servicios.map((row, idx) => `
+      <tr data-idx="${idx}">
+        <td><input type="text" class="cc-svc-desc" value="${escAttr(row.desc)}" placeholder="Descripción del servicio"></td>
+        <td class="td-cant"><input type="number" class="cc-svc-cant" min="1" value="${row.cant}" inputmode="numeric"></td>
+        <td class="td-precio"><input type="number" class="cc-svc-unit" min="0" step="1000" value="${row.unit || ''}" inputmode="numeric" placeholder="0"></td>
+        <td class="td-total cc-svc-total">${formatoPesos(row.cant * row.unit)}</td>
+        <td class="td-action">${servicios.length > 1 ? `<button type="button" class="btn-quitar cc-svc-remove" data-idx="${idx}">✕</button>` : ''}</td>
+      </tr>
+    `).join('');
+
+    tbody.querySelectorAll('.cc-svc-desc, .cc-svc-cant, .cc-svc-unit').forEach((input) => {
+      input.addEventListener('input', onServicioChange);
+    });
+    tbody.querySelectorAll('.cc-svc-remove').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        servicios.splice(Number(btn.dataset.idx), 1);
+        renderServicios();
+        recalcularTotales();
+      });
+    });
+    recalcularTotales();
+  }
+
+  function escAttr(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  }
+
+  function onServicioChange(e) {
+    const tr = e.target.closest('tr');
+    if (!tr) return;
+    const idx = Number(tr.dataset.idx);
+    const row = servicios[idx];
+    if (!row) return;
+    row.desc = tr.querySelector('.cc-svc-desc')?.value || '';
+    row.cant = parseInt(tr.querySelector('.cc-svc-cant')?.value, 10) || 1;
+    row.unit = parseNum(tr.querySelector('.cc-svc-unit')?.value);
+    const totalCell = tr.querySelector('.cc-svc-total');
+    if (totalCell) totalCell.textContent = formatoPesos(row.cant * row.unit);
+    recalcularTotales();
+  }
+
+  function getSubtotal() {
+    return servicios.reduce((s, r) => s + (parseInt(r.cant, 10) || 1) * parseNum(r.unit), 0);
+  }
+
+  function recalcularTotales() {
+    const subtotal = getSubtotal();
+    const conIva = document.getElementById('cc-iva-check')?.checked;
+    const conRet = document.getElementById('cc-ret-check')?.checked;
+    const retPct = parseNum(document.getElementById('cc-ret-pct')?.value) || 0;
+    const iva = conIva ? subtotal * 0.19 : 0;
+    const retencion = conRet ? subtotal * (retPct / 100) : 0;
+    const total = subtotal + iva - retencion;
+
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('cc-subtotal-val', formatoPesos(subtotal));
+    set('cc-iva-val', formatoPesos(iva));
+    set('cc-ret-val', formatoPesos(retencion));
+    set('cc-total-val', formatoPesos(total));
+
+    const ivaRow = document.getElementById('cc-iva-row');
+    const retRow = document.getElementById('cc-ret-row');
+    const retField = document.getElementById('cc-ret-pct-wrap');
+    if (ivaRow) ivaRow.style.display = conIva ? 'flex' : 'none';
+    if (retRow) retRow.style.display = conRet ? 'flex' : 'none';
+    if (retField) retField.style.display = conRet ? 'flex' : 'none';
+  }
+
+  function getPaymentData() {
+    if (hasBankFromConfig()) {
+      const r = getRawSettings();
+      return {
+        bankName: (r.bankName || '').trim(),
+        accountType: (r.accountType || '').trim(),
+        accountNumber: (r.accountNumber || '').trim(),
+        accountHolder: (r.accountHolder || '').trim(),
+        accountHolderDocument: (r.accountHolderDocument || '').trim()
+      };
+    }
+    return {
+      bankName: document.getElementById('cc-pago-banco')?.value.trim() || '',
+      accountType: document.getElementById('cc-pago-tipo')?.value.trim() || '',
+      accountNumber: document.getElementById('cc-pago-numero')?.value.trim() || '',
+      accountHolder: document.getElementById('cc-pago-titular')?.value.trim() || '',
+      accountHolderDocument: document.getElementById('cc-pago-titular-doc')?.value.trim() || ''
+    };
+  }
+
+  function getFormSnapshot() {
+    const subtotal = getSubtotal();
+    const conIva = document.getElementById('cc-iva-check')?.checked;
+    const conRet = document.getElementById('cc-ret-check')?.checked;
+    const retPct = parseNum(document.getElementById('cc-ret-pct')?.value) || 0;
+    const iva = conIva ? subtotal * 0.19 : 0;
+    const retencion = conRet ? subtotal * (retPct / 100) : 0;
+    const total = subtotal + iva - retencion;
+    const r = getRawSettings();
+    const clienteNombre = document.getElementById('cc-cliente-nombre')?.value.trim() || '';
+
+    return {
+      numero: document.getElementById('cc-numero')?.value.trim() || '',
+      ciudad: document.getElementById('cc-ciudad')?.value.trim() || '',
+      fechaEmision: document.getElementById('cc-fecha-emision')?.value || '',
+      fechaVencimiento: document.getElementById('cc-fecha-vencimiento')?.value || '',
+      cobrador: {
+        nombre: (r.technicianName || '').trim(),
+        doc: (r.technicianDocument || '').trim(),
+        empresa: (r.companyName || '').trim(),
+        nit: (r.nit || '').trim(),
+        tel: (r.phone || '').trim(),
+        dir: (r.address || '').trim()
+      },
+      cliente: {
+        nombre: clienteNombre,
+        doc: document.getElementById('cc-cliente-doc')?.value.trim() || '',
+        dir: document.getElementById('cc-cliente-dir')?.value.trim() || '',
+        tel: document.getElementById('cc-cliente-tel')?.value.trim() || ''
+      },
+      servicios: servicios.map((s) => ({
+        desc: s.desc,
+        cant: parseInt(s.cant, 10) || 1,
+        unit: parseNum(s.unit),
+        total: (parseInt(s.cant, 10) || 1) * parseNum(s.unit)
+      })),
+      subtotal,
+      iva,
+      retencion,
+      retPct,
+      conIva,
+      conRet,
+      total,
+      pago: getPaymentData(),
+      observaciones: document.getElementById('cc-obs')?.value.trim() || '',
+      logo: global.ArpaBrand?.getLogo?.(global.ArpaBrand?.getSettings?.())
+    };
+  }
+
+  function limpiarFormulario() {
+    ['cc-cliente-nombre', 'cc-cliente-doc', 'cc-cliente-dir', 'cc-cliente-tel', 'cc-obs'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    ['cc-pago-banco', 'cc-pago-numero', 'cc-pago-titular', 'cc-pago-titular-doc'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    const tipo = document.getElementById('cc-pago-tipo');
+    if (tipo) tipo.value = 'Ahorros';
+    document.getElementById('cc-iva-check').checked = false;
+    document.getElementById('cc-ret-check').checked = false;
+    const retPct = document.getElementById('cc-ret-pct');
+    if (retPct) retPct.value = '11';
+    servicios = [{ desc: '', cant: 1, unit: 0 }];
+    initFechas();
+    renderServicios();
+    syncFirmaCliente();
+  }
+
+  function initFechas() {
+    const hoy = new Date();
+    const em = document.getElementById('cc-fecha-emision');
+    const ven = document.getElementById('cc-fecha-vencimiento');
+    if (em) em.value = hoy.toISOString().split('T')[0];
+    if (ven) {
+      const v = new Date(hoy);
+      v.setDate(v.getDate() + 15);
+      ven.value = v.toISOString().split('T')[0];
+    }
+  }
+
+  function syncFirmaCliente() {
+    const nom = document.getElementById('cc-cliente-nombre')?.value.trim() || '—';
+    const el = document.getElementById('cc-firma-cliente-nombre');
+    if (el) el.textContent = nom;
+  }
+
+  function sanitizeFilename(name) {
+    return (name || 'Cliente').replace(/[^\w\s-áéíóúÁÉÍÓÚñÑ]/g, '').replace(/\s+/g, '_').substring(0, 40) || 'Cliente';
+  }
+
+  function enviarWhatsApp() {
+    const d = getFormSnapshot();
+    const telRaw = d.cliente.tel.replace(/\D/g, '');
+    const empresa = d.cobrador.empresa || 'nuestra empresa';
+    const telEmp = d.cobrador.tel || '';
+    const msg = `Hola ${d.cliente.nombre || 'cliente'}, le compartimos la ${d.numero} de ${empresa} por un valor de ${formatoPesos(d.total)}. Quedamos atentos para cualquier consulta.\n${empresa} 📞 ${telEmp}`;
+    const text = encodeURIComponent(msg);
+    const url = telRaw.length >= 10
+      ? `https://wa.me/${telRaw.startsWith('57') ? telRaw : '57' + telRaw}?text=${text}`
+      : `https://wa.me/?text=${text}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  function loadImageDataUrl(src) {
+    return new Promise((resolve) => {
+      if (!src) { resolve(null); return; }
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        try {
+          const c = document.createElement('canvas');
+          c.width = img.naturalWidth || img.width;
+          c.height = img.naturalHeight || img.height;
+          c.getContext('2d').drawImage(img, 0, 0);
+          resolve(c.toDataURL('image/png'));
+        } catch (e) {
+          resolve(null);
+        }
+      };
+      img.onerror = () => resolve(null);
+      img.src = src;
+    });
+  }
+
+  async function generarPDF() {
+    const jsPDF = global.jspdf?.jsPDF;
+    if (!jsPDF) {
+      alert('No se pudo cargar jsPDF. Verifique su conexión e intente de nuevo.');
+      return;
+    }
+
+    const d = getFormSnapshot();
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const pw = doc.internal.pageSize.getWidth();
+    const ph = doc.internal.pageSize.getHeight();
+    const m = 14;
+    let y = 0;
+
+    doc.setFillColor(...NAVY);
+    doc.rect(0, 0, pw, 38, 'F');
+
+    const logoData = await loadImageDataUrl(d.logo);
+    if (logoData) {
+      try {
+        doc.addImage(logoData, 'PNG', m, 6, 22, 22);
+      } catch (e) { /* skip logo */ }
+    }
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    const company = d.cobrador.empresa || 'Empresa';
+    doc.text(company, m + (logoData ? 26 : 0), 14);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    let hy = 20;
+    if (d.cobrador.nit) { doc.text(`NIT: ${d.cobrador.nit}`, m + (logoData ? 26 : 0), hy); hy += 5; }
+    if (d.cobrador.tel) { doc.text(`Tel: ${d.cobrador.tel}`, m + (logoData ? 26 : 0), hy); }
+
+    doc.setFillColor(...GOLD);
+    doc.rect(0, 38, pw, 1.2, 'F');
+    y = 46;
+
+    doc.setTextColor(...NAVY);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.text('CUENTA DE COBRO', pw / 2, y, { align: 'center' });
+    y += 8;
+    doc.setFontSize(14);
+    doc.setTextColor(...GOLD);
+    doc.text(d.numero || 'CC-000', pw / 2, y, { align: 'center' });
+    y += 10;
+
+    const colW = (pw - m * 2 - 6) / 2;
+    const leftX = m;
+    const rightX = m + colW + 6;
+
+    function blockTitle(x, by, title) {
+      doc.setFillColor(232, 237, 245);
+      doc.rect(x, by - 4, colW, 7, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(...NAVY);
+      doc.text(title, x + 2, by);
+    }
+
+    function blockLines(x, by, lines) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(30, 41, 59);
+      lines.forEach(([label, val]) => {
+        if (!val) return;
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${label}:`, x + 2, by);
+        doc.setFont('helvetica', 'normal');
+        const wrapped = doc.splitTextToSize(String(val), colW - 28);
+        doc.text(wrapped, x + 24, by);
+        by += wrapped.length * 4 + 1;
+      });
+      return by;
+    }
+
+    blockTitle(leftX, y, 'COBRADOR');
+    blockTitle(rightX, y, 'CLIENTE');
+    let yL = y + 6;
+    let yR = y + 6;
+    yL = blockLines(leftX, yL, [
+      ['Nombre', d.cobrador.nombre],
+      ['C.C. / NIT', d.cobrador.doc],
+      ['Empresa', d.cobrador.empresa],
+      ['NIT', d.cobrador.nit],
+      ['Tel', d.cobrador.tel],
+      ['Dir', d.cobrador.dir]
+    ]);
+    yR = blockLines(rightX, yR, [
+      ['Nombre', d.cliente.nombre],
+      ['NIT / C.C.', d.cliente.doc],
+      ['Dir', d.cliente.dir],
+      ['Tel', d.cliente.tel]
+    ]);
+    y = Math.max(yL, yR) + 6;
+
+    if (d.ciudad || d.fechaEmision) {
+      doc.setFontSize(8);
+      doc.setTextColor(...MUTED);
+      const meta = [d.ciudad, d.fechaEmision ? `Emisión: ${d.fechaEmision}` : '', d.fechaVencimiento ? `Vence: ${d.fechaVencimiento}` : ''].filter(Boolean).join('  ·  ');
+      doc.text(meta, m, y);
+      y += 6;
+    }
+
+    const cols = [m, m + 78, m + 92, m + 118, m + 148];
+    doc.setFillColor(...NAVY);
+    doc.rect(m, y, pw - m * 2, 7, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    ['Descripción', 'Cant.', 'V. Unit.', 'Total'].forEach((h, i) => {
+      const x = [cols[0] + 2, cols[1] + 2, cols[2] + 2, cols[3] + 2][i];
+      doc.text(h, x, y + 4.5);
+    });
+    y += 7;
+
+    d.servicios.forEach((row, i) => {
+      if (y > ph - 70) { doc.addPage(); y = m; }
+      if (i % 2 === 1) {
+        doc.setFillColor(248, 250, 252);
+        doc.rect(m, y, pw - m * 2, 7, 'F');
+      }
+      doc.setTextColor(30, 41, 59);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      const descLines = doc.splitTextToSize(row.desc || '—', 72);
+      doc.text(descLines, cols[0] + 2, y + 4.5);
+      doc.text(String(row.cant), cols[1] + 2, y + 4.5);
+      doc.text(formatoPesos(row.unit), cols[2] + 2, y + 4.5);
+      doc.text(formatoPesos(row.total), cols[3] + 2, y + 4.5);
+      y += Math.max(7, descLines.length * 4 + 2);
+    });
+    y += 4;
+
+    const totX = pw - m - 62;
+    doc.setFontSize(9);
+    const totales = [
+      ['Subtotal', formatoPesos(d.subtotal)],
+      ...(d.conIva ? [['IVA (19%)', formatoPesos(d.iva)]] : []),
+      ...(d.conRet ? [[`Retención (${d.retPct}%)`, '- ' + formatoPesos(d.retencion)]] : [])
+    ];
+    totales.forEach(([label, val]) => {
+      doc.setTextColor(...MUTED);
+      doc.setFont('helvetica', 'normal');
+      doc.text(label, totX, y);
+      doc.setTextColor(26, 58, 110);
+      doc.setFont('helvetica', 'bold');
+      doc.text(val, pw - m, y, { align: 'right' });
+      y += 5;
+    });
+    y += 2;
+    doc.setDrawColor(...NAVY);
+    doc.line(totX, y, pw - m, y);
+    y += 5;
+    doc.setFontSize(11);
+    doc.setTextColor(...NAVY);
+    doc.text('TOTAL A COBRAR', totX, y);
+    doc.text(formatoPesos(d.total), pw - m, y, { align: 'right' });
+    y += 10;
+
+    if (y > ph - 55) { doc.addPage(); y = m; }
+    doc.setFillColor(220, 252, 231);
+    doc.setDrawColor(22, 163, 74);
+    doc.roundedRect(m, y, pw - m * 2, 28, 2, 2, 'FD');
+    doc.setTextColor(21, 128, 61);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.text('DATOS PARA CONSIGNACIÓN', m + 4, y + 6);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    let py = y + 12;
+    [
+      d.pago.bankName && `Banco: ${d.pago.bankName}`,
+      d.pago.accountType && `Tipo: ${d.pago.accountType}`,
+      d.pago.accountNumber && `Cuenta N°: ${d.pago.accountNumber}`,
+      d.pago.accountHolder && `Titular: ${d.pago.accountHolder}`,
+      d.pago.accountHolderDocument && `NIT/C.C.: ${d.pago.accountHolderDocument}`
+    ].filter(Boolean).forEach((line) => {
+      doc.text(line, m + 4, py);
+      py += 4.5;
+    });
+    y += 32;
+
+    if (d.observaciones) {
+      if (y > ph - 40) { doc.addPage(); y = m; }
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(...NAVY);
+      doc.text('Observaciones', m, y);
+      y += 5;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(30, 41, 59);
+      const obsLines = doc.splitTextToSize(d.observaciones, pw - m * 2);
+      doc.text(obsLines, m, y);
+      y += obsLines.length * 4 + 8;
+    }
+
+    if (y > ph - 35) { doc.addPage(); y = m; }
+    const sigW = (pw - m * 2 - 10) / 2;
+    doc.setDrawColor(180, 180, 180);
+    doc.line(m, y + 12, m + sigW, y + 12);
+    doc.line(m + sigW + 10, y + 12, pw - m, y + 12);
+    doc.setFontSize(8);
+    doc.setTextColor(...MUTED);
+    doc.text('Firma cobrador', m + sigW / 2, y + 17, { align: 'center' });
+    doc.text('Firma cliente', m + sigW + 10 + sigW / 2, y + 17, { align: 'center' });
+    doc.setTextColor(30, 41, 59);
+    doc.setFont('helvetica', 'bold');
+    doc.text(d.cobrador.nombre || '—', m + sigW / 2, y + 22, { align: 'center' });
+    doc.text(d.cliente.nombre || '—', m + sigW + 10 + sigW / 2, y + 22, { align: 'center' });
+
+    doc.setFillColor(...NAVY);
+    doc.rect(0, ph - 14, pw, 14, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    const footer = [d.cobrador.empresa, d.cobrador.nit && `NIT ${d.cobrador.nit}`, d.cobrador.tel && `Tel ${d.cobrador.tel}`, d.cobrador.dir].filter(Boolean).join('  ·  ');
+    doc.text(footer, pw / 2, ph - 6, { align: 'center' });
+
+    const filename = `CuentaCobro_${d.numero || 'CC'}_${sanitizeFilename(d.cliente.nombre)}.pdf`;
+    doc.save(filename);
+  }
+
+  function refreshView() {
+    renderCobrador();
+    renderPagoSection();
+    renderServicios();
+    syncFirmaCliente();
+  }
+
+  function initCuentaCobro() {
+    initFechas();
+    ensureCcNumero();
+    renderCobrador();
+    renderPagoSection();
+    renderServicios();
+
+    document.getElementById('cc-iva-check')?.addEventListener('change', recalcularTotales);
+    document.getElementById('cc-ret-check')?.addEventListener('change', recalcularTotales);
+    document.getElementById('cc-ret-pct')?.addEventListener('input', recalcularTotales);
+    document.getElementById('cc-cliente-nombre')?.addEventListener('input', syncFirmaCliente);
+    document.getElementById('btn-cc-add-servicio')?.addEventListener('click', () => {
+      servicios.push({ desc: '', cant: 1, unit: 0 });
+      renderServicios();
+    });
+    document.getElementById('btn-cc-limpiar')?.addEventListener('click', limpiarFormulario);
+    document.getElementById('btn-cc-whatsapp')?.addEventListener('click', enviarWhatsApp);
+    document.getElementById('btn-cc-pdf')?.addEventListener('click', generarPDF);
+  }
+
+  global.ArpaCuentaCobro = {
+    initCuentaCobro,
+    refreshView,
+    nuevoCcNumero,
+    ensureCcNumero,
+    limpiarFormulario,
+    enviarWhatsApp,
+    generarPDF
+  };
+  global.nuevoCcNumero = nuevoCcNumero;
+})(window);
