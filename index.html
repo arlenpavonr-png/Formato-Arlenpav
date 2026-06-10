@@ -578,6 +578,106 @@
     gap: 8px;
     margin-bottom: 12px;
   }
+  .catalogo-toolbar-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  @media (min-width: 480px) {
+    .catalogo-toolbar-row {
+      flex-direction: row;
+      align-items: stretch;
+    }
+    .catalogo-toolbar-row input { flex: 1; }
+  }
+  .btn-catalogo-import {
+    width: 100%;
+    padding: 12px 14px;
+    border: none;
+    border-radius: 10px;
+    background: #1a2a4a;
+    color: #fff;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    min-height: 48px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .btn-catalogo-import:active { opacity: 0.92; }
+  @media (min-width: 480px) {
+    .btn-catalogo-import { width: auto; min-width: 200px; }
+  }
+  .catalogo-import-modal { max-width: 520px; }
+  .catalogo-import-summary {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin: 0 0 12px;
+  }
+  .catalogo-import-summary strong { color: #1a2a4a; }
+  .catalogo-import-preview-wrap {
+    overflow: auto;
+    max-height: 45vh;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .catalogo-import-table {
+    width: 100%;
+    min-width: 480px;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  .catalogo-import-table thead tr {
+    background: #1a2a4a;
+    color: #fff;
+  }
+  .catalogo-import-table th {
+    padding: 8px 6px;
+    text-align: left;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    font-size: 10px;
+  }
+  .catalogo-import-table td {
+    padding: 7px 6px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .catalogo-import-table tbody tr:nth-child(even) { background: #f8fafc; }
+  .catalogo-import-table tr.row-invalid { background: #fef2f2 !important; }
+  .catalogo-import-table tr.row-invalid td:last-child {
+    color: #dc2626;
+    font-size: 10px;
+  }
+  .catalogo-import-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+  @media (min-width: 400px) {
+    .catalogo-import-actions {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+  }
+  .btn-import-add {
+    background: #c9a84c !important;
+    color: #1a2a4a !important;
+    font-weight: 700 !important;
+  }
+  .btn-import-replace {
+    background: #1a2a4a !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+  }
   .catalogo-toolbar input {
     width: 100%;
     padding: 12px 14px;
@@ -2056,7 +2156,11 @@ try {
         Sus productos se agrupan por categoría. Cotización usará este catálogo cuando tenga ítems cargados.
       </p>
       <div class="catalogo-toolbar">
-        <input type="search" id="catalogo-buscar" placeholder="🔍 Buscar por nombre o referencia…" autocomplete="off" inputmode="search">
+        <div class="catalogo-toolbar-row">
+          <input type="search" id="catalogo-buscar" placeholder="🔍 Buscar por nombre o referencia…" autocomplete="off" inputmode="search">
+          <button type="button" class="btn-catalogo-import" id="btn-catalogo-import">📥 Importar Excel/CSV</button>
+        </div>
+        <input type="file" id="catalogo-import-file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden>
         <span id="catalogo-count" class="catalogo-count"></span>
       </div>
       <div id="catalogo-empty" class="catalogo-empty" hidden>
@@ -2290,6 +2394,40 @@ try {
 </nav>
 
 <button type="button" class="catalogo-fab" id="btn-catalogo-fab" hidden aria-label="Agregar">+</button>
+
+<!-- MODAL IMPORTAR (MI CATÁLOGO) -->
+<div class="settings-overlay" id="catalogo-import-modal" role="dialog" aria-modal="true" aria-labelledby="catalogo-import-title">
+  <div class="settings-modal catalogo-import-modal">
+    <div class="settings-modal-header">
+      <h2 id="catalogo-import-title">Vista previa de importación</h2>
+      <button type="button" class="settings-modal-close" id="catalogo-import-close" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="settings-modal-body">
+      <p id="catalogo-import-summary" class="catalogo-import-summary"></p>
+      <div class="catalogo-import-preview-wrap">
+        <table class="catalogo-import-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Ref.</th>
+              <th>Precio</th>
+              <th>Unidad</th>
+              <th>Marca</th>
+              <th>Categoría</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="catalogo-import-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="settings-modal-footer catalogo-import-actions">
+      <button type="button" id="btn-catalogo-import-cancel">Cancelar</button>
+      <button type="button" id="btn-catalogo-import-add" class="btn-import-add" disabled>Agregar a existentes</button>
+      <button type="button" id="btn-catalogo-import-replace" class="btn-import-replace" disabled>Reemplazar catálogo</button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL CATEGORÍA (MI CATÁLOGO) -->
 <div class="settings-overlay" id="catalogo-cat-modal" role="dialog" aria-modal="true" aria-labelledby="catalogo-cat-title">
@@ -2680,6 +2818,7 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" crossorigin="anonymous"></script>
 <script src="./js/arpa-license.js"></script>
 <script src="./js/arpa-brand.js"></script>
