@@ -496,7 +496,6 @@
   .cc-info-row span { color: var(--muted); flex-shrink: 0; }
   .cc-info-row strong { color: var(--text); text-align: right; font-weight: 600; }
   .cc-parties { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .cc-pago-readonly .cc-info-row strong { font-family: 'DM Mono', monospace; font-size: 11px; }
   .cc-ret-pct-wrap {
     display: none;
     align-items: center;
@@ -1869,8 +1868,7 @@ try {
 
     <div class="section">
       <div class="section-title"><span class="dot"></span>Datos de Pago</div>
-      <div id="cc-pago-readonly" class="cc-info-panel cc-pago-readonly" hidden></div>
-      <div id="cc-pago-editable" class="grid g2" hidden>
+      <div id="cc-pago-editable" class="grid g2">
         <div class="field"><label>Banco</label><input type="text" id="cc-pago-banco" placeholder="Ej. Bancolombia, Nequi…"></div>
         <div class="field"><label>Tipo de cuenta</label>
           <select id="cc-pago-tipo">
@@ -2018,6 +2016,10 @@ try {
       <div class="field">
         <label for="settings-address">Dirección <span class="req">*</span></label>
         <input type="text" id="settings-address" required autocomplete="street-address" placeholder="Dirección comercial">
+      </div>
+      <div class="field">
+        <label for="settings-city">Ciudad (opcional)</label>
+        <input type="text" id="settings-city" autocomplete="address-level2" placeholder="Medellín">
       </div>
       <div class="field">
         <label for="settings-phone">Teléfono <span class="req">*</span></label>

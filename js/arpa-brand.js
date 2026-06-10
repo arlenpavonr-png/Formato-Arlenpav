@@ -9,6 +9,7 @@
     companyName: 'Su Empresa S.A.S.',
     nit: '000.000.000-0',
     address: 'Dirección comercial',
+    city: '',
     phone: '000-000-0000',
     website: '',
     bankName: 'Nombre del banco',
@@ -157,6 +158,7 @@
       'settings-company': s.companyName,
       'settings-nit': s.nit,
       'settings-address': s.address,
+      'settings-city': s.city,
       'settings-phone': s.phone,
       'settings-website': s.website,
       'settings-bank': s.bankName,
@@ -203,6 +205,7 @@
     const companyName = document.getElementById('settings-company')?.value.trim();
     const nit = document.getElementById('settings-nit')?.value.trim();
     const address = document.getElementById('settings-address')?.value.trim();
+    const city = document.getElementById('settings-city')?.value.trim();
     const phone = document.getElementById('settings-phone')?.value.trim();
     const bankName = document.getElementById('settings-bank')?.value.trim();
     const accountType = document.getElementById('settings-account-type')?.value.trim();
@@ -218,6 +221,7 @@
       companyName,
       nit,
       address,
+      city,
       phone,
       website: document.getElementById('settings-website')?.value.trim() || '',
       bankName,

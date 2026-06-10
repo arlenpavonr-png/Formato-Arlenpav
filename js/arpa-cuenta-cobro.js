@@ -18,9 +18,42 @@
     }
   }
 
-  function cfgDisplay(key) {
-    const v = (getRawSettings()[key] || '').trim();
-    return v || '—';
+  const PAGO_FIELD_IDS = ['cc-pago-banco', 'cc-pago-numero', 'cc-pago-titular', 'cc-pago-titular-doc'];
+
+  function loadPagoFields() {
+    const r = getRawSettings();
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+    set('cc-pago-banco', r.bankName);
+    set('cc-pago-numero', r.accountNumber);
+    set('cc-pago-titular', r.accountHolder);
+    set('cc-pago-titular-doc', r.accountHolderDocument);
+    const tipo = document.getElementById('cc-pago-tipo');
+    if (tipo) tipo.value = r.accountType || 'Ahorros';
+  }
+
+  function savePagoToSettings() {
+    if (!global.ArpaBrand?.saveSettings) return;
+    const current = global.ArpaBrand.getSettings();
+    global.ArpaBrand.saveSettings({
+      ...current,
+      bankName: document.getElementById('cc-pago-banco')?.value.trim() || '',
+      accountType: document.getElementById('cc-pago-tipo')?.value.trim() || 'Ahorros',
+      accountNumber: document.getElementById('cc-pago-numero')?.value.trim() || '',
+      accountHolder: document.getElementById('cc-pago-titular')?.value.trim() || '',
+      accountHolderDocument: document.getElementById('cc-pago-titular-doc')?.value.trim() || ''
+    });
+  }
+
+  function loadCiudadFromConfig() {
+    const el = document.getElementById('cc-ciudad');
+    if (!el) return;
+    const r = getRawSettings();
+    let city = (r.city || '').trim();
+    if (!city && (r.address || '').trim()) {
+      const tail = String(r.address).split(/[–—-]/).pop()?.trim() || '';
+      city = tail.split(',')[0]?.trim() || '';
+    }
+    el.value = city;
   }
 
   function formatoPesos(n) {
@@ -60,11 +93,6 @@
     if (el && !el.value.trim()) nuevoCcNumero();
   }
 
-  function hasBankFromConfig() {
-    const r = getRawSettings();
-    return !!(String(r.bankName || '').trim() && String(r.accountNumber || '').trim());
-  }
-
   function renderCobrador() {
     const r = getRawSettings();
     const map = {
@@ -81,28 +109,6 @@
     });
     const firmaNom = document.getElementById('cc-firma-cobrador-nombre');
     if (firmaNom) firmaNom.textContent = (r.technicianName || '').trim() || '—';
-  }
-
-  function renderPagoSection() {
-    const readonly = document.getElementById('cc-pago-readonly');
-    const editable = document.getElementById('cc-pago-editable');
-    if (!readonly || !editable) return;
-
-    if (hasBankFromConfig()) {
-      readonly.hidden = false;
-      editable.hidden = true;
-      const r = getRawSettings();
-      readonly.innerHTML = `
-        <div class="cc-info-row"><span>Banco</span><strong>${cfgDisplay('bankName')}</strong></div>
-        <div class="cc-info-row"><span>Tipo de cuenta</span><strong>${cfgDisplay('accountType')}</strong></div>
-        <div class="cc-info-row"><span>Número de cuenta</span><strong>${cfgDisplay('accountNumber')}</strong></div>
-        <div class="cc-info-row"><span>Titular</span><strong>${cfgDisplay('accountHolder')}</strong></div>
-        <div class="cc-info-row"><span>NIT / Cédula titular</span><strong>${cfgDisplay('accountHolderDocument')}</strong></div>
-      `;
-    } else {
-      readonly.hidden = true;
-      editable.hidden = false;
-    }
   }
 
   function renderServicios() {
@@ -178,16 +184,6 @@
   }
 
   function getPaymentData() {
-    if (hasBankFromConfig()) {
-      const r = getRawSettings();
-      return {
-        bankName: (r.bankName || '').trim(),
-        accountType: (r.accountType || '').trim(),
-        accountNumber: (r.accountNumber || '').trim(),
-        accountHolder: (r.accountHolder || '').trim(),
-        accountHolderDocument: (r.accountHolderDocument || '').trim()
-      };
-    }
     return {
       bankName: document.getElementById('cc-pago-banco')?.value.trim() || '',
       accountType: document.getElementById('cc-pago-tipo')?.value.trim() || '',
@@ -251,12 +247,8 @@
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
-    ['cc-pago-banco', 'cc-pago-numero', 'cc-pago-titular', 'cc-pago-titular-doc'].forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) el.value = '';
-    });
-    const tipo = document.getElementById('cc-pago-tipo');
-    if (tipo) tipo.value = 'Ahorros';
+    loadPagoFields();
+    loadCiudadFromConfig();
     document.getElementById('cc-iva-check').checked = false;
     document.getElementById('cc-ret-check').checked = false;
     const retPct = document.getElementById('cc-ret-pct');
@@ -551,7 +543,8 @@
 
   function refreshView() {
     renderCobrador();
-    renderPagoSection();
+    loadPagoFields();
+    loadCiudadFromConfig();
     renderServicios();
     syncFirmaCliente();
   }
@@ -560,9 +553,15 @@
     initFechas();
     ensureCcNumero();
     renderCobrador();
-    renderPagoSection();
+    loadPagoFields();
+    loadCiudadFromConfig();
     renderServicios();
 
+    document.getElementById('cc-pago-tipo')?.addEventListener('change', savePagoToSettings);
+    PAGO_FIELD_IDS.forEach((id) => {
+      document.getElementById(id)?.addEventListener('change', savePagoToSettings);
+      document.getElementById(id)?.addEventListener('blur', savePagoToSettings);
+    });
     document.getElementById('cc-iva-check')?.addEventListener('change', recalcularTotales);
     document.getElementById('cc-ret-check')?.addEventListener('change', recalcularTotales);
     document.getElementById('cc-ret-pct')?.addEventListener('input', recalcularTotales);
