@@ -13,7 +13,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
   :root {
     --navy: #0f2044;
@@ -457,13 +457,13 @@
   }
   .main-menu-btn {
     flex: 1;
-    min-height: 56px;
-    padding: 8px 4px;
+    min-height: 52px;
+    padding: 6px 2px;
     background: none;
     border: none;
     color: #7090b8;
     font-family: 'DM Sans', sans-serif;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 600;
     cursor: pointer;
     display: flex;
@@ -474,7 +474,156 @@
     -webkit-tap-highlight-color: transparent;
   }
   .main-menu-btn.active { color: #fff; }
-  .main-menu-icon { font-size: 17px; line-height: 1; }
+  .main-menu-icon { font-size: 16px; line-height: 1; }
+
+  /* ── MI CATÁLOGO ── */
+  #view-catalogo .section-title,
+  #view-catalogo .catalogo-nom {
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.02em;
+  }
+  .catalogo-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .catalogo-toolbar input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 16px;
+    min-height: 48px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .catalogo-count {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .catalogo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 88px;
+  }
+  .catalogo-empty,
+  .catalogo-no-results {
+    text-align: center;
+    padding: 28px 16px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .catalogo-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: 0 1px 3px rgba(15, 32, 68, 0.06);
+  }
+  .catalogo-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .catalogo-ref {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--navy);
+  }
+  .catalogo-unidad {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--gold);
+    background: #fffbeb;
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+  .catalogo-nom {
+    margin: 0 0 6px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.25;
+  }
+  .catalogo-meta {
+    margin: 0 0 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .catalogo-meta span {
+    background: var(--light);
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+  .catalogo-card-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--light);
+  }
+  .catalogo-pvp {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--green);
+  }
+  .catalogo-card-actions {
+    display: flex;
+    gap: 6px;
+  }
+  .btn-catalogo-edit,
+  .btn-catalogo-del {
+    width: 40px;
+    height: 40px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn-catalogo-del { border-color: #fecaca; background: #fef2f2; }
+  .catalogo-fab {
+    position: fixed;
+    right: 16px;
+    bottom: calc(68px + env(safe-area-inset-bottom, 0px) + 12px);
+    z-index: 850;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 16px rgba(217, 119, 6, 0.45);
+    font-size: 28px;
+    font-weight: 300;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .catalogo-fab:active { transform: scale(0.96); }
+  #catalogo-form-modal .settings-modal-header h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.03em;
+  }
 
   /* ── CUENTA DE COBRO ── */
   .cc-info-panel {
@@ -1142,6 +1291,7 @@
     body { padding: 0; padding-bottom: 0; margin-bottom: 28mm; }
     body.is-printing #view-formato,
     body.is-printing #view-historial { display: none !important; }
+    body.is-printing #view-catalogo { display: none !important; }
     .suite-footer-global-link::after { content: none !important; }
     .page { box-shadow: none; border-radius: 0; }
     .photo-box input[type=file] { display: none; }
@@ -1689,7 +1839,7 @@ try {
           </div>
         </div>
         <div class="resultados-cot" id="resultados-cot"></div>
-        <p id="cot-catalog-hint" class="cot-catalog-hint" hidden>Catálogo no disponible</p>
+        <p id="cot-catalog-hint" class="cot-catalog-hint" hidden>Ve a Mi Catálogo para agregar tus productos</p>
       </div>
     </div>
 
@@ -1776,6 +1926,24 @@ try {
     </div>
 
   </div><!-- /view-cotizacion -->
+
+  <div id="view-catalogo" class="suite-view body" hidden>
+    <div class="section">
+      <div class="section-title"><span class="dot"></span>Mi Catálogo</div>
+      <p style="font-size:12px;color:var(--muted);margin:-4px 0 10px;line-height:1.5;">
+        Administre sus productos y servicios. Al agregar ítems aquí, Cotización usará su catálogo personalizado.
+      </p>
+      <div class="catalogo-toolbar">
+        <input type="search" id="catalogo-buscar" placeholder="🔍 Buscar por nombre o referencia…" autocomplete="off" inputmode="search">
+        <span id="catalogo-count" class="catalogo-count"></span>
+      </div>
+      <div id="catalogo-empty" class="catalogo-empty">
+        Aún no hay productos en su catálogo.<br>Pulse <strong>+</strong> para agregar el primero.
+      </div>
+      <div id="catalogo-list" class="catalogo-list"></div>
+    </div>
+    <button type="button" class="catalogo-fab" id="btn-catalogo-fab" aria-label="Agregar producto">+</button>
+  </div>
 
   <div id="view-cuenta-cobro" class="suite-view body" hidden>
 
@@ -1982,6 +2150,10 @@ try {
     <span class="main-menu-icon" aria-hidden="true">💰</span>
     <span>Cotización</span>
   </button>
+  <button type="button" class="main-menu-btn" onclick="openCatalogoView(this)">
+    <span class="main-menu-icon" aria-hidden="true">📦</span>
+    <span>Catálogo</span>
+  </button>
   <button type="button" class="main-menu-btn" onclick="openHistorialView(this)">
     <span class="main-menu-icon" aria-hidden="true">🗂️</span>
     <span>Historial</span>
@@ -1995,6 +2167,54 @@ try {
     <span>Configuración</span>
   </button>
 </nav>
+
+<!-- MODAL PRODUCTO (MI CATÁLOGO) -->
+<div class="settings-overlay" id="catalogo-form-modal" role="dialog" aria-modal="true" aria-labelledby="catalogo-form-title">
+  <div class="settings-modal">
+    <div class="settings-modal-header">
+      <h2 id="catalogo-form-title">Nuevo producto</h2>
+      <button type="button" class="settings-modal-close" id="catalogo-form-close" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="settings-modal-body">
+      <p id="catalogo-form-error" class="settings-error" role="alert" hidden></p>
+      <div class="field">
+        <label for="cat-form-nom">Nombre <span class="req">*</span></label>
+        <input type="text" id="cat-form-nom" required placeholder="Nombre del producto o servicio">
+      </div>
+      <div class="field">
+        <label for="cat-form-cod">Referencia <span class="req">*</span></label>
+        <input type="text" id="cat-form-cod" required placeholder="Código o referencia única">
+      </div>
+      <div class="grid g2">
+        <div class="field">
+          <label for="cat-form-pvp">Precio unitario <span class="req">*</span></label>
+          <input type="number" id="cat-form-pvp" min="0" step="1000" inputmode="numeric" placeholder="0">
+        </div>
+        <div class="field">
+          <label for="cat-form-unidad">Unidad <span class="req">*</span></label>
+          <select id="cat-form-unidad">
+            <option value="unidad">Unidad</option>
+            <option value="metro">Metro</option>
+            <option value="hora">Hora</option>
+            <option value="servicio">Servicio</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="cat-form-marca">Marca (opcional)</label>
+        <input type="text" id="cat-form-marca" placeholder="Marca del producto">
+      </div>
+      <div class="field">
+        <label for="cat-form-categoria">Categoría (opcional)</label>
+        <input type="text" id="cat-form-categoria" placeholder="Ej. Motores, Accesorios…">
+      </div>
+    </div>
+    <div class="settings-modal-footer">
+      <button type="button" id="btn-catalogo-form-cancel">Cancelar</button>
+      <button type="button" id="btn-catalogo-form-save" style="background:var(--navy);color:#fff;font-weight:700;">Guardar</button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL AJUSTES DE EMPRESA -->
 <div class="settings-overlay" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
@@ -2323,6 +2543,7 @@ if ('serviceWorker' in navigator) {
 <script src="./js/arpa-cobros.js"></script>
 <script src="./js/arpa-signature.js"></script>
 <script src="./js/arpa-cotizacion.js"></script>
+<script src="./js/arpa-mi-catalogo.js"></script>
 <script src="./js/arpa-cuenta-cobro.js"></script>
 <script src="./js/arpa-views.js"></script>
 <script src="./js/arpa-historial.js"></script>
@@ -2330,6 +2551,7 @@ if ('serviceWorker' in navigator) {
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   if (window.ArpaCotizacion) window.ArpaCotizacion.initCotizacion();
+  if (window.ArpaMiCatalogo) window.ArpaMiCatalogo.initMiCatalogo();
   if (window.ArpaCuentaCobro) window.ArpaCuentaCobro.initCuentaCobro();
 });
 </script>

@@ -300,9 +300,38 @@
     });
   }
 
-  enrichCatalogoPrecios();
+  const USER_CATALOG_KEY = 'arpa_catalogo_usuario';
 
-  let listaPlanaCache = null;
+  function getUserProductsRaw() {
+    try {
+      const data = JSON.parse(localStorage.getItem(USER_CATALOG_KEY) || '[]');
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function userProductsToFlat() {
+    return getUserProductsRaw()
+      .filter((p) => (p.nom || '').trim() && (p.cod || '').trim())
+      .map((p) => {
+        const nom = (p.nom || '').trim();
+        const marca = (p.marca || '').trim();
+        return {
+          cod: (p.cod || '').trim(),
+          nom: marca ? `${marca} – ${nom}` : nom,
+          marca,
+          categoria: (p.categoria || '').trim(),
+          pvp: Number(p.pvp) || 0,
+          unidad: p.unidad || 'unidad',
+        };
+      });
+  }
+
+  function hasUserCatalog() {
+    return userProductsToFlat().length > 0;
+  }
+
 
   function invalidateListaCache() {
     listaPlanaCache = null;
@@ -317,8 +346,11 @@
     return CATALOGO_MARCAS;
   }
 
-  function getListaProductos() {
-    if (listaPlanaCache) return listaPlanaCache;
+  enrichCatalogoPrecios();
+
+  let listaPlanaCache = null;
+
+  function buildListaDefault() {
     const list = [];
     Object.entries(CATALOGO_MARCAS).forEach(([marca, categorias]) => {
       Object.entries(categorias).forEach(([categoria, items]) => {
@@ -333,8 +365,20 @@
         });
       });
     });
-    listaPlanaCache = list;
     return list;
+  }
+
+  function getListaProductos() {
+    const user = userProductsToFlat();
+    if (user.length) return user;
+    if (listaPlanaCache) return listaPlanaCache;
+    listaPlanaCache = buildListaDefault();
+    return listaPlanaCache;
+  }
+
+  function getListaProductosDefault() {
+    if (!listaPlanaCache) listaPlanaCache = buildListaDefault();
+    return listaPlanaCache;
   }
 
   function findRawItem(cod) {
@@ -348,11 +392,16 @@
   }
 
   function getPrecioByCod(cod) {
+    const userItem = userProductsToFlat().find((p) => p.cod === cod);
+    if (userItem) return userItem.pvp || 0;
     const item = findRawItem(cod);
     return getPrecioVenta(cod, item || { cod });
   }
 
   function findByCod(cod) {
+    const userItem = userProductsToFlat().find((p) => p.cod === cod);
+    if (userItem) return userItem;
+
     let found = null;
     Object.entries(CATALOGO_MARCAS).forEach(([marca, categorias]) => {
       Object.entries(categorias).forEach(([categoria, items]) => {
@@ -375,8 +424,11 @@
   global.ArpaCatalogo = {
     getCatalogoMarcas,
     getListaProductos,
+    getListaProductosDefault,
+    hasUserCatalog,
     findByCod,
     getPrecioVenta,
     getPrecioByCod,
+    invalidateListaCache,
   };
 })(window);

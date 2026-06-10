@@ -192,6 +192,8 @@
     document.querySelectorAll('.main-menu-btn').forEach((b) => b.classList.remove('active'));
     const sel = view === 'cotizacion'
       ? '.main-menu-btn[onclick*="openCotizacionView"]'
+      : view === 'catalogo'
+      ? '.main-menu-btn[onclick*="openCatalogoView"]'
       : view === 'cuenta-cobro'
       ? '.main-menu-btn[onclick*="openCuentaCobroView"]'
       : view === 'historial'

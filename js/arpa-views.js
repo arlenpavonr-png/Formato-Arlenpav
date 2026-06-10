@@ -15,6 +15,7 @@
     const labels = {
       formato: 'Formato de Servicio',
       cotizacion: '💰 Cotización',
+      catalogo: '📦 Mi Catálogo',
       'cuenta-cobro': '🧾 Cuenta de Cobro',
       historial: '📋 Historial de Servicios'
     };
@@ -46,6 +47,9 @@
       global.ArpaCuentaCobro?.refreshView?.();
       global.ArpaCuentaCobro?.ensureCcNumero?.();
     }
+    if (view === 'catalogo') {
+      global.ArpaMiCatalogo?.refreshView?.();
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -59,6 +63,10 @@
 
   function openCuentaCobroView(btn) {
     showView('cuenta-cobro', btn);
+  }
+
+  function openCatalogoView(btn) {
+    showView('catalogo', btn);
   }
 
   function openHistorialView(menuBtn) {
@@ -78,11 +86,13 @@
     scrollToTopMenu,
     openCotizacionView,
     openCuentaCobroView,
+    openCatalogoView,
     openHistorialView,
     getCurrentView: () => currentView
   };
   global.scrollToTopMenu = scrollToTopMenu;
   global.openCotizacionView = openCotizacionView;
   global.openCuentaCobroView = openCuentaCobroView;
+  global.openCatalogoView = openCatalogoView;
   global.openHistorialView = openHistorialView;
 })(window);
