@@ -72,6 +72,7 @@
         if (ok) {
           saveCode(code);
           unlockApp();
+          global.ArpaOnboarding?.tryShow?.();
         } else {
           showError(errorEl, 'Código de licencia inválido. Verifique e intente de nuevo.');
           input?.focus();

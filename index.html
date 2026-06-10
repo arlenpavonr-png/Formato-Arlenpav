@@ -1702,6 +1702,134 @@
   @media print {
     .license-gate { display: none !important; }
   }
+
+  /* ── ONBOARDING ── */
+  .onboarding-gate {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    background: #f1f5f9;
+    flex-direction: column;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  html.onboarding-active .onboarding-gate.open { display: flex; }
+  html.onboarding-active .page,
+  html.onboarding-active .main-menu,
+  html.onboarding-active .settings-overlay,
+  html.onboarding-active .catalogo-fab { visibility: hidden !important; }
+  .onboarding-nav {
+    background: #1a2a4a;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 3px solid #c9a84c;
+  }
+  .onboarding-nav img {
+    max-height: 44px;
+    max-width: 180px;
+    object-fit: contain;
+  }
+  .onboarding-body {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px 40px;
+  }
+  .onboarding-card {
+    width: 100%;
+    max-width: 420px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px 22px;
+    box-shadow: 0 8px 32px rgba(26, 42, 74, 0.12);
+    text-align: center;
+  }
+  .onboarding-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a2a4a;
+    margin: 0 0 8px;
+    letter-spacing: 0.02em;
+  }
+  .onboarding-sub {
+    font-size: 14px;
+    color: var(--muted);
+    margin: 0 0 24px;
+    line-height: 1.5;
+  }
+  .onboarding-rubros {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .btn-onboarding-rubro {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #1a2a4a;
+    border-radius: 10px;
+    background: #fff;
+    color: #1a2a4a;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    min-height: 52px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .btn-onboarding-rubro:hover,
+  .btn-onboarding-rubro:active {
+    background: #1a2a4a;
+    color: #fff;
+  }
+  .btn-onboarding-rubro.primary {
+    background: #c9a84c;
+    border-color: #c9a84c;
+    color: #1a2a4a;
+  }
+  .btn-onboarding-rubro.primary:hover,
+  .btn-onboarding-rubro.primary:active {
+    background: #b8963f;
+    border-color: #b8963f;
+    color: #1a2a4a;
+  }
+  #onboarding-demo-modal { z-index: 1200; }
+  #onboarding-demo-modal .settings-modal-header {
+    background: #1a2a4a;
+  }
+  #onboarding-demo-modal .settings-modal-header h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.03em;
+  }
+  .onboarding-demo-text {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.55;
+    margin: 0;
+    text-align: center;
+  }
+  .onboarding-demo-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+  .btn-onboarding-demo-yes {
+    background: #c9a84c !important;
+    color: #1a2a4a !important;
+    font-weight: 700 !important;
+  }
+  .btn-onboarding-demo-skip {
+    background: #1a2a4a !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+  }
 </style>
 <script>
 try {
@@ -1726,6 +1854,39 @@ try {
     </div>
     <p id="license-error" class="license-gate-error" role="alert"></p>
     <button type="button" id="license-activate-btn" class="license-gate-btn">Activar</button>
+  </div>
+</div>
+
+<div id="onboarding-gate" class="onboarding-gate" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
+  <header class="onboarding-nav">
+    <img src="./logo-arpa-suite.png" alt="ARPA Suite">
+  </header>
+  <div class="onboarding-body">
+    <div class="onboarding-card">
+      <h1 id="onboarding-title" class="onboarding-title">Bienvenido a ARPA Suite</h1>
+      <p class="onboarding-sub">¿Cuál es tu rubro principal?</p>
+      <div class="onboarding-rubros">
+        <button type="button" class="btn-onboarding-rubro primary" data-onboarding-rubro="automatizacion">Automatización</button>
+        <button type="button" class="btn-onboarding-rubro" data-onboarding-rubro="aire-acondicionado">Aire Acondicionado</button>
+        <button type="button" class="btn-onboarding-rubro" data-onboarding-rubro="electricidad">Electricidad</button>
+        <button type="button" class="btn-onboarding-rubro" data-onboarding-rubro="otro">Otro</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="settings-overlay" id="onboarding-demo-modal" role="dialog" aria-modal="true" aria-labelledby="onboarding-demo-title">
+  <div class="settings-modal">
+    <div class="settings-modal-header">
+      <h2 id="onboarding-demo-title">Catálogo demo</h2>
+    </div>
+    <div class="settings-modal-body">
+      <p id="onboarding-demo-text" class="onboarding-demo-text">¿Deseas cargar el catálogo demo Accessmatic?</p>
+    </div>
+    <div class="settings-modal-footer onboarding-demo-actions">
+      <button type="button" id="btn-onboarding-demo-skip" class="btn-onboarding-demo-skip">Omitir</button>
+      <button type="button" id="btn-onboarding-demo-yes" class="btn-onboarding-demo-yes">Sí, cargar</button>
+    </div>
   </div>
 </div>
 
@@ -2829,6 +2990,7 @@ if ('serviceWorker' in navigator) {
 <script src="./js/arpa-mi-catalogo.js"></script>
 <script src="./js/arpa-cuenta-cobro.js"></script>
 <script src="./js/arpa-views.js"></script>
+<script src="./js/arpa-onboarding.js"></script>
 <script src="./js/arpa-historial.js"></script>
 <script src="./js/arpa-whatsapp.js"></script>
 <script>
