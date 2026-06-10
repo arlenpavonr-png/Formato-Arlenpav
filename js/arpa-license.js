@@ -4,7 +4,7 @@
 (function (global) {
   const STORAGE_KEY = 'arpa_suite_license_code';
   const LAST_VALIDATION_KEY = 'arpa_last_validation';
-  const API_URL = 'https://script.google.com/macros/s/AKfycbzJvK5-hb4-IWAHvktIpx421C-aEzgRPALjGb9ks-Rl7V5vO0RKHUHrul852gicuI62/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbwpDWX0Wp9xDB14pDPSq3hQOwa82QV3P5FyS4insOPQpsle6uwOksE7OIomiWNe7gyt/exec';
   const VALIDATION_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
   const WHATSAPP_RENEW = '573005683914';
 
@@ -77,74 +77,11 @@
     el.classList.remove('visible');
   }
 
-  function normalizeActivo(value) {
-    return String(value || '')
-      .trim()
-      .toUpperCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
-  }
-
-  function parseExpiryDate(raw) {
-    if (raw == null || raw === '') return null;
-    if (typeof raw === 'number' && raw > 30000) {
-      const excelEpoch = new Date(Date.UTC(1899, 11, 30));
-      return new Date(excelEpoch.getTime() + raw * 86400000);
-    }
-    const s = String(raw).trim();
-    if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
-      return new Date(s.slice(0, 10) + 'T23:59:59');
-    }
-    const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
-    if (dmy) {
-      return new Date(+dmy[3], +dmy[2] - 1, +dmy[1], 23, 59, 59);
-    }
-    const d = new Date(s);
-    return Number.isNaN(d.getTime()) ? null : d;
-  }
-
-  function isExpired(vencimiento) {
-    const exp = parseExpiryDate(vencimiento);
-    if (!exp) return false;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return exp < today;
-  }
-
   function evaluateLicenseResponse(data) {
     if (!data || typeof data !== 'object') {
       return { ok: false, reason: 'invalid_response' };
     }
-
-    const activo = data.activo ?? data.ACTIVO ?? data.Activo;
-    const vencimiento = data.vencimiento ?? data.VENCIMIENTO ?? data.fecha_vencimiento
-      ?? data.fechaVencimiento ?? data.vence ?? data.VENCE;
-
-    if (activo != null && activo !== '') {
-      if (normalizeActivo(activo) !== 'SI') {
-        return { ok: false, reason: 'inactive' };
-      }
-    }
-
-    if (vencimiento != null && vencimiento !== '') {
-      if (isExpired(vencimiento)) {
-        return { ok: false, reason: 'expired' };
-      }
-    }
-
-    if (data.valido === false) {
-      return { ok: false, reason: 'invalid' };
-    }
-
-    if (data.valido === true) {
-      return { ok: true };
-    }
-
-    if (activo != null && normalizeActivo(activo) === 'SI') {
-      return { ok: true };
-    }
-
-    return { ok: false, reason: 'invalid' };
+    return { ok: data.valido === true, reason: data.valido === true ? 'ok' : 'invalid' };
   }
 
   async function fetchLicenseStatus(code) {
@@ -217,9 +154,7 @@
           showActivateUI();
           global.ArpaOnboarding?.tryShow?.();
         } else {
-          showError(errorEl, 'Código de licencia inválido o vencido. Verifique e intente de nuevo.');
-          input?.focus();
-          input?.select();
+          handleLicenseExpired();
         }
       } catch (e) {
         showError(errorEl, 'No se pudo verificar la licencia. Compruebe su conexión e intente de nuevo.');
