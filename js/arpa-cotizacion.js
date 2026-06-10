@@ -278,9 +278,14 @@
       'canvas-cot-elaborado'
     ]);
 
+    const tituloRespaldo = document.title;
+    const numCot = document.getElementById('numero-cot')?.value.trim() || 'Cotización';
+    document.title = numCot;
+
     window.print();
 
     setTimeout(() => {
+      document.title = tituloRespaldo;
       document.body.classList.remove('is-printing');
       global.ArpaSignature?.restoreAfterPrint?.();
       respaldos.forEach(({ el, parent }) => {

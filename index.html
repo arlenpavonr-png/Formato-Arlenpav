@@ -20,7 +20,7 @@
     --blue: #1a3a6e;
     --accent: #2563eb;
     --gold: #d97706;
-    --bg: #f5f6fa;
+    --bg: #ffffff;
     --card: #ffffff;
     --border: #d1d5db;
     --text: #1e293b;
@@ -32,9 +32,13 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  html {
+    background: #ffffff;
+  }
+
   body {
     font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
+    background: #ffffff;
     color: var(--text);
     font-size: 14px;
     min-height: 100vh;
@@ -109,7 +113,7 @@
   }
 
   /* ── GOLD BAR ── */
-  .gold-bar { height: 4px; background: linear-gradient(90deg, var(--gold), #f59e0b, var(--gold)); }
+  .gold-bar { height: 4px; background: var(--gold); }
 
   /* ── BODY ── */
   .body { padding: 20px 24px; display: flex; flex-direction: column; gap: 18px; }
@@ -1026,7 +1030,11 @@
 
   /* ── PRINT ── */
   @media print {
-    body { background: white; padding: 0; padding-bottom: 0; margin-bottom: 28mm; }
+    html, body { background: #ffffff !important; }
+    body { padding: 0; padding-bottom: 0; margin-bottom: 28mm; }
+    body.is-printing #view-formato,
+    body.is-printing #view-historial { display: none !important; }
+    .suite-footer-global-link::after { content: none !important; }
     .page { box-shadow: none; border-radius: 0; }
     .photo-box input[type=file] { display: none; }
     button { display: none !important; }
@@ -1369,7 +1377,7 @@
       </div>
     </div>
 
-    <div class="verification-seal" style="margin-top: 20px; padding: 14px; border: 1.5px solid var(--border); border-radius: 10px; background: linear-gradient(135deg, var(--light), #ffffff);">
+    <div class="verification-seal" style="margin-top: 20px; padding: 14px; border: 1.5px solid var(--border); border-radius: 10px; background: #ffffff;">
       <p style="font-size: 10.5px; color: var(--muted); line-height: 1.4; margin: 0;">
         Documento emitido por <strong id="brand-verification-company">Su Empresa</strong> a través de <strong>Arpa Suite</strong>.
       </p>
