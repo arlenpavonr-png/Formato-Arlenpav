@@ -2,6 +2,37 @@
  * Módulo: Cotización, ítems dinámicos y PDF
  */
 (function (global) {
+  var COT_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyV0-C_XACD5suCh9gm1JkiKvrI3mket-z5GSFGFc6Y87HZaqFyCtVz7jmtQMayNEUeJg/exec';
+
+  function guardarEnSheets(numCot, cliente, telefono, total) {
+    return new Promise(function (resolve, reject) {
+      var cb = '_arpaCotSheet_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+      var script = document.createElement('script');
+      var settled = false;
+
+      function finish(fn, val) {
+        if (settled) return;
+        settled = true;
+        try { delete global[cb]; } catch (e) { global[cb] = undefined; }
+        script.remove();
+        fn(val);
+      }
+
+      global[cb] = function (data) { finish(resolve, data); };
+      script.onerror = function () { finish(reject, new Error('network')); };
+
+      script.src = COT_SHEETS_URL
+        + '?action=save'
+        + '&numCot=' + encodeURIComponent(String(numCot || ''))
+        + '&cliente=' + encodeURIComponent(String(cliente || ''))
+        + '&telefono=' + encodeURIComponent(String(telefono || ''))
+        + '&total=' + encodeURIComponent(String(total || ''))
+        + '&callback=' + cb;
+
+      (document.body || document.head).appendChild(script);
+    });
+  }
+
   function formatoPesos(n) {
     return global.ArpaPricing?.formatoPesos(n) || ('$ ' + (Number(n) || 0).toLocaleString('es-CO'));
   }
@@ -284,6 +315,14 @@
     document.title = numCot;
 
     window.print();
+
+    var numCotSheets = document.getElementById('numero-cot')?.value?.trim() || '';
+    var clienteSheets = document.getElementById('cot-nombre')?.value?.trim() || '';
+    var telefonoEl = document.getElementById('cot-telefono') || document.getElementById('cot-tel');
+    var telefonoSheets = telefonoEl?.value?.trim() || '';
+    var totalEl = document.getElementById('cot-total') || document.getElementById('total-val-cot');
+    var totalSheets = (totalEl?.value ?? totalEl?.textContent ?? '').trim();
+    guardarEnSheets(numCotSheets, clienteSheets, telefonoSheets, totalSheets);
 
     setTimeout(() => {
       document.title = tituloRespaldo;
