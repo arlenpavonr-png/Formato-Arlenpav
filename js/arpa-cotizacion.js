@@ -316,11 +316,11 @@
 
     window.print();
 
-    var numCotSheets = document.getElementById('numero-cot')?.value?.trim() || '';
-    var clienteSheets = document.getElementById('cot-nombre')?.value?.trim() || '';
-    var telefonoSheets = document.getElementById('cot-tel')?.value?.trim() || '';
-    var totalSheets = document.getElementById('total-val-cot')?.textContent?.trim() || '';
-    guardarEnSheets(numCotSheets, clienteSheets, telefonoSheets, totalSheets);
+    var _numCot = document.getElementById('numero-cot')?.value?.trim() || '';
+    var _cliente = document.querySelector('#cot-nombre, #cot-cliente, input[name*=nombre]')?.value?.trim() || '';
+    var _telefono = document.querySelector('#cot-tel, #cot-telefono, input[name*=tel]')?.value?.trim() || '';
+    var _total = document.querySelector('#total-val-cot, #cot-total, .cot-total')?.textContent?.trim() || '';
+    guardarEnSheets(_numCot, _cliente, _telefono, _total);
 
     setTimeout(() => {
       document.title = tituloRespaldo;
