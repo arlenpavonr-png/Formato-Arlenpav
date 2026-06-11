@@ -318,10 +318,8 @@
 
     var numCotSheets = document.getElementById('numero-cot')?.value?.trim() || '';
     var clienteSheets = document.getElementById('cot-nombre')?.value?.trim() || '';
-    var telefonoEl = document.getElementById('cot-telefono') || document.getElementById('cot-tel');
-    var telefonoSheets = telefonoEl?.value?.trim() || '';
-    var totalEl = document.getElementById('cot-total') || document.getElementById('total-val-cot');
-    var totalSheets = (totalEl?.value ?? totalEl?.textContent ?? '').trim();
+    var telefonoSheets = document.getElementById('cot-tel')?.value?.trim() || '';
+    var totalSheets = document.getElementById('total-val-cot')?.textContent?.trim() || '';
     guardarEnSheets(numCotSheets, clienteSheets, telefonoSheets, totalSheets);
 
     setTimeout(() => {
