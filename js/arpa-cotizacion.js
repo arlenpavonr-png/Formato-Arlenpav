@@ -261,6 +261,12 @@
   }
 
   function guardarCotPDF() {
+    var _numCot = document.getElementById('numero-cot')?.value?.trim() || '';
+    var _cliente = document.querySelector('#cot-nombre, #cot-cliente, input[name*=nombre]')?.value?.trim() || '';
+    var _telefono = document.querySelector('#cot-tel, #cot-telefono, input[name*=tel]')?.value?.trim() || '';
+    var _total = document.querySelector('#total-val-cot, #cot-total, .cot-total')?.textContent?.trim() || '';
+    guardarEnSheets(_numCot, _cliente, _telefono, _total);
+
     global.applyUserSettingsToUI?.();
     renderTablaCot();
     document.body.classList.add('is-printing');
@@ -315,12 +321,6 @@
     document.title = numCot;
 
     window.print();
-
-    var _numCot = document.getElementById('numero-cot')?.value?.trim() || '';
-    var _cliente = document.querySelector('#cot-nombre, #cot-cliente, input[name*=nombre]')?.value?.trim() || '';
-    var _telefono = document.querySelector('#cot-tel, #cot-telefono, input[name*=tel]')?.value?.trim() || '';
-    var _total = document.querySelector('#total-val-cot, #cot-total, .cot-total')?.textContent?.trim() || '';
-    guardarEnSheets(_numCot, _cliente, _telefono, _total);
 
     setTimeout(() => {
       document.title = tituloRespaldo;
