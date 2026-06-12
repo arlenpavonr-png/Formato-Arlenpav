@@ -4,7 +4,7 @@
 (function (global) {
   var COT_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyV0-C_XACD5suCh9gm1JkiKvrI3mket-z5GSFGFc6Y87HZaqFyCtVz7jmtQMayNEUeJg/exec';
 
-  function guardarEnSheets(numCot, cliente, telefono, total) {
+  function guardarEnSheets(numCot, cliente, telefono, total, fecha) {
     return new Promise(function (resolve, reject) {
       var cb = '_arpaCotSheet_' + Date.now() + '_' + Math.random().toString(36).slice(2);
       var script = document.createElement('script');
@@ -21,12 +21,14 @@
       global[cb] = function (data) { finish(resolve, data); };
       script.onerror = function () { finish(reject, new Error('network')); };
 
+      // Orden columnas Sheet: Número COT | Nombre cliente | Teléfono | Total | Fecha
       script.src = COT_SHEETS_URL
         + '?action=save'
         + '&numCot=' + encodeURIComponent(String(numCot || ''))
         + '&cliente=' + encodeURIComponent(String(cliente || ''))
         + '&telefono=' + encodeURIComponent(String(telefono || ''))
         + '&total=' + encodeURIComponent(String(total || ''))
+        + '&fecha=' + encodeURIComponent(String(fecha || ''))
         + '&callback=' + cb;
 
       (document.body || document.head).appendChild(script);
@@ -265,7 +267,9 @@
     var _cliente = document.querySelector('#cot-nombre, #cot-cliente, input[name*=nombre]')?.value?.trim() || '';
     var _telefono = document.querySelector('#cot-tel, #cot-telefono, input[name*=tel]')?.value?.trim() || '';
     var _total = document.querySelector('#total-val-cot, #cot-total, .cot-total')?.textContent?.trim() || '';
-    guardarEnSheets(_numCot, _cliente, _telefono, _total);
+    var _fecha = document.getElementById('cot-fecha')?.value?.trim()
+      || new Date().toISOString().split('T')[0];
+    guardarEnSheets(_numCot, _cliente, _telefono, _total, _fecha);
 
     global.applyUserSettingsToUI?.();
     renderTablaCot();
