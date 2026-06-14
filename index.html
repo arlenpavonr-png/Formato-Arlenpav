@@ -386,6 +386,54 @@
   }
   .firma-name { border: none; border-bottom: 1px solid var(--border); font-size: 12px; font-family: 'DM Sans', sans-serif; background: transparent; outline: none; padding: 4px 2px; color: var(--text); width: 100%; }
 
+  /* ── VIDEO ENTREGA + QR ── */
+  .formato-video-qr-print {
+    display: none;
+    margin-top: 20px;
+    padding: 16px;
+    border: 1.5px solid #1a2a4a;
+    border-radius: 10px;
+    background: #ffffff;
+    text-align: center;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .formato-video-qr-print.formato-video-qr-visible {
+    display: block;
+  }
+  .formato-video-qr-title {
+    color: #1a2a4a;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin: 0 0 12px;
+  }
+  .formato-video-qr-canvas-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 0 auto 10px;
+  }
+  #formato-video-qr-canvas {
+    display: block;
+    max-width: 140px;
+    height: auto;
+  }
+  .formato-video-qr-hint {
+    color: #1a2a4a;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.45;
+    margin: 0 0 8px;
+  }
+  .formato-video-qr-url {
+    font-size: 9px;
+    color: #64748b;
+    word-break: break-all;
+    line-height: 1.35;
+    margin: 0;
+  }
+
   /* ── FOOTER SUITE ── */
   .suite-footer {
     background: var(--navy);
@@ -1520,9 +1568,18 @@
   @media print {
     html, body { background-color: #ffffff !important; background-image: none !important; }
     body { padding: 0; padding-bottom: 0; margin-bottom: 28mm; }
-    body.is-printing #view-formato,
     body.is-printing #view-historial { display: none !important; }
     body.is-printing #view-catalogo { display: none !important; }
+    body.is-printing:not(.is-printing-formato) #view-formato { display: none !important; }
+    body.is-printing-formato #view-formato { display: block !important; }
+    body.is-printing-formato #view-cotizacion,
+    body.is-printing-formato #view-cuenta-cobro { display: none !important; }
+    body.is-printing-formato.formato-has-video-qr #formato-video-section { display: none !important; }
+    body.is-printing-formato .formato-video-qr-print.formato-video-qr-visible {
+      display: block !important;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
     .suite-footer-global-link::after { content: none !important; }
     .page { box-shadow: none; border-radius: 0; }
     .photo-box input[type=file] { display: none; }
@@ -2194,6 +2251,15 @@ try {
       </div>
     </div>
 
+    <!-- VIDEO DE ENTREGA -->
+    <div class="section" id="formato-video-section">
+      <div class="section-title"><span class="dot"></span>Video de Entrega</div>
+      <div class="field span2">
+        <label for="formato-video-url">Enlace de Video de Entrega (Google Drive/YouTube) - Opcional</label>
+        <input type="url" id="formato-video-url" placeholder="https://drive.google.com/... o https://youtube.com/..." autocomplete="off" inputmode="url">
+      </div>
+    </div>
+
     <!-- 10. FIRMAS -->
     <div class="section">
       <div class="section-title"><span class="dot"></span>Aceptación y Firmas</div>
@@ -2216,6 +2282,14 @@ try {
           <input class="firma-name" id="campo-tecnico-firma" type="text" placeholder="Nombre del técnico">
           <input class="firma-name" type="text" placeholder="ID técnico">
         </div>
+      </div>
+      <div id="formato-video-qr-print" class="formato-video-qr-print" hidden aria-hidden="true">
+        <p class="formato-video-qr-title">Video de entrega del equipo</p>
+        <div class="formato-video-qr-canvas-wrap">
+          <canvas id="formato-video-qr-canvas" width="140" height="140" aria-label="Código QR video de entrega"></canvas>
+        </div>
+        <p class="formato-video-qr-hint">Escanee el código para ver el video de entrega del equipo</p>
+        <p class="formato-video-qr-url" id="formato-video-qr-url-text"></p>
       </div>
     </div>
 
@@ -2854,10 +2928,109 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+// ── FORMATO BORRADOR (localStorage) ───────────────────────────────────────────
+const FORMATO_DRAFT_KEY = 'arpa_formato_borrador';
+let formatoDraftTimer;
+
+function collectFormatoDraft() {
+  const data = {};
+  document.querySelectorAll('#view-formato [id]').forEach((el) => {
+    if (el.type === 'file') return;
+    if (el.type === 'checkbox') data[el.id] = el.checked;
+    else if (el.type === 'radio') return;
+    else if ('value' in el) data[el.id] = el.value;
+  });
+  const tipo = document.querySelector('#view-formato input[name="tipo"]:checked');
+  if (tipo) data._tipo = tipo.value;
+  return data;
+}
+
+function applyFormatoDraft() {
+  try {
+    const data = JSON.parse(localStorage.getItem(FORMATO_DRAFT_KEY) || '{}');
+    Object.entries(data).forEach(([key, val]) => {
+      if (key === '_tipo') {
+        const radio = document.querySelector('#view-formato input[name="tipo"][value="' + val + '"]');
+        if (radio) radio.checked = true;
+        return;
+      }
+      const el = document.getElementById(key);
+      if (!el || el.type === 'file') return;
+      if (el.type === 'checkbox') el.checked = !!val;
+      else el.value = val == null ? '' : val;
+    });
+  } catch (e) {}
+}
+
+function scheduleFormatoDraftSave() {
+  clearTimeout(formatoDraftTimer);
+  formatoDraftTimer = setTimeout(function () {
+    try {
+      localStorage.setItem(FORMATO_DRAFT_KEY, JSON.stringify(collectFormatoDraft()));
+    } catch (e) {}
+  }, 400);
+}
+
+function initFormatoDraftPersistence() {
+  applyFormatoDraft();
+  const root = document.getElementById('view-formato');
+  if (!root) return;
+  root.addEventListener('input', scheduleFormatoDraftSave);
+  root.addEventListener('change', scheduleFormatoDraftSave);
+}
+
+function isValidVideoEntregaUrl(url) {
+  if (!url || !String(url).trim()) return false;
+  try {
+    const u = new URL(String(url).trim());
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch (e) {
+    return false;
+  }
+}
+
+function prepareVideoQrForPrint() {
+  const urlInput = document.getElementById('formato-video-url');
+  const url = urlInput ? urlInput.value.trim() : '';
+  const block = document.getElementById('formato-video-qr-print');
+  const canvas = document.getElementById('formato-video-qr-canvas');
+  const urlText = document.getElementById('formato-video-qr-url-text');
+
+  if (!isValidVideoEntregaUrl(url) || !block || !canvas) {
+    return null;
+  }
+
+  if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
+    QRCode.toCanvas(canvas, url, {
+      width: 140,
+      margin: 1,
+      color: { dark: '#1a2a4a', light: '#ffffff' }
+    }, function () {});
+  }
+
+  if (urlText) urlText.textContent = url;
+  block.hidden = false;
+  block.setAttribute('aria-hidden', 'false');
+  block.classList.add('formato-video-qr-visible');
+  return block;
+}
+
+function restoreVideoQrAfterPrint(block) {
+  if (!block) return;
+  block.hidden = true;
+  block.setAttribute('aria-hidden', 'true');
+  block.classList.remove('formato-video-qr-visible');
+  const canvas = document.getElementById('formato-video-qr-canvas');
+  if (canvas && canvas.getContext) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+}
+
 // ── GUARDAR PDF ─────────────────────────────────────────────────────────────
 function guardarPDF() {
   applyUserSettingsToUI();
-  document.body.classList.add('is-printing');
+  document.body.classList.add('is-printing', 'is-printing-formato');
 
   const viewRoot = document.getElementById('view-formato');
   const elementos = viewRoot.querySelectorAll('input:not([type=file]):not([type=radio]):not([type=checkbox]), select, textarea');
@@ -2901,11 +3074,15 @@ function guardarPDF() {
     'canvas-firma-tecnico'
   ]);
 
+  const qrBlock = prepareVideoQrForPrint();
+  if (qrBlock) document.body.classList.add('formato-has-video-qr');
+
   window.print();
 
   // Restaura todo después de imprimir
   setTimeout(() => {
-    document.body.classList.remove('is-printing');
+    document.body.classList.remove('is-printing', 'is-printing-formato', 'formato-has-video-qr');
+    restoreVideoQrAfterPrint(qrBlock);
     window.ArpaSignature?.restoreAfterPrint?.();
     respaldos.forEach(({ el, parent, next }) => {
       const span = parent.querySelector('.pdf-valor');
@@ -2916,6 +3093,7 @@ function guardarPDF() {
       if (lbl) lbl.style.fontWeight = '';
     });
     if (btnPDF) btnPDF.parentElement.style.display = '';
+    scheduleFormatoDraftSave();
   }, 1000);
 }
 function getUltimoNumero() {
@@ -2944,6 +3122,7 @@ function nuevoNumero() {
 
 // Al cargar, mostrar el número actual (sin incrementar) o sugerir el siguiente
 window.addEventListener('DOMContentLoaded', () => {
+  initFormatoDraftPersistence();
   const ultimo = getUltimoNumero();
   const campo = document.getElementById('numero-formato');
   const fechaFormato = document.getElementById('formato-fecha');
@@ -3166,6 +3345,7 @@ if ('serviceWorker' in navigator) {
 })();
 </script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" crossorigin="anonymous"></script>
 <script src="./js/arpa-brand.js"></script>
