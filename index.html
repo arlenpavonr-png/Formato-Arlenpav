@@ -20,6 +20,7 @@
     --blue: #1a3a6e;
     --accent: #2563eb;
     --gold: #d97706;
+    --shell: #f4f6f9;
     --bg: #ffffff;
     --card: #ffffff;
     --border: #d1d5db;
@@ -33,12 +34,14 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   html {
-    background: #ffffff;
+    background-color: var(--shell);
+    background-image: none;
   }
 
   body {
     font-family: 'DM Sans', sans-serif;
-    background: #ffffff;
+    background-color: var(--shell);
+    background-image: none;
     color: var(--text);
     font-size: 14px;
     min-height: 100vh;
@@ -49,7 +52,8 @@
   .page {
     max-width: 760px;
     margin: 0 auto;
-    background: var(--card);
+    background-color: var(--card);
+    background-image: none;
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 4px 24px rgba(0,0,0,.10);
@@ -1100,13 +1104,18 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(15,32,68,.55);
+    background: rgba(0, 0, 0, 0.5);
+    background-image: none;
     z-index: 1000;
     align-items: center;
     justify-content: center;
     padding: 16px;
   }
   .settings-overlay.open { display: flex; }
+  .onboarding-step-modal {
+    background: rgba(0, 0, 0, 0.5);
+    background-image: none;
+  }
   .settings-modal {
     background: var(--card);
     border-radius: 14px;
@@ -1247,6 +1256,10 @@
 
   /* ── VISTAS SUITE ── */
   .suite-view[hidden] { display: none !important; }
+  .suite-view {
+    background-color: var(--card);
+    background-image: none;
+  }
 
   /* ── COTIZACIÓN ── */
   .buscador-wrap-cot {
@@ -1505,7 +1518,7 @@
 
   /* ── PRINT ── */
   @media print {
-    html, body { background: #ffffff !important; }
+    html, body { background-color: #ffffff !important; background-image: none !important; }
     body { padding: 0; padding-bottom: 0; margin-bottom: 28mm; }
     body.is-printing #view-formato,
     body.is-printing #view-historial { display: none !important; }
@@ -2358,6 +2371,7 @@ try {
         <div class="catalogo-toolbar-row">
           <input type="search" id="catalogo-buscar" placeholder="🔍 Buscar por nombre o referencia…" autocomplete="off" inputmode="search">
           <button type="button" class="btn-catalogo-import" id="btn-catalogo-import">📥 Importar Excel/CSV</button>
+          <button type="button" class="btn-catalogo-import" onclick="precargarCatalogoBFTNAS()">📦 Cargar Catálogo BFT + NAS (333 productos)</button>
         </div>
         <input type="file" id="catalogo-import-file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden>
         <span id="catalogo-count" class="catalogo-count"></span>
@@ -3159,6 +3173,7 @@ if ('serviceWorker' in navigator) {
 <script src="./js/arpa-cobros.js"></script>
 <script src="./js/arpa-signature.js"></script>
 <script src="./js/arpa-cotizacion.js"></script>
+<script src="./js/catalogo-bft-nas.js"></script>
 <script src="./js/arpa-mi-catalogo.js"></script>
 <script src="./js/arpa-cuenta-cobro.js"></script>
 <script src="./js/arpa-views.js"></script>
