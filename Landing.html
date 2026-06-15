@@ -325,6 +325,10 @@ nav {
 .pricing-cta.standard:hover { border-color:var(--white);background:rgba(255,255,255,0.02); }
 .pricing-cta.gold-btn { background:linear-gradient(135deg,var(--gold),var(--gold2));color:#07090F;box-shadow:0 8px 28px rgba(201,168,76,0.25); }
 .pricing-cta.gold-btn:hover{ transform:translateY(-2px);box-shadow:0 12px 36px rgba(201,168,76,0.35); }
+.pricing-cop { font-size:13px;color:var(--gray);font-weight:600;margin-bottom:4px;letter-spacing:0.3px; }
+.pricing-usd { font-size:16px;color:#c9a84c;font-weight:600;margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border2); }
+.pricing-footnote { font-size:11.5px;color:var(--gray);line-height:1.55;margin-bottom:24px;padding:12px 14px;background:rgba(26,42,74,0.55);border-radius:10px;border:1px solid rgba(201,168,76,0.12); }
+.pricing-card.featured { border:2px solid #c9a84c;background:linear-gradient(180deg,rgba(26,42,74,0.35) 0%,var(--bg-card) 55%); }
 
 /* FOOTER */
 footer { padding:64px 0 40px;border-top:1px solid var(--border2); background: #05070a; }
@@ -544,48 +548,47 @@ footer { padding:64px 0 40px;border-top:1px solid var(--border2); background: #0
 <section class="pricing-section" id="precio">
   <div class="wrap">
     <div class="pricing-header">
-      <div class="sec-label">Modelos de Inversi├│n ├Ünica</div>
-      <h2 class="sec-title">Paga una sola vez. ├Üsalo para siempre.</h2>
-      <p class="sec-sub">Lib├®rate de las rentas mensuales abusivas de los softwares tradicionales. Elige el plan perfecto para ti.</p>
+      <h2 class="sec-title">Elige tu plan — pago único, sin sorpresas</h2>
     </div>
     <div class="pricing-grid">
-      
+
       <div class="pricing-card">
-        <div class="pricing-type" style="color:var(--gray);">Especialistas y Consultores</div>
-        <div class="pricing-name">Plan Independiente</div>
-        <p class="pricing-tagline">El esquema ideal para el t├®cnico o ingeniero independiente que quiere organizar su administraci├│n y proyectar una imagen de alto nivel.</p>
-        <div class="pricing-amount" style="color:var(--white);">$39</div>
-        <div class="pricing-period">Licencia de pago ├║nico ┬À Sin costos mensuales ocultos</div>
+        <div class="pricing-type" style="color:var(--gray);">Plan 1</div>
+        <div class="pricing-name">Técnico Independiente</div>
+        <p class="pricing-tagline">Para el técnico que trabaja solo</p>
+        <div class="pricing-amount" style="color:var(--white);">$350.000</div>
+        <div class="pricing-cop">COP · pago único</div>
+        <div class="pricing-usd">~$83 USD</div>
         <ul class="pricing-list">
-          <li>Licencia autorizada para <strong>1 dispositivo activo</strong></li>
-          <li>Archivo Maestro HTML optimizado de alta velocidad</li>
-          <li>M├│dulos completos: Ofertas Comerciales, Actas de Entrega, Prefacturaci├│n y Reportes de Campo</li>
-          <li>Acceso total a la Base Maestra de Suministros local</li>
-          <li>Gu├¡a paso a paso para desplegar en tu celular en 5 minutos</li>
-          <li>Actualizaciones libres de n├║cleo para toda la vida</li>
+          <li>1 dispositivo</li>
+          <li>Todos los módulos</li>
+          <li>PDFs con tu marca</li>
+          <li>Soporte 12 meses incluido</li>
         </ul>
-        <a href="https://wa.me/573151831998?text=Hola%2C%20me%20interesa%20el%20Plan%20Independiente%20de%20ARPA%20Suite%20(%2439%20USD).%20%C2%BFc%C3%B3mo%20adquiero%3F" target="_blank" rel="noopener noreferrer" class="pricing-cta standard">
-          Adquirir Plan Independiente ($39 USD)
+        <p class="pricing-footnote">Mantenimiento anual opcional después del primer año: $59.000 COP / $14 USD</p>
+        <a href="https://wa.me/573151831998?text=Hola%2C%20quiero%20el%20plan%20T%C3%A9cnico%20Independiente%20de%20ARPA%20Suite" target="_blank" rel="noopener noreferrer" class="pricing-cta standard">
+          Quiero este plan
         </a>
       </div>
 
       <div class="pricing-card featured">
-        <div class="pricing-best">­ƒöÑ LA OPCI├ôN M├üS RENTABLE</div>
-        <div class="pricing-type" style="color:var(--gold);">Licencia para Equipos</div>
-        <div class="pricing-name">Plan Corporativo PYME</div>
-        <p class="pricing-tagline">Para administradores, contratistas y empresas de servicios que coordinan cuadrillas y exigen un control milim├®trico de la facturaci├│n en la calle.</p>
-        <div class="pricing-amount premium">$69</div>
-        <div class="pricing-period">Inversi├│n ├║nica corporativa ┬À Licencia Multidispositivo</div>
+        <div class="pricing-best">MÁS POPULAR</div>
+        <div class="pricing-type" style="color:#c9a84c;">Plan 2</div>
+        <div class="pricing-name">PYME</div>
+        <p class="pricing-tagline">Para empresas con hasta 3 técnicos en campo</p>
+        <div class="pricing-amount premium">$800.000</div>
+        <div class="pricing-cop">COP · pago único</div>
+        <div class="pricing-usd">~$190 USD</div>
         <ul class="pricing-list">
-          <li><strong>Licencia Libre Multidispositivo</strong> (Para todos tus t├®cnicos actuales y futuros)</li>
-          <li>Gu├¡a t├®cnica de Personalizaci├│n con <strong>tu logotipo y colores corporativos</strong></li>
-          <li>Bot├│n de Respaldo Local de seguridad para celulares de gama baja</li>
-          <li>Estructura optimizada para env├¡o masivo de reportes ejecutivos por WhatsApp</li>
-          <li>Acceso al canal de soporte t├®cnico preferencial corporativo</li>
-          <li><strong>Garant├¡a de Cero Costos Mensuales</strong> de por vida</li>
+          <li>3 dispositivos</li>
+          <li>Todos los módulos</li>
+          <li>PDFs con tu marca</li>
+          <li>Soporte 12 meses incluido</li>
+          <li>Dispositivos adicionales a $200.000 c/u</li>
         </ul>
-        <a href="https://wa.me/573151831998?text=Hola%2C%20me%20interesa%20el%20Plan%20Corporativo%20PYME%20de%20ARPA%20Suite%20(%2469%20USD).%20%C2%BFc%C3%B3mo%20adquiero%3F" target="_blank" rel="noopener noreferrer" class="pricing-cta gold-btn">
-          Adquirir Plan Corporativo PYME ($69 USD)
+        <p class="pricing-footnote">Mantenimiento anual opcional después del primer año: $59.000 COP / $14 USD</p>
+        <a href="https://wa.me/573151831998?text=Hola%2C%20quiero%20el%20plan%20PYME%20de%20ARPA%20Suite" target="_blank" rel="noopener noreferrer" class="pricing-cta gold-btn">
+          Quiero este plan
         </a>
       </div>
 
