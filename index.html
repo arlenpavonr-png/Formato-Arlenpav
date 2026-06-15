@@ -1398,7 +1398,7 @@
   }
   .tabla-productos {
     width: 100%;
-    min-width: 520px;
+    min-width: 640px;
     border-collapse: collapse;
     border: 1.5px solid var(--border);
     border-radius: 8px;
@@ -1426,10 +1426,18 @@
     vertical-align: middle;
     word-wrap: break-word;
   }
-  .td-cod { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); width: 12%; }
-  .td-desc { width: 38%; }
-  .td-cant { width: 10%; text-align: center; }
-  .td-precio, .td-total { width: 18%; text-align: right; font-family: 'DM Mono', monospace; font-weight: 600; }
+  .td-cod { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); width: 10%; }
+  .td-desc { width: 28%; }
+  .td-cant { width: 8%; text-align: center; }
+  .td-precio, .td-total {
+    width: 22%;
+    min-width: 7.25rem;
+    text-align: right;
+    font-family: 'DM Mono', monospace;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: visible;
+  }
   .td-total { color: var(--green); font-weight: 700; }
   .td-action { width: 4%; text-align: center; }
   .cot-cant-input {
@@ -1445,7 +1453,8 @@
   }
   .cot-pvp-input {
     width: 100%;
-    max-width: 120px;
+    min-width: 6.5rem;
+    max-width: none;
     border: 1.5px solid var(--border);
     border-radius: 5px;
     padding: 4px 8px;
@@ -2384,6 +2393,14 @@ try {
       <div class="section-title"><span class="dot"></span><span data-i18n="cot.section.productos">Productos y Servicios Cotizados</span></div>
       <div class="tabla-cot-wrap">
         <table class="tabla-productos">
+          <colgroup>
+            <col style="width:10%">
+            <col style="width:28%">
+            <col style="width:8%">
+            <col style="width:22%">
+            <col style="width:22%">
+            <col style="width:10%">
+          </colgroup>
           <thead>
             <tr>
               <th data-i18n="cot.table.codigo">Código</th>
