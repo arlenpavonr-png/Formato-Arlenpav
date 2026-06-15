@@ -115,6 +115,33 @@
     border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.1);
     color: white; font-size: 12px; font-weight: 600; text-align: center;
   }
+  .lang-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 8px;
+    padding: 3px 7px;
+    border-radius: 6px;
+    border: 1px solid rgba(201, 168, 76, 0.35);
+    background: rgba(26, 42, 74, 0.55);
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .lang-icon { color: #a8c0e8; font-size: 12px; line-height: 1; }
+  .lang-btn {
+    background: transparent;
+    border: none;
+    color: #7090b8;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 2px 4px;
+    letter-spacing: 0.5px;
+  }
+  .lang-btn.active { color: #c9a84c; }
+  .lang-btn:hover:not(.active) { color: #a8c0e8; }
+  .lang-sep { color: #c9a84c; opacity: 0.55; user-select: none; }
 
   /* ── GOLD BAR ── */
   .gold-bar { height: 4px; background: var(--gold); }
@@ -1938,15 +1965,15 @@ try {
     <div class="license-gate-logo-wrap">
       <img src="./logo-arpa-suite.png" alt="ARPA Suite">
     </div>
-    <h1 id="license-gate-title" class="license-gate-title">ARPA Suite</h1>
+    <h1 id="license-gate-title" class="license-gate-title" data-i18n="license_gate.title">ARPA Suite</h1>
     <div id="license-gate-activate">
-      <p id="license-gate-sub" class="license-gate-sub">Ingrese su código de licencia para activar la plataforma.</p>
+      <p id="license-gate-sub" class="license-gate-sub" data-i18n="license_gate.subtitle">Ingrese su código de licencia para activar la plataforma.</p>
       <div class="license-gate-field">
-        <label for="license-code-input">Código de licencia</label>
-        <input type="text" id="license-code-input" autocomplete="off" spellcheck="false" placeholder="Su código de licencia" inputmode="text">
+        <label for="license-code-input" data-i18n="license_gate.label_code">Código de licencia</label>
+        <input type="text" id="license-code-input" autocomplete="off" spellcheck="false" data-i18n-placeholder="license_gate.placeholder_code" placeholder="Su código de licencia" inputmode="text">
       </div>
       <p id="license-error" class="license-gate-error" role="alert"></p>
-      <button type="button" id="license-activate-btn" class="license-gate-btn">Verificar</button>
+      <button type="button" id="license-activate-btn" class="license-gate-btn" data-i18n="license_gate.btn_verify">Verificar</button>
     </div>
   </div>
 </div>
@@ -1957,13 +1984,13 @@ try {
   </header>
   <div class="onboarding-body">
     <div class="onboarding-card">
-      <h1 id="onboarding-title" class="onboarding-title">Bienvenido a ARPA Suite</h1>
-      <p class="onboarding-sub">¿Cuál es tu rubro principal?</p>
+      <h1 id="onboarding-title" class="onboarding-title" data-i18n="onboarding.title">Bienvenido a ARPA Suite</h1>
+      <p class="onboarding-sub" data-i18n="onboarding.subtitle_rubro">¿Cuál es tu rubro principal?</p>
       <div class="onboarding-rubros">
-        <button type="button" class="btn-onboarding-rubro primary" id="btn-onboarding-rubro-automatizacion" data-onboarding-rubro="automatizacion">Automatización</button>
-        <button type="button" class="btn-onboarding-rubro" id="btn-onboarding-rubro-aire" data-onboarding-rubro="aire-acondicionado">Aire Acondicionado</button>
-        <button type="button" class="btn-onboarding-rubro" id="btn-onboarding-rubro-electricidad" data-onboarding-rubro="electricidad">Electricidad</button>
-        <button type="button" class="btn-onboarding-rubro" id="btn-onboarding-rubro-otro" data-onboarding-rubro="otro">Otro</button>
+        <button type="button" class="btn-onboarding-rubro primary" id="btn-onboarding-rubro-automatizacion" data-onboarding-rubro="automatizacion" data-i18n="onboarding.rubro.automatizacion">Automatización</button>
+        <button type="button" class="btn-onboarding-rubro" id="btn-onboarding-rubro-aire" data-onboarding-rubro="aire-acondicionado" data-i18n="onboarding.rubro.aire_acondicionado">Aire Acondicionado</button>
+        <button type="button" class="btn-onboarding-rubro" id="btn-onboarding-rubro-electricidad" data-onboarding-rubro="electricidad" data-i18n="onboarding.rubro.electricidad">Electricidad</button>
+        <button type="button" class="btn-onboarding-rubro" id="btn-onboarding-rubro-otro" data-onboarding-rubro="otro" data-i18n="onboarding.rubro.otro">Otro</button>
       </div>
     </div>
   </div>
@@ -1972,14 +1999,14 @@ try {
 <div class="settings-overlay onboarding-step-modal" id="onboarding-demo-modal" role="dialog" aria-modal="true" aria-labelledby="onboarding-demo-title">
   <div class="settings-modal">
     <div class="settings-modal-header">
-      <h2 id="onboarding-demo-title">Catálogo Demo Accessmatic</h2>
+      <h2 id="onboarding-demo-title" data-i18n="onboarding.demo.title">Catálogo Demo Accessmatic</h2>
     </div>
     <div class="settings-modal-body">
-      <p id="onboarding-demo-text" class="onboarding-demo-text">¿Deseas precargar 59 productos?</p>
+      <p id="onboarding-demo-text" class="onboarding-demo-text" data-i18n="onboarding.demo.text">¿Deseas precargar 59 productos?</p>
     </div>
     <div class="settings-modal-footer onboarding-demo-actions">
-      <button type="button" id="btn-onboarding-demo-skip" class="btn-onboarding-demo-skip">Omitir, empezar vacío</button>
-      <button type="button" id="btn-onboarding-demo-yes" class="btn-onboarding-demo-yes">Sí, cargar catálogo</button>
+      <button type="button" id="btn-onboarding-demo-skip" class="btn-onboarding-demo-skip" data-i18n="onboarding.demo.btn_skip">Omitir, empezar vacío</button>
+      <button type="button" id="btn-onboarding-demo-yes" class="btn-onboarding-demo-yes" data-i18n="onboarding.demo.btn_yes">Sí, cargar catálogo</button>
     </div>
   </div>
 </div>
@@ -1987,13 +2014,13 @@ try {
 <div class="settings-overlay onboarding-step-modal" id="onboarding-otro-modal" role="dialog" aria-modal="true" aria-labelledby="onboarding-otro-title">
   <div class="settings-modal">
     <div class="settings-modal-header">
-      <h2 id="onboarding-otro-title">Tu catálogo</h2>
+      <h2 id="onboarding-otro-title" data-i18n="onboarding.otro.title">Tu catálogo</h2>
     </div>
     <div class="settings-modal-body">
-      <p class="onboarding-demo-text">Empezarás con catálogo vacío. Puedes agregar tus productos manualmente.</p>
+      <p class="onboarding-demo-text" data-i18n="onboarding.otro.text">Empezarás con catálogo vacío. Puedes agregar tus productos manualmente.</p>
     </div>
     <div class="settings-modal-footer onboarding-demo-actions">
-      <button type="button" id="btn-onboarding-otro-continue" class="btn-onboarding-otro-continue">Entender y continuar</button>
+      <button type="button" id="btn-onboarding-otro-continue" class="btn-onboarding-otro-continue" data-i18n="onboarding.otro.btn_continue">Entender y continuar</button>
     </div>
   </div>
 </div>
@@ -2010,37 +2037,43 @@ try {
       <p id="brand-company-contact">&nbsp;</p>
       <div id="validation-badge" style="display:inline-flex; align-items:center; gap:6px; margin-top:8px; padding:4px 8px; border-radius:4px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);">
         <span id="validation-dot" style="width:6px; height:6px; border-radius:50%; background:#16a34a; display:inline-block;"></span>
-        <span id="validation-text" style="color:#a8c0e8;">Arpa Suite</span>
+        <span id="validation-text" style="color:#a8c0e8;" data-i18n="header.validation_badge">Arpa Suite</span>
       </div>
     </div>
     <div class="header-meta">
-      <button type="button" class="settings-btn" onclick="openSettingsModal()" title="Ajustes de empresa" aria-label="Ajustes de empresa">⚙️</button>
-      <div class="doc-type" id="doc-type-label">Formato de Servicio</div>
+      <div class="lang-switch" id="lang-switch" role="group" data-i18n-aria-label="header.lang.aria" aria-label="Language">
+        <span class="lang-icon" aria-hidden="true">🌐</span>
+        <button type="button" class="lang-btn active" data-lang="es" id="lang-btn-es">ES</button>
+        <span class="lang-sep">|</span>
+        <button type="button" class="lang-btn" data-lang="en" id="lang-btn-en">EN</button>
+      </div>
+      <button type="button" class="settings-btn" onclick="openSettingsModal()" data-i18n-title="header.settings.title" data-i18n-aria-label="header.settings.aria" title="Ajustes de empresa" aria-label="Ajustes de empresa">⚙️</button>
+      <div class="doc-type" id="doc-type-label" data-i18n="header.doc_type.formato">Formato de Servicio</div>
       <div id="header-meta-formato">
         <div class="no-field">
-          <label>N°</label>
-          <input type="text" id="numero-formato" placeholder="0001" style="cursor:pointer;" title="Toca para generar nuevo número">
+          <label data-i18n="header.number_label">N°</label>
+          <input type="text" id="numero-formato" data-i18n-placeholder="header.placeholder.formato_number" placeholder="0001" style="cursor:pointer;" data-i18n-title="header.title.tap_new_number" title="Toca para generar nuevo número">
         </div>
         <div style="margin-top:5px;">
-          <button onclick="nuevoNumero()" style="background:var(--gold);color:white;border:none;border-radius:5px;padding:4px 9px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.5px;">+ NUEVO N°</button>
+          <button onclick="nuevoNumero()" style="background:var(--gold);color:white;border:none;border-radius:5px;padding:4px 9px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.5px;" data-i18n="header.btn_new_number">+ NUEVO N°</button>
         </div>
       </div>
       <div id="header-meta-cot" hidden>
         <div class="no-field">
-          <label>N°</label>
-          <input type="text" id="numero-cot" placeholder="COT-001">
+          <label data-i18n="header.number_label">N°</label>
+          <input type="text" id="numero-cot" data-i18n-placeholder="header.placeholder.cot_number" placeholder="COT-001">
         </div>
         <div style="margin-top:5px;">
-          <button type="button" onclick="nuevoCotNumero()" style="background:var(--gold);color:white;border:none;border-radius:5px;padding:4px 9px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.5px;">+ NUEVO N°</button>
+          <button type="button" onclick="nuevoCotNumero()" style="background:var(--gold);color:white;border:none;border-radius:5px;padding:4px 9px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.5px;" data-i18n="header.btn_new_number">+ NUEVO N°</button>
         </div>
       </div>
       <div id="header-meta-cc" hidden>
         <div class="no-field">
-          <label>N°</label>
-          <input type="text" id="cc-numero" placeholder="CC-001" readonly style="cursor:default;">
+          <label data-i18n="header.number_label">N°</label>
+          <input type="text" id="cc-numero" data-i18n-placeholder="header.placeholder.cc_number" placeholder="CC-001" readonly style="cursor:default;">
         </div>
         <div style="margin-top:5px;">
-          <button type="button" onclick="nuevoCcNumero()" style="background:var(--gold);color:white;border:none;border-radius:5px;padding:4px 9px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.5px;">+ NUEVO N°</button>
+          <button type="button" onclick="nuevoCcNumero()" style="background:var(--gold);color:white;border:none;border-radius:5px;padding:4px 9px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.5px;" data-i18n="header.btn_new_number">+ NUEVO N°</button>
         </div>
       </div>
     </div>
@@ -2051,74 +2084,74 @@ try {
 
     <!-- 1. TIPO DE SERVICIO -->
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Tipo de Servicio</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.tipo_servicio">Tipo de Servicio</span></div>
       <div class="toggle-group">
         <input type="radio" name="tipo" id="t1" value="instalacion" checked>
-        <label for="t1">⚙️ Instalación</label>
+        <label for="t1" data-i18n="formato.tipo.instalacion">⚙️ Instalación</label>
         <input type="radio" name="tipo" id="t2" value="mantenimiento">
-        <label for="t2">🔧 Mantenimiento</label>
+        <label for="t2" data-i18n="formato.tipo.mantenimiento">🔧 Mantenimiento</label>
         <input type="radio" name="tipo" id="t3" value="reparacion">
-        <label for="t3">🛠 Reparación</label>
+        <label for="t3" data-i18n="formato.tipo.reparacion">🛠 Reparación</label>
       </div>
     </div>
 
     <!-- 2. DATOS DEL CLIENTE -->
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Datos del Cliente</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.datos_cliente">Datos del Cliente</span></div>
       <div class="grid g2">
-        <div class="field span2"><label>Nombre / Empresa</label><input type="text" id="formato-cliente-nombre" placeholder="Nombre completo o razón social"></div>
-        <div class="field"><label>NIT / Cédula</label><input type="text" placeholder="000.000.000-0"></div>
-        <div class="field"><label>Teléfono</label><input type="tel" id="formato-cliente-tel" placeholder="+57 300 000 0000"></div>
-        <div class="field span2"><label>Dirección de instalación</label><input type="text" placeholder="Calle, carrera, barrio..."></div>
-        <div class="field"><label>Ciudad</label><input type="text" id="formato-cliente-ciudad" placeholder="Medellín"></div>
-        <div class="field"><label>Fecha</label><input type="date" id="formato-fecha"></div>
+        <div class="field span2"><label data-i18n="formato.label.nombre_empresa">Nombre / Empresa</label><input type="text" id="formato-cliente-nombre" data-i18n-placeholder="formato.placeholder.nombre_empresa" placeholder="Nombre completo o razón social"></div>
+        <div class="field"><label data-i18n="formato.label.nit_cedula">NIT / Cédula</label><input type="text" data-i18n-placeholder="formato.placeholder.nit_cedula" placeholder="000.000.000-0"></div>
+        <div class="field"><label data-i18n="formato.label.telefono">Teléfono</label><input type="tel" id="formato-cliente-tel" data-i18n-placeholder="formato.placeholder.telefono" placeholder="+57 300 000 0000"></div>
+        <div class="field span2"><label data-i18n="formato.label.direccion_instalacion">Dirección de instalación</label><input type="text" data-i18n-placeholder="formato.placeholder.direccion" placeholder="Calle, carrera, barrio..."></div>
+        <div class="field"><label data-i18n="formato.label.ciudad">Ciudad</label><input type="text" id="formato-cliente-ciudad" data-i18n-placeholder="formato.placeholder.ciudad" placeholder="Medellín"></div>
+        <div class="field"><label data-i18n="formato.label.fecha">Fecha</label><input type="date" id="formato-fecha"></div>
       </div>
     </div>
 
     <!-- 3. TÉCNICO -->
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Técnico Responsable</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.tecnico">Técnico Responsable</span></div>
       <div class="grid g2">
-        <div class="field"><label>Técnico</label><input type="text" id="campo-tecnico-responsable" placeholder="Nombre del técnico"></div>
-        <div class="field"><label>Auxiliar (si aplica)</label><input type="text" placeholder="Nombre del auxiliar"></div>
+        <div class="field"><label data-i18n="formato.label.tecnico">Técnico</label><input type="text" id="campo-tecnico-responsable" data-i18n-placeholder="formato.placeholder.tecnico" placeholder="Nombre del técnico"></div>
+        <div class="field"><label data-i18n="formato.label.auxiliar">Auxiliar (si aplica)</label><input type="text" data-i18n-placeholder="formato.placeholder.auxiliar" placeholder="Nombre del auxiliar"></div>
       </div>
     </div>
 
     <!-- 4. TIPO DE PUERTA -->
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Tipo de Puerta / Motor</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.tipo_puerta">Tipo de Puerta / Motor</span></div>
       <div class="chips">
-        <input type="checkbox" id="c1"><label for="c1">Corrediza</label>
-        <input type="checkbox" id="c2"><label for="c2">Batiente 1 hoja</label>
-        <input type="checkbox" id="c3"><label for="c3">Batiente 2 hojas</label>
-        <input type="checkbox" id="c4"><label for="c4">Levadiza</label>
-        <input type="checkbox" id="c5"><label for="c5">Seccional</label>
-        <input type="checkbox" id="c6"><label for="c6">Barrera vehicular</label>
-        <input type="checkbox" id="c7"><label for="c7">Techo corredizo</label>
-        <input type="checkbox" id="c8"><label for="c8">Otra</label>
+        <input type="checkbox" id="c1"><label for="c1" data-i18n="formato.puerta.corrediza">Corrediza</label>
+        <input type="checkbox" id="c2"><label for="c2" data-i18n="formato.puerta.batiente_1">Batiente 1 hoja</label>
+        <input type="checkbox" id="c3"><label for="c3" data-i18n="formato.puerta.batiente_2">Batiente 2 hojas</label>
+        <input type="checkbox" id="c4"><label for="c4" data-i18n="formato.puerta.levadiza">Levadiza</label>
+        <input type="checkbox" id="c5"><label for="c5" data-i18n="formato.puerta.seccional">Seccional</label>
+        <input type="checkbox" id="c6"><label for="c6" data-i18n="formato.puerta.barrera">Barrera vehicular</label>
+        <input type="checkbox" id="c7"><label for="c7" data-i18n="formato.puerta.techo_corredizo">Techo corredizo</label>
+        <input type="checkbox" id="c8"><label for="c8" data-i18n="formato.puerta.otra">Otra</label>
       </div>
     </div>
 
     <!-- 5. MEDIDAS -->
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Medidas del Vano</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.medidas">Medidas del Vano</span></div>
       <div class="dims">
-        <div class="dim-field"><label>Ancho A (m)</label><input type="text" placeholder="0.00"></div>
-        <div class="dim-field"><label>Alto H (m)</label><input type="text" placeholder="0.00"></div>
-        <div class="dim-field"><label>MD (m)</label><input type="text" placeholder="0.00"></div>
-        <div class="dim-field"><label>MI (m)</label><input type="text" placeholder="0.00"></div>
-        <div class="dim-field" style="grid-column:span 2"><label>Peso aprox. (kg)</label><input type="text" placeholder="kg"></div>
-        <div class="dim-field" style="grid-column:span 2"><label>Material puerta</label><input type="text" placeholder="Hierro, aluminio..."></div>
+        <div class="dim-field"><label data-i18n="formato.label.ancho_a">Ancho A (m)</label><input type="text" data-i18n-placeholder="formato.placeholder.dimension" placeholder="0.00"></div>
+        <div class="dim-field"><label data-i18n="formato.label.alto_h">Alto H (m)</label><input type="text" data-i18n-placeholder="formato.placeholder.dimension" placeholder="0.00"></div>
+        <div class="dim-field"><label data-i18n="formato.label.md">MD (m)</label><input type="text" data-i18n-placeholder="formato.placeholder.dimension" placeholder="0.00"></div>
+        <div class="dim-field"><label data-i18n="formato.label.mi">MI (m)</label><input type="text" data-i18n-placeholder="formato.placeholder.dimension" placeholder="0.00"></div>
+        <div class="dim-field" style="grid-column:span 2"><label data-i18n="formato.label.peso">Peso aprox. (kg)</label><input type="text" data-i18n-placeholder="formato.placeholder.peso" placeholder="kg"></div>
+        <div class="dim-field" style="grid-column:span 2"><label data-i18n="formato.label.material_puerta">Material puerta</label><input type="text" data-i18n-placeholder="formato.placeholder.material_puerta" placeholder="Hierro, aluminio..."></div>
       </div>
     </div>
 
     <!-- 6. EQUIPO -->
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Equipo Instalado</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.equipo">Equipo Instalado</span></div>
       <div class="grid g2">
-        <div class="field"><label>Marca del motor</label>
+        <div class="field"><label data-i18n="formato.label.marca_motor">Marca del motor</label>
           <select id="sel-marca" onchange="actualizarReferencias()">
-            <option value="">Seleccionar...</option>
+            <option value="" data-i18n="formato.select.seleccionar">Seleccionar...</option>
             <option value="Accessmatic">Accessmatic</option>
             <option value="Elite">Elite</option>
             <option value="BFT">BFT</option>
@@ -2126,32 +2159,32 @@ try {
             <option value="Liftmaster">Liftmaster</option>
             <option value="Beninca">Beninca</option>
             <option value="NAS">NAS</option>
-            <option value="Otra">Otra</option>
+            <option value="Otra" data-i18n="formato.select.otra_marca">Otra</option>
           </select>
         </div>
-        <div class="field"><label>Referencia / Modelo</label>
+        <div class="field"><label data-i18n="formato.label.referencia_modelo">Referencia / Modelo</label>
           <select id="sel-referencia" style="display:none">
-            <option value="">Seleccionar referencia...</option>
+            <option value="" data-i18n="formato.select.seleccionar_referencia">Seleccionar referencia...</option>
           </select>
-          <input id="ref-manual" type="text" placeholder="Ej: ARES 1500">
+          <input id="ref-manual" type="text" data-i18n-placeholder="formato.placeholder.referencia_manual" placeholder="Ej: ARES 1500">
         </div>
-        <div class="field"><label>Serie / Código</label><input type="text" placeholder="N° de serie"></div>
-        <div class="field"><label>Voltaje</label>
+        <div class="field"><label data-i18n="formato.label.serie_codigo">Serie / Código</label><input type="text" data-i18n-placeholder="formato.placeholder.serie" placeholder="N° de serie"></div>
+        <div class="field"><label data-i18n="formato.label.voltaje">Voltaje</label>
           <select>
             <option>110V</option><option>220V</option><option>110V / 220V</option>
           </select>
         </div>
       </div>
       <div style="margin-top:10px;">
-        <div class="field"><label style="margin-bottom:6px; display:block;">Accesorios incluidos</label>
+        <div class="field"><label style="margin-bottom:6px; display:block;" data-i18n="formato.label.accesorios">Accesorios incluidos</label>
           <div class="check-group">
-            <label class="check-item"><input type="checkbox"><span>Control remoto</span></label>
-            <label class="check-item"><input type="checkbox"><span>Teclado numérico</span></label>
-            <label class="check-item"><input type="checkbox"><span>Fotocelda</span></label>
-            <label class="check-item"><input type="checkbox"><span>Sensor apertura</span></label>
-            <label class="check-item"><input type="checkbox"><span>Batería respaldo</span></label>
-            <label class="check-item"><input type="checkbox"><span>Cierre automático</span></label>
-            <label class="check-item"><input type="checkbox"><span>Tarjeta / lector</span></label>
+            <label class="check-item"><input type="checkbox"><span data-i18n="formato.accesorio.control_remoto">Control remoto</span></label>
+            <label class="check-item"><input type="checkbox"><span data-i18n="formato.accesorio.teclado">Teclado numérico</span></label>
+            <label class="check-item"><input type="checkbox"><span data-i18n="formato.accesorio.fotocelda">Fotocelda</span></label>
+            <label class="check-item"><input type="checkbox"><span data-i18n="formato.accesorio.sensor_apertura">Sensor apertura</span></label>
+            <label class="check-item"><input type="checkbox"><span data-i18n="formato.accesorio.bateria">Batería respaldo</span></label>
+            <label class="check-item"><input type="checkbox"><span data-i18n="formato.accesorio.cierre_automatico">Cierre automático</span></label>
+            <label class="check-item"><input type="checkbox"><span data-i18n="formato.accesorio.tarjeta_lector">Tarjeta / lector</span></label>
           </div>
         </div>
       </div>
@@ -2159,48 +2192,48 @@ try {
 
     <!-- 7. MATERIALES -->
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Materiales Utilizados</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.materiales">Materiales Utilizados</span></div>
       <div class="mat-wrap">
         <div class="materials-grid">
           <div class="mat-header">
-            <div>Material / Descripción</div>
-            <div style="text-align:center">Unidad</div>
-            <div style="text-align:center">Cant.</div>
+            <div data-i18n="formato.mat.header.descripcion">Material / Descripción</div>
+            <div style="text-align:center" data-i18n="formato.mat.header.unidad">Unidad</div>
+            <div style="text-align:center" data-i18n="formato.mat.header.cant">Cant.</div>
           </div>
-          <div class="mat-row"><div><input type="text" placeholder="Ej: Tubería conduit 1/2&quot;"></div><div><input type="text" placeholder="ml" style="text-align:center"></div><div><input type="number" placeholder="0" style="text-align:center"></div></div>
-          <div class="mat-row"><div><input type="text" placeholder="Ej: Tubo rectangular 40x20"></div><div><input type="text" placeholder="ml" style="text-align:center"></div><div><input type="number" placeholder="0" style="text-align:center"></div></div>
-          <div class="mat-row"><div><input type="text" placeholder="Ej: Cable encauchetado #12"></div><div><input type="text" placeholder="ml" style="text-align:center"></div><div><input type="number" placeholder="0" style="text-align:center"></div></div>
-          <div class="mat-row"><div><input type="text" placeholder="Ej: Tornillería y anclajes"></div><div><input type="text" placeholder="und" style="text-align:center"></div><div><input type="number" placeholder="0" style="text-align:center"></div></div>
-          <div class="mat-row"><div><input type="text" placeholder="Otro material..."></div><div><input type="text" style="text-align:center"></div><div><input type="number" placeholder="0" style="text-align:center"></div></div>
+          <div class="mat-row"><div><input type="text" data-i18n-placeholder="formato.mat.placeholder.ej1" placeholder="Ej: Tubería conduit 1/2&quot;"></div><div><input type="text" data-i18n-placeholder="formato.mat.placeholder.ml" placeholder="ml" style="text-align:center"></div><div><input type="number" data-i18n-placeholder="formato.mat.placeholder.cero" placeholder="0" style="text-align:center"></div></div>
+          <div class="mat-row"><div><input type="text" data-i18n-placeholder="formato.mat.placeholder.ej2" placeholder="Ej: Tubo rectangular 40x20"></div><div><input type="text" data-i18n-placeholder="formato.mat.placeholder.ml" placeholder="ml" style="text-align:center"></div><div><input type="number" data-i18n-placeholder="formato.mat.placeholder.cero" placeholder="0" style="text-align:center"></div></div>
+          <div class="mat-row"><div><input type="text" data-i18n-placeholder="formato.mat.placeholder.ej3" placeholder="Ej: Cable encauchetado #12"></div><div><input type="text" data-i18n-placeholder="formato.mat.placeholder.ml" placeholder="ml" style="text-align:center"></div><div><input type="number" data-i18n-placeholder="formato.mat.placeholder.cero" placeholder="0" style="text-align:center"></div></div>
+          <div class="mat-row"><div><input type="text" data-i18n-placeholder="formato.mat.placeholder.ej4" placeholder="Ej: Tornillería y anclajes"></div><div><input type="text" data-i18n-placeholder="formato.mat.placeholder.und" placeholder="und" style="text-align:center"></div><div><input type="number" data-i18n-placeholder="formato.mat.placeholder.cero" placeholder="0" style="text-align:center"></div></div>
+          <div class="mat-row"><div><input type="text" data-i18n-placeholder="formato.mat.placeholder.otro" placeholder="Otro material..."></div><div><input type="text" style="text-align:center"></div><div><input type="number" data-i18n-placeholder="formato.mat.placeholder.cero" placeholder="0" style="text-align:center"></div></div>
         </div>
       </div>
     </div>
 
     <!-- 8. FOTOS -->
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Registro Fotográfico</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.fotos">Registro Fotográfico</span></div>
       <div class="photos-grid">
 
         <!-- ANTES -->
         <div class="photo-box" id="box-before">
-          <div class="photo-badge">Antes</div>
+          <div class="photo-badge" data-i18n="formato.foto.badge_antes">Antes</div>
           <input type="file" id="file-before-gal" accept="image/*" multiple onchange="loadPhotos(this,'before-preview')" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;">
           <div id="before-placeholder">
             <div class="icon">📷</div>
-            <div class="ph-label">Foto Antes</div>
-            <label class="ph-btn-label" for="file-before-gal">🖼 Galería / Cámara</label>
+            <div class="ph-label" data-i18n="formato.foto.label_antes">Foto Antes</div>
+            <label class="ph-btn-label" for="file-before-gal" data-i18n="formato.foto.btn_galeria">🖼 Galería / Cámara</label>
           </div>
           <div id="before-preview" style="display:none;width:100%;padding:4px;flex-wrap:wrap;gap:4px;"></div>
         </div>
 
         <!-- DESPUÉS -->
         <div class="photo-box" id="box-after">
-          <div class="photo-badge" style="background:var(--green)">Después</div>
+          <div class="photo-badge" style="background:var(--green)" data-i18n="formato.foto.badge_despues">Después</div>
           <input type="file" id="file-after-gal" accept="image/*" multiple onchange="loadPhotos(this,'after-preview')" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;">
           <div id="after-placeholder">
             <div class="icon">✅</div>
-            <div class="ph-label">Foto Después</div>
-            <label class="ph-btn-label" for="file-after-gal">🖼 Galería / Cámara</label>
+            <div class="ph-label" data-i18n="formato.foto.label_despues">Foto Después</div>
+            <label class="ph-btn-label" for="file-after-gal" data-i18n="formato.foto.btn_galeria">🖼 Galería / Cámara</label>
           </div>
           <div id="after-preview" style="display:none;width:100%;padding:4px;flex-wrap:wrap;gap:4px;"></div>
         </div>
@@ -2210,42 +2243,42 @@ try {
 
     <!-- 9. OBSERVACIONES -->
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Observaciones y Recomendaciones</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.observaciones">Observaciones y Recomendaciones</span></div>
       <div class="obs-box">
         <div class="obs-lines">
-          <input type="text" placeholder="Observación 1...">
-          <input type="text" placeholder="Observación 2...">
-          <input type="text" placeholder="Observación 3...">
-          <input type="text" placeholder="Observación 4...">
+          <input type="text" data-i18n-placeholder="formato.placeholder.obs1" placeholder="Observación 1...">
+          <input type="text" data-i18n-placeholder="formato.placeholder.obs2" placeholder="Observación 2...">
+          <input type="text" data-i18n-placeholder="formato.placeholder.obs3" placeholder="Observación 3...">
+          <input type="text" data-i18n-placeholder="formato.placeholder.obs4" placeholder="Observación 4...">
         </div>
       </div>
     </div>
 
     <!-- NOTA -->
     <div class="nota">
-      <strong>Nota:</strong> El cliente debe suministrar punto eléctrico (110V–220V) con polo a tierra para la instalación,
-      incluyendo cableado y tubería para sensores si se requieren. De no cumplir con estos requisitos, tendrá un costo adicional.
+      <strong data-i18n="formato.nota.label">Nota:</strong> <span data-i18n-html="formato.nota.body">El cliente debe suministrar punto eléctrico (110V–220V) con polo a tierra para la instalación,
+      incluyendo cableado y tubería para sensores si se requieren. De no cumplir con estos requisitos, tendrá un costo adicional.</span>
     </div>
 
     <!-- GARANTÍA -->
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Términos de Garantía</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.garantia">Términos de Garantía</span></div>
       <div class="garantia">
         <div class="garantia-header" id="brand-warranty-header">
-          <span class="shield">🛡️</span> Términos de Garantía
+          <span class="shield">🛡️</span> <span data-i18n="formato.garantia.header_static">Términos de Garantía</span>
         </div>
         <div class="garantia-body">
           <div class="garantia-item">
             <div class="gi-icon gi-ok">✅</div>
-            <div><strong>Tiempo de garantía:</strong> La garantía de mano de obra es de <strong>1 año</strong> a partir de la fecha del servicio. Los equipos tienen garantía de <strong>2 años</strong> contra defectos de fabricación.</div>
+            <div><strong data-i18n="formato.garantia.tiempo.label">Tiempo de garantía:</strong> <span data-i18n-html="formato.garantia.tiempo.body">La garantía de mano de obra es de 1 año a partir de la fecha del servicio. Los equipos tienen garantía de 2 años contra defectos de fabricación.</span></div>
           </div>
           <div class="garantia-item">
             <div class="gi-icon gi-cal">📅</div>
-            <div><strong>Mantenimiento preventivo:</strong> Recomendamos realizar mantenimiento <strong>cada 6 meses</strong> con nuestro equipo técnico. Esto permite prolongar la vida útil del equipo, prevenir fallas y conservar las condiciones óptimas de funcionamiento.</div>
+            <div><strong data-i18n="formato.garantia.mantenimiento.label">Mantenimiento preventivo:</strong> <span data-i18n-html="formato.garantia.mantenimiento.body">Recomendamos realizar mantenimiento cada 6 meses con nuestro equipo técnico. Esto permite prolongar la vida útil del equipo, prevenir fallas y conservar las condiciones óptimas de funcionamiento.</span></div>
           </div>
           <div class="garantia-item">
             <div class="gi-icon gi-warn">⚠️</div>
-            <div id="brand-warranty-exclusion"><strong>Exclusiones de garantía:</strong> La garantía no aplica sobre daños por causas externas, descargas eléctricas o intervención de personal no autorizado.</div>
+            <div id="brand-warranty-exclusion"><strong data-i18n="formato.garantia.exclusiones.label">Exclusiones de garantía:</strong> <span data-i18n-html="formato.garantia.exclusiones.body_static">La garantía no aplica sobre daños por causas externas, descargas eléctricas o intervención de personal no autorizado.</span></div>
           </div>
         </div>
       </div>
@@ -2253,54 +2286,54 @@ try {
 
     <!-- VIDEO DE ENTREGA -->
     <div class="section" id="formato-video-section">
-      <div class="section-title"><span class="dot"></span>Video de Entrega</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.video">Video de Entrega</span></div>
       <div class="field span2">
-        <label for="formato-video-url">Enlace de Video de Entrega (Google Drive/YouTube) - Opcional</label>
-        <input type="url" id="formato-video-url" placeholder="https://drive.google.com/... o https://youtube.com/..." autocomplete="off" inputmode="url">
+        <label for="formato-video-url" data-i18n="formato.video.label">Enlace de Video de Entrega (Google Drive/YouTube) - Opcional</label>
+        <input type="url" id="formato-video-url" data-i18n-placeholder="formato.video.placeholder" placeholder="https://drive.google.com/... o https://youtube.com/..." autocomplete="off" inputmode="url">
       </div>
     </div>
 
     <!-- 10. FIRMAS -->
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Aceptación y Firmas</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.firmas">Aceptación y Firmas</span></div>
       <div class="firmas">
         <div class="firma-box">
-          <div class="firma-label">Firma Cliente</div>
+          <div class="firma-label" data-i18n="formato.firma.cliente">Firma Cliente</div>
           <div class="firma-canvas-wrap">
-            <canvas id="canvas-firma-cliente" class="firma-canvas" width="600" height="200" aria-label="Lienzo firma cliente"></canvas>
-            <button type="button" class="btn-firma-clear no-print" onclick="limpiarFirma('canvas-firma-cliente')">Borrar</button>
+            <canvas id="canvas-firma-cliente" class="firma-canvas" width="600" height="200" data-i18n-aria-label="formato.firma.aria_cliente" aria-label="Lienzo firma cliente"></canvas>
+            <button type="button" class="btn-firma-clear no-print" onclick="limpiarFirma('canvas-firma-cliente')" data-i18n="formato.firma.btn_borrar">Borrar</button>
           </div>
-          <input class="firma-name" type="text" placeholder="Nombre completo">
-          <input class="firma-name" type="text" placeholder="CC / NIT">
+          <input class="firma-name" type="text" data-i18n-placeholder="formato.firma.placeholder.nombre" placeholder="Nombre completo">
+          <input class="firma-name" type="text" data-i18n-placeholder="formato.firma.placeholder.doc" placeholder="CC / NIT">
         </div>
         <div class="firma-box">
-          <div class="firma-label" id="brand-technician-signature-label">Firma Técnico</div>
+          <div class="firma-label" id="brand-technician-signature-label" data-i18n="formato.firma.tecnico">Firma Técnico</div>
           <div class="firma-canvas-wrap">
-            <canvas id="canvas-firma-tecnico" class="firma-canvas" width="600" height="200" aria-label="Lienzo firma técnico"></canvas>
-            <button type="button" class="btn-firma-clear no-print" onclick="limpiarFirma('canvas-firma-tecnico')">Borrar</button>
+            <canvas id="canvas-firma-tecnico" class="firma-canvas" width="600" height="200" data-i18n-aria-label="formato.firma.aria_tecnico" aria-label="Lienzo firma técnico"></canvas>
+            <button type="button" class="btn-firma-clear no-print" onclick="limpiarFirma('canvas-firma-tecnico')" data-i18n="formato.firma.btn_borrar">Borrar</button>
           </div>
-          <input class="firma-name" id="campo-tecnico-firma" type="text" placeholder="Nombre del técnico">
-          <input class="firma-name" type="text" placeholder="ID técnico">
+          <input class="firma-name" id="campo-tecnico-firma" type="text" data-i18n-placeholder="formato.firma.placeholder.tecnico" placeholder="Nombre del técnico">
+          <input class="firma-name" type="text" data-i18n-placeholder="formato.firma.placeholder.id_tecnico" placeholder="ID técnico">
         </div>
       </div>
       <div id="formato-video-qr-print" class="formato-video-qr-print" hidden aria-hidden="true">
-        <p class="formato-video-qr-title">Video de entrega del equipo</p>
+        <p class="formato-video-qr-title" data-i18n="formato.video_qr.title">Video de entrega del equipo</p>
         <div class="formato-video-qr-canvas-wrap">
-          <canvas id="formato-video-qr-canvas" width="140" height="140" aria-label="Código QR video de entrega"></canvas>
+          <canvas id="formato-video-qr-canvas" width="140" height="140" data-i18n-aria-label="formato.video_qr.aria" aria-label="Código QR video de entrega"></canvas>
         </div>
-        <p class="formato-video-qr-hint">Escanee el código para ver el video de entrega del equipo</p>
+        <p class="formato-video-qr-hint" data-i18n="formato.video_qr.hint">Escanee el código para ver el video de entrega del equipo</p>
         <p class="formato-video-qr-url" id="formato-video-qr-url-text"></p>
       </div>
     </div>
 
     <div class="verification-seal" style="margin-top: 20px; padding: 14px; border: 1.5px solid var(--border); border-radius: 10px; background: #ffffff;">
-      <p style="font-size: 10.5px; color: var(--muted); line-height: 1.4; margin: 0;">
+      <p style="font-size: 10.5px; color: var(--muted); line-height: 1.4; margin: 0;" data-i18n-html="formato.verification">
         Documento emitido por <strong id="brand-verification-company">Su Empresa</strong> a través de <strong>Arpa Suite</strong>.
       </p>
     </div>
 
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Datos Bancarios</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.datos_bancarios">Datos Bancarios</span></div>
       <div class="brand-bank-info" id="brand-bank-block-formato">&nbsp;</div>
     </div>
 
@@ -2309,60 +2342,60 @@ try {
   <div id="view-cotizacion" class="suite-view body" hidden>
 
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Datos del Cliente</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="cot.section.datos_cliente">Datos del Cliente</span></div>
       <div class="grid g2">
-        <div class="field span2"><label>Nombre / Empresa</label><input id="cot-nombre" type="text" placeholder="Nombre completo o razón social"></div>
-        <div class="field"><label>NIT / Cédula</label><input id="cot-nit" type="text" placeholder="000.000.000-0"></div>
-        <div class="field"><label>Teléfono</label><input id="cot-tel" type="tel" placeholder="+57 300 000 0000"></div>
-        <div class="field"><label>Correo electrónico</label><input id="cot-email" type="email" placeholder="correo@ejemplo.com"></div>
-        <div class="field"><label>Ciudad</label><input id="cot-ciudad" type="text" placeholder="Medellín"></div>
-        <div class="field"><label>Fecha</label><input id="cot-fecha" type="date"></div>
-        <div class="field"><label>Válida hasta</label><input id="cot-validez" type="date"></div>
+        <div class="field span2"><label data-i18n="formato.label.nombre_empresa">Nombre / Empresa</label><input id="cot-nombre" type="text" data-i18n-placeholder="formato.placeholder.nombre_empresa" placeholder="Nombre completo o razón social"></div>
+        <div class="field"><label data-i18n="formato.label.nit_cedula">NIT / Cédula</label><input id="cot-nit" type="text" data-i18n-placeholder="formato.placeholder.nit_cedula" placeholder="000.000.000-0"></div>
+        <div class="field"><label data-i18n="formato.label.telefono">Teléfono</label><input id="cot-tel" type="tel" data-i18n-placeholder="formato.placeholder.telefono" placeholder="+57 300 000 0000"></div>
+        <div class="field"><label data-i18n="cot.label.correo">Correo electrónico</label><input id="cot-email" type="email" data-i18n-placeholder="cot.placeholder.correo" placeholder="correo@ejemplo.com"></div>
+        <div class="field"><label data-i18n="formato.label.ciudad">Ciudad</label><input id="cot-ciudad" type="text" data-i18n-placeholder="formato.placeholder.ciudad" placeholder="Medellín"></div>
+        <div class="field"><label data-i18n="formato.label.fecha">Fecha</label><input id="cot-fecha" type="date"></div>
+        <div class="field"><label data-i18n="cot.label.valida_hasta">Válida hasta</label><input id="cot-validez" type="date"></div>
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Cobros</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="cot.section.cobros">Cobros</span></div>
       <div id="cobros-editor-cot" class="cobros-editor"></div>
       <div id="cobros-actions-cot" style="margin-top:10px;">
-        <button type="button" class="btn-add-item" id="btn-cobros-add-cot">+ Agregar ítem adicional</button>
+        <button type="button" class="btn-add-item" id="btn-cobros-add-cot" data-i18n="cot.btn_agregar_item">+ Agregar ítem adicional</button>
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Buscar y Agregar Productos</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="cot.section.buscar">Buscar y Agregar Productos</span></div>
       <div class="buscador-wrap-cot">
         <div class="buscador-row-cot">
           <div class="field" style="flex:1;min-width:180px;">
-            <label>Producto</label>
-            <input type="text" class="buscador-input-cot" id="buscador-cot" placeholder="🔍 Buscar por nombre o código..." autocomplete="off">
+            <label data-i18n="cot.label.producto">Producto</label>
+            <input type="text" class="buscador-input-cot" id="buscador-cot" data-i18n-placeholder="cot.placeholder.buscar" placeholder="🔍 Buscar por nombre o código..." autocomplete="off">
           </div>
           <div class="field" style="min-width:72px;">
-            <label>Cant.</label>
+            <label data-i18n="cot.label.cant">Cant.</label>
             <input type="number" id="cant-input-cot" min="1" value="1" style="width:72px;text-align:center;min-height:44px;font-size:16px;">
           </div>
         </div>
         <div class="resultados-cot" id="resultados-cot"></div>
-        <p id="cot-catalog-hint" class="cot-catalog-hint" hidden>Ve a Mi Catálogo para agregar tus productos</p>
+        <p id="cot-catalog-hint" class="cot-catalog-hint" hidden data-i18n="cot.hint.catalogo">Ve a Mi Catálogo para agregar tus productos</p>
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Productos y Servicios Cotizados</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="cot.section.productos">Productos y Servicios Cotizados</span></div>
       <div class="tabla-cot-wrap">
         <table class="tabla-productos">
           <thead>
             <tr>
-              <th>Código</th>
-              <th>Descripción</th>
-              <th style="text-align:center;">Cant.</th>
-              <th style="text-align:right;">P.V.P Unit.</th>
-              <th style="text-align:right;">Total</th>
+              <th data-i18n="cot.table.codigo">Código</th>
+              <th data-i18n="cot.table.descripcion">Descripción</th>
+              <th style="text-align:center;" data-i18n="cot.table.cant">Cant.</th>
+              <th style="text-align:right;" data-i18n="cot.table.pvp_unit">P.V.P Unit.</th>
+              <th style="text-align:right;" data-i18n="cot.table.total">Total</th>
               <th></th>
             </tr>
           </thead>
           <tbody id="cot-tabla-body">
-            <tr class="empty-row"><td colspan="6">Agregue productos, servicios o ítems adicionales</td></tr>
+            <tr class="empty-row"><td colspan="6" data-i18n="cot.table.empty">Agregue productos, servicios o ítems adicionales</td></tr>
           </tbody>
         </table>
       </div>
@@ -2370,61 +2403,61 @@ try {
 
     <div class="cot-cierre-block">
       <div class="section">
-        <div class="section-title"><span class="dot"></span>Resumen de Cotización</div>
+        <div class="section-title"><span class="dot"></span><span data-i18n="cot.section.resumen">Resumen de Cotización</span></div>
         <div class="totales-box">
           <label class="iva-toggle">
             <input type="checkbox" id="iva-check-cot">
-            Incluir IVA 19%
+            <span data-i18n="cot.iva.toggle">Incluir IVA 19%</span>
           </label>
           <div class="total-row">
-            <span class="total-label">Subtotal</span>
+            <span class="total-label" data-i18n="cot.total.subtotal">Subtotal</span>
             <span class="total-val" id="subtotal-val-cot">$ 0</span>
           </div>
           <div class="total-row" id="iva-row-cot" style="display:none;">
-            <span class="total-label">IVA (19%)</span>
+            <span class="total-label" data-i18n="cot.total.iva">IVA (19%)</span>
             <span class="total-val" id="iva-val-cot">$ 0</span>
           </div>
           <div class="total-row grand">
-            <span class="total-label" style="font-weight:700;color:var(--navy);">TOTAL</span>
+            <span class="total-label" style="font-weight:700;color:var(--navy);" data-i18n="cot.total.grand">TOTAL</span>
             <span class="total-val" id="total-val-cot">$ 0</span>
           </div>
         </div>
       </div>
 
       <div class="section cot-bank-section">
-        <div class="section-title"><span class="dot"></span>Datos Bancarios</div>
+        <div class="section-title"><span class="dot"></span><span data-i18n="cot.section.datos_bancarios">Datos Bancarios</span></div>
         <div class="brand-bank-info" id="brand-bank-block">&nbsp;</div>
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Observaciones</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="cot.section.observaciones">Observaciones</span></div>
       <div class="field">
-        <textarea id="cot-obs" placeholder="Especificaciones adicionales, notas para el cliente..."></textarea>
+        <textarea id="cot-obs" data-i18n-placeholder="cot.placeholder.obs" placeholder="Especificaciones adicionales, notas para el cliente..."></textarea>
       </div>
     </div>
 
     <div class="nota-cot" id="cot-nota-legal">&nbsp;</div>
 
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Aprobación</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="cot.section.aprobacion">Aprobación</span></div>
       <div class="firmas">
         <div class="firma-box">
-          <div class="firma-label">Aprobado por (Cliente)</div>
+          <div class="firma-label" data-i18n="cot.firma.aprobado_cliente">Aprobado por (Cliente)</div>
           <div class="firma-canvas-wrap">
-            <canvas id="canvas-cot-cliente" class="firma-canvas" width="600" height="200" aria-label="Firma cliente cotización"></canvas>
-            <button type="button" class="btn-firma-clear no-print" onclick="limpiarFirma('canvas-cot-cliente')">Borrar</button>
+            <canvas id="canvas-cot-cliente" class="firma-canvas" width="600" height="200" data-i18n-aria-label="cot.firma.aria_cliente" aria-label="Firma cliente cotización"></canvas>
+            <button type="button" class="btn-firma-clear no-print" onclick="limpiarFirma('canvas-cot-cliente')" data-i18n="formato.firma.btn_borrar">Borrar</button>
           </div>
-          <input class="firma-name" type="text" placeholder="Nombre completo">
+          <input class="firma-name" type="text" data-i18n-placeholder="formato.firma.placeholder.nombre" placeholder="Nombre completo">
         </div>
         <div class="firma-box">
-          <div class="firma-label" id="cot-elaborado-label">Elaborado por</div>
+          <div class="firma-label" id="cot-elaborado-label" data-i18n="cot.firma.elaborado">Elaborado por</div>
           <div class="firma-canvas-wrap">
-            <canvas id="canvas-cot-elaborado" class="firma-canvas" width="600" height="200" aria-label="Firma elaborado cotización"></canvas>
-            <button type="button" class="btn-firma-clear no-print" onclick="limpiarFirma('canvas-cot-elaborado')">Borrar</button>
+            <canvas id="canvas-cot-elaborado" class="firma-canvas" width="600" height="200" data-i18n-aria-label="cot.firma.aria_elaborado" aria-label="Firma elaborado cotización"></canvas>
+            <button type="button" class="btn-firma-clear no-print" onclick="limpiarFirma('canvas-cot-elaborado')" data-i18n="formato.firma.btn_borrar">Borrar</button>
           </div>
-          <input class="firma-name" id="cot-elaborado-nombre" type="text" placeholder="Nombre del técnico">
-          <input class="firma-name" id="cot-elaborado-tel" type="text" placeholder="Teléfono">
+          <input class="firma-name" id="cot-elaborado-nombre" type="text" data-i18n-placeholder="formato.firma.placeholder.tecnico" placeholder="Nombre del técnico">
+          <input class="firma-name" id="cot-elaborado-tel" type="text" data-i18n-placeholder="formato.label.telefono" placeholder="Teléfono">
         </div>
       </div>
     </div>
@@ -2433,24 +2466,24 @@ try {
 
   <div id="view-catalogo" class="suite-view body" hidden>
     <div class="section catalogo-categorias-block">
-      <div class="section-title"><span class="dot"></span>Categorías</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="cat.section.categorias">Categorías</span></div>
       <div id="catalogo-categorias-panel"></div>
     </div>
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Productos</div>
-      <p style="font-size:12px;color:var(--muted);margin:-4px 0 10px;line-height:1.5;">
+      <div class="section-title"><span class="dot"></span><span data-i18n="cat.section.productos">Productos</span></div>
+      <p style="font-size:12px;color:var(--muted);margin:-4px 0 10px;line-height:1.5;" data-i18n="cat.intro">
         Sus productos se agrupan por categoría. Cotización usará este catálogo cuando tenga ítems cargados.
       </p>
       <div class="catalogo-toolbar">
         <div class="catalogo-toolbar-row">
-          <input type="search" id="catalogo-buscar" placeholder="🔍 Buscar por nombre o referencia…" autocomplete="off" inputmode="search">
-          <button type="button" class="btn-catalogo-import" id="btn-catalogo-import">📥 Importar Excel/CSV</button>
-          <button type="button" class="btn-catalogo-import" onclick="precargarCatalogoBFTNAS()">📦 Cargar Catálogo BFT + NAS (333 productos)</button>
+          <input type="search" id="catalogo-buscar" data-i18n-placeholder="cat.placeholder.buscar" placeholder="🔍 Buscar por nombre o referencia…" autocomplete="off" inputmode="search">
+          <button type="button" class="btn-catalogo-import" id="btn-catalogo-import" data-i18n="cat.btn.importar">📥 Importar Excel/CSV</button>
+          <button type="button" class="btn-catalogo-import" onclick="precargarCatalogoBFTNAS()" data-i18n="cat.btn.cargar_bft_nas">📦 Cargar Catálogo BFT + NAS (333 productos)</button>
         </div>
         <input type="file" id="catalogo-import-file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden>
         <span id="catalogo-count" class="catalogo-count"></span>
       </div>
-      <div id="catalogo-empty" class="catalogo-empty" hidden>
+      <div id="catalogo-empty" class="catalogo-empty" hidden data-i18n-html="cat.empty">
         Aún no hay productos.<br>Pulse <strong>+</strong> para agregar el primero.
       </div>
       <div id="catalogo-list" class="catalogo-list"></div>
@@ -2460,47 +2493,47 @@ try {
   <div id="view-cuenta-cobro" class="suite-view body" hidden>
 
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Datos del Documento</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="cc.section.datos_documento">Datos del Documento</span></div>
       <div class="grid g2">
-        <div class="field"><label>Ciudad</label><input type="text" id="cc-ciudad" placeholder="Ciudad"></div>
-        <div class="field"><label>Fecha de emisión</label><input type="date" id="cc-fecha-emision"></div>
-        <div class="field"><label>Fecha de vencimiento</label><input type="date" id="cc-fecha-vencimiento"></div>
+        <div class="field"><label data-i18n="formato.label.ciudad">Ciudad</label><input type="text" id="cc-ciudad" data-i18n-placeholder="cc.placeholder.ciudad" placeholder="Ciudad"></div>
+        <div class="field"><label data-i18n="cc.label.fecha_emision">Fecha de emisión</label><input type="date" id="cc-fecha-emision"></div>
+        <div class="field"><label data-i18n="cc.label.fecha_vencimiento">Fecha de vencimiento</label><input type="date" id="cc-fecha-vencimiento"></div>
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Cobrador</div>
-      <p style="font-size:11px;color:var(--muted);margin:-4px 0 10px;line-height:1.45;">Datos desde Configuración de Empresa.</p>
+      <div class="section-title"><span class="dot"></span><span data-i18n="cc.section.cobrador">Cobrador</span></div>
+      <p style="font-size:11px;color:var(--muted);margin:-4px 0 10px;line-height:1.45;" data-i18n="cc.cobrador.hint">Datos desde Configuración de Empresa.</p>
       <div class="cc-info-panel">
-        <div class="cc-info-row"><span>Técnico / Dueño</span><strong id="cc-cobrador-nombre">—</strong></div>
-        <div class="cc-info-row"><span>Cédula / NIT personal</span><strong id="cc-cobrador-doc">—</strong></div>
-        <div class="cc-info-row"><span>Empresa</span><strong id="cc-cobrador-empresa">—</strong></div>
-        <div class="cc-info-row"><span>NIT empresa</span><strong id="cc-cobrador-nit">—</strong></div>
-        <div class="cc-info-row"><span>Teléfono</span><strong id="cc-cobrador-tel">—</strong></div>
-        <div class="cc-info-row"><span>Dirección</span><strong id="cc-cobrador-dir">—</strong></div>
+        <div class="cc-info-row"><span data-i18n="cc.cobrador.tecnico_dueno">Técnico / Dueño</span><strong id="cc-cobrador-nombre">—</strong></div>
+        <div class="cc-info-row"><span data-i18n="cc.cobrador.cedula_nit">Cédula / NIT personal</span><strong id="cc-cobrador-doc">—</strong></div>
+        <div class="cc-info-row"><span data-i18n="cc.cobrador.empresa">Empresa</span><strong id="cc-cobrador-empresa">—</strong></div>
+        <div class="cc-info-row"><span data-i18n="cc.cobrador.nit_empresa">NIT empresa</span><strong id="cc-cobrador-nit">—</strong></div>
+        <div class="cc-info-row"><span data-i18n="cc.cobrador.telefono">Teléfono</span><strong id="cc-cobrador-tel">—</strong></div>
+        <div class="cc-info-row"><span data-i18n="cc.cobrador.direccion">Dirección</span><strong id="cc-cobrador-dir">—</strong></div>
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Cliente</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="cc.section.cliente">Cliente</span></div>
       <div class="grid g2">
-        <div class="field span2"><label>Nombre / Empresa</label><input type="text" id="cc-cliente-nombre" placeholder="Nombre del cliente"></div>
-        <div class="field"><label>NIT / C.C.</label><input type="text" id="cc-cliente-doc" placeholder="000.000.000-0"></div>
-        <div class="field"><label>Teléfono</label><input type="tel" id="cc-cliente-tel" placeholder="+57 300 000 0000"></div>
-        <div class="field span2"><label>Dirección</label><input type="text" id="cc-cliente-dir" placeholder="Dirección del cliente"></div>
+        <div class="field span2"><label data-i18n="formato.label.nombre_empresa">Nombre / Empresa</label><input type="text" id="cc-cliente-nombre" data-i18n-placeholder="cc.placeholder.cliente_nombre" placeholder="Nombre del cliente"></div>
+        <div class="field"><label data-i18n="cc.label.nit_cc">NIT / C.C.</label><input type="text" id="cc-cliente-doc" data-i18n-placeholder="formato.placeholder.nit_cedula" placeholder="000.000.000-0"></div>
+        <div class="field"><label data-i18n="formato.label.telefono">Teléfono</label><input type="tel" id="cc-cliente-tel" data-i18n-placeholder="formato.placeholder.telefono" placeholder="+57 300 000 0000"></div>
+        <div class="field span2"><label data-i18n="cc.cobrador.direccion">Dirección</label><input type="text" id="cc-cliente-dir" data-i18n-placeholder="cc.placeholder.direccion_cliente" placeholder="Dirección del cliente"></div>
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Servicios</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="cc.section.servicios">Servicios</span></div>
       <div class="tabla-cot-wrap">
         <table class="tabla-productos">
           <thead>
             <tr>
-              <th>Descripción</th>
-              <th style="text-align:center;">Cant.</th>
-              <th style="text-align:right;">Valor unitario</th>
-              <th style="text-align:right;">Total</th>
+              <th data-i18n="cc.table.descripcion">Descripción</th>
+              <th style="text-align:center;" data-i18n="cot.table.cant">Cant.</th>
+              <th style="text-align:right;" data-i18n="cc.table.valor_unitario">Valor unitario</th>
+              <th style="text-align:right;" data-i18n="cot.table.total">Total</th>
               <th></th>
             </tr>
           </thead>
@@ -2508,81 +2541,81 @@ try {
         </table>
       </div>
       <div style="margin-top:10px;">
-        <button type="button" class="btn-add-item" id="btn-cc-add-servicio">+ Agregar servicio</button>
+        <button type="button" class="btn-add-item" id="btn-cc-add-servicio" data-i18n="cc.btn.agregar_servicio">+ Agregar servicio</button>
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Totales</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="cc.section.totales">Totales</span></div>
       <div class="totales-box">
         <label class="iva-toggle">
           <input type="checkbox" id="cc-iva-check">
-          Incluir IVA 19%
+          <span data-i18n="cot.iva.toggle">Incluir IVA 19%</span>
         </label>
         <label class="iva-toggle">
           <input type="checkbox" id="cc-ret-check">
-          Retención en la fuente
+          <span data-i18n="cc.retencion.toggle">Retención en la fuente</span>
         </label>
         <div class="cc-ret-pct-wrap" id="cc-ret-pct-wrap">
-          <span>% Retención</span>
+          <span data-i18n="cc.retencion.pct_label">% Retención</span>
           <input type="number" id="cc-ret-pct" min="0" max="100" step="0.1" value="11" inputmode="decimal">
         </div>
         <div class="total-row">
-          <span class="total-label">Subtotal</span>
+          <span class="total-label" data-i18n="cot.total.subtotal">Subtotal</span>
           <span class="total-val" id="cc-subtotal-val">$ 0</span>
         </div>
         <div class="total-row" id="cc-iva-row" style="display:none;">
-          <span class="total-label">IVA (19%)</span>
+          <span class="total-label" data-i18n="cot.total.iva">IVA (19%)</span>
           <span class="total-val" id="cc-iva-val">$ 0</span>
         </div>
         <div class="total-row" id="cc-ret-row" style="display:none;">
-          <span class="total-label">Retención</span>
+          <span class="total-label" data-i18n="cc.total.retencion">Retención</span>
           <span class="total-val" id="cc-ret-val">$ 0</span>
         </div>
         <div class="total-row grand">
-          <span class="total-label" style="font-weight:700;color:var(--navy);">TOTAL A COBRAR</span>
+          <span class="total-label" style="font-weight:700;color:var(--navy);" data-i18n="cc.total.grand">TOTAL A COBRAR</span>
           <span class="total-val" id="cc-total-val">$ 0</span>
         </div>
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Datos de Pago</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="cc.section.datos_pago">Datos de Pago</span></div>
       <div id="cc-pago-editable" class="grid g2">
-        <div class="field"><label>Banco</label><input type="text" id="cc-pago-banco" placeholder="Ej. Bancolombia, Nequi…"></div>
-        <div class="field"><label>Tipo de cuenta</label>
+        <div class="field"><label data-i18n="cc.label.banco">Banco</label><input type="text" id="cc-pago-banco" data-i18n-placeholder="cc.placeholder.banco" placeholder="Ej. Bancolombia, Nequi…"></div>
+        <div class="field"><label data-i18n="cc.label.tipo_cuenta">Tipo de cuenta</label>
           <select id="cc-pago-tipo">
-            <option value="Ahorros">Ahorros</option>
-            <option value="Corriente">Corriente</option>
+            <option value="Ahorros" data-i18n="cc.cuenta.ahorros">Ahorros</option>
+            <option value="Corriente" data-i18n="cc.cuenta.corriente">Corriente</option>
           </select>
         </div>
-        <div class="field span2"><label>Número de cuenta</label><input type="text" id="cc-pago-numero" inputmode="numeric" placeholder="Número de cuenta"></div>
-        <div class="field"><label>Titular</label><input type="text" id="cc-pago-titular" placeholder="Nombre del titular"></div>
-        <div class="field"><label>NIT / Cédula titular</label><input type="text" id="cc-pago-titular-doc" placeholder="Documento del titular"></div>
+        <div class="field span2"><label data-i18n="cc.label.numero_cuenta">Número de cuenta</label><input type="text" id="cc-pago-numero" inputmode="numeric" data-i18n-placeholder="settings.placeholder.account_number" placeholder="Número de cuenta"></div>
+        <div class="field"><label data-i18n="cc.label.titular">Titular</label><input type="text" id="cc-pago-titular" data-i18n-placeholder="cc.placeholder.titular" placeholder="Nombre del titular"></div>
+        <div class="field"><label data-i18n="cc.label.nit_titular">NIT / Cédula titular</label><input type="text" id="cc-pago-titular-doc" data-i18n-placeholder="cc.placeholder.doc_titular" placeholder="Documento del titular"></div>
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Observaciones</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="cc.section.observaciones">Observaciones</span></div>
       <div class="field">
-        <textarea id="cc-obs" placeholder="Notas adicionales para el cliente..."></textarea>
+        <textarea id="cc-obs" data-i18n-placeholder="cc.placeholder.obs" placeholder="Notas adicionales para el cliente..."></textarea>
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Firmas</div>
+      <div class="section-title"><span class="dot"></span><span data-i18n="cc.section.firmas">Firmas</span></div>
       <div class="firmas">
         <div class="firma-box">
-          <div class="firma-label">Cobrador</div>
+          <div class="firma-label" data-i18n="cc.firma.cobrador">Cobrador</div>
           <div class="cc-firma-line">
-            <span>Firma</span>
+            <span data-i18n="cc.firma.label">Firma</span>
             <strong id="cc-firma-cobrador-nombre">—</strong>
           </div>
         </div>
         <div class="firma-box">
-          <div class="firma-label">Cliente</div>
+          <div class="firma-label" data-i18n="cc.firma.cliente">Cliente</div>
           <div class="cc-firma-line">
-            <span>Firma</span>
+            <span data-i18n="cc.firma.label">Firma</span>
             <strong id="cc-firma-cliente-nombre">—</strong>
           </div>
         </div>
@@ -2590,52 +2623,52 @@ try {
     </div>
 
     <div class="cc-actions-stack">
-      <button type="button" class="btn-cc-clear" id="btn-cc-limpiar">🗑 Limpiar</button>
-      <button type="button" class="btn-pdf-whatsapp" id="btn-cc-whatsapp">💬 WhatsApp</button>
-      <button type="button" class="btn-pdf-primary" id="btn-cc-pdf">📄 Generar PDF</button>
+      <button type="button" class="btn-cc-clear" id="btn-cc-limpiar" data-i18n="cc.btn.limpiar">🗑 Limpiar</button>
+      <button type="button" class="btn-pdf-whatsapp" id="btn-cc-whatsapp" data-i18n="cc.btn.whatsapp">💬 WhatsApp</button>
+      <button type="button" class="btn-pdf-primary" id="btn-cc-pdf" data-i18n="cc.btn.pdf">📄 Generar PDF</button>
     </div>
 
   </div><!-- /view-cuenta-cobro -->
 
   <div id="view-historial" class="suite-view body" hidden>
     <div class="section">
-      <div class="section-title"><span class="dot"></span>Historial de Servicios</div>
-      <p style="font-size:12px;color:var(--muted);margin:-4px 0 12px;line-height:1.5;">
+      <div class="section-title"><span class="dot"></span><span data-i18n="hist.section.title">Historial de Servicios</span></div>
+      <p style="font-size:12px;color:var(--muted);margin:-4px 0 12px;line-height:1.5;" data-i18n="hist.intro">
         Registros guardados al exportar PDF desde Formato. Máximo 200 servicios.
       </p>
-      <div id="historial-empty" class="historial-empty">
+      <div id="historial-empty" class="historial-empty" data-i18n-html="hist.empty">
         Aún no hay servicios en el historial.<br>Guarde un formato como PDF para registrar el primer servicio.
       </div>
       <div id="historial-list" class="historial-list"></div>
     </div>
     <div class="historial-actions">
-      <button type="button" class="btn-export-csv" id="btn-exportar-historial">Exportar Historial CSV</button>
+      <button type="button" class="btn-export-csv" id="btn-exportar-historial" data-i18n="hist.btn.export_csv">Exportar Historial CSV</button>
     </div>
   </div>
 
   <!-- BOTÓN GUARDAR PDF -->
   <div id="pdf-actions-formato" style="padding: 16px 24px; background: var(--bg); border-top: 1px solid var(--border);">
     <div class="pdf-actions-stack">
-      <button type="button" class="btn-pdf-primary" onclick="guardarPDFYHistorial()">
+      <button type="button" class="btn-pdf-primary" onclick="guardarPDFYHistorial()" data-i18n="pdf.btn.guardar_formato">
         📄 Guardar como PDF
       </button>
-      <button type="button" class="btn-pdf-whatsapp" onclick="guardarPDFYWhatsApp()">
+      <button type="button" class="btn-pdf-whatsapp" onclick="guardarPDFYWhatsApp()" data-i18n="pdf.btn.whatsapp_formato">
         📲 Enviar por WhatsApp
       </button>
     </div>
   </div>
   <div id="pdf-actions-cot" hidden style="padding: 16px 24px; background: var(--bg); border-top: 1px solid var(--border);">
     <div class="pdf-actions-stack">
-      <button type="button" class="btn-pdf-primary" onclick="guardarCotPDF()">
+      <button type="button" class="btn-pdf-primary" onclick="guardarCotPDF()" data-i18n="pdf.btn.guardar_cot">
         📄 Guardar como PDF
       </button>
-      <button type="button" class="btn-pdf-whatsapp" onclick="guardarCotPDFYWhatsApp()">
+      <button type="button" class="btn-pdf-whatsapp" onclick="guardarCotPDFYWhatsApp()" data-i18n="pdf.btn.whatsapp_cot">
         📲 Enviar por WhatsApp
       </button>
     </div>
   </div>
 
-  <footer class="suite-footer" id="suite-footer" aria-label="Pie de página">
+  <footer class="suite-footer" id="suite-footer" data-i18n-aria-label="footer.aria" aria-label="Pie de página">
     <div class="suite-footer-local" id="brand-screen-footer" data-editable="true">
       Su Empresa S.A.S. &nbsp;|&nbsp; NIT 000.000.000-0 &nbsp;|&nbsp; Tel 000-000-0000
     </div>
@@ -2646,48 +2679,48 @@ try {
         <a href="https://arpatechnologyglobal.com" class="suite-footer-global-link" target="_blank" rel="noopener noreferrer">ARPA Technology Global</a>
         ·
         <a href="https://arpatechnologyglobal.com" class="suite-footer-global-link" target="_blank" rel="noopener noreferrer">arpatechnologyglobal.com</a>
-        · Todos los derechos reservados.
+        · <span data-i18n="footer.global.rights">Todos los derechos reservados.</span>
       </p>
     </div>
   </footer>
 </div>
 
 <!-- MENÚ PRINCIPAL -->
-<nav class="main-menu" aria-label="Menú principal">
+<nav class="main-menu" data-i18n-aria-label="menu.aria" aria-label="Menú principal">
   <button type="button" class="main-menu-btn active" onclick="scrollToTopMenu(this)">
     <span class="main-menu-icon" aria-hidden="true">📋</span>
-    <span>Formato</span>
+    <span data-i18n="menu.formato">Formato</span>
   </button>
   <button type="button" class="main-menu-btn" onclick="openCotizacionView(this)">
     <span class="main-menu-icon" aria-hidden="true">💰</span>
-    <span>Cotización</span>
+    <span data-i18n="menu.cotizacion">Cotización</span>
   </button>
   <button type="button" class="main-menu-btn" onclick="openCatalogoView(this)">
     <span class="main-menu-icon" aria-hidden="true">📦</span>
-    <span>Catálogo</span>
+    <span data-i18n="menu.catalogo">Catálogo</span>
   </button>
   <button type="button" class="main-menu-btn" onclick="openHistorialView(this)">
     <span class="main-menu-icon" aria-hidden="true">🗂️</span>
-    <span>Historial</span>
+    <span data-i18n="menu.historial">Historial</span>
   </button>
   <button type="button" class="main-menu-btn" onclick="openCuentaCobroView(this)">
     <span class="main-menu-icon" aria-hidden="true">🧾</span>
-    <span>Cuenta de Cobro</span>
+    <span data-i18n="menu.cuenta_cobro">Cuenta de Cobro</span>
   </button>
   <button type="button" class="main-menu-btn" onclick="openSettingsModal(this)">
     <span class="main-menu-icon" aria-hidden="true">⚙️</span>
-    <span>Configuración</span>
+    <span data-i18n="menu.configuracion">Configuración</span>
   </button>
 </nav>
 
-<button type="button" class="catalogo-fab" id="btn-catalogo-fab" hidden aria-label="Agregar">+</button>
+<button type="button" class="catalogo-fab" id="btn-catalogo-fab" hidden data-i18n-aria-label="menu.fab_add.aria" aria-label="Agregar">+</button>
 
 <!-- MODAL IMPORTAR (MI CATÁLOGO) -->
 <div class="settings-overlay" id="catalogo-import-modal" role="dialog" aria-modal="true" aria-labelledby="catalogo-import-title">
   <div class="settings-modal catalogo-import-modal">
     <div class="settings-modal-header">
-      <h2 id="catalogo-import-title">Vista previa de importación</h2>
-      <button type="button" class="settings-modal-close" id="catalogo-import-close" aria-label="Cerrar">&times;</button>
+      <h2 id="catalogo-import-title" data-i18n="import.title">Vista previa de importación</h2>
+      <button type="button" class="settings-modal-close" id="catalogo-import-close" data-i18n-aria-label="settings.close.aria" aria-label="Cerrar">&times;</button>
     </div>
     <div class="settings-modal-body">
       <p id="catalogo-import-summary" class="catalogo-import-summary"></p>
@@ -2695,13 +2728,13 @@ try {
         <table class="catalogo-import-table">
           <thead>
             <tr>
-              <th>Nombre</th>
-              <th>Ref.</th>
-              <th>Precio</th>
-              <th>Unidad</th>
-              <th>Marca</th>
-              <th>Categoría</th>
-              <th>Estado</th>
+              <th data-i18n="import.table.nombre">Nombre</th>
+              <th data-i18n="import.table.ref">Ref.</th>
+              <th data-i18n="import.table.precio">Precio</th>
+              <th data-i18n="import.table.unidad">Unidad</th>
+              <th data-i18n="import.table.marca">Marca</th>
+              <th data-i18n="import.table.categoria">Categoría</th>
+              <th data-i18n="import.table.estado">Estado</th>
             </tr>
           </thead>
           <tbody id="catalogo-import-tbody"></tbody>
@@ -2709,9 +2742,9 @@ try {
       </div>
     </div>
     <div class="settings-modal-footer catalogo-import-actions">
-      <button type="button" id="btn-catalogo-import-cancel">Cancelar</button>
-      <button type="button" id="btn-catalogo-import-add" class="btn-import-add" disabled>Agregar a existentes</button>
-      <button type="button" id="btn-catalogo-import-replace" class="btn-import-replace" disabled>Reemplazar catálogo</button>
+      <button type="button" id="btn-catalogo-import-cancel" data-i18n="import.btn.cancel">Cancelar</button>
+      <button type="button" id="btn-catalogo-import-add" class="btn-import-add" disabled data-i18n="import.btn.add">Agregar a existentes</button>
+      <button type="button" id="btn-catalogo-import-replace" class="btn-import-replace" disabled data-i18n="import.btn.replace">Reemplazar catálogo</button>
     </div>
   </div>
 </div>
@@ -2720,19 +2753,19 @@ try {
 <div class="settings-overlay" id="catalogo-cat-modal" role="dialog" aria-modal="true" aria-labelledby="catalogo-cat-title">
   <div class="settings-modal">
     <div class="settings-modal-header">
-      <h2 id="catalogo-cat-title">Nueva categoría</h2>
-      <button type="button" class="settings-modal-close" id="catalogo-cat-close" aria-label="Cerrar">&times;</button>
+      <h2 id="catalogo-cat-title" data-i18n="cat_modal.title.new">Nueva categoría</h2>
+      <button type="button" class="settings-modal-close" id="catalogo-cat-close" data-i18n-aria-label="settings.close.aria" aria-label="Cerrar">&times;</button>
     </div>
     <div class="settings-modal-body">
       <p id="catalogo-cat-error" class="settings-error" role="alert" hidden></p>
       <div class="field">
-        <label for="cat-cat-nombre">Nombre de la categoría <span class="req">*</span></label>
-        <input type="text" id="cat-cat-nombre" required placeholder="Ej. Motores, Repuestos, Servicios…">
+        <label for="cat-cat-nombre"><span data-i18n="cat_modal.label.nombre">Nombre de la categoría</span> <span class="req">*</span></label>
+        <input type="text" id="cat-cat-nombre" required data-i18n-placeholder="cat_modal.placeholder.nombre" placeholder="Ej. Motores, Repuestos, Servicios…">
       </div>
     </div>
     <div class="settings-modal-footer">
-      <button type="button" id="btn-catalogo-cat-cancel">Cancelar</button>
-      <button type="button" id="btn-catalogo-cat-save" style="background:#1a2a4a;color:#fff;font-weight:700;">Guardar</button>
+      <button type="button" id="btn-catalogo-cat-cancel" data-i18n="common.btn.cancel">Cancelar</button>
+      <button type="button" id="btn-catalogo-cat-save" style="background:#1a2a4a;color:#fff;font-weight:700;" data-i18n="common.btn.save">Guardar</button>
     </div>
   </div>
 </div>
@@ -2741,46 +2774,46 @@ try {
 <div class="settings-overlay" id="catalogo-form-modal" role="dialog" aria-modal="true" aria-labelledby="catalogo-form-title">
   <div class="settings-modal">
     <div class="settings-modal-header">
-      <h2 id="catalogo-form-title">Nuevo producto</h2>
-      <button type="button" class="settings-modal-close" id="catalogo-form-close" aria-label="Cerrar">&times;</button>
+      <h2 id="catalogo-form-title" data-i18n="prod_modal.title.new">Nuevo producto</h2>
+      <button type="button" class="settings-modal-close" id="catalogo-form-close" data-i18n-aria-label="settings.close.aria" aria-label="Cerrar">&times;</button>
     </div>
     <div class="settings-modal-body">
       <p id="catalogo-form-error" class="settings-error" role="alert" hidden></p>
       <div class="field">
-        <label for="cat-form-nom">Nombre <span class="req">*</span></label>
-        <input type="text" id="cat-form-nom" required placeholder="Nombre del producto o servicio">
+        <label for="cat-form-nom"><span data-i18n="prod_modal.label.nombre">Nombre</span> <span class="req">*</span></label>
+        <input type="text" id="cat-form-nom" required data-i18n-placeholder="prod_modal.placeholder.nombre" placeholder="Nombre del producto o servicio">
       </div>
       <div class="field">
-        <label for="cat-form-cod">Referencia <span class="req">*</span></label>
-        <input type="text" id="cat-form-cod" required placeholder="Código o referencia única">
+        <label for="cat-form-cod"><span data-i18n="prod_modal.label.referencia">Referencia</span> <span class="req">*</span></label>
+        <input type="text" id="cat-form-cod" required data-i18n-placeholder="prod_modal.placeholder.referencia" placeholder="Código o referencia única">
       </div>
       <div class="grid g2">
         <div class="field">
-          <label for="cat-form-pvp">Precio unitario <span class="req">*</span></label>
+          <label for="cat-form-pvp"><span data-i18n="prod_modal.label.precio">Precio unitario</span> <span class="req">*</span></label>
           <input type="number" id="cat-form-pvp" min="0" step="1000" inputmode="numeric" placeholder="0">
         </div>
         <div class="field">
-          <label for="cat-form-unidad">Unidad <span class="req">*</span></label>
+          <label for="cat-form-unidad"><span data-i18n="prod_modal.label.unidad">Unidad</span> <span class="req">*</span></label>
           <select id="cat-form-unidad">
-            <option value="unidad">Unidad</option>
-            <option value="metro">Metro</option>
-            <option value="hora">Hora</option>
-            <option value="servicio">Servicio</option>
+            <option value="unidad" data-i18n="prod_modal.unidad.unidad">Unidad</option>
+            <option value="metro" data-i18n="prod_modal.unidad.metro">Metro</option>
+            <option value="hora" data-i18n="prod_modal.unidad.hora">Hora</option>
+            <option value="servicio" data-i18n="prod_modal.unidad.servicio">Servicio</option>
           </select>
         </div>
       </div>
       <div class="field">
-        <label for="cat-form-marca">Marca (opcional)</label>
-        <input type="text" id="cat-form-marca" placeholder="Marca del producto">
+        <label for="cat-form-marca" data-i18n="prod_modal.label.marca_optional">Marca (opcional)</label>
+        <input type="text" id="cat-form-marca" data-i18n-placeholder="prod_modal.placeholder.marca" placeholder="Marca del producto">
       </div>
       <div class="field">
-        <label for="cat-form-categoria">Categoría <span class="req">*</span></label>
+        <label for="cat-form-categoria"><span data-i18n="prod_modal.label.categoria">Categoría</span> <span class="req">*</span></label>
         <select id="cat-form-categoria" required></select>
       </div>
     </div>
     <div class="settings-modal-footer">
-      <button type="button" id="btn-catalogo-form-cancel">Cancelar</button>
-      <button type="button" id="btn-catalogo-form-save" style="background:var(--navy);color:#fff;font-weight:700;">Guardar</button>
+      <button type="button" id="btn-catalogo-form-cancel" data-i18n="common.btn.cancel">Cancelar</button>
+      <button type="button" id="btn-catalogo-form-save" style="background:var(--navy);color:#fff;font-weight:700;" data-i18n="common.btn.save">Guardar</button>
     </div>
   </div>
 </div>
@@ -2789,84 +2822,84 @@ try {
 <div class="settings-overlay" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
   <div class="settings-modal">
     <div class="settings-modal-header">
-      <h2 id="settings-modal-title">⚙️ Configuración de Empresa</h2>
-      <button type="button" class="settings-modal-close" onclick="closeSettingsModal()" aria-label="Cerrar">&times;</button>
+      <h2 id="settings-modal-title" data-i18n="settings.title">⚙️ Configuración de Empresa</h2>
+      <button type="button" class="settings-modal-close" onclick="closeSettingsModal()" data-i18n-aria-label="settings.close.aria" aria-label="Cerrar">&times;</button>
     </div>
     <div class="settings-modal-body">
       <p id="settings-error" class="settings-error" role="alert"></p>
       <div class="field">
-        <label for="settings-company">Nombre Empresa <span class="req">*</span></label>
-        <input type="text" id="settings-company" required autocomplete="organization" placeholder="Nombre de su empresa">
+        <label for="settings-company"><span data-i18n="settings.label.company">Nombre Empresa</span> <span class="req">*</span></label>
+        <input type="text" id="settings-company" required autocomplete="organization" data-i18n-placeholder="settings.placeholder.company" placeholder="Nombre de su empresa">
       </div>
       <div class="field">
-        <label for="settings-nit">NIT <span class="req">*</span></label>
-        <input type="text" id="settings-nit" required inputmode="numeric" placeholder="000.000.000-0">
+        <label for="settings-nit"><span data-i18n="settings.label.nit">NIT</span> <span class="req">*</span></label>
+        <input type="text" id="settings-nit" required inputmode="numeric" data-i18n-placeholder="formato.placeholder.nit_cedula" placeholder="000.000.000-0">
       </div>
       <div class="field">
-        <label for="settings-address">Dirección <span class="req">*</span></label>
-        <input type="text" id="settings-address" required autocomplete="street-address" placeholder="Dirección comercial">
+        <label for="settings-address"><span data-i18n="settings.label.address">Dirección</span> <span class="req">*</span></label>
+        <input type="text" id="settings-address" required autocomplete="street-address" data-i18n-placeholder="settings.placeholder.address" placeholder="Dirección comercial">
       </div>
       <div class="field">
-        <label for="settings-city">Ciudad (opcional)</label>
-        <input type="text" id="settings-city" autocomplete="address-level2" placeholder="Medellín">
+        <label for="settings-city" data-i18n="settings.label.city_optional">Ciudad (opcional)</label>
+        <input type="text" id="settings-city" autocomplete="address-level2" data-i18n-placeholder="formato.placeholder.ciudad" placeholder="Medellín">
       </div>
       <div class="field">
-        <label for="settings-phone">Teléfono <span class="req">*</span></label>
-        <input type="tel" id="settings-phone" required autocomplete="tel" inputmode="tel" placeholder="Teléfono de contacto">
+        <label for="settings-phone"><span data-i18n="settings.label.phone">Teléfono</span> <span class="req">*</span></label>
+        <input type="tel" id="settings-phone" required autocomplete="tel" inputmode="tel" data-i18n-placeholder="settings.placeholder.phone" placeholder="Teléfono de contacto">
       </div>
       <div class="field">
-        <label for="settings-website">Sitio web (opcional)</label>
-        <input type="url" id="settings-website" autocomplete="url" placeholder="https://su-empresa.com">
+        <label for="settings-website" data-i18n="settings.label.website_optional">Sitio web (opcional)</label>
+        <input type="url" id="settings-website" autocomplete="url" data-i18n-placeholder="settings.placeholder.website" placeholder="https://su-empresa.com">
       </div>
-      <div class="settings-section-title">Datos Bancarios</div>
+      <div class="settings-section-title" data-i18n="settings.section.bank">Datos Bancarios</div>
       <div class="field">
-        <label for="settings-bank">Banco <span class="req">*</span></label>
-        <input type="text" id="settings-bank" required placeholder="Nombre del banco">
+        <label for="settings-bank"><span data-i18n="settings.label.bank">Banco</span> <span class="req">*</span></label>
+        <input type="text" id="settings-bank" required data-i18n-placeholder="settings.placeholder.bank" placeholder="Nombre del banco">
       </div>
       <div class="field">
-        <label for="settings-account-type">Tipo de cuenta <span class="req">*</span></label>
+        <label for="settings-account-type"><span data-i18n="settings.label.account_type">Tipo de cuenta</span> <span class="req">*</span></label>
         <select id="settings-account-type" required>
-          <option value="Ahorros">Ahorros</option>
-          <option value="Corriente">Corriente</option>
+          <option value="Ahorros" data-i18n="cc.cuenta.ahorros">Ahorros</option>
+          <option value="Corriente" data-i18n="cc.cuenta.corriente">Corriente</option>
         </select>
       </div>
       <div class="field">
-        <label for="settings-account-number">Número de cuenta <span class="req">*</span></label>
-        <input type="text" id="settings-account-number" required inputmode="numeric" placeholder="Número de cuenta">
+        <label for="settings-account-number"><span data-i18n="settings.label.account_number">Número de cuenta</span> <span class="req">*</span></label>
+        <input type="text" id="settings-account-number" required inputmode="numeric" data-i18n-placeholder="settings.placeholder.account_number" placeholder="Número de cuenta">
       </div>
       <div class="field">
-        <label for="settings-account-holder">Titular de la cuenta (opcional)</label>
-        <input type="text" id="settings-account-holder" autocomplete="name" placeholder="Nombre del titular">
+        <label for="settings-account-holder" data-i18n="settings.label.account_holder_optional">Titular de la cuenta (opcional)</label>
+        <input type="text" id="settings-account-holder" autocomplete="name" data-i18n-placeholder="cc.placeholder.titular" placeholder="Nombre del titular">
       </div>
       <div class="field">
-        <label for="settings-account-holder-doc">NIT / Cédula del titular (opcional)</label>
-        <input type="text" id="settings-account-holder-doc" placeholder="Documento del titular">
+        <label for="settings-account-holder-doc" data-i18n="settings.label.holder_doc_optional">NIT / Cédula del titular (opcional)</label>
+        <input type="text" id="settings-account-holder-doc" data-i18n-placeholder="cc.placeholder.doc_titular" placeholder="Documento del titular">
       </div>
       <div class="field">
-        <label for="settings-technician">Nombre del técnico (opcional)</label>
-        <input type="text" id="settings-technician" autocomplete="name" placeholder="Nombre del técnico responsable">
+        <label for="settings-technician" data-i18n="settings.label.technician_optional">Nombre del técnico (opcional)</label>
+        <input type="text" id="settings-technician" autocomplete="name" data-i18n-placeholder="settings.placeholder.technician" placeholder="Nombre del técnico responsable">
       </div>
       <div class="field">
-        <label for="settings-technician-doc">Cédula / NIT del técnico (opcional)</label>
-        <input type="text" id="settings-technician-doc" placeholder="Documento del técnico">
+        <label for="settings-technician-doc" data-i18n="settings.label.technician_doc_optional">Cédula / NIT del técnico (opcional)</label>
+        <input type="text" id="settings-technician-doc" data-i18n-placeholder="cc.placeholder.doc_titular" placeholder="Documento del técnico">
       </div>
       <div class="field">
-        <label for="settings-logo">Logo de su empresa</label>
+        <label for="settings-logo" data-i18n="settings.label.logo">Logo de su empresa</label>
         <div class="logo-upload-box">
           <div class="logo-upload-preview-wrap">
             <img id="settings-logo-preview" class="logo-upload-preview" src="./logo-arpa-suite.png" alt="Vista previa del logo">
           </div>
-          <p class="logo-upload-hint">Suba su logo (PNG, JPG o WebP). Si no carga uno, se usará el logo oficial de ARPA Suite.</p>
+          <p class="logo-upload-hint" data-i18n="settings.logo.hint">Suba su logo (PNG, JPG o WebP). Si no carga uno, se usará el logo oficial de ARPA Suite.</p>
           <input type="file" id="settings-logo" class="logo-upload-input" accept="image/png,image/jpeg,image/webp,image/gif" onchange="previewLogoUpload(this)">
         </div>
       </div>
-      <div class="settings-section-title">Lista de Precios</div>
-      <p style="font-size:11px;color:var(--muted);line-height:1.4;margin-bottom:4px;">Valores base para servicios recurrentes. Se aplican en Cotización (editables antes del PDF).</p>
+      <div class="settings-section-title" data-i18n="settings.section.price_list">Lista de Precios</div>
+      <p style="font-size:11px;color:var(--muted);line-height:1.4;margin-bottom:4px;" data-i18n="settings.price_list.hint">Valores base para servicios recurrentes. Se aplican en Cotización (editables antes del PDF).</p>
       <div id="settings-price-list" class="servicios-grid"></div>
     </div>
     <div class="settings-modal-footer">
-      <button type="button" class="btn-settings-cancel" onclick="closeSettingsModal()">Cancelar</button>
-      <button type="button" class="btn-settings-save" onclick="saveSettingsFromModal()">Guardar</button>
+      <button type="button" class="btn-settings-cancel" onclick="closeSettingsModal()" data-i18n="settings.btn.cancel">Cancelar</button>
+      <button type="button" class="btn-settings-save" onclick="saveSettingsFromModal()" data-i18n="settings.btn.save">Guardar</button>
     </div>
   </div>
 </div>
@@ -3346,6 +3379,7 @@ if ('serviceWorker' in navigator) {
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js" crossorigin="anonymous"></script>
+<script src="./js/arpa-i18n.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" crossorigin="anonymous"></script>
 <script src="./js/arpa-brand.js"></script>
