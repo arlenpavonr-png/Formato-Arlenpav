@@ -300,6 +300,32 @@ nav {
   -webkit-mask-composite: destination-out; mask-composite: exclude;
 }
 
+/* AUDIENCE — ¿Para quién es? */
+.audience-section {
+  padding:100px 0;
+  background:linear-gradient(180deg,var(--bg-800) 0%,rgba(26,42,74,0.25) 50%,var(--bg-900) 100%);
+}
+.audience-header { text-align:center;display:flex;flex-direction:column;align-items:center;margin-bottom:56px; }
+.audience-header .sec-sub { margin-bottom:0; }
+.audience-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:1140px;margin:0 auto; }
+.audience-card {
+  background:var(--bg-card);border:1px solid var(--border2);border-radius:var(--r2);
+  padding:32px 28px;display:flex;flex-direction:column;height:100%;
+  transition:all 0.3s ease;
+}
+.audience-card:hover { border-color:rgba(201,168,76,0.25);transform:translateY(-4px);box-shadow:0 24px 48px rgba(0,0,0,0.35); }
+.audience-card.featured {
+  border:2px solid #c9a84c;
+  background:linear-gradient(180deg,rgba(26,42,74,0.4) 0%,var(--bg-card) 60%);
+}
+.audience-icon {
+  width:56px;height:56px;border-radius:14px;
+  background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.2);
+  display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:20px;
+}
+.audience-title { font-family:var(--font-display);font-size:20px;font-weight:700;margin-bottom:14px;letter-spacing:-0.3px;line-height:1.25; }
+.audience-desc { font-size:14px;color:var(--gray);line-height:1.65;margin:0;flex-grow:1; }
+
 /* PRICING */
 .pricing-section { padding:100px 0; background:radial-gradient(ellipse 80% 50% at 50% 50%,rgba(201,168,76,0.04) 0%,transparent 70%); }
 .pricing-header { text-align:center; display:flex; flex-direction:column; align-items:center; margin-bottom:60px; }
@@ -352,6 +378,7 @@ footer { padding:64px 0 40px;border-top:1px solid var(--border2); background: #0
   .tablet-wrap{display:flex; justify-content:center;}
   .pricing-grid{grid-template-columns:1fr;max-width:440px;}
   .features-grid{grid-template-columns:1fr;}
+  .audience-grid{grid-template-columns:1fr;max-width:440px;}
 }
 </style>
 </head>
@@ -541,6 +568,37 @@ footer { padding:64px 0 40px;border-top:1px solid var(--border2); background: #0
           <strong>Tu operaci├│n no se detiene si se cae la red.</strong> Los softwares tradicionales en la nube se quedan colgados en s├│tanos, zonas rurales o parqueaderos subterr├íneos, dejando a tus t├®cnicos incomunicados. ARPA Suite procesa todo de forma local en la memoria del dispositivo. Adem├ís, <strong>tus datos comerciales e inventarios jam├ís se almacenan en servidores de terceros</strong>: son estrictamente confidenciales y de tu propiedad. Si el celular tiene bater├¡a, tu empresa factura.
         </p>
       </div>
+    </div>
+  </div>
+</section>
+
+<section class="audience-section" id="para-quien">
+  <div class="wrap">
+    <div class="audience-header">
+      <div class="sec-label">Perfiles de uso</div>
+      <h2 class="sec-title">¿Para quién es?</h2>
+      <p class="sec-sub">Tres perfiles, una plataforma. ARPA Suite se adapta a cómo trabajas — solo, en equipo o bajo tu propia marca.</p>
+    </div>
+    <div class="audience-grid">
+
+      <div class="audience-card">
+        <div class="audience-icon">🔌</div>
+        <h3 class="audience-title">Técnicos Independientes</h3>
+        <p class="audience-desc">Electricistas, plomeros, refrigeración, automatismos, techos corredizos, cerrajeros — cualquier técnico de campo que quiera verse profesional.</p>
+      </div>
+
+      <div class="audience-card featured">
+        <div class="audience-icon">🏢</div>
+        <h3 class="audience-title">Empresas PYME</h3>
+        <p class="audience-desc">Negocios con 2 a 20 técnicos en campo que necesitan control, documentación e imagen corporativa.</p>
+      </div>
+
+      <div class="audience-card">
+        <div class="audience-icon">🏷️</div>
+        <h3 class="audience-title">Marca Propia</h3>
+        <p class="audience-desc">Empresas que quieren la plataforma con su propio nombre y logo, sin que sus clientes sepan qué software usan.</p>
+      </div>
+
     </div>
   </div>
 </section>
