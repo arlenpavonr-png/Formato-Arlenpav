@@ -1,9 +1,10 @@
-const CACHE_NAME = 'arpa-suite-cache-v34';
+const CACHE_NAME = 'arpa-suite-cache-v35';
 const BASE = self.location.pathname.replace(/service-worker\.js$/, '');
 const ASSETS = [
   BASE,
   BASE + 'index.html',
   BASE + 'manifest.json',
+  BASE + 'icon-192x192.png',
   BASE + 'logo-arpa-suite.png',
   BASE + 'js/arpa-brand.js',
   BASE + 'js/arpa-catalogo.js',

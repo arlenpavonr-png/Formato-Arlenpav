@@ -22,7 +22,7 @@
     logoBase64: ''
   };
 
-  const DEFAULT_LOGO = './logo-arpa-suite.png';
+  const DEFAULT_LOGO = './icon-192x192.png';
 
   let pendingLogoBase64 = null;
 
