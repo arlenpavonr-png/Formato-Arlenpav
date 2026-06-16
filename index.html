@@ -1759,6 +1759,74 @@
   html:not(.license-ok) .page,
   html:not(.license-ok) .main-menu,
   html:not(.license-ok) .settings-overlay { visibility: hidden; }
+  .license-gate-panel { display: none; }
+  .license-gate-panel.is-visible { display: block; }
+  .license-gate-loading-spinner {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 16px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #c9a84c;
+    border-radius: 50%;
+    animation: license-spin 0.8s linear infinite;
+  }
+  @keyframes license-spin { to { transform: rotate(360deg); } }
+  .license-gate-expired-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    line-height: 1;
+  }
+  .license-gate-upgrade-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 20px 0 16px;
+  }
+  .license-gate-btn-pro {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    background: #1a2a4a;
+    color: #ffffff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    text-align: center;
+    letter-spacing: 0.03em;
+  }
+  .license-gate-btn-pyme {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    background: #c9a84c;
+    color: #1a2a4a;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    text-align: center;
+    letter-spacing: 0.03em;
+  }
+  .license-gate-btn-link {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #1a2a4a;
+    font-weight: 600;
+    text-decoration: underline;
+  }
+  .license-gate-manual-link {
+    margin-top: 16px;
+    font-size: 12px;
+    color: #5a6478;
+  }
+  .license-gate-manual-link a {
+    color: #1a2a4a;
+    font-weight: 600;
+  }
   .license-gate-card {
     width: 100%;
     max-width: 400px;
@@ -2016,11 +2084,7 @@
   }
 </style>
 <script>
-try {
-  if ((localStorage.getItem('arpa_suite_license_code') || '').trim()) {
-    document.documentElement.classList.add('license-ok');
-  }
-} catch (e) {}
+document.documentElement.classList.add('license-checking');
 </script>
 </head>
 <body>
@@ -2031,7 +2095,22 @@ try {
       <img src="./icon-192x192.png" alt="ARPA Suite">
     </div>
     <h1 id="license-gate-title" class="license-gate-title" data-i18n="license_gate.title">ARPA Suite</h1>
-    <div id="license-gate-activate">
+    <div id="license-gate-loading" class="license-gate-panel is-visible">
+      <div class="license-gate-loading-spinner" aria-hidden="true"></div>
+      <p id="license-gate-loading-text" class="license-gate-sub" data-i18n="license_gate.loading">Activando su prueba de 7 días…</p>
+    </div>
+    <div id="license-gate-expired" class="license-gate-panel">
+      <div class="license-gate-expired-icon" aria-hidden="true">⏱</div>
+      <p class="license-gate-sub" data-i18n="license_gate.expired_title">Su prueba de 7 días ha terminado.</p>
+      <p class="license-gate-sub" data-i18n="license_gate.expired_sub">Elija un plan para seguir usando ARPA Suite. Recibirá su código por email al comprar.</p>
+      <div class="license-gate-upgrade-btns">
+        <a id="license-btn-pro" class="license-gate-btn-pro" href="https://arpatechnologyglobal.com/" target="_blank" rel="noopener" data-i18n="license_gate.btn_pro">Comprar plan Pro</a>
+        <a id="license-btn-pyme" class="license-gate-btn-pyme" href="https://arpatechnologyglobal.com/" target="_blank" rel="noopener" data-i18n="license_gate.btn_pyme">Comprar plan PYME</a>
+      </div>
+      <a id="license-btn-whatsapp" class="license-gate-btn-link" href="https://wa.me/573017419558" target="_blank" rel="noopener" data-i18n="license_gate.btn_whatsapp">¿Dudas? Escríbenos por WhatsApp</a>
+      <p class="license-gate-manual-link"><span data-i18n="license_gate.have_code">¿Ya tiene un código Pro o PYME?</span> <a href="#" id="license-show-manual" data-i18n="license_gate.enter_code">Ingréselo aquí</a></p>
+    </div>
+    <div id="license-gate-activate" class="license-gate-panel">
       <p id="license-gate-sub" class="license-gate-sub" data-i18n="license_gate.subtitle">Ingrese su código de licencia para activar la plataforma.</p>
       <div class="license-gate-field">
         <label for="license-code-input" data-i18n="license_gate.label_code">Código de licencia</label>
@@ -2039,6 +2118,7 @@ try {
       </div>
       <p id="license-error" class="license-gate-error" role="alert"></p>
       <button type="button" id="license-activate-btn" class="license-gate-btn" data-i18n="license_gate.btn_verify">Verificar</button>
+      <p class="license-gate-manual-link"><a href="#" id="license-retry-trial" data-i18n="license_gate.retry_trial" hidden>Reintentar activación automática</a></p>
     </div>
   </div>
 </div>
@@ -3314,21 +3394,51 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 
-<!-- Validación de licencia: 100% inline (sin arpa-license.js ni loaders externos) -->
+<!-- Validación de licencia: trial auto 7 días + revalidación en cada apertura -->
 <script data-cfasync="false" type="text/javascript" charset="utf-8">
 (function () {
   var LICENSE_API = 'https://script.google.com/macros/s/AKfycbx4pOeZNxpA5T9hrZNaJgkB9BCEC2DbVjdHfOu0wmMV5RJsGfQAbiCldD3pPa43kuEw/exec';
   var LICENSE_STORAGE_KEY = 'arpa_suite_license_code';
+  var LICENSE_VENC_KEY = 'arpa_suite_license_vencimiento';
+  var LICENSE_PLAN_KEY = 'arpa_suite_license_plan';
+  var DEVICE_STORAGE_KEY = 'arpa_suite_device_id';
   var JSONP_SCRIPT_ID = 'suite-license-jsonp';
+  var jsonpCounter = 0;
+
+  function t(key, fallback) {
+    if (window.ArpaI18n && typeof window.ArpaI18n.t === 'function') {
+      var val = window.ArpaI18n.t(key);
+      if (val && val !== key) return val;
+    }
+    return fallback || key;
+  }
 
   function unlockApp() {
+    document.documentElement.classList.remove('license-checking');
     document.documentElement.classList.add('license-ok');
+  }
+
+  function lockApp() {
+    document.documentElement.classList.remove('license-ok');
+    document.documentElement.classList.add('license-checking');
+  }
+
+  function showPanel(name) {
+    ['loading', 'expired', 'activate'].forEach(function (id) {
+      var el = document.getElementById('license-gate-' + id);
+      if (el) el.classList.toggle('is-visible', id === name);
+    });
+  }
+
+  function setLoadingText(text) {
+    var el = document.getElementById('license-gate-loading-text');
+    if (el) el.textContent = text;
   }
 
   function showLicenseError(message) {
     var el = document.getElementById('license-error');
     if (!el) return;
-    el.textContent = message || 'Código de licencia inválido.';
+    el.textContent = message || t('license_gate.error_invalid', 'Código de licencia inválido.');
     el.classList.add('visible');
   }
 
@@ -3344,32 +3454,107 @@ if ('serviceWorker' in navigator) {
     if (old && old.parentNode) old.parentNode.removeChild(old);
   }
 
-  function validarLicenciaJsonp(codigo) {
+  function licenseApiJsonp(params) {
     return new Promise(function (resolve, reject) {
       removeJsonpScript();
+      jsonpCounter += 1;
+      var cbName = 'arpaLicenseCb' + jsonpCounter + '_' + Date.now();
 
-      window.validarLicencia = function (data) {
-        try { delete window.validarLicencia; } catch (e) { window.validarLicencia = undefined; }
+      window[cbName] = function (data) {
+        try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
         removeJsonpScript();
         resolve(data);
       };
+
+      var qs = [];
+      Object.keys(params || {}).forEach(function (k) {
+        qs.push(encodeURIComponent(k) + '=' + encodeURIComponent(params[k]));
+      });
+      qs.push('callback=' + encodeURIComponent(cbName));
 
       var script = document.createElement('script');
       script.id = JSONP_SCRIPT_ID;
       script.type = 'text/javascript';
       script.charset = 'UTF-8';
       script.onerror = function () {
-        try { delete window.validarLicencia; } catch (e) { window.validarLicencia = undefined; }
+        try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
         removeJsonpScript();
         reject(new Error('network'));
       };
-
-      script.src = LICENSE_API
-        + '?codigo=' + encodeURIComponent(String(codigo).trim())
-        + '&callback=validarLicencia';
-
+      script.src = LICENSE_API + '?' + qs.join('&');
       (document.body || document.head).appendChild(script);
     });
+  }
+
+  function validarLicenciaJsonp(codigo) {
+    return licenseApiJsonp({ codigo: String(codigo).trim() });
+  }
+
+  function provisionTrialJsonp(deviceId) {
+    return licenseApiJsonp({ accion: 'provision_trial', device_id: deviceId });
+  }
+
+  function getOrCreateDeviceId() {
+    try {
+      var id = (localStorage.getItem(DEVICE_STORAGE_KEY) || '').trim();
+      if (id && id.length >= 12) return id;
+      id = (window.crypto && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : ('d-' + Date.now() + '-' + Math.random().toString(36).slice(2, 12));
+      localStorage.setItem(DEVICE_STORAGE_KEY, id);
+      return id;
+    } catch (e) {
+      return 'd-' + Date.now() + '-' + Math.random().toString(36).slice(2, 12);
+    }
+  }
+
+  function parseDateOnly(str) {
+    if (!str) return null;
+    var parts = String(str).split('-');
+    if (parts.length === 3) {
+      var d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      return isNaN(d.getTime()) ? null : d;
+    }
+    var d2 = new Date(str);
+    return isNaN(d2.getTime()) ? null : d2;
+  }
+
+  function isLocallyExpired() {
+    try {
+      var venc = (localStorage.getItem(LICENSE_VENC_KEY) || '').trim();
+      var d = parseDateOnly(venc);
+      if (!d) return false;
+      var today = new Date();
+      today.setHours(0, 0, 0, 0);
+      d.setHours(0, 0, 0, 0);
+      return d < today;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function saveLicenseData(data) {
+    try {
+      if (data.codigo) localStorage.setItem(LICENSE_STORAGE_KEY, String(data.codigo).trim().toUpperCase());
+      if (data.vencimiento) localStorage.setItem(LICENSE_VENC_KEY, data.vencimiento);
+      if (data.plan) localStorage.setItem(LICENSE_PLAN_KEY, data.plan);
+    } catch (e) {}
+  }
+
+  function clearLicenseData() {
+    try {
+      localStorage.removeItem(LICENSE_STORAGE_KEY);
+      localStorage.removeItem(LICENSE_VENC_KEY);
+      localStorage.removeItem(LICENSE_PLAN_KEY);
+    } catch (e) {}
+  }
+
+  function getSavedCode() {
+    try {
+      return (localStorage.getItem(LICENSE_STORAGE_KEY) || '').trim();
+    } catch (e) {
+      return '';
+    }
   }
 
   function tryOnboarding() {
@@ -3378,33 +3563,121 @@ if ('serviceWorker' in navigator) {
     }
   }
 
-  function initLicenseGate() {
+  function showExpiredPanel() {
+    lockApp();
+    showPanel('expired');
+  }
+
+  function showActivatePanel() {
+    lockApp();
+    showPanel('activate');
     var input = document.getElementById('license-code-input');
-    var btn = document.getElementById('license-activate-btn');
-    var saved = '';
+    if (input) input.focus();
+  }
 
-    try {
-      saved = (localStorage.getItem(LICENSE_STORAGE_KEY) || '').trim();
-    } catch (e) {}
+  function handleValidLicense(data) {
+    saveLicenseData(data);
+    unlockApp();
+    tryOnboarding();
+  }
 
-    if (saved) {
-      unlockApp();
-      tryOnboarding();
+  function handleInvalidLicense(data) {
+    clearLicenseData();
+    if (data && (data.vencida || data.trial_usado)) {
+      showExpiredPanel();
+      return;
+    }
+    showActivatePanel();
+    showLicenseError((data && data.mensaje) || t('license_gate.error_invalid', 'Código de licencia inválido.'));
+  }
+
+  function validateSavedCode(saved) {
+    setLoadingText(t('license_gate.validating', 'Verificando licencia…'));
+    showPanel('loading');
+
+    if (isLocallyExpired()) {
+      handleInvalidLicense({ vencida: true, trial_usado: true, mensaje: 'Licencia vencida.' });
       return;
     }
 
-    if (input) input.focus();
+    validarLicenciaJsonp(saved)
+      .then(function (data) {
+        if (data && data.valido === true) {
+          handleValidLicense(data);
+        } else if (isLocallyExpired()) {
+          handleInvalidLicense({ vencida: true, trial_usado: true, mensaje: 'Licencia vencida.' });
+        } else {
+          handleInvalidLicense(data);
+        }
+      })
+      .catch(function () {
+        if (saved && !isLocallyExpired()) {
+          unlockApp();
+          tryOnboarding();
+          validarLicenciaJsonp(saved).then(function (data) {
+            if (data && data.valido === true) saveLicenseData(data);
+            else if (data && !data.valido) handleInvalidLicense(data);
+          }).catch(function () {});
+        } else {
+          showActivatePanel();
+          showLicenseError(t('license_gate.error_network', 'No se pudo verificar la licencia. Compruebe su conexión e intente de nuevo.'));
+        }
+      });
+  }
+
+  function provisionAutoTrial() {
+    var deviceId = getOrCreateDeviceId();
+    setLoadingText(t('license_gate.loading', 'Activando su prueba de 7 días…'));
+    showPanel('loading');
+
+    provisionTrialJsonp(deviceId)
+      .then(function (data) {
+        if (data && data.valido === true) {
+          handleValidLicense(data);
+          return;
+        }
+        if (data && (data.vencida || data.trial_usado)) {
+          handleInvalidLicense(data);
+          return;
+        }
+        showActivatePanel();
+        showLicenseError((data && data.mensaje) || t('license_gate.error_trial', 'No se pudo activar la prueba. Ingrese su código o reintente.'));
+      })
+      .catch(function () {
+        showActivatePanel();
+        showLicenseError(t('license_gate.error_network', 'No se pudo verificar la licencia. Compruebe su conexión e intente de nuevo.'));
+        var retry = document.getElementById('license-retry-trial');
+        if (retry) retry.hidden = false;
+      });
+  }
+
+  function initLicenseGate() {
+    var input = document.getElementById('license-code-input');
+    var btn = document.getElementById('license-activate-btn');
+    var saved = getSavedCode();
+
+    document.getElementById('license-show-manual')?.addEventListener('click', function (e) {
+      e.preventDefault();
+      showActivatePanel();
+      hideLicenseError();
+    });
+
+    document.getElementById('license-retry-trial')?.addEventListener('click', function (e) {
+      e.preventDefault();
+      hideLicenseError();
+      provisionAutoTrial();
+    });
 
     function resetBtn() {
       if (!btn) return;
       btn.disabled = false;
-      btn.textContent = 'Verificar';
+      btn.textContent = t('license_gate.btn_verify', 'Verificar');
     }
 
     function verifyLicense() {
       var code = (input && input.value || '').trim();
       if (!code) {
-        showLicenseError('Ingrese su código de licencia.');
+        showLicenseError(t('license_gate.error_required', 'Ingrese su código de licencia.'));
         if (input) input.focus();
         return;
       }
@@ -3412,23 +3685,21 @@ if ('serviceWorker' in navigator) {
       hideLicenseError();
       if (btn) {
         btn.disabled = true;
-        btn.textContent = 'Verificando…';
+        btn.textContent = t('license_gate.btn_verifying', 'Verificando…');
       }
 
       validarLicenciaJsonp(code)
         .then(function (data) {
           if (data && data.valido === true) {
-            try { localStorage.setItem(LICENSE_STORAGE_KEY, code); } catch (e) {}
-            unlockApp();
-            tryOnboarding();
+            handleValidLicense(Object.assign({ codigo: code }, data));
           } else {
-            showLicenseError((data && data.mensaje) || 'Código de licencia inválido.');
+            showLicenseError((data && data.mensaje) || t('license_gate.error_invalid', 'Código de licencia inválido.'));
             if (input) input.focus();
           }
           resetBtn();
         })
         .catch(function () {
-          showLicenseError('No se pudo verificar la licencia. Compruebe su conexión e intente de nuevo.');
+          showLicenseError(t('license_gate.error_network', 'No se pudo verificar la licencia. Compruebe su conexión e intente de nuevo.'));
           resetBtn();
         });
     }
@@ -3438,6 +3709,12 @@ if ('serviceWorker' in navigator) {
       input.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') verifyLicense();
       });
+    }
+
+    if (saved) {
+      validateSavedCode(saved);
+    } else {
+      provisionAutoTrial();
     }
   }
 
