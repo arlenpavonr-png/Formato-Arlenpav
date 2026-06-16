@@ -46,8 +46,7 @@
   function updateCatalogHint() {
     const hint = document.getElementById('cot-catalog-hint');
     if (!hint) return;
-    const usingUser = global.ArpaCatalogo?.hasUserCatalog?.() || false;
-    hint.hidden = usingUser;
+    hint.hidden = getCatalogoActivo().length > 0;
   }
 
   let filas = [];

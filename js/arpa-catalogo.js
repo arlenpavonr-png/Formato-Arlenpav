@@ -368,6 +368,52 @@
 
   function invalidateListaCache() {
     listaPlanaCache = null;
+    listaPlanaMergedCache = null;
+  }
+
+  function mergeCatalogLists(...lists) {
+    const byCode = new Map();
+    lists.forEach((list) => {
+      list.forEach((p) => {
+        const cod = canonicalCodigo(p.cod);
+        if (!cod) return;
+        byCode.set(cod, { ...p, cod });
+      });
+    });
+    return Array.from(byCode.values());
+  }
+
+  function buildListaBftNasExtended() {
+    const catalog = global.CATALOGO_BFT_NAS;
+    if (!Array.isArray(catalog)) return [];
+    return catalog.map((p) => {
+      const cod = canonicalCodigo(p.codigo);
+      const marca = (p.marca || '').trim();
+      const nombre = (p.nombre || '').trim();
+      return {
+        cod,
+        nom: marca ? `${marca} – ${nombre}` : nombre,
+        marca,
+        categoria: p.categoria || '',
+        pvp: Number(p.precio) || 0,
+      };
+    });
+  }
+
+  function findInBftNasCatalog(cod) {
+    const catalog = global.CATALOGO_BFT_NAS;
+    if (!Array.isArray(catalog)) return null;
+    const item = catalog.find((p) => canonicalCodigo(p.codigo) === cod);
+    if (!item) return null;
+    const marca = (item.marca || '').trim();
+    const nombre = (item.nombre || '').trim();
+    return {
+      cod,
+      nom: marca ? `${marca} – ${nombre}` : nombre,
+      marca,
+      categoria: item.categoria || '',
+      pvp: Number(item.precio) || 0,
+    };
   }
 
   function getPrecioVenta(cod, item) {
@@ -382,6 +428,7 @@
   enrichCatalogoPrecios();
 
   let listaPlanaCache = null;
+  let listaPlanaMergedCache = null;
 
   function buildListaDefault() {
     const list = [];
@@ -401,12 +448,20 @@
     return list;
   }
 
+  function getListaBaseMerged() {
+    if (!listaPlanaMergedCache) {
+      listaPlanaMergedCache = mergeCatalogLists(
+        buildListaDefault(),
+        buildListaBftNasExtended()
+      );
+    }
+    return listaPlanaMergedCache;
+  }
+
   function getListaProductos() {
     const user = userProductsToFlat();
-    if (user.length) return user;
-    if (listaPlanaCache) return listaPlanaCache;
-    listaPlanaCache = buildListaDefault();
-    return listaPlanaCache;
+    if (!user.length) return getListaBaseMerged();
+    return mergeCatalogLists(getListaBaseMerged(), user);
   }
 
   function getListaProductosDefault() {
@@ -431,7 +486,10 @@
     );
     if (userItem) return userItem.pvp || 0;
     const item = findRawItem(canon);
-    return getPrecioVenta(canon, item || { cod: canon });
+    if (item) return getPrecioVenta(canon, item);
+    const bftNas = findInBftNasCatalog(canon);
+    if (bftNas) return bftNas.pvp || 0;
+    return getPrecioVenta(canon, { cod: canon });
   }
 
   function findByCod(cod) {
@@ -457,7 +515,8 @@
         });
       });
     });
-    return found;
+    if (found) return found;
+    return findInBftNasCatalog(canon);
   }
 
   global.ArpaCatalogo = {

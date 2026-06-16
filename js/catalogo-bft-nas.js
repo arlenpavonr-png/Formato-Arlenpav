@@ -439,4 +439,5 @@
 
   global.CATALOGO_BFT_NAS = CATALOGO_BFT_NAS;
   global.precargarCatalogoBFTNAS = precargarCatalogoBFTNAS;
+  global.ArpaCatalogo?.invalidateListaCache?.();
 })(typeof window !== 'undefined' ? window : globalThis);
