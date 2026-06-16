@@ -4,6 +4,7 @@
 (function (global) {
   const SETTINGS_KEY = 'arpa_suite_user_settings';
   const SETTINGS_CONFIGURED_KEY = 'arpa_suite_settings_configured';
+  const SALES_ENTRY_KEY = 'arpa_suite_sales_entry';
   const FORMATO_DRAFT_KEY = 'arpa_formato_borrador';
   const GLOBAL_BRAND_URL = 'https://arpatechnologyglobal.com';
   const GLOBAL_FOOTER_TEXT = '© 2026 ARPA Technology Global · arpatechnologyglobal.com · Todos los derechos reservados.';
@@ -335,6 +336,7 @@
 
     if (!saveSettings(settings)) return;
     try { localStorage.setItem(SETTINGS_CONFIGURED_KEY, 'true'); } catch (e) {}
+    try { localStorage.setItem(SALES_ENTRY_KEY, 'true'); } catch (e) {}
 
     global.ArpaPricing?.savePriceList?.(global.ArpaPricing.readPriceListFromSettingsForm());
     global.ArpaCobros?.seedFromPriceList?.('cot');
@@ -398,6 +400,7 @@
   global.ArpaBrand = {
     SETTINGS_KEY,
     SETTINGS_CONFIGURED_KEY,
+    SALES_ENTRY_KEY,
     FORMATO_DRAFT_KEY,
     GLOBAL_BRAND_URL,
     GLOBAL_FOOTER_TEXT,

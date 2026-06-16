@@ -2092,6 +2092,63 @@
   }
 </style>
 <script>
+(function () {
+  var LANDING_URL = 'https://arpatechnologyglobal.com/';
+  var SETTINGS_KEY = 'arpa_suite_user_settings';
+  var CONFIGURED_KEY = 'arpa_suite_settings_configured';
+  var SALES_ENTRY_KEY = 'arpa_suite_sales_entry';
+  var LICENSE_KEY = 'arpa_suite_license_code';
+
+  function hasCompanySettings() {
+    try {
+      if (localStorage.getItem(CONFIGURED_KEY) === 'true') return true;
+      var saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      return Boolean(String(saved.companyName || '').trim());
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function hasSalesEntry() {
+    try {
+      return localStorage.getItem(SALES_ENTRY_KEY) === 'true';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function hasActiveLicense() {
+    try {
+      return Boolean((localStorage.getItem(LICENSE_KEY) || '').trim());
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function markSalesEntry() {
+    try {
+      localStorage.setItem(SALES_ENTRY_KEY, 'true');
+    } catch (e) {}
+  }
+
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('start') === '1' || params.get('from') === 'landing') {
+    markSalesEntry();
+    if (window.history && window.history.replaceState) {
+      params.delete('start');
+      params.delete('from');
+      var qs = params.toString();
+      var clean = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
+      window.history.replaceState(null, '', clean);
+    }
+  }
+
+  if (!hasCompanySettings() && !hasSalesEntry() && !hasActiveLicense()) {
+    window.location.replace(LANDING_URL);
+  }
+})();
+</script>
+<script>
 document.documentElement.classList.add('license-checking');
 </script>
 </head>
@@ -3460,6 +3517,7 @@ if ('serviceWorker' in navigator) {
   var LICENSE_STORAGE_KEY = 'arpa_suite_license_code';
   var LICENSE_VENC_KEY = 'arpa_suite_license_vencimiento';
   var LICENSE_PLAN_KEY = 'arpa_suite_license_plan';
+  var SALES_ENTRY_KEY = 'arpa_suite_sales_entry';
   var DEVICE_STORAGE_KEY = 'arpa_suite_device_id';
   var JSONP_SCRIPT_ID = 'suite-license-jsonp';
   var jsonpCounter = 0;
@@ -3597,6 +3655,7 @@ if ('serviceWorker' in navigator) {
       if (data.codigo) localStorage.setItem(LICENSE_STORAGE_KEY, String(data.codigo).trim().toUpperCase());
       if (data.vencimiento) localStorage.setItem(LICENSE_VENC_KEY, data.vencimiento);
       if (data.plan) localStorage.setItem(LICENSE_PLAN_KEY, data.plan);
+      localStorage.setItem(SALES_ENTRY_KEY, 'true');
     } catch (e) {}
   }
 
