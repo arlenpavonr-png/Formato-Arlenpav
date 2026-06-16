@@ -76,8 +76,8 @@
         { cod: 'KICAROSMARTACA2000', nom: 'Icaro Smart AC A2000 – Corredizo 2000kg uso continuo (Kit)', pvp: 5522900 },
       ],
       'Batiente 1 hoja': [
-        { cod: 'K1PHOBOBTA25-1', nom: 'Phobos BT A25 – Batiente 400kg 2.5m 110V (Kit 1 brazo)', pvp: 2663900 },
-        { cod: 'K1PHOBOBTA40-1', nom: 'Phobos BT A40 – Batiente 500kg 4m 110V (Kit 1 brazo)', pvp: 2995900 },
+        { cod: 'K1PHOBOSBT-A25', nom: 'Phobos BT A25 – Batiente 400kg 2.5m 110V (Kit 1 brazo)', pvp: 2663900 },
+        { cod: 'K1PHOBOSBT-A40', nom: 'Phobos BT A40 – Batiente 500kg 4m 110V (Kit 1 brazo)', pvp: 2995900 },
         { cod: 'K1PHOBOSACA25-AL', nom: 'Phobos AC A25 – Batiente 400kg 2.5m tarjeta Alena (Kit 1 brazo)', pvp: 2844900 },
         { cod: 'K1PHOBOSACA25-R', nom: 'Phobos AC A25 – Batiente 400kg 2.5m tarjeta Rigel (Kit 1 brazo)', pvp: 3170900 },
         { cod: 'K1LUX2B-1', nom: 'Lux 2B Hidráulico – Batiente 300kg 3.5m (Kit 1 brazo)', pvp: 3875900 },
@@ -86,8 +86,8 @@
         { cod: 'K1GIUNO-BTA50-1', nom: 'Giuno Ultra BT A50 Hidráulico – Batiente 800kg 5m uso intensivo (Kit 1 brazo)', pvp: 7024900 },
       ],
       'Batiente 2 hojas': [
-        { cod: 'KPHOBOBTA25-1', nom: 'Phobos BT A25 – Batiente 400kg 2.5m 110V (Kit 2 brazos)', pvp: 3278900 },
-        { cod: 'KPHOBOBTA40-1', nom: 'Phobos BT A40 – Batiente 500kg 4m 110V (Kit 2 brazos)', pvp: 3498900 },
+        { cod: 'K2PHOBOSBT-A25', nom: 'Phobos BT A25 – Batiente 400kg 2.5m 110V (Kit 2 brazos)', pvp: 3278900 },
+        { cod: 'K2PHOBOSBT-A40', nom: 'Phobos BT A40 – Batiente 500kg 4m 110V (Kit 2 brazos)', pvp: 3498900 },
         { cod: 'K2PHOBOSACA25-AL', nom: 'Phobos AC A25 – Batiente 400kg 2.5m tarjeta Alena (Kit 2 brazos)', pvp: 3253900 },
         { cod: 'K2PHOBOSACA25-R', nom: 'Phobos AC A25 – Batiente 400kg 2.5m tarjeta Rigel (Kit 2 brazos)', pvp: 3823900 },
         { cod: 'K2LUX2B-1', nom: 'Lux 2B Hidráulico – Batiente 300kg 3.5m (Kit 2 brazos)', pvp: 6413900 },
@@ -112,39 +112,33 @@
     },
     NAS: {
       'Levadiza / Seccional': [
-        { cod: 'KPOWER700', nom: 'KPower 700 – motor de garaje residencial' },
-        { cod: 'KPOWER1000', nom: 'KPower 1000 – motor de garaje residencial' },
-        { cod: 'KPOWER1200', nom: 'KPower 1200 – motor de garaje residencial' },
+        { cod: 'KPOWER700', nom: 'Power 700 – motor garaje residencial 110V', pvp: 770000 },
+        { cod: 'KPOWER1000', nom: 'Power 1000 – motor garaje residencial 110V', pvp: 826000 },
+        { cod: 'KPOWER1200', nom: 'Power 1200 – motor garaje residencial 110V', pvp: 893000 },
       ],
       Corrediza: [
-        { cod: 'FORZA500', nom: 'Forza 500 – 500 kg corrediza' },
-        { cod: 'FORZA800', nom: 'Forza 800 – 800 kg corrediza' },
-        { cod: 'FORTE800', nom: 'Forte 800 – 800 kg corrediza' },
-        { cod: 'FORTE1200', nom: 'Forte 1200 – 1200 kg corrediza' },
-        { cod: 'FORTE1500', nom: 'Forte 1500 – 1500 kg corrediza' },
-        { cod: 'FORTE800DC', nom: 'Forte 800DC – 800 kg con batería' },
-        { cod: 'FORTE800+', nom: 'Forte 800+ – 800 kg corrediza' },
-      ],
-      'Batiente 1 hoja': [
-        { cod: 'APOLO200-1', nom: 'Apolo 200 – 1 hoja batiente' },
-        { cod: 'APOLO300-1', nom: 'Apolo 300 – 1 hoja batiente' },
-        { cod: 'MAGNO200-1', nom: 'Magno 200 – 1 hoja batiente' },
-        { cod: 'POTENZA400-1', nom: 'Potenza 400 – 1 hoja batiente' },
+        { cod: 'KFORZA500-1', nom: 'Forza 500 – 500 kg corrediza 110V', pvp: 999900 },
+        { cod: 'KFORZA800-1', nom: 'Forza 800 – 800 kg corrediza 110V', pvp: 1183900 },
+        { cod: 'KFORTE800-1', nom: 'Forte 800 – 800 kg corrediza 110V', pvp: 1183900 },
+        { cod: 'KFORTE1200-1', nom: 'Forte 1200 – 1200 kg corrediza 110V', pvp: 1314900 },
+        { cod: 'KFORTE1500-1', nom: 'Forte 1500 – 1500 kg corrediza 110V', pvp: 1380900 },
+        { cod: 'KFORTE800DC-1', nom: 'Forte 800DC – 800 kg con batería 110V/24V', pvp: 1536900 },
+        { cod: 'KFORTE800PLUS-1', nom: 'Forte 800 Plus – 800 kg corrediza 110V', pvp: 1183900 },
       ],
       'Batiente 2 hojas': [
-        { cod: 'APOLO200', nom: 'Apolo 200 – 2 hojas batientes' },
-        { cod: 'APOLO300', nom: 'Apolo 300 – 2 hojas batientes' },
-        { cod: 'MAGNO200', nom: 'Magno 200 – 2 hojas batientes' },
-        { cod: 'POTENZA400', nom: 'Potenza 400 – 2 hojas batientes' },
+        { cod: 'APOLO200-1', nom: 'Apolo 200 – Kit 2 brazos batiente', pvp: 990000 },
+        { cod: 'APOLO300-1', nom: 'Apolo 300 – Kit 2 brazos batiente', pvp: 1086000 },
+        { cod: 'MAGNO200-1', nom: 'Magno 200 – Kit 2 brazos batiente', pvp: 2135000 },
+        { cod: 'POTENZA400-1', nom: 'Potenza 400 – Kit 2 brazos batiente', pvp: 3136000 },
       ],
       'Barrera vehicular': [
-        { cod: 'ELECTRA-DC421', nom: 'Electra DC421 – barrera electromecánica' },
-        { cod: 'ELECTRA-DC656', nom: 'Electra DC656 – barrera electromecánica' },
+        { cod: 'KELECTRADC421', nom: 'Electra DC421 – barrera 3.6m 220V', pvp: 4055000 },
+        { cod: 'KELECTRADC656', nom: 'Electra DC656 – barrera 6m 220V', pvp: 4116000 },
       ],
       'Cortina enrollable': [
-        { cod: 'THOR', nom: 'Thor – uso industrial externo' },
-        { cod: 'ODIN', nom: 'Odin – uso industrial externo' },
-        { cod: 'HERCULES', nom: 'Hércules – uso interno' },
+        { cod: 'KTHOR600-1', nom: 'Thor 600 – cortina industrial hasta 600 kg 110V', pvp: 955000 },
+        { cod: 'KODIN500-1', nom: 'Odin 500 – cortina industrial hasta 500 kg 110V', pvp: 969900 },
+        { cod: 'HERCULES1600', nom: 'Hércules 1600 – cortina uso interno hasta 150 kg', pvp: 732000 },
       ],
     },
     Elite: {
@@ -237,10 +231,10 @@
     'KARESBTA1500Z25-2': 4402900,
     KICAROSMARTACA2000V: 5522900,
     KICAROSMARTACA2000: 5522900,
-    'KPHOBOBTA25-1': 3278900,
-    'KPHOBOBTA40-1': 3498900,
-    'K1PHOBOBTA25-1': 2663900,
-    'K1PHOBOBTA40-1': 2995900,
+    'K2PHOBOSBT-A25': 3278900,
+    'K2PHOBOSBT-A40': 3498900,
+    'K1PHOBOSBT-A25': 2663900,
+    'K1PHOBOSBT-A40': 2995900,
     'K2PHOBOSACA25-AL': 3253900,
     'K2PHOBOSACA25-R': 3823900,
     'K1PHOBOSACA25-AL': 2844900,
@@ -263,30 +257,51 @@
     'KCMC-10': 740000,
     P111526: 251000,
     P111827: 705000,
-    KPOWER700: 939900,
-    KPOWER1000: 999900,
-    KPOWER1200: 1095900,
-    FORZA500: 1199900,
-    FORZA800: 1549900,
-    FORTE800: 1549900,
-    FORTE1200: 1999900,
-    FORTE1500: 2629900,
-    FORTE800DC: 1649900,
-    'FORTE800+': 1699900,
-    'APOLO200-1': 1799900,
-    'APOLO300-1': 2199900,
-    'MAGNO200-1': 2519900,
-    'POTENZA400-1': 2719900,
-    APOLO200: 2519900,
-    APOLO300: 3889900,
-    MAGNO200: 2719900,
-    POTENZA400: 4159900,
-    'ELECTRA-DC421': 4599900,
-    'ELECTRA-DC656': 5399900,
-    THOR: 4249900,
-    ODIN: 3999900,
-    HERCULES: 2699900,
+    KPOWER700: 770000,
+    KPOWER1000: 826000,
+    KPOWER1200: 893000,
+    'KFORZA500-1': 999900,
+    'KFORZA800-1': 1183900,
+    'KFORTE800-1': 1183900,
+    'KFORTE1200-1': 1314900,
+    'KFORTE1500-1': 1380900,
+    'KFORTE800DC-1': 1536900,
+    'KFORTE800PLUS-1': 1183900,
+    'APOLO200-1': 990000,
+    'APOLO300-1': 1086000,
+    'MAGNO200-1': 2135000,
+    'POTENZA400-1': 3136000,
+    KELECTRADC421: 4055000,
+    KELECTRADC656: 4116000,
+    'KTHOR600-1': 955000,
+    'KODIN500-1': 969900,
+    HERCULES1600: 732000,
   };
+
+  /** Códigos legacy → código oficial (catalogo-bft-nas.js) */
+  const CODIGO_ALIASES = {
+    'KPHOBOBTA25-1': 'K2PHOBOSBT-A25',
+    'KPHOBOBTA40-1': 'K2PHOBOSBT-A40',
+    'K1PHOBOBTA25-1': 'K1PHOBOSBT-A25',
+    'K1PHOBOBTA40-1': 'K1PHOBOSBT-A40',
+    FORZA500: 'KFORZA500-1',
+    FORZA800: 'KFORZA800-1',
+    FORTE800: 'KFORTE800-1',
+    FORTE1200: 'KFORTE1200-1',
+    FORTE1500: 'KFORTE1500-1',
+    FORTE800DC: 'KFORTE800DC-1',
+    'FORTE800+': 'KFORTE800PLUS-1',
+    'ELECTRA-DC421': 'KELECTRADC421',
+    'ELECTRA-DC656': 'KELECTRADC656',
+    THOR: 'KTHOR600-1',
+    ODIN: 'KODIN500-1',
+    HERCULES: 'HERCULES1600',
+  };
+
+  function canonicalCodigo(cod) {
+    const c = String(cod || '').trim().toUpperCase();
+    return CODIGO_ALIASES[c] || c;
+  }
 
   function enrichCatalogoPrecios() {
     Object.values(CATALOGO_MARCAS).forEach((categorias) => {
@@ -410,21 +425,27 @@
   }
 
   function getPrecioByCod(cod) {
-    const userItem = userProductsToFlat().find((p) => p.cod === cod);
+    const canon = canonicalCodigo(cod);
+    const userItem = userProductsToFlat().find(
+      (p) => canonicalCodigo(p.cod) === canon
+    );
     if (userItem) return userItem.pvp || 0;
-    const item = findRawItem(cod);
-    return getPrecioVenta(cod, item || { cod });
+    const item = findRawItem(canon);
+    return getPrecioVenta(canon, item || { cod: canon });
   }
 
   function findByCod(cod) {
-    const userItem = userProductsToFlat().find((p) => p.cod === cod);
+    const canon = canonicalCodigo(cod);
+    const userItem = userProductsToFlat().find(
+      (p) => canonicalCodigo(p.cod) === canon
+    );
     if (userItem) return userItem;
 
     let found = null;
     Object.entries(CATALOGO_MARCAS).forEach(([marca, categorias]) => {
       Object.entries(categorias).forEach(([categoria, items]) => {
         items.forEach((item) => {
-          if (item.cod === cod && !found) {
+          if (item.cod === canon && !found) {
             found = {
               cod: item.cod,
               nom: `${marca} – ${item.nom}`,

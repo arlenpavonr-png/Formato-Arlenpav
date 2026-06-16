@@ -5,6 +5,30 @@
   const CATALOG_KEY = 'arpa_catalogo_usuario';
   const CATEGORIES_KEY = 'arpa_categorias_usuario';
 
+  const CODIGO_ALIASES = {
+    'KPHOBOBTA25-1': 'K2PHOBOSBT-A25',
+    'KPHOBOBTA40-1': 'K2PHOBOSBT-A40',
+    'K1PHOBOBTA25-1': 'K1PHOBOSBT-A25',
+    'K1PHOBOBTA40-1': 'K1PHOBOSBT-A40',
+    FORZA500: 'KFORZA500-1',
+    FORZA800: 'KFORZA800-1',
+    FORTE800: 'KFORTE800-1',
+    FORTE1200: 'KFORTE1200-1',
+    FORTE1500: 'KFORTE1500-1',
+    FORTE800DC: 'KFORTE800DC-1',
+    'FORTE800+': 'KFORTE800PLUS-1',
+    'ELECTRA-DC421': 'KELECTRADC421',
+    'ELECTRA-DC656': 'KELECTRADC656',
+    THOR: 'KTHOR600-1',
+    ODIN: 'KODIN500-1',
+    HERCULES: 'HERCULES1600',
+  };
+
+  function canonicalCodigo(cod) {
+    const c = String(cod || '').trim().toUpperCase();
+    return CODIGO_ALIASES[c] || c;
+  }
+
   const CATALOGO_BFT_NAS = [
   { codigo: "KDEIMOSBTA400-1", nombre: "Kit BFT Deimos BT A400 110V - Corrediza hasta 400kg Uso Intensivo", precio: 1948900, categoria: "Corredizas BFT", marca: "BFT" },
   { codigo: "KDEIMOSBTA600-1", nombre: "Kit BFT Deimos BT A600 110V - Corrediza hasta 600kg Uso Intensivo", precio: 2391900, categoria: "Corredizas BFT", marca: "BFT" },
@@ -376,14 +400,16 @@
     }
 
     const codigosExistentes = new Set(
-      productosExistentes.map((p) => String(p.cod || p.codigo || '').trim()).filter(Boolean)
+      productosExistentes
+        .map((p) => canonicalCodigo(String(p.cod || p.codigo || '').trim()))
+        .filter(Boolean)
     );
 
     let agregados = 0;
     const ahora = new Date().toISOString();
 
     CATALOGO_BFT_NAS.forEach((producto) => {
-      const cod = String(producto.codigo || '').trim();
+      const cod = canonicalCodigo(producto.codigo);
       if (!cod || codigosExistentes.has(cod)) return;
       productosExistentes.push({
         id: newId(),
