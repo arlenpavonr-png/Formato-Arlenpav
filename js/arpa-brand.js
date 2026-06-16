@@ -4,6 +4,12 @@
 (function (global) {
   const SETTINGS_KEY = 'arpa_suite_user_settings';
   const GLOBAL_BRAND_URL = 'https://arpatechnologyglobal.com';
+  const GLOBAL_FOOTER_TEXT = '© 2026 ARPA Technology Global · arpatechnologyglobal.com · Todos los derechos reservados.';
+
+  function isInternalAppUrl(url) {
+    const u = String(url || '').trim().toLowerCase();
+    return !u || u.includes('github.io') || u.includes('/formato-arlenpav');
+  }
 
   const DEFAULTS = {
     companyName: 'Su Empresa S.A.S.',
@@ -86,7 +92,8 @@
     set('brand-company-name', (el) => { el.textContent = companyUpper; });
     set('brand-company-contact', (el) => {
       let html = `NIT: ${val(s.nit, DEFAULTS.nit)} &nbsp;|&nbsp; Tel: ${val(s.phone, DEFAULTS.phone)}<br>${val(s.address, DEFAULTS.address)}`;
-      if (s.website?.trim()) html += `<br>${s.website.trim()}`;
+      const website = (s.website || '').trim();
+      if (website && !isInternalAppUrl(website)) html += `<br>${website}`;
       el.innerHTML = html;
     });
     set('brand-screen-footer', (el) => {
@@ -225,7 +232,10 @@
       address,
       city,
       phone,
-      website: document.getElementById('settings-website')?.value.trim() || '',
+      website: (() => {
+        const w = document.getElementById('settings-website')?.value.trim() || '';
+        return isInternalAppUrl(w) ? '' : w;
+      })(),
       bankName,
       accountType,
       accountNumber,
@@ -249,27 +259,66 @@
     closeSettings();
   }
 
+  let printUiBackup = null;
+
+  function prepareForPrint() {
+    printUiBackup = { contactHtml: null, sealHtml: null };
+    const contact = document.getElementById('brand-company-contact');
+    if (contact) {
+      printUiBackup.contactHtml = contact.innerHTML;
+      contact.querySelectorAll('a').forEach((a) => {
+        const span = document.createElement('span');
+        span.textContent = a.textContent;
+        a.replaceWith(span);
+      });
+      contact.innerHTML = contact.innerHTML.replace(/https?:\/\/[^\s<]*github\.io[^\s<]*/gi, '');
+    }
+    const seal = document.getElementById('arpa-global-seal');
+    if (seal) {
+      printUiBackup.sealHtml = seal.innerHTML;
+      seal.innerHTML = `<p class="suite-footer-global-text">${GLOBAL_FOOTER_TEXT}</p>`;
+    }
+    document.querySelectorAll('#suite-footer a[href]').forEach((a) => {
+      const span = document.createElement('span');
+      span.className = 'suite-footer-global-link';
+      span.textContent = a.textContent;
+      a.replaceWith(span);
+    });
+  }
+
+  function restoreAfterPrint() {
+    if (!printUiBackup) return;
+    const contact = document.getElementById('brand-company-contact');
+    if (contact && printUiBackup.contactHtml != null) contact.innerHTML = printUiBackup.contactHtml;
+    const seal = document.getElementById('arpa-global-seal');
+    if (seal && printUiBackup.sealHtml != null) seal.innerHTML = printUiBackup.sealHtml;
+    printUiBackup = null;
+  }
+
   function protectGlobalSeal() {
     const seal = document.getElementById('arpa-global-seal');
     if (!seal || seal.dataset.arpaCore !== 'immutable') return;
-    const snapshot = seal.innerHTML;
     new MutationObserver(() => {
       const text = seal.textContent.replace(/\s+/g, ' ').trim();
       if (!text.includes('ARPA Technology Global') || !text.includes('arpatechnologyglobal.com')) {
-        seal.innerHTML = snapshot;
+        seal.innerHTML = `<p class="suite-footer-global-text">${GLOBAL_FOOTER_TEXT}</p>`;
       }
+      seal.querySelectorAll('a[href*="github.io"], a[href*="Formato-Arlenpav"]').forEach((a) => a.remove());
     }).observe(seal, { childList: true, subtree: true, characterData: true });
   }
 
   global.ArpaBrand = {
     SETTINGS_KEY,
     GLOBAL_BRAND_URL,
+    GLOBAL_FOOTER_TEXT,
     DEFAULTS,
     DEFAULT_LOGO,
     getSettings,
     saveSettings,
     getLogo,
     applyToUI,
+    prepareForPrint,
+    restoreAfterPrint,
     previewLogo,
     openSettings,
     closeSettings,

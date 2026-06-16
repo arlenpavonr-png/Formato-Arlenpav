@@ -533,9 +533,10 @@
     doc.rect(0, ph - 14, pw, 14, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    const footer = [d.cobrador.empresa, d.cobrador.nit && `NIT ${d.cobrador.nit}`, d.cobrador.tel && `Tel ${d.cobrador.tel}`, d.cobrador.dir].filter(Boolean).join('  ·  ');
-    doc.text(footer, pw / 2, ph - 6, { align: 'center' });
+    doc.setFontSize(7);
+    const arpaFooter = global.ArpaBrand?.GLOBAL_FOOTER_TEXT
+      || '© 2026 ARPA Technology Global · arpatechnologyglobal.com · Todos los derechos reservados.';
+    doc.text(arpaFooter, pw / 2, ph - 5.5, { align: 'center' });
 
     const filename = `CuentaCobro_${d.numero || 'CC'}_${sanitizeFilename(d.cliente.nombre)}.pdf`;
     doc.save(filename);

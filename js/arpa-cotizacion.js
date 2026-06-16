@@ -273,6 +273,7 @@
     global.applyUserSettingsToUI?.();
     renderTablaCot();
     document.body.classList.add('is-printing');
+    global.ArpaBrand?.prepareForPrint?.();
 
     const viewRoot = document.getElementById('view-cotizacion');
     const elementos = viewRoot.querySelectorAll(
@@ -328,6 +329,7 @@
     setTimeout(() => {
       document.title = tituloRespaldo;
       document.body.classList.remove('is-printing');
+      global.ArpaBrand?.restoreAfterPrint?.();
       global.ArpaSignature?.restoreAfterPrint?.();
       respaldos.forEach(({ el, parent }) => {
         const span = parent.querySelector('.pdf-valor');
