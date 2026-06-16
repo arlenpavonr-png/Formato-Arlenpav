@@ -3,6 +3,8 @@
  */
 (function (global) {
   const SETTINGS_KEY = 'arpa_suite_user_settings';
+  const SETTINGS_CONFIGURED_KEY = 'arpa_suite_settings_configured';
+  const FORMATO_DRAFT_KEY = 'arpa_formato_borrador';
   const GLOBAL_BRAND_URL = 'https://arpatechnologyglobal.com';
   const GLOBAL_FOOTER_TEXT = '© 2026 ARPA Technology Global · arpatechnologyglobal.com · Todos los derechos reservados.';
   const COT_NOTA_LEGAL_HTML = '<strong>Nota:</strong> Cotización válida por <strong>15 días calendario</strong>. Precios en pesos colombianos (COP).';
@@ -16,16 +18,16 @@
     return !u || u.includes('github.io') || u.includes('/formato-arlenpav');
   }
 
-  const DEFAULTS = {
-    companyName: 'Su Empresa S.A.S.',
-    nit: '000.000.000-0',
-    address: 'Dirección comercial',
+  const EMPTY_SETTINGS = {
+    companyName: '',
+    nit: '',
+    address: '',
     city: '',
-    phone: '000-000-0000',
+    phone: '',
     website: '',
-    bankName: 'Nombre del banco',
+    bankName: '',
     accountType: 'Ahorros',
-    accountNumber: '00000000000',
+    accountNumber: '',
     accountHolder: '',
     accountHolderDocument: '',
     technicianName: '',
@@ -33,16 +35,74 @@
     logoBase64: ''
   };
 
+  /** @deprecated use EMPTY_SETTINGS — kept for callers that read DEFAULTS */
+  const DEFAULTS = { ...EMPTY_SETTINGS };
+
+  const LEGACY_COMPANY_PATTERNS = [
+    /automatismos\s*arlenpav/i,
+    /^automatismos\s*arpa/i
+  ];
+  const LEGACY_NIT_PATTERNS = [
+    /901\.?\s*473\.?\s*259/i
+  ];
+
   const DEFAULT_LOGO = './icon-192x192.png';
 
   let pendingLogoBase64 = null;
 
+  function hasUserSettings() {
+    try {
+      return localStorage.getItem(SETTINGS_CONFIGURED_KEY) === 'true';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function isLegacyPreset(saved) {
+    if (!saved || typeof saved !== 'object') return false;
+    const name = String(saved.companyName || '');
+    const nit = String(saved.nit || '');
+    if (LEGACY_COMPANY_PATTERNS.some((re) => re.test(name))) return true;
+    if (LEGACY_NIT_PATTERNS.some((re) => re.test(nit))) return true;
+    return false;
+  }
+
+  function containsLegacyBrandText(text) {
+    const blob = String(text || '').toLowerCase();
+    return blob.includes('automatismos') && blob.includes('arlenpav');
+  }
+
+  function migrateConfiguredFlag() {
+    if (hasUserSettings()) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      if (saved.companyName?.trim() && !isLegacyPreset(saved)) {
+        localStorage.setItem(SETTINGS_CONFIGURED_KEY, 'true');
+      }
+    } catch (e) {}
+  }
+
+  function purgeLegacyData() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      if (isLegacyPreset(saved)) {
+        localStorage.removeItem(SETTINGS_KEY);
+        localStorage.removeItem(SETTINGS_CONFIGURED_KEY);
+      }
+      const draft = localStorage.getItem(FORMATO_DRAFT_KEY) || '';
+      if (containsLegacyBrandText(draft)) {
+        localStorage.removeItem(FORMATO_DRAFT_KEY);
+      }
+      migrateConfiguredFlag();
+    } catch (e) {}
+  }
+
   function getSettings() {
     try {
       const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
-      return { ...DEFAULTS, ...saved };
+      return { ...EMPTY_SETTINGS, ...saved };
     } catch (e) {
-      return { ...DEFAULTS };
+      return { ...EMPTY_SETTINGS };
     }
   }
 
@@ -81,40 +141,62 @@
   }
 
   function formatBankBlock(s) {
-    return `<strong>Datos para consignación:</strong> ${val(s.bankName, DEFAULTS.bankName)} · Cuenta ${val(s.accountType, DEFAULTS.accountType)} · N° ${val(s.accountNumber, DEFAULTS.accountNumber)}`;
+    if (!hasUserSettings()) {
+      return '<em>Configure datos bancarios en Ajustes ⚙️</em>';
+    }
+    return `<strong>Datos para consignación:</strong> ${val(s.bankName, '—')} · Cuenta ${val(s.accountType, '—')} · N° ${val(s.accountNumber, '—')}`;
   }
 
   function applyToUI() {
     const s = getSettings();
-    const company = val(s.companyName, DEFAULTS.companyName);
-    const companyUpper = company.toUpperCase();
+    const configured = hasUserSettings() && Boolean(s.companyName?.trim());
+    document.documentElement.classList.toggle('brand-unconfigured', !configured);
+
+    const company = (s.companyName || '').trim();
+    const companyDisplay = configured ? company : 'Nombre de tu Empresa';
+    const companyUpper = configured ? company.toUpperCase() : 'NOMBRE DE TU EMPRESA';
     const logo = getLogo(s);
 
     const set = (id, fn) => { const el = document.getElementById(id); if (el) fn(el); };
 
-    set('brand-logo', (el) => { el.src = logo; el.alt = company + ' – Logo'; });
+    set('brand-logo', (el) => { el.src = logo; el.alt = configured ? company + ' – Logo' : 'Logo de su empresa'; });
     set('settings-logo-preview', (el) => { el.src = logo; el.alt = 'Vista previa del logo'; });
-    set('brand-company-name', (el) => { el.textContent = companyUpper; });
+    set('brand-company-name', (el) => {
+      el.textContent = companyUpper;
+      el.classList.toggle('brand-placeholder', !configured);
+    });
     set('brand-company-contact', (el) => {
-      let html = `NIT: ${val(s.nit, DEFAULTS.nit)} &nbsp;|&nbsp; Tel: ${val(s.phone, DEFAULTS.phone)}<br>${val(s.address, DEFAULTS.address)}`;
+      if (!configured) {
+        el.innerHTML = 'Configure su empresa en <strong>⚙️ Ajustes</strong> para personalizar este documento.';
+        return;
+      }
+      let html = `NIT: ${val(s.nit, '—')} &nbsp;|&nbsp; Tel: ${val(s.phone, '—')}<br>${val(s.address, '—')}`;
       const website = (s.website || '').trim();
       if (website && !isInternalAppUrl(website)) html += `<br>${website}`;
       el.innerHTML = html;
     });
     set('brand-screen-footer', (el) => {
       if (el.dataset.editable !== 'true') return;
-      el.innerHTML = `${company} &nbsp;|&nbsp; NIT ${val(s.nit, DEFAULTS.nit)} &nbsp;|&nbsp; Tel ${val(s.phone, DEFAULTS.phone)}`;
+      if (!configured) {
+        el.innerHTML = 'Configure los datos de su empresa en ⚙️ Ajustes';
+        return;
+      }
+      el.innerHTML = `${company} &nbsp;|&nbsp; NIT ${val(s.nit, '—')} &nbsp;|&nbsp; Tel ${val(s.phone, '—')}`;
     });
     set('brand-bank-block', (el) => { el.innerHTML = formatBankBlock(s); });
     set('brand-bank-block-formato', (el) => { el.innerHTML = formatBankBlock(s); });
     set('brand-warranty-header', (el) => {
-      el.innerHTML = `<span class="shield">🛡️</span> Garantía – ${company}`;
+      el.innerHTML = configured
+        ? `<span class="shield">🛡️</span> Garantía – ${company}`
+        : '<span class="shield">🛡️</span> Términos de Garantía';
     });
     set('brand-warranty-exclusion', (el) => {
-      el.innerHTML = `<strong>Exclusiones de garantía:</strong> La garantía no aplica sobre daños causados por descargas eléctricas, sobretensiones, rayos u otras causas externas. Tampoco aplica cuando el equipo ha sido intervenido por <strong>personal no autorizado por ${company}</strong>.`;
+      el.innerHTML = configured
+        ? `<strong>Exclusiones de garantía:</strong> La garantía no aplica sobre daños causados por descargas eléctricas, sobretensiones, rayos u otras causas externas. Tampoco aplica cuando el equipo ha sido intervenido por <strong>personal no autorizado por ${company}</strong>.`
+        : '<strong>Exclusiones de garantía:</strong> La garantía no aplica sobre daños por causas externas, descargas eléctricas o intervención de personal no autorizado.';
     });
-    set('brand-verification-company', (el) => { el.textContent = company; });
-    document.querySelectorAll('[data-brand-company]').forEach((el) => { el.textContent = company; });
+    set('brand-verification-company', (el) => { el.textContent = configured ? company : 'su empresa'; });
+    document.querySelectorAll('[data-brand-company]').forEach((el) => { el.textContent = configured ? company : 'su empresa'; });
     set('brand-technician-signature-label', (el) => {
       el.textContent = s.technicianName?.trim() ? `Firma Técnico – ${s.technicianName}` : 'Firma Técnico';
     });
@@ -128,15 +210,15 @@
 
     const tech = document.getElementById('campo-tecnico-responsable');
     const techFirma = document.getElementById('campo-tecnico-firma');
-    if (tech && !tech.value.trim() && s.technicianName) tech.value = s.technicianName;
-    if (techFirma && !techFirma.value.trim() && s.technicianName) techFirma.value = s.technicianName;
+    if (configured && tech && !tech.value.trim() && s.technicianName) tech.value = s.technicianName;
+    if (configured && techFirma && !techFirma.value.trim() && s.technicianName) techFirma.value = s.technicianName;
 
     const cotNom = document.getElementById('cot-elaborado-nombre');
     const cotTel = document.getElementById('cot-elaborado-tel');
-    if (cotNom && !cotNom.value.trim() && s.technicianName) cotNom.value = s.technicianName;
-    if (cotTel && !cotTel.value.trim()) cotTel.value = val(s.phone, DEFAULTS.phone);
+    if (configured && cotNom && !cotNom.value.trim() && s.technicianName) cotNom.value = s.technicianName;
+    if (configured && cotTel && !cotTel.value.trim() && s.phone?.trim()) cotTel.value = s.phone.trim();
 
-    document.title = document.title.includes('–') ? document.title : `Arpa Suite – ${company}`;
+    document.title = document.title.includes('–') ? document.title : (configured ? `Arpa Suite – ${company}` : 'Arpa Suite');
   }
 
   function previewLogo(input) {
@@ -252,6 +334,7 @@
     };
 
     if (!saveSettings(settings)) return;
+    try { localStorage.setItem(SETTINGS_CONFIGURED_KEY, 'true'); } catch (e) {}
 
     global.ArpaPricing?.savePriceList?.(global.ArpaPricing.readPriceListFromSettingsForm());
     global.ArpaCobros?.seedFromPriceList?.('cot');
@@ -314,11 +397,17 @@
 
   global.ArpaBrand = {
     SETTINGS_KEY,
+    SETTINGS_CONFIGURED_KEY,
+    FORMATO_DRAFT_KEY,
     GLOBAL_BRAND_URL,
     GLOBAL_FOOTER_TEXT,
     getCotNotaLegalHtml,
     DEFAULTS,
+    EMPTY_SETTINGS,
     DEFAULT_LOGO,
+    hasUserSettings,
+    purgeLegacyData,
+    isLegacyPreset,
     getSettings,
     saveSettings,
     getLogo,
@@ -339,6 +428,7 @@
   global.previewLogoUpload = previewLogo;
 
   document.addEventListener('DOMContentLoaded', () => {
+    purgeLegacyData();
     applyToUI();
     protectGlobalSeal();
   });

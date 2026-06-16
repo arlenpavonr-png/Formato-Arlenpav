@@ -1744,7 +1744,15 @@
     .header-meta { width: 100%; text-align: left; }
   }
 
-  /* ── ACTIVACIÓN DE LICENCIA ── */
+  .brand-placeholder {
+    opacity: 0.72;
+    letter-spacing: 0.06em;
+  }
+  html.brand-unconfigured .brand-company-contact {
+    font-size: 12px;
+    line-height: 1.5;
+    opacity: 0.9;
+  }
   .license-gate {
     display: none;
     position: fixed;
@@ -2473,7 +2481,7 @@ document.documentElement.classList.add('license-checking');
 
     <div class="verification-seal" style="margin-top: 20px; padding: 14px; border: 1.5px solid var(--border); border-radius: 10px; background: #ffffff;">
       <p style="font-size: 10.5px; color: var(--muted); line-height: 1.4; margin: 0;" data-i18n-html="formato.verification">
-        Documento emitido por <strong id="brand-verification-company">Su Empresa</strong> a través de <strong>Arpa Suite</strong>.
+        Documento emitido por <strong id="brand-verification-company">su empresa</strong> a través de <strong>Arpa Suite</strong>.
       </p>
     </div>
 
@@ -2823,7 +2831,7 @@ document.documentElement.classList.add('license-checking');
 
   <footer class="suite-footer" id="suite-footer" data-i18n-aria-label="footer.aria" aria-label="Pie de página">
     <div class="suite-footer-local" id="brand-screen-footer" data-editable="true">
-      Su Empresa S.A.S. &nbsp;|&nbsp; NIT 000.000.000-0 &nbsp;|&nbsp; Tel 000-000-0000
+      Configure los datos de su empresa en ⚙️ Ajustes
     </div>
     <hr class="suite-footer-divider" aria-hidden="true">
     <div class="suite-footer-global" id="arpa-global-seal" data-arpa-core="immutable">
@@ -3125,6 +3133,51 @@ function collectFormatoDraft() {
   return data;
 }
 
+function clearFormatoForm() {
+  const root = document.getElementById('view-formato');
+  if (!root) return;
+  root.querySelectorAll('input:not([type=file]):not([type=radio])').forEach((el) => {
+    if (el.type === 'checkbox') el.checked = false;
+    else el.value = '';
+  });
+  root.querySelectorAll('select').forEach((el) => { el.selectedIndex = 0; });
+  root.querySelectorAll('textarea').forEach((el) => { el.value = ''; });
+  const t1 = document.getElementById('t1');
+  if (t1) t1.checked = true;
+  const numero = document.getElementById('numero-formato');
+  if (numero) numero.value = '';
+  const fecha = document.getElementById('formato-fecha');
+  if (fecha) fecha.value = new Date().toISOString().slice(0, 10);
+  ['foto-antes-preview', 'foto-despues-preview'].forEach((id) => {
+    const preview = document.getElementById(id);
+    if (preview) preview.innerHTML = '';
+  });
+  ['foto-antes-placeholder', 'foto-despues-placeholder'].forEach((id) => {
+    const ph = document.getElementById(id);
+    if (ph) ph.style.display = '';
+  });
+  global.ArpaSignature?.clear?.('canvas-firma-cliente');
+  global.ArpaSignature?.clear?.('canvas-firma-tecnico');
+}
+
+function shouldSkipFormatoDraft() {
+  if (!global.ArpaBrand?.hasUserSettings?.()) return true;
+  try {
+    const raw = localStorage.getItem(FORMATO_DRAFT_KEY) || '';
+    if (!raw || raw === '{}') return true;
+    const blob = raw.toLowerCase();
+    if (blob.includes('automatismos') && blob.includes('arlenpav')) return true;
+    if (global.ArpaBrand?.isLegacyPreset) {
+      const data = JSON.parse(raw);
+      const values = Object.values(data).join(' ').toLowerCase();
+      if (values.includes('automatismos') && values.includes('arlenpav')) return true;
+    }
+  } catch (e) {
+    return true;
+  }
+  return false;
+}
+
 function applyFormatoDraft() {
   try {
     const data = JSON.parse(localStorage.getItem(FORMATO_DRAFT_KEY) || '{}');
@@ -3152,7 +3205,13 @@ function scheduleFormatoDraftSave() {
 }
 
 function initFormatoDraftPersistence() {
-  applyFormatoDraft();
+  global.ArpaBrand?.purgeLegacyData?.();
+  if (shouldSkipFormatoDraft()) {
+    try { localStorage.removeItem(FORMATO_DRAFT_KEY); } catch (e) {}
+    clearFormatoForm();
+  } else {
+    applyFormatoDraft();
+  }
   const root = document.getElementById('view-formato');
   if (!root) return;
   root.addEventListener('input', scheduleFormatoDraftSave);

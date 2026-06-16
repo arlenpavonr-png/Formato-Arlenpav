@@ -4,8 +4,7 @@
 (function (global) {
   function getCompanyName() {
     return global.ArpaBrand?.getSettings?.()?.companyName?.trim()
-      || global.ArpaBrand?.DEFAULTS?.companyName
-      || 'Su Empresa S.A.S.';
+      || 'su empresa';
   }
 
   function openWhatsAppWithMessage(telRaw, message) {
