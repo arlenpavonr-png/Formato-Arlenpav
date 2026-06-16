@@ -61,6 +61,20 @@
     return String(str).replace(/"/g, '&quot;');
   }
 
+  function syncFromEditor(storeId) {
+    const store = getStore(storeId);
+    const container = document.getElementById(`cobros-editor-${storeId}`);
+    if (!container || !store.lines.length) return;
+    container.querySelectorAll('.cobro-row').forEach((row, index) => {
+      const line = store.lines[index];
+      if (!line) return;
+      const desc = row.querySelector('.cobro-desc');
+      const valor = row.querySelector('.cobro-valor');
+      if (desc) line.desc = desc.value;
+      if (valor) line.value = Number(valor.value) || 0;
+    });
+  }
+
   function addLine(storeId, desc = '', value = 0) {
     getStore(storeId).lines.push(createLine(desc, value));
     renderEditor(storeId);
@@ -72,10 +86,11 @@
   }
 
   function getLines(storeId) {
+    syncFromEditor(storeId);
     return getStore(storeId).lines
       .filter((l) => l.desc.trim() || l.value > 0)
-      .map((l) => ({
-        cod: 'COBRO',
+      .map((l, index) => ({
+        cod: `COBRO-${index + 1}`,
         nom: l.desc.trim() || 'Ítem de cobro',
         pvp: Number(l.value) || 0,
         cant: 1,
@@ -114,7 +129,8 @@
     getLines,
     getSubtotal,
     seedFromPriceList,
-    renderEditor
+    renderEditor,
+    syncFromEditor
   };
 
   global.agregarCobroItem = (storeId) => addLine(storeId || 'cot');

@@ -1580,6 +1580,16 @@
       overflow-wrap: break-word;
       line-height: 1.35;
     }
+    body.is-printing:not(.is-printing-formato) #view-cotizacion {
+      display: block !important;
+    }
+    body.is-printing #cot-cobros-section,
+    body.is-printing #view-cotizacion .buscador-wrap-cot {
+      display: none !important;
+    }
+    body.is-printing #view-cotizacion .tabla-productos tbody tr.row-cobro {
+      display: table-row !important;
+    }
     body.is-printing #view-cotizacion .tabla-productos .td-action,
     body.is-printing #view-cotizacion .tabla-productos thead th:last-child,
     body.is-printing #view-cotizacion .tabla-productos tbody td:last-child,
@@ -2409,7 +2419,7 @@ try {
       </div>
     </div>
 
-    <div class="section">
+    <div class="section" id="cot-cobros-section">
       <div class="section-title"><span class="dot"></span><span data-i18n="cot.section.cobros">Cobros</span></div>
       <div id="cobros-editor-cot" class="cobros-editor"></div>
       <div id="cobros-actions-cot" style="margin-top:10px;">

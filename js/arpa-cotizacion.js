@@ -52,7 +52,16 @@
   let filas = [];
 
   function getCobrosLineas() {
+    global.ArpaCobros?.syncFromEditor?.('cot');
     return global.ArpaCobros?.getLines('cot') || [];
+  }
+
+  function escapeHtml(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   function parsePvp(value) {
@@ -155,8 +164,8 @@
     let html = '';
     filas.forEach((f, idx) => {
       html += `<tr class="cot-row" data-fila="${idx}">
-        <td class="td-cod">${f.cod}</td>
-        <td class="td-desc"><span class="cot-desc-text">${f.nom}</span></td>
+        <td class="td-cod">${escapeHtml(f.cod)}</td>
+        <td class="td-desc"><span class="cot-desc-text">${escapeHtml(f.nom)}</span></td>
         <td class="td-cant"><input type="number" class="cot-cant-input" min="1" value="${f.cant}" data-fila="${idx}"></td>
         <td class="td-precio"><input type="number" class="cot-pvp-input" min="0" step="1000" value="${f.pvp}" data-fila="${idx}" inputmode="numeric"></td>
         <td class="td-total">${formatoPesos(f.pvp * f.cant)}</td>
@@ -164,9 +173,9 @@
       </tr>`;
     });
     cobros.forEach((f) => {
-      html += `<tr class="row-cobro cot-row">
-        <td class="td-cod">${f.cod}</td>
-        <td class="td-desc"><span class="cot-desc-text">${f.nom}</span></td>
+      html += `<tr class="row-cobro cot-row" data-cobro="1">
+        <td class="td-cod">${escapeHtml(f.cod)}</td>
+        <td class="td-desc"><span class="cot-desc-text">${escapeHtml(f.nom)}</span></td>
         <td class="td-cant"><span class="cot-cant-static">1</span></td>
         <td class="td-precio">${formatoPesos(f.pvp)}</td>
         <td class="td-total">${formatoPesos(f.pvp)}</td>
@@ -293,12 +302,18 @@
     guardarEnSheets(_numCot, _cliente, _telefono, _total, _fecha);
 
     global.applyUserSettingsToUI?.();
+    global.ArpaCobros?.syncFromEditor?.('cot');
     renderTablaCot();
+
+    const viewRoot = document.getElementById('view-cotizacion');
+    const viewWasHidden = viewRoot?.hasAttribute('hidden') ?? false;
+    if (viewRoot) viewRoot.removeAttribute('hidden');
+
     document.body.classList.add('is-printing');
     global.ArpaBrand?.prepareForPrint?.();
     global.ArpaI18n?.preparePdfSpanish?.('view-cotizacion');
-
-    const viewRoot = document.getElementById('view-cotizacion');
+    global.ArpaCobros?.syncFromEditor?.('cot');
+    renderTablaCot();
     const rowPrintBackups = lockCotRowsForPrint(viewRoot);
     const elementos = viewRoot.querySelectorAll(
       'input:not([type=file]):not([type=checkbox]):not(.cot-cant-input):not(.cot-pvp-input):not(.cobro-desc):not(.cobro-valor), select, textarea'
@@ -352,6 +367,7 @@
 
     setTimeout(() => {
       document.title = tituloRespaldo;
+      if (viewRoot && viewWasHidden) viewRoot.setAttribute('hidden', '');
       document.body.classList.remove('is-printing');
       global.ArpaI18n?.restorePdfSpanish?.();
       global.ArpaBrand?.restoreAfterPrint?.();
