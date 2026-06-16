@@ -203,7 +203,7 @@
     'cot.firma.elaborado_named': 'Prepared by – {name}',
     'cot.firma.aria_cliente': 'Client quote signature',
     'cot.firma.aria_elaborado': 'Prepared-by quote signature',
-    'cot.nota_legal': '<strong>Note:</strong> Quote valid for <strong>15 calendar days</strong>. Prices in Colombian pesos (COP). Issued by <strong>{company}</strong>.',
+    'cot.nota_legal': '<strong>Nota:</strong> Cotización válida por <strong>15 días calendario</strong>. Precios en pesos colombianos (COP).',
 
     'cat.section.categorias': 'Categories',
     'cat.section.productos': 'Products',
@@ -389,7 +389,7 @@
       'formato.garantia.exclusiones.body': '<strong>Exclusiones de garantía:</strong> La garantía no aplica sobre daños causados por descargas eléctricas, sobretensiones, rayos u otras causas externas. Tampoco aplica cuando el equipo ha sido intervenido por <strong>personal no autorizado por {company}</strong>.',
       'formato.firma.tecnico_named': 'Firma Técnico – {name}',
       'cot.firma.elaborado_named': 'Elaborado por – {name}',
-      'cot.nota_legal': '<strong>Nota:</strong> Cotización con vigencia de <strong>15 días calendario</strong>. Precios en pesos colombianos (COP). Emitida por <strong>{company}</strong>.'
+      'cot.nota_legal': '<strong>Nota:</strong> Cotización válida por <strong>15 días calendario</strong>. Precios en pesos colombianos (COP).'
     });
   }
 
@@ -556,6 +556,127 @@
     brandDefaultsCaptured = true;
   }
 
+  var pdfBackup = null;
+
+  function pushBackup(items, el, kind, value) {
+    if (!el) return;
+    items.push({ el: el, kind: kind, value: value });
+  }
+
+  function applySpanishInRoot(root, items) {
+    if (!root) return;
+    root.querySelectorAll('[data-i18n]').forEach(function (el) {
+      var def = el.getAttribute('data-i18n-default');
+      if (def == null) return;
+      pushBackup(items, el, 'textContent', el.textContent);
+      el.textContent = def;
+    });
+    root.querySelectorAll('[data-i18n-placeholder]').forEach(function (el) {
+      var def = el.getAttribute('data-i18n-default-placeholder');
+      if (def == null) return;
+      pushBackup(items, el, 'placeholder', el.getAttribute('placeholder') || '');
+      el.setAttribute('placeholder', def);
+    });
+    root.querySelectorAll('[data-i18n-title]').forEach(function (el) {
+      var def = el.getAttribute('data-i18n-default-title');
+      if (def == null) return;
+      pushBackup(items, el, 'title', el.getAttribute('title') || '');
+      el.setAttribute('title', def);
+    });
+    root.querySelectorAll('[data-i18n-aria-label]').forEach(function (el) {
+      var def = el.getAttribute('data-i18n-default-aria');
+      if (def == null) return;
+      pushBackup(items, el, 'aria-label', el.getAttribute('aria-label') || '');
+      el.setAttribute('aria-label', def);
+    });
+    root.querySelectorAll('[data-i18n-html]').forEach(function (el) {
+      var def = el.getAttribute('data-i18n-default-html');
+      if (def == null) return;
+      pushBackup(items, el, 'innerHTML', el.innerHTML);
+      el.innerHTML = def;
+    });
+  }
+
+  function applyPdfBrandSpanish(items) {
+    var company = getCompanyName();
+    var techName = getTechnicianName();
+
+    var warrantyHeader = document.getElementById('brand-warranty-header');
+    if (warrantyHeader) {
+      pushBackup(items, warrantyHeader, 'innerHTML', warrantyHeader.innerHTML);
+      warrantyHeader.innerHTML = '<span class="shield">🛡️</span> ' + interpolate(resolveText('formato.garantia.header', 'es'), { company: company });
+    }
+    var warrantyExclusion = document.getElementById('brand-warranty-exclusion');
+    if (warrantyExclusion) {
+      pushBackup(items, warrantyExclusion, 'innerHTML', warrantyExclusion.innerHTML);
+      warrantyExclusion.innerHTML = interpolate(resolveText('formato.garantia.exclusiones.body', 'es'), { company: company });
+    }
+    var verificationCompany = document.getElementById('brand-verification-company');
+    if (verificationCompany && verificationCompany.parentElement) {
+      pushBackup(items, verificationCompany.parentElement, 'innerHTML', verificationCompany.parentElement.innerHTML);
+      verificationCompany.parentElement.innerHTML = interpolate(resolveText('formato.verification', 'es'), { company: company });
+    }
+    var cotNota = document.getElementById('cot-nota-legal');
+    if (cotNota && global.ArpaBrand && typeof global.ArpaBrand.getCotNotaLegalHtml === 'function') {
+      pushBackup(items, cotNota, 'innerHTML', cotNota.innerHTML);
+      cotNota.innerHTML = global.ArpaBrand.getCotNotaLegalHtml();
+    }
+    var techSigLabel = document.getElementById('brand-technician-signature-label');
+    if (techSigLabel) {
+      pushBackup(items, techSigLabel, 'textContent', techSigLabel.textContent);
+      techSigLabel.textContent = techName
+        ? interpolate(resolveText('formato.firma.tecnico_named', 'es'), { name: techName })
+        : resolveText('formato.firma.tecnico', 'es');
+    }
+    var cotElabLabel = document.getElementById('cot-elaborado-label');
+    if (cotElabLabel) {
+      pushBackup(items, cotElabLabel, 'textContent', cotElabLabel.textContent);
+      cotElabLabel.textContent = techName
+        ? interpolate(resolveText('cot.firma.elaborado_named', 'es'), { name: techName })
+        : resolveText('cot.firma.elaborado', 'es');
+    }
+  }
+
+  function preparePdfSpanish(viewId) {
+    captureDefaults();
+    captureBrandDefaultsIfNeeded();
+    pdfBackup = { items: [] };
+    var viewRoot = document.getElementById(viewId);
+    var page = document.querySelector('.page');
+    var header = page ? page.querySelector('.header') : null;
+    var qrPrint = document.getElementById('formato-video-qr-print');
+    [viewRoot, header, qrPrint].forEach(function (root) {
+      applySpanishInRoot(root, pdfBackup.items);
+    });
+    applyPdfBrandSpanish(pdfBackup.items);
+    var viewKey = String(viewId || '').replace('view-', '');
+    var docType = document.getElementById('doc-type-label');
+    if (docType) {
+      pushBackup(pdfBackup.items, docType, 'textContent', docType.textContent);
+      docType.textContent = resolveText(DOC_TYPE_KEYS[viewKey] || DOC_TYPE_KEYS.formato, 'es');
+    }
+  }
+
+  function restorePdfSpanish() {
+    if (!pdfBackup) return;
+    pdfBackup.items.forEach(function (item) {
+      if (!item.el) return;
+      if (item.kind === 'placeholder') item.el.setAttribute('placeholder', item.value);
+      else if (item.kind === 'title') item.el.setAttribute('title', item.value);
+      else if (item.kind === 'aria-label') item.el.setAttribute('aria-label', item.value);
+      else item.el[item.kind] = item.value;
+    });
+    pdfBackup = null;
+    refreshBrandTexts();
+  }
+
+  function applyCotNotaLegal() {
+    var cotNota = document.getElementById('cot-nota-legal');
+    if (cotNota && global.ArpaBrand && typeof global.ArpaBrand.getCotNotaLegalHtml === 'function') {
+      cotNota.innerHTML = global.ArpaBrand.getCotNotaLegalHtml();
+    }
+  }
+
   function refreshBrandTexts() {
     captureBrandDefaultsIfNeeded();
     var lang = currentLang;
@@ -587,6 +708,7 @@
       if (cotLabel && brandDefaults['cot-elaborado-label'] != null) {
         cotLabel.textContent = brandDefaults['cot-elaborado-label'];
       }
+      applyCotNotaLegal();
       return;
     }
 
@@ -602,10 +724,6 @@
     if (verificationCompany && verificationCompany.parentElement) {
       verificationCompany.parentElement.innerHTML = t('formato.verification', { company: company });
     }
-    var cotNota = document.getElementById('cot-nota-legal');
-    if (cotNota) {
-      cotNota.innerHTML = t('cot.nota_legal', { company: company });
-    }
     var techSigLabel = document.getElementById('brand-technician-signature-label');
     if (techSigLabel) {
       techSigLabel.textContent = techName
@@ -618,6 +736,7 @@
         ? t('cot.firma.elaborado_named', { name: techName })
         : t('cot.firma.elaborado');
     }
+    applyCotNotaLegal();
   }
 
   function refreshDocTypeLabel() {
@@ -655,11 +774,6 @@
 
   function wrapExternalFunctions() {
     wrapFunction('applyUserSettingsToUI', refreshBrandTexts);
-    wrapFunction('guardarPDF', refreshBrandTexts);
-    wrapFunction('guardarCotPDF', refreshBrandTexts);
-    wrapFunction('guardarPDFYHistorial', refreshBrandTexts);
-    wrapFunction('guardarPDFYWhatsApp', refreshBrandTexts);
-    wrapFunction('guardarCotPDFYWhatsApp', refreshBrandTexts);
   }
 
   function patchShowView() {
@@ -708,6 +822,8 @@
     init: init,
     refreshDocTypeLabel: refreshDocTypeLabel,
     refreshBrandTexts: refreshBrandTexts,
+    preparePdfSpanish: preparePdfSpanish,
+    restorePdfSpanish: restorePdfSpanish,
     KEY_COUNT: Object.keys(I18N_EN).length
   };
 

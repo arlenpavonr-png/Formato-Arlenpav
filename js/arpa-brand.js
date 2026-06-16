@@ -5,6 +5,11 @@
   const SETTINGS_KEY = 'arpa_suite_user_settings';
   const GLOBAL_BRAND_URL = 'https://arpatechnologyglobal.com';
   const GLOBAL_FOOTER_TEXT = '© 2026 ARPA Technology Global · arpatechnologyglobal.com · Todos los derechos reservados.';
+  const COT_NOTA_LEGAL_HTML = '<strong>Nota:</strong> Cotización válida por <strong>15 días calendario</strong>. Precios en pesos colombianos (COP).';
+
+  function getCotNotaLegalHtml() {
+    return COT_NOTA_LEGAL_HTML;
+  }
 
   function isInternalAppUrl(url) {
     const u = String(url || '').trim().toLowerCase();
@@ -117,7 +122,7 @@
       el.textContent = s.technicianName?.trim() ? `Elaborado por – ${s.technicianName}` : 'Elaborado por';
     });
     set('cot-nota-legal', (el) => {
-      el.innerHTML = `<strong>Nota:</strong> Cotización con vigencia de <strong>15 días calendario</strong>. Precios en pesos colombianos (COP). Emitida por <strong>${company}</strong>.`;
+      el.innerHTML = getCotNotaLegalHtml();
     });
     set('validation-text', (el) => { el.textContent = 'Arpa Suite · Listo'; });
 
@@ -311,6 +316,7 @@
     SETTINGS_KEY,
     GLOBAL_BRAND_URL,
     GLOBAL_FOOTER_TEXT,
+    getCotNotaLegalHtml,
     DEFAULTS,
     DEFAULT_LOGO,
     getSettings,

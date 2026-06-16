@@ -116,8 +116,8 @@
     if (!tbody) return;
 
     tbody.innerHTML = servicios.map((row, idx) => `
-      <tr data-idx="${idx}">
-        <td><input type="text" class="cc-svc-desc" value="${escAttr(row.desc)}" placeholder="Descripción del servicio"></td>
+      <tr class="cc-row" data-idx="${idx}">
+        <td class="td-desc"><input type="text" class="cc-svc-desc" value="${escAttr(row.desc)}" placeholder="Descripción del servicio"></td>
         <td class="td-cant"><input type="number" class="cc-svc-cant" min="1" value="${row.cant}" inputmode="numeric"></td>
         <td class="td-precio"><input type="number" class="cc-svc-unit" min="0" step="1000" value="${row.unit || ''}" inputmode="numeric" placeholder="0"></td>
         <td class="td-total cc-svc-total">${formatoPesos(row.cant * row.unit)}</td>
@@ -434,20 +434,24 @@
     y += 7;
 
     d.servicios.forEach((row, i) => {
-      if (y > ph - 70) { doc.addPage(); y = m; }
+      const descLines = doc.splitTextToSize(row.desc || '—', 72);
+      const rowHeight = Math.max(7, descLines.length * 4 + 2);
+      if (y + rowHeight > ph - 70) {
+        doc.addPage();
+        y = m;
+      }
       if (i % 2 === 1) {
         doc.setFillColor(248, 250, 252);
-        doc.rect(m, y, pw - m * 2, 7, 'F');
+        doc.rect(m, y, pw - m * 2, rowHeight, 'F');
       }
       doc.setTextColor(30, 41, 59);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
-      const descLines = doc.splitTextToSize(row.desc || '—', 72);
       doc.text(descLines, cols[0] + 2, y + 4.5);
       doc.text(String(row.cant), cols[1] + 2, y + 4.5);
       doc.text(formatoPesos(row.unit), cols[2] + 2, y + 4.5);
       doc.text(formatoPesos(row.total), cols[3] + 2, y + 4.5);
-      y += Math.max(7, descLines.length * 4 + 2);
+      y += rowHeight;
     });
     y += 4;
 

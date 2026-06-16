@@ -296,6 +296,7 @@
     renderTablaCot();
     document.body.classList.add('is-printing');
     global.ArpaBrand?.prepareForPrint?.();
+    global.ArpaI18n?.preparePdfSpanish?.('view-cotizacion');
 
     const viewRoot = document.getElementById('view-cotizacion');
     const rowPrintBackups = lockCotRowsForPrint(viewRoot);
@@ -352,6 +353,7 @@
     setTimeout(() => {
       document.title = tituloRespaldo;
       document.body.classList.remove('is-printing');
+      global.ArpaI18n?.restorePdfSpanish?.();
       global.ArpaBrand?.restoreAfterPrint?.();
       unlockCotRowsForPrint(rowPrintBackups);
       global.ArpaSignature?.restoreAfterPrint?.();

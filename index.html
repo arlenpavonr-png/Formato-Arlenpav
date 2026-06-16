@@ -1582,8 +1582,15 @@
     }
     body.is-printing #view-cotizacion .tabla-productos .td-action,
     body.is-printing #view-cotizacion .tabla-productos thead th:last-child,
-    body.is-printing #view-cotizacion .tabla-productos tbody td:last-child {
+    body.is-printing #view-cotizacion .tabla-productos tbody td:last-child,
+    body.is-printing #view-cuenta-cobro .tabla-productos .td-action,
+    body.is-printing #view-cuenta-cobro .tabla-productos thead th:last-child,
+    body.is-printing #view-cuenta-cobro .tabla-productos tbody td:last-child {
       display: none !important;
+    }
+    body.is-printing-formato .mat-row {
+      page-break-inside: avoid !important;
+      break-inside: avoid-page !important;
     }
     .btn-quitar, .btn-add-item, .extra-items-editor .field label { display: none !important; }
     .extra-item-row { display: none !important; }
@@ -3115,6 +3122,7 @@ function guardarPDF() {
   applyUserSettingsToUI();
   document.body.classList.add('is-printing', 'is-printing-formato');
   window.ArpaBrand?.prepareForPrint?.();
+  window.ArpaI18n?.preparePdfSpanish?.('view-formato');
 
   const viewRoot = document.getElementById('view-formato');
   const elementos = viewRoot.querySelectorAll('input:not([type=file]):not([type=radio]):not([type=checkbox]), select, textarea');
@@ -3166,6 +3174,7 @@ function guardarPDF() {
   // Restaura todo después de imprimir
   setTimeout(() => {
     document.body.classList.remove('is-printing', 'is-printing-formato', 'formato-has-video-qr');
+    window.ArpaI18n?.restorePdfSpanish?.();
     window.ArpaBrand?.restoreAfterPrint?.();
     restoreVideoQrAfterPrint(qrBlock);
     window.ArpaSignature?.restoreAfterPrint?.();
