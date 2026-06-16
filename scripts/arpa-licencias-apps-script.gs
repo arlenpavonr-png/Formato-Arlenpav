@@ -19,6 +19,7 @@ const CONFIG = {
   SHEET_ID: '154LeJlcAPa3dlWxXHC2WA2_xFNL4oQ45I8630Kzcd3E',
   SHEET_NAME: 'Hoja 1',
   APP_URL: 'https://arlenpavonr-png.github.io/Formato-Arlenpav/',
+  MANUAL_URL: 'https://arlenpavonr-png.github.io/Formato-Arlenpav/manual.html',
   SUPPORT_WHATSAPP: '573005683914',
   SUPPORT_WHATSAPP_DISPLAY: '+57 300-568-3914',
   EMAIL_FROM_NAME: 'ARPA Technology Global',
@@ -161,6 +162,7 @@ function sendActivationEmail_(to, cliente, plan, codigo, vencimiento) {
     codigo: codigo,
     vencStr: vencStr,
     appUrl: CONFIG.APP_URL,
+    manualUrl: CONFIG.MANUAL_URL,
     waUrl: waUrl,
     waDisplay: CONFIG.SUPPORT_WHATSAPP_DISPLAY,
   });
@@ -213,10 +215,16 @@ function buildActivationEmailHtml_(d) {
     '</table>',
 
     // CTA button
-    '<table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 auto 28px;"><tr><td>',
+    '<table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 auto 16px;"><tr><td>',
     '<a href="' + escapeHtml_(d.appUrl) + '" target="_blank" style="display:inline-block;background:#c9a84c;color:#1a2a4a;',
     'font-size:16px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:8px;">',
     'Abrir ARPA Suite →</a></td></tr></table>',
+
+    // Manual
+    '<p style="margin:0 0 28px;font-size:14px;color:#5a6a8a;line-height:1.6;text-align:center;">',
+    '¿Primera vez? Consulta el ',
+    '<a href="' + escapeHtml_(d.manualUrl) + '" target="_blank" style="color:#1a2a4a;font-weight:700;text-decoration:underline;">',
+    'manual de usuario</a> con guías paso a paso.</p>',
 
     // Support
     '<p style="margin:0;font-size:14px;color:#5a6a8a;line-height:1.6;text-align:center;">',
