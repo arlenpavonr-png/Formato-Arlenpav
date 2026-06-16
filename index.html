@@ -1556,8 +1556,35 @@
     .servicio-row .cot-servicio-valor { grid-column: span 2; }
   }
   @media print {
-    .tabla-productos { min-width: 0; table-layout: auto; }
+    .tabla-productos {
+      min-width: 0;
+      table-layout: fixed;
+      overflow: visible !important;
+    }
     .tabla-cot-wrap { overflow: visible; }
+    .tabla-productos thead { display: table-header-group; }
+    .tabla-productos tbody { display: table-row-group; }
+    .tabla-productos tbody tr {
+      page-break-inside: avoid !important;
+      break-inside: avoid-page !important;
+      -webkit-column-break-inside: avoid !important;
+    }
+    .tabla-productos tbody td {
+      page-break-inside: avoid !important;
+      break-inside: avoid-page !important;
+      vertical-align: top;
+    }
+    .tabla-productos .td-desc {
+      white-space: normal;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      line-height: 1.35;
+    }
+    body.is-printing #view-cotizacion .tabla-productos .td-action,
+    body.is-printing #view-cotizacion .tabla-productos thead th:last-child,
+    body.is-printing #view-cotizacion .tabla-productos tbody td:last-child {
+      display: none !important;
+    }
     .btn-quitar, .btn-add-item, .extra-items-editor .field label { display: none !important; }
     .extra-item-row { display: none !important; }
     .cot-cierre-block {

@@ -154,9 +154,9 @@
 
     let html = '';
     filas.forEach((f, idx) => {
-      html += `<tr data-fila="${idx}">
+      html += `<tr class="cot-row" data-fila="${idx}">
         <td class="td-cod">${f.cod}</td>
-        <td class="td-desc">${f.nom}</td>
+        <td class="td-desc"><span class="cot-desc-text">${f.nom}</span></td>
         <td class="td-cant"><input type="number" class="cot-cant-input" min="1" value="${f.cant}" data-fila="${idx}"></td>
         <td class="td-precio"><input type="number" class="cot-pvp-input" min="0" step="1000" value="${f.pvp}" data-fila="${idx}" inputmode="numeric"></td>
         <td class="td-total">${formatoPesos(f.pvp * f.cant)}</td>
@@ -164,9 +164,9 @@
       </tr>`;
     });
     cobros.forEach((f) => {
-      html += `<tr class="row-cobro">
+      html += `<tr class="row-cobro cot-row">
         <td class="td-cod">${f.cod}</td>
-        <td class="td-desc">${f.nom}</td>
+        <td class="td-desc"><span class="cot-desc-text">${f.nom}</span></td>
         <td class="td-cant"><span class="cot-cant-static">1</span></td>
         <td class="td-precio">${formatoPesos(f.pvp)}</td>
         <td class="td-total">${formatoPesos(f.pvp)}</td>
@@ -261,6 +261,28 @@
     if (numField && !numField.value.trim()) nuevoCotNumero();
   }
 
+  function lockCotRowsForPrint(viewRoot) {
+    if (!viewRoot) return [];
+    const backups = [];
+    viewRoot.querySelectorAll('#cot-tabla-body tr.cot-row').forEach((tr) => {
+      backups.push({
+        el: tr,
+        breakInside: tr.style.breakInside,
+        pageBreakInside: tr.style.pageBreakInside,
+      });
+      tr.style.breakInside = 'avoid-page';
+      tr.style.pageBreakInside = 'avoid';
+    });
+    return backups;
+  }
+
+  function unlockCotRowsForPrint(backups) {
+    backups.forEach(({ el, breakInside, pageBreakInside }) => {
+      el.style.breakInside = breakInside;
+      el.style.pageBreakInside = pageBreakInside;
+    });
+  }
+
   function guardarCotPDF() {
     var _numCot = (document.getElementById('numero-cot')?.value || '').trim();
     var _cliente = document.querySelector('#cot-nombre, #cot-cliente, input[name*=nombre]')?.value?.trim() || '';
@@ -276,6 +298,7 @@
     global.ArpaBrand?.prepareForPrint?.();
 
     const viewRoot = document.getElementById('view-cotizacion');
+    const rowPrintBackups = lockCotRowsForPrint(viewRoot);
     const elementos = viewRoot.querySelectorAll(
       'input:not([type=file]):not([type=checkbox]):not(.cot-cant-input):not(.cot-pvp-input):not(.cobro-desc):not(.cobro-valor), select, textarea'
     );
@@ -330,6 +353,7 @@
       document.title = tituloRespaldo;
       document.body.classList.remove('is-printing');
       global.ArpaBrand?.restoreAfterPrint?.();
+      unlockCotRowsForPrint(rowPrintBackups);
       global.ArpaSignature?.restoreAfterPrint?.();
       respaldos.forEach(({ el, parent }) => {
         const span = parent.querySelector('.pdf-valor');
