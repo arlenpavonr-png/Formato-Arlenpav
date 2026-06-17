@@ -1301,6 +1301,32 @@
   }
   .settings-error.visible { display: block; }
 
+  .settings-brand-lock {
+    background: #fffbeb;
+    border: 1px solid rgba(201, 168, 76, 0.45);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #1a2a4a;
+  }
+  .settings-brand-lock a {
+    color: #1a2a4a;
+    font-weight: 700;
+    text-decoration: underline;
+  }
+  .brand-customization-locked .logo-upload-preview-wrap,
+  .brand-customization-locked .logo-upload-input {
+    opacity: 0.55;
+    pointer-events: none;
+  }
+  .settings-modal-body input.brand-field-locked {
+    background: #f1f5f9;
+    color: #64748b;
+    cursor: not-allowed;
+  }
+
   /* ── LISTA DE PRECIOS (AJUSTES) ── */
   .settings-section-title {
     font-size: 11px;
@@ -3058,6 +3084,11 @@ document.documentElement.classList.add('license-checking');
     </div>
     <div class="settings-modal-body">
       <p id="settings-error" class="settings-error" role="alert"></p>
+      <div id="settings-brand-lock" class="settings-brand-lock" hidden>
+        Esta función está disponible solo en el plan White Label.
+        <a href="https://wa.me/573017419558?text=Hola,%20quiero%20información%20sobre%20ARPA%20Suite%20White%20Label" target="_blank" rel="noopener noreferrer">Escríbenos por WhatsApp</a>
+        para conocer cómo activarla.
+      </div>
       <div class="field">
         <label for="settings-company"><span data-i18n="settings.label.company">Nombre Empresa</span> <span class="req">*</span></label>
         <input type="text" id="settings-company" required autocomplete="organization" data-i18n-placeholder="settings.placeholder.company" placeholder="Nombre de su empresa">
@@ -3656,6 +3687,9 @@ if ('serviceWorker' in navigator) {
 
   function isLocallyExpired() {
     try {
+      var code = (localStorage.getItem(LICENSE_STORAGE_KEY) || '').trim().toUpperCase();
+      if (code === 'ARPA-FOUNDER-001') return false;
+      if (window.ArpaLicense && window.ArpaLicense.isNeverExpiring(code)) return false;
       var venc = (localStorage.getItem(LICENSE_VENC_KEY) || '').trim();
       var d = parseDateOnly(venc);
       if (!d) return false;
@@ -3866,6 +3900,7 @@ if ('serviceWorker' in navigator) {
 <script src="./js/arpa-i18n.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" crossorigin="anonymous"></script>
+<script src="./js/arpa-license.js"></script>
 <script src="./js/arpa-brand.js"></script>
 <script src="./js/arpa-pricing.js"></script>
 <script src="./js/arpa-cobros.js"></script>

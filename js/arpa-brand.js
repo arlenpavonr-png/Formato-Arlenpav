@@ -311,6 +311,7 @@
   }
 
   function previewLogo(input) {
+    if (!global.ArpaLicense?.canCustomizeBrand?.()) return;
     const file = input.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
@@ -331,6 +332,24 @@
       if (preview) preview.src = pendingLogoBase64;
     };
     reader.readAsDataURL(file);
+  }
+
+  function applyBrandCustomizationPolicy() {
+    const allowed = global.ArpaLicense?.canCustomizeBrand?.() ?? false;
+    const lockEl = document.getElementById('settings-brand-lock');
+    const companyEl = document.getElementById('settings-company');
+    const logoEl = document.getElementById('settings-logo');
+    const logoBox = document.querySelector('#settings-modal .logo-upload-box');
+    const reqMark = document.querySelector('label[for="settings-company"] .req');
+
+    if (lockEl) lockEl.hidden = allowed;
+    if (companyEl) {
+      companyEl.readOnly = !allowed;
+      companyEl.classList.toggle('brand-field-locked', !allowed);
+      if (reqMark) reqMark.style.display = allowed ? '' : 'none';
+    }
+    if (logoEl) logoEl.disabled = !allowed;
+    if (logoBox) logoBox.classList.toggle('brand-customization-locked', !allowed);
   }
 
   function openSettings(menuBtn) {
@@ -360,6 +379,7 @@
     if (preview) preview.src = getLogo(s);
     const logoInput = document.getElementById('settings-logo');
     if (logoInput) logoInput.value = '';
+    applyBrandCustomizationPolicy();
     global.ArpaPricing?.renderPriceListSettings?.();
     document.getElementById('settings-modal')?.classList.add('open');
     if (menuBtn) {
@@ -387,6 +407,7 @@
 
   function saveFromModal() {
     clearError();
+    const canBrand = global.ArpaLicense?.canCustomizeBrand?.() ?? false;
     const companyName = document.getElementById('settings-company')?.value.trim();
     const nit = document.getElementById('settings-nit')?.value.trim();
     const address = document.getElementById('settings-address')?.value.trim();
@@ -396,14 +417,19 @@
     const accountType = document.getElementById('settings-account-type')?.value.trim();
     const accountNumber = document.getElementById('settings-account-number')?.value.trim();
 
-    if (!companyName || !nit || !address || !phone || !bankName || !accountType || !accountNumber) {
+    const current = getSettings();
+
+    if (canBrand && (!companyName || !nit || !address || !phone || !bankName || !accountType || !accountNumber)) {
+      showError('Complete todos los campos obligatorios marcados con *.');
+      return;
+    }
+    if (!canBrand && (!nit || !address || !phone || !bankName || !accountType || !accountNumber)) {
       showError('Complete todos los campos obligatorios marcados con *.');
       return;
     }
 
-    const current = getSettings();
     const settings = {
-      companyName,
+      companyName: canBrand ? companyName : (current.companyName || ''),
       nit,
       address,
       city,
@@ -419,7 +445,9 @@
       accountHolderDocument: document.getElementById('settings-account-holder-doc')?.value.trim() || '',
       technicianName: document.getElementById('settings-technician')?.value.trim() || '',
       technicianDocument: document.getElementById('settings-technician-doc')?.value.trim() || '',
-      logoBase64: pendingLogoBase64 !== null ? pendingLogoBase64 : (current.logoBase64 || '')
+      logoBase64: canBrand
+        ? (pendingLogoBase64 !== null ? pendingLogoBase64 : (current.logoBase64 || ''))
+        : (current.logoBase64 || '')
     };
 
     if (!saveSettings(settings)) return;
