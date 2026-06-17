@@ -21,6 +21,12 @@
   const PAGO_FIELD_IDS = ['cc-pago-banco', 'cc-pago-numero', 'cc-pago-titular', 'cc-pago-titular-doc'];
 
   function loadPagoFields() {
+    if (!global.ArpaBrand?.hasUserSettings?.()) {
+      PAGO_FIELD_IDS.forEach((id) => { const el = document.getElementById(id); if (el) el.value = ''; });
+      const tipo = document.getElementById('cc-pago-tipo');
+      if (tipo) tipo.value = 'Ahorros';
+      return;
+    }
     const r = getRawSettings();
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
     set('cc-pago-banco', r.bankName);
@@ -47,6 +53,10 @@
   function loadCiudadFromConfig() {
     const el = document.getElementById('cc-ciudad');
     if (!el) return;
+    if (!global.ArpaBrand?.hasUserSettings?.()) {
+      el.value = '';
+      return;
+    }
     const r = getRawSettings();
     let city = (r.city || '').trim();
     if (!city && (r.address || '').trim()) {
@@ -94,7 +104,8 @@
   }
 
   function renderCobrador() {
-    const r = getRawSettings();
+    const configured = global.ArpaBrand?.hasUserSettings?.();
+    const r = configured ? getRawSettings() : {};
     const map = {
       'cc-cobrador-nombre': r.technicianName,
       'cc-cobrador-doc': r.technicianDocument,

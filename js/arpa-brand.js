@@ -40,11 +40,18 @@
   const DEFAULTS = { ...EMPTY_SETTINGS };
 
   const LEGACY_COMPANY_PATTERNS = [
+    /automatismos\s*arlen\s*pav/i,
     /automatismos\s*arlenpav/i,
-    /^automatismos\s*arpa/i
+    /^automatismos\s*arpa/i,
+    /arlen\s*pavon/i,
+    /arlenpav/i
   ];
   const LEGACY_NIT_PATTERNS = [
     /901\.?\s*473\.?\s*259/i
+  ];
+  const LEGACY_PHONE_PATTERNS = [
+    /300[\s.-]?568[\s.-]?3914/,
+    /315[\s.-]?183[\s.-]?1998/
   ];
 
   const DEFAULT_LOGO = './icon-192x192.png';
@@ -61,16 +68,85 @@
 
   function isLegacyPreset(saved) {
     if (!saved || typeof saved !== 'object') return false;
-    const name = String(saved.companyName || '');
-    const nit = String(saved.nit || '');
-    if (LEGACY_COMPANY_PATTERNS.some((re) => re.test(name))) return true;
-    if (LEGACY_NIT_PATTERNS.some((re) => re.test(nit))) return true;
+    const fields = [
+      saved.companyName,
+      saved.nit,
+      saved.address,
+      saved.phone,
+      saved.technicianName,
+      saved.accountHolder,
+      saved.website
+    ];
+    if (fields.some((v) => isLegacyFieldValue(v))) return true;
+    if (LEGACY_NIT_PATTERNS.some((re) => re.test(String(saved.nit || '')))) return true;
     return false;
   }
 
   function containsLegacyBrandText(text) {
     const blob = String(text || '').toLowerCase();
-    return blob.includes('automatismos') && blob.includes('arlenpav');
+    if (LEGACY_COMPANY_PATTERNS.some((re) => re.test(blob))) return true;
+    if (blob.includes('automatismos') && blob.includes('arlen')) return true;
+    return false;
+  }
+
+  function isFakeDefaultSettings(saved) {
+    if (!saved || typeof saved !== 'object') return false;
+    const name = String(saved.companyName || '').trim();
+    const nit = String(saved.nit || '').trim();
+    const phone = String(saved.phone || '').replace(/\D/g, '');
+    const address = String(saved.address || '').trim();
+    if (/^su empresa/i.test(name) && /^000/.test(nit.replace(/\D/g, ''))) return true;
+    if (name === 'Su Empresa S.A.S.' && nit === '000.000.000-0') return true;
+    if (address === 'Dirección comercial' && phone === '0000000000') return true;
+    return false;
+  }
+
+  function isLegacyFieldValue(value) {
+    const text = String(value || '').trim();
+    if (!text) return false;
+    if (containsLegacyBrandText(text)) return true;
+    if (LEGACY_NIT_PATTERNS.some((re) => re.test(text))) return true;
+    if (LEGACY_PHONE_PATTERNS.some((re) => re.test(text))) return true;
+    return false;
+  }
+
+  function shouldPurgeSettings(saved) {
+    if (!saved || typeof saved !== 'object') return false;
+    if (isLegacyPreset(saved)) return true;
+    if (containsLegacyBrandText(JSON.stringify(saved))) return true;
+    if (!hasUserSettings() && isFakeDefaultSettings(saved)) return true;
+    return false;
+  }
+
+  function scrubLegacyInputValues(root) {
+    const scope = root || document;
+    scope.querySelectorAll('input:not([type=file]):not([type=radio]):not([type=checkbox]), textarea, select').forEach((el) => {
+      if (el.tagName === 'SELECT') return;
+      const val = el.value;
+      if (isLegacyFieldValue(val)) el.value = '';
+    });
+  }
+
+  function resetUnconfiguredFormFields() {
+    if (hasUserSettings()) return;
+    [
+      'campo-tecnico-responsable',
+      'campo-tecnico-firma',
+      'formato-cliente-nombre',
+      'formato-cliente-tel',
+      'formato-cliente-ciudad',
+      'cot-elaborado-nombre',
+      'cot-elaborado-tel',
+      'cot-nombre',
+      'cc-cobrador-nombre',
+      'cc-cobrador-empresa'
+    ].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    scrubLegacyInputValues(document.getElementById('view-formato'));
+    scrubLegacyInputValues(document.getElementById('view-cotizacion'));
+    scrubLegacyInputValues(document.getElementById('view-cuenta-cobro'));
   }
 
   function migrateConfiguredFlag() {
@@ -83,15 +159,26 @@
     } catch (e) {}
   }
 
+  function shouldPurgeDraft(draftRaw) {
+    if (!draftRaw || draftRaw === '{}') return false;
+    if (containsLegacyBrandText(draftRaw)) return true;
+    try {
+      const data = JSON.parse(draftRaw);
+      return Object.values(data).some((v) => isLegacyFieldValue(String(v)));
+    } catch (e) {
+      return false;
+    }
+  }
+
   function purgeLegacyData() {
     try {
       const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
-      if (isLegacyPreset(saved)) {
+      if (shouldPurgeSettings(saved)) {
         localStorage.removeItem(SETTINGS_KEY);
         localStorage.removeItem(SETTINGS_CONFIGURED_KEY);
       }
       const draft = localStorage.getItem(FORMATO_DRAFT_KEY) || '';
-      if (containsLegacyBrandText(draft)) {
+      if (shouldPurgeDraft(draft)) {
         localStorage.removeItem(FORMATO_DRAFT_KEY);
       }
       migrateConfiguredFlag();
@@ -220,6 +307,7 @@
     if (configured && cotTel && !cotTel.value.trim() && s.phone?.trim()) cotTel.value = s.phone.trim();
 
     document.title = document.title.includes('–') ? document.title : (configured ? `Arpa Suite – ${company}` : 'Arpa Suite');
+    if (!configured) resetUnconfiguredFormFields();
   }
 
   function previewLogo(input) {
@@ -411,6 +499,11 @@
     hasUserSettings,
     purgeLegacyData,
     isLegacyPreset,
+    isLegacyFieldValue,
+    containsLegacyBrandText,
+    shouldPurgeSettings,
+    scrubLegacyInputValues,
+    resetUnconfiguredFormFields,
     getSettings,
     saveSettings,
     getLogo,

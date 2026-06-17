@@ -2101,13 +2101,32 @@
 
   function hasCompanySettings() {
     try {
-      if (localStorage.getItem(CONFIGURED_KEY) === 'true') return true;
-      var saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
-      return Boolean(String(saved.companyName || '').trim());
+      return localStorage.getItem(CONFIGURED_KEY) === 'true';
     } catch (e) {
       return false;
     }
   }
+
+  function purgeLegacyStorageEarly() {
+    try {
+      function legacyText(t) {
+        var b = String(t || '').toLowerCase();
+        if (/automatismos\s*arlen\s*pav|automatismos\s*arlenpav|arlen\s*pavon|arlenpav/.test(b)) return true;
+        if (b.indexOf('automatismos') >= 0 && b.indexOf('arlen') >= 0) return true;
+        if (/901\.?\s*473\.?\s*259/.test(b)) return true;
+        return false;
+      }
+      var saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      if (legacyText(JSON.stringify(saved))) {
+        localStorage.removeItem(SETTINGS_KEY);
+        localStorage.removeItem(CONFIGURED_KEY);
+      }
+      var draft = localStorage.getItem('arpa_formato_borrador') || '';
+      if (legacyText(draft)) localStorage.removeItem('arpa_formato_borrador');
+    } catch (e) {}
+  }
+
+  purgeLegacyStorageEarly();
 
   function hasSalesEntry() {
     try {
@@ -3222,13 +3241,10 @@ function shouldSkipFormatoDraft() {
   try {
     const raw = localStorage.getItem(FORMATO_DRAFT_KEY) || '';
     if (!raw || raw === '{}') return true;
-    const blob = raw.toLowerCase();
-    if (blob.includes('automatismos') && blob.includes('arlenpav')) return true;
-    if (global.ArpaBrand?.isLegacyPreset) {
-      const data = JSON.parse(raw);
-      const values = Object.values(data).join(' ').toLowerCase();
-      if (values.includes('automatismos') && values.includes('arlenpav')) return true;
-    }
+    if (global.ArpaBrand.containsLegacyBrandText?.(raw)) return true;
+    const data = JSON.parse(raw);
+    const values = Object.values(data);
+    if (values.some((v) => global.ArpaBrand.isLegacyFieldValue?.(String(v)))) return true;
   } catch (e) {
     return true;
   }
@@ -3269,6 +3285,8 @@ function initFormatoDraftPersistence() {
   } else {
     applyFormatoDraft();
   }
+  global.ArpaBrand?.scrubLegacyInputValues?.(document.getElementById('view-formato'));
+  global.ArpaBrand?.resetUnconfiguredFormFields?.();
   const root = document.getElementById('view-formato');
   if (!root) return;
   root.addEventListener('input', scheduleFormatoDraftSave);
