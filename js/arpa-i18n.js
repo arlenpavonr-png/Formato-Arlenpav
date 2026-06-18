@@ -229,6 +229,7 @@
     'cat.empty': 'No products yet.<br>Tap <strong>+</strong> to add the first one.',
     'cat.oficio.intro': 'Editable starter catalog. Adjust prices and products for your business.',
     'cat.btn.agregar_producto': '+ Add product',
+    'cat.btn.cargar_catalogo_base': '📦 Load starter catalog',
     'cat.cat_empty': 'Create your categories first. E.g.: Motors, Parts, Services, Materials…',
 
     'oficio.automatismos': 'Gate Automation',

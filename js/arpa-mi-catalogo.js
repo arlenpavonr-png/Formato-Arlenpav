@@ -560,6 +560,7 @@
     container.innerHTML = extras.map((oficioId) => {
       const i18nKey = global.ArpaOficios?.getOficioById?.(oficioId)?.i18nKey || '';
       const label = global.ArpaOficios?.getOficioLabel?.(oficioId) || oficioId;
+      const seedCount = global.ArpaOficios?.getSeedProductCount?.(oficioId) || 0;
       return `
         <div id="catalogo-section-${escapeHtml(oficioId)}" class="catalogo-oficio-section" data-oficio="${escapeHtml(oficioId)}">
           <h2 class="catalogo-oficio-title"><span class="dot"></span><span${i18nKey ? ` data-i18n="${escapeHtml(i18nKey)}"` : ''}>${escapeHtml(label)}</span></h2>
@@ -573,6 +574,7 @@
             <div class="catalogo-toolbar">
               <div class="catalogo-toolbar-row">
                 <input type="search" id="catalogo-buscar-${escapeHtml(oficioId)}" data-i18n-placeholder="cat.placeholder.buscar" placeholder="🔍 Buscar por nombre o referencia…" autocomplete="off" inputmode="search">
+                <button type="button" class="btn-catalogo-import btn-catalogo-seed-oficio" data-oficio="${escapeHtml(oficioId)}" data-i18n="cat.btn.cargar_catalogo_base">📦 Cargar catálogo base (${seedCount})</button>
                 <button type="button" class="btn-catalogo-import btn-catalogo-add-oficio" data-oficio="${escapeHtml(oficioId)}" data-i18n="cat.btn.agregar_producto">+ Agregar producto</button>
               </div>
               <span id="catalogo-count-${escapeHtml(oficioId)}" class="catalogo-count"></span>
@@ -592,6 +594,10 @@
         searchByOficio[oficioId] = e.target.value;
         currentOficioId = oficioId;
         renderProductGroups(oficioId);
+      });
+      container.querySelector(`.btn-catalogo-seed-oficio[data-oficio="${oficioId}"]`)?.addEventListener('click', () => {
+        currentOficioId = oficioId;
+        global.ArpaOficios?.precargarCatalogoOficio?.(oficioId);
       });
       container.querySelector(`.btn-catalogo-add-oficio[data-oficio="${oficioId}"]`)?.addEventListener('click', () => {
         currentOficioId = oficioId;

@@ -246,19 +246,18 @@
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   }
 
-  /**
-   * Importa productos genéricos del oficio a localStorage si hay datos en SEED_CATALOGS.
-   * No modifica Automatismos ni productos ya existentes del usuario.
-   */
-  function seedOficioIfNeeded(oficioId) {
+  function importSeedCatalog(oficioId, options) {
+    const opts = options || {};
     const id = normalizeOficioId(oficioId);
-    if (id === OFICIO_AUTOMATISMOS) return { added: 0, skipped: true };
-    if (getSeededOficios().includes(id)) return { added: 0, skipped: true };
+    if (id === OFICIO_AUTOMATISMOS) return { added: 0, skipped: true, reason: 'automatismos' };
+    if (!opts.force && getSeededOficios().includes(id)) {
+      return { added: 0, skipped: true, reason: 'already_seeded' };
+    }
 
     const pack = SEED_CATALOGS[id];
     const seedProducts = Array.isArray(pack?.products) ? pack.products : [];
     if (!seedProducts.length) {
-      return { added: 0, skipped: true, empty: true };
+      return { added: 0, skipped: true, empty: true, total: 0 };
     }
 
     const STORAGE_KEY = global.ArpaMiCatalogo?.STORAGE_KEY || 'arpa_catalogo_usuario';
@@ -330,7 +329,47 @@
       global.ArpaCotizacion?.updateCatalogHint?.();
     }
 
-    return { added, skipped: false };
+    return { added, skipped: false, total: seedProducts.length };
+  }
+
+  function seedOficioIfNeeded(oficioId) {
+    return importSeedCatalog(oficioId, { force: false });
+  }
+
+  function getSeedProductCount(oficioId) {
+    const id = normalizeOficioId(oficioId);
+    const pack = SEED_CATALOGS[id];
+    return Array.isArray(pack?.products) ? pack.products.length : 0;
+  }
+
+  /** Carga manual del catálogo base de un oficio (agrega faltantes, sin duplicar códigos). */
+  function precargarCatalogoOficio(oficioId) {
+    const id = normalizeOficioId(oficioId);
+    if (id === OFICIO_AUTOMATISMOS) return 0;
+
+    const total = getSeedProductCount(id);
+    if (!total) {
+      alert('No hay catálogo base disponible para este oficio.');
+      return 0;
+    }
+
+    const label = getOficioLabel(id);
+    const result = importSeedCatalog(id, { force: true });
+    global.ArpaMiCatalogo?.refreshView?.();
+
+    if (result.added > 0) {
+      alert(
+        'Catálogo base cargado: ' + result.added + ' producto' +
+        (result.added !== 1 ? 's' : '') + ' agregado' +
+        (result.added !== 1 ? 's' : '') + ' en ' + label + '.'
+      );
+    } else {
+      alert(
+        'El catálogo base de ' + label + ' ya estaba cargado (' + total +
+        ' productos). No se agregaron duplicados.'
+      );
+    }
+    return result.added;
   }
 
   function seedActiveOficios() {
@@ -373,7 +412,12 @@
     getOficioLabel,
     seedOficioIfNeeded,
     seedActiveOficios,
+    importSeedCatalog,
+    getSeedProductCount,
+    precargarCatalogoOficio,
     renderSettingsCheckboxes,
     readSettingsCheckboxes
   };
+
+  global.precargarCatalogoOficio = precargarCatalogoOficio;
 })(typeof window !== 'undefined' ? window : globalThis);
