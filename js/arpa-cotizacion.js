@@ -229,28 +229,24 @@
   }
 
   function formatCotNumero(n) {
-    return 'COT-' + String(n).padStart(3, '0');
+    return global.ArpaNumeracion?.formatCotNumber?.(n) || ('COT-' + String(n).padStart(3, '0'));
   }
 
   function parseCotNumero(value) {
-    const match = String(value || '').match(/(\d+)/);
-    return match ? parseInt(match[1], 10) : 0;
+    return global.ArpaNumeracion?.parseSequenceNumber?.(value) || 0;
   }
 
   function getUltimoCot() {
-    try {
-      const stored = parseInt(localStorage.getItem('arpa_ultimo_cot') || '0', 10);
-      const fieldNum = parseCotNumero(document.getElementById('numero-cot')?.value);
-      return Math.max(stored, fieldNum);
-    } catch (e) { return 0; }
+    const N = global.ArpaNumeracion;
+    if (!N) return 0;
+    return N.getMaxCounter(N.KEYS.cot, document.getElementById('numero-cot')?.value);
   }
 
   function nuevoCotNumero() {
-    const nuevo = getUltimoCot() + 1;
-    try { localStorage.setItem('arpa_ultimo_cot', String(nuevo)); } catch (e) {}
-    const num = formatCotNumero(nuevo);
+    if (!global.ArpaNumeracion?.blockIfPymeMissingCode?.()) return;
     const numField = document.getElementById('numero-cot');
-    if (numField) numField.value = num;
+    const { value } = global.ArpaNumeracion.nextNumber('cot', numField?.value);
+    if (numField) numField.value = value;
     const hoy = new Date();
     const fecha = document.getElementById('cot-fecha');
     const validez = document.getElementById('cot-validez');
@@ -262,7 +258,7 @@
     }
     const cliente = document.getElementById('cot-nombre')?.value || '';
     const nc = cliente ? '-' + cliente.replace(/\s+/g, '-').substring(0, 20) : '';
-    document.title = `${num}${nc}-${hoy.toISOString().slice(0, 10)}`;
+    document.title = `${value}${nc}-${hoy.toISOString().slice(0, 10)}`;
   }
 
   function ensureCotNumero() {

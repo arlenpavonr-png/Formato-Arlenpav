@@ -3173,6 +3173,14 @@ document.documentElement.classList.add('license-checking');
         <label for="settings-technician-doc" data-i18n="settings.label.technician_doc_optional">Cédula / NIT del técnico (opcional)</label>
         <input type="text" id="settings-technician-doc" data-i18n-placeholder="cc.placeholder.doc_titular" placeholder="Documento del técnico">
       </div>
+      <div class="field">
+        <label for="settings-technician-code">
+          <span data-i18n="settings.label.technician_code">Iniciales o Código del Técnico</span>
+          <span class="req" id="settings-technician-code-req" hidden>*</span>
+        </label>
+        <input type="text" id="settings-technician-code" maxlength="4" autocomplete="off" style="text-transform:uppercase;max-width:120px;" data-i18n-placeholder="settings.placeholder.technician_code" placeholder="PJ">
+        <p class="logo-upload-hint" data-i18n="settings.technician_code.hint">Plan PYME: obligatorio. Prefija sus documentos (ej. PJ-001). Otros planes: opcional.</p>
+      </div>
       <div class="settings-section-title" data-i18n="settings.section.price_list">Lista de Precios</div>
       <p style="font-size:11px;color:var(--muted);line-height:1.4;margin-bottom:4px;" data-i18n="settings.price_list.hint">Valores base para servicios recurrentes. Se aplican en Cotización (editables antes del PDF).</p>
       <div id="settings-price-list" class="servicios-grid"></div>
@@ -3464,27 +3472,27 @@ function guardarPDF() {
   }, 1000);
 }
 function getUltimoNumero() {
-  try { return parseInt(localStorage.getItem('arpa_ultimo_no') || '0'); }
-  catch(e) { return 0; }
+  const N = window.ArpaNumeracion;
+  if (!N) return 0;
+  return N.getMaxCounter(N.KEYS.formato, document.getElementById('numero-formato')?.value);
 }
 function guardarNumero(n) {
-  try { localStorage.setItem('arpa_ultimo_no', n); } catch(e) {}
+  window.ArpaNumeracion?.setCounter?.(window.ArpaNumeracion.KEYS.formato, n);
 }
 function formatearNumero(n) {
-  return String(n).padStart(4, '0');
+  return window.ArpaNumeracion?.formatFormNumber?.(n) ?? String(n).padStart(4, '0');
 }
 function nuevoNumero() {
-  const ultimo = getUltimoNumero();
-  const nuevo = ultimo + 1;
-  guardarNumero(nuevo);
-  document.getElementById('numero-formato').value = formatearNumero(nuevo);
-  // También actualiza el título de la página para el PDF
+  if (!window.ArpaNumeracion?.blockIfPymeMissingCode?.()) return;
+  const field = document.getElementById('numero-formato');
+  const { value, sequence } = window.ArpaNumeracion.nextNumber('formato', field?.value);
+  if (field) field.value = value;
   const cliente = document.querySelector('input[placeholder="Nombre completo o razón social"]').value;
   const tipo = document.querySelector('input[name="tipo"]:checked').value;
   const prefijo = tipo === 'mantenimiento' ? 'Mant' : tipo === 'reparacion' ? 'Rep' : 'FI';
   const fecha = new Date().toISOString().slice(0,10);
   const nombre = cliente ? '-' + cliente.replace(/\s+/g,'-').substring(0,20) : '';
-  document.title = `${prefijo}-${formatearNumero(nuevo)}${nombre}-${fecha}`;
+  document.title = `${prefijo}-${value}${nombre}-${fecha}`;
 }
 
 // Al cargar, mostrar el número actual (sin incrementar) o sugerir el siguiente
@@ -3522,8 +3530,8 @@ function actualizarTitulo() {
 // Permitir editar el número manualmente también
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('numero-formato').addEventListener('change', function() {
-    const val = parseInt(this.value);
-    if (!isNaN(val)) guardarNumero(val);
+    const seq = window.ArpaNumeracion?.parseSequenceNumber?.(this.value);
+    if (seq > 0) guardarNumero(seq);
     actualizarTitulo();
   });
 });
@@ -3917,6 +3925,7 @@ if ('serviceWorker' in navigator) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" crossorigin="anonymous"></script>
 <script src="./js/arpa-license.js"></script>
+<script src="./js/arpa-numeracion.js"></script>
 <script src="./js/arpa-brand.js"></script>
 <script src="./js/arpa-pricing.js"></script>
 <script src="./js/arpa-cobros.js"></script>

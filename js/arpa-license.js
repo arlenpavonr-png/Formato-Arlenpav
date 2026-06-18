@@ -3,8 +3,10 @@
  */
 (function (global) {
   const LICENSE_CODE_KEY = 'arpa_suite_license_code';
+  const LICENSE_PLAN_KEY = 'arpa_suite_license_plan';
   const FOUNDER_CODE = 'ARPA-FOUNDER-001';
   const WL_PREFIX = 'ARPA-WL-';
+  const PYME_PREFIX = 'ARPA-PYME-';
 
   function normalizeCode(code) {
     return String(code || '').trim().toUpperCase();
@@ -43,14 +45,37 @@
     return isFounderLicense(code);
   }
 
+  function getActiveLicensePlan() {
+    try {
+      return String(localStorage.getItem(LICENSE_PLAN_KEY) || '').trim().toUpperCase();
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function isPymePlan(code) {
+    const c = normalizeCode(code || getActiveLicenseCode());
+    if (c.indexOf(PYME_PREFIX) === 0) return true;
+    return getActiveLicensePlan() === 'PYME';
+  }
+
+  function requiresTechnicianCode(code) {
+    return isPymePlan(code);
+  }
+
   global.ArpaLicense = {
     FOUNDER_CODE,
     WL_PREFIX,
+    PYME_PREFIX,
+    LICENSE_PLAN_KEY,
     getActiveLicenseCode,
+    getActiveLicensePlan,
     isFounderLicense,
     isWhiteLabelLicense,
     isNeverExpiring,
     canCustomizeBrand,
-    isExemptFromPlanRestrictions
+    isExemptFromPlanRestrictions,
+    isPymePlan,
+    requiresTechnicianCode
   };
 })(typeof window !== 'undefined' ? window : globalThis);

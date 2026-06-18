@@ -33,6 +33,7 @@
     accountHolderDocument: '',
     technicianName: '',
     technicianDocument: '',
+    technicianCode: '',
     logoBase64: '',
     appBrandName: '',
     appLogoBase64: ''
@@ -377,6 +378,14 @@
     });
   }
 
+  function applyTechnicianCodePolicy() {
+    const required = global.ArpaLicense?.requiresTechnicianCode?.() ?? false;
+    const req = document.getElementById('settings-technician-code-req');
+    const input = document.getElementById('settings-technician-code');
+    if (req) req.hidden = !required;
+    if (input) input.required = required;
+  }
+
   function applyBrandCustomizationPolicy() {
     const allowed = canCustomizeAppBrand();
     const lockEl = document.getElementById('settings-brand-lock');
@@ -413,7 +422,8 @@
       'settings-account-holder': s.accountHolder,
       'settings-account-holder-doc': s.accountHolderDocument,
       'settings-technician': s.technicianName,
-      'settings-technician-doc': s.technicianDocument
+      'settings-technician-doc': s.technicianDocument,
+      'settings-technician-code': s.technicianCode
     };
     Object.entries(fields).forEach(([id, v]) => {
       const el = document.getElementById(id);
@@ -428,6 +438,7 @@
     const appLogoInput = document.getElementById('settings-app-logo');
     if (appLogoInput) appLogoInput.value = '';
     applyBrandCustomizationPolicy();
+    applyTechnicianCodePolicy();
     global.ArpaPricing?.renderPriceListSettings?.();
     document.getElementById('settings-modal')?.classList.add('open');
     if (menuBtn) {
@@ -473,6 +484,17 @@
       return;
     }
 
+    const techCodeRaw = document.getElementById('settings-technician-code')?.value.trim() || '';
+    const techCode = global.ArpaNumeracion?.normalizeTechnicianCode?.(techCodeRaw) || '';
+    if (global.ArpaLicense?.requiresTechnicianCode?.() && !techCode) {
+      showError('En plan PYME debe indicar las iniciales o código del técnico (ej. PJ).');
+      return;
+    }
+    if (techCodeRaw && !techCode) {
+      showError('Use 2 a 4 letras o números para el código del técnico.');
+      return;
+    }
+
     const settings = {
       companyName,
       nit,
@@ -490,6 +512,7 @@
       accountHolderDocument: document.getElementById('settings-account-holder-doc')?.value.trim() || '',
       technicianName: document.getElementById('settings-technician')?.value.trim() || '',
       technicianDocument: document.getElementById('settings-technician-doc')?.value.trim() || '',
+      technicianCode: techCode,
       logoBase64: pendingLogoBase64 !== null ? pendingLogoBase64 : (current.logoBase64 || ''),
       appBrandName: canAppBrand
         ? (document.getElementById('settings-app-brand')?.value.trim() || '')
@@ -595,6 +618,7 @@
     openSettings,
     closeSettings,
     saveFromModal,
+    showError,
     formatBankBlock
   };
 

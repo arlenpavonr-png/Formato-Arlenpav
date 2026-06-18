@@ -76,26 +76,20 @@
   }
 
   function formatCcNumero(n) {
-    return 'CC-' + String(n).padStart(3, '0');
+    return global.ArpaNumeracion?.formatCcNumber?.(n) || ('CC-' + String(n).padStart(3, '0'));
   }
 
   function getUltimoCc() {
-    try {
-      const stored = parseInt(localStorage.getItem(CC_NUM_KEY) || '0', 10);
-      const field = document.getElementById('cc-numero')?.value || '';
-      const m = field.match(/(\d+)/);
-      const fromField = m ? parseInt(m[1], 10) : 0;
-      return Math.max(stored, fromField);
-    } catch (e) {
-      return 0;
-    }
+    const N = global.ArpaNumeracion;
+    if (!N) return 0;
+    return N.getMaxCounter(CC_NUM_KEY, document.getElementById('cc-numero')?.value);
   }
 
   function nuevoCcNumero() {
-    const nuevo = getUltimoCc() + 1;
-    try { localStorage.setItem(CC_NUM_KEY, String(nuevo)); } catch (e) {}
+    if (!global.ArpaNumeracion?.blockIfPymeMissingCode?.()) return;
+    const { value } = global.ArpaNumeracion.nextNumber('cc', document.getElementById('cc-numero')?.value);
     const el = document.getElementById('cc-numero');
-    if (el) el.value = formatCcNumero(nuevo);
+    if (el) el.value = value;
   }
 
   function ensureCcNumero() {
