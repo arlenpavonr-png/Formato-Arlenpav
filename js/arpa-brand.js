@@ -33,7 +33,9 @@
     accountHolderDocument: '',
     technicianName: '',
     technicianDocument: '',
-    logoBase64: ''
+    logoBase64: '',
+    appBrandName: '',
+    appLogoBase64: ''
   };
 
   /** @deprecated use EMPTY_SETTINGS — kept for callers that read DEFAULTS */
@@ -57,6 +59,9 @@
   const DEFAULT_LOGO = './icon-192x192.png';
 
   let pendingLogoBase64 = null;
+  let pendingAppLogoBase64 = null;
+
+  const DEFAULT_APP_BRAND_NAME = 'ARPA Suite';
 
   function hasUserSettings() {
     try {
@@ -209,6 +214,24 @@
     return settings?.logoBase64 || DEFAULT_LOGO;
   }
 
+  function canCustomizeAppBrand() {
+    return global.ArpaLicense?.canCustomizeBrand?.() ?? false;
+  }
+
+  function getAppLogo(settings) {
+    if (canCustomizeAppBrand() && settings?.appLogoBase64) {
+      return settings.appLogoBase64;
+    }
+    return DEFAULT_LOGO;
+  }
+
+  function getAppBrandName(settings) {
+    if (canCustomizeAppBrand() && settings?.appBrandName?.trim()) {
+      return settings.appBrandName.trim();
+    }
+    return DEFAULT_APP_BRAND_NAME;
+  }
+
   function val(value, fallback) {
     const v = (value || '').trim();
     return v || fallback;
@@ -241,14 +264,17 @@
     document.documentElement.classList.toggle('brand-unconfigured', !configured);
 
     const company = (s.companyName || '').trim();
-    const companyDisplay = configured ? company : 'Nombre de tu Empresa';
     const companyUpper = configured ? company.toUpperCase() : 'NOMBRE DE TU EMPRESA';
-    const logo = getLogo(s);
+    const companyLogo = getLogo(s);
+    const appLogo = getAppLogo(s);
+    const appBrandName = getAppBrandName(s);
 
     const set = (id, fn) => { const el = document.getElementById(id); if (el) fn(el); };
 
-    set('brand-logo', (el) => { el.src = logo; el.alt = configured ? company + ' – Logo' : 'Logo de su empresa'; });
-    set('settings-logo-preview', (el) => { el.src = logo; el.alt = 'Vista previa del logo'; });
+    set('brand-logo', (el) => { el.src = appLogo; el.alt = appBrandName + ' – Logo'; });
+    set('license-gate-logo', (el) => { el.src = appLogo; el.alt = appBrandName; });
+    set('settings-logo-preview', (el) => { el.src = companyLogo; el.alt = 'Vista previa del logo en documentos'; });
+    set('settings-app-logo-preview', (el) => { el.src = appLogo; el.alt = 'Vista previa del logo de la app'; });
     set('brand-company-name', (el) => {
       el.textContent = companyUpper;
       el.classList.toggle('brand-placeholder', !configured);
@@ -294,7 +320,12 @@
     set('cot-nota-legal', (el) => {
       el.innerHTML = getCotNotaLegalHtml();
     });
-    set('validation-text', (el) => { el.textContent = 'Arpa Suite · Listo'; });
+    set('validation-text', (el) => { el.textContent = appBrandName + ' · Listo'; });
+    set('license-gate-title', (el) => {
+      if (canCustomizeAppBrand() && s.appBrandName?.trim()) {
+        el.textContent = appBrandName;
+      }
+    });
 
     const tech = document.getElementById('campo-tecnico-responsable');
     const techFirma = document.getElementById('campo-tecnico-firma');
@@ -306,12 +337,11 @@
     if (configured && cotNom && !cotNom.value.trim() && s.technicianName) cotNom.value = s.technicianName;
     if (configured && cotTel && !cotTel.value.trim() && s.phone?.trim()) cotTel.value = s.phone.trim();
 
-    document.title = document.title.includes('–') ? document.title : (configured ? `Arpa Suite – ${company}` : 'Arpa Suite');
+    document.title = document.title.includes('–') ? document.title : (configured ? `${appBrandName} – ${company}` : appBrandName);
     if (!configured) resetUnconfiguredFormFields();
   }
 
-  function previewLogo(input) {
-    if (!global.ArpaLicense?.canCustomizeBrand?.()) return;
+  function readLogoFile(input, onLoad) {
     const file = input.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
@@ -326,35 +356,48 @@
     }
     clearError();
     const reader = new FileReader();
-    reader.onload = (e) => {
-      pendingLogoBase64 = e.target.result;
-      const preview = document.getElementById('settings-logo-preview');
-      if (preview) preview.src = pendingLogoBase64;
-    };
+    reader.onload = (e) => onLoad(e.target.result);
     reader.readAsDataURL(file);
   }
 
+  function previewLogo(input) {
+    readLogoFile(input, (dataUrl) => {
+      pendingLogoBase64 = dataUrl;
+      const preview = document.getElementById('settings-logo-preview');
+      if (preview) preview.src = dataUrl;
+    });
+  }
+
+  function previewAppLogo(input) {
+    if (!canCustomizeAppBrand()) return;
+    readLogoFile(input, (dataUrl) => {
+      pendingAppLogoBase64 = dataUrl;
+      const preview = document.getElementById('settings-app-logo-preview');
+      if (preview) preview.src = dataUrl;
+    });
+  }
+
   function applyBrandCustomizationPolicy() {
-    const allowed = global.ArpaLicense?.canCustomizeBrand?.() ?? false;
+    const allowed = canCustomizeAppBrand();
     const lockEl = document.getElementById('settings-brand-lock');
-    const companyEl = document.getElementById('settings-company');
-    const logoEl = document.getElementById('settings-logo');
-    const logoBox = document.querySelector('#settings-modal .logo-upload-box');
-    const reqMark = document.querySelector('label[for="settings-company"] .req');
+    const appBrandEl = document.getElementById('settings-app-brand');
+    const appLogoEl = document.getElementById('settings-app-logo');
+    const appLogoBox = document.getElementById('settings-app-logo-box');
 
     if (lockEl) lockEl.hidden = allowed;
-    if (companyEl) {
-      companyEl.readOnly = !allowed;
-      companyEl.classList.toggle('brand-field-locked', !allowed);
-      if (reqMark) reqMark.style.display = allowed ? '' : 'none';
-    }
-    if (logoEl) logoEl.disabled = !allowed;
-    if (logoBox) logoBox.classList.toggle('brand-customization-locked', !allowed);
+    [appBrandEl, appLogoEl].forEach((el) => {
+      if (!el) return;
+      if (el.type === 'file') el.disabled = !allowed;
+      else el.readOnly = !allowed;
+      el.classList.toggle('brand-field-locked', !allowed);
+    });
+    if (appLogoBox) appLogoBox.classList.toggle('brand-customization-locked', !allowed);
   }
 
   function openSettings(menuBtn) {
     clearError();
     pendingLogoBase64 = null;
+    pendingAppLogoBase64 = null;
     const s = getSettings();
     const fields = {
       'settings-company': s.companyName,
@@ -363,6 +406,7 @@
       'settings-city': s.city,
       'settings-phone': s.phone,
       'settings-website': s.website,
+      'settings-app-brand': s.appBrandName,
       'settings-bank': s.bankName,
       'settings-account-type': s.accountType,
       'settings-account-number': s.accountNumber,
@@ -377,8 +421,12 @@
     });
     const preview = document.getElementById('settings-logo-preview');
     if (preview) preview.src = getLogo(s);
+    const appPreview = document.getElementById('settings-app-logo-preview');
+    if (appPreview) appPreview.src = getAppLogo(s);
     const logoInput = document.getElementById('settings-logo');
     if (logoInput) logoInput.value = '';
+    const appLogoInput = document.getElementById('settings-app-logo');
+    if (appLogoInput) appLogoInput.value = '';
     applyBrandCustomizationPolicy();
     global.ArpaPricing?.renderPriceListSettings?.();
     document.getElementById('settings-modal')?.classList.add('open');
@@ -391,6 +439,7 @@
   function closeSettings() {
     document.getElementById('settings-modal')?.classList.remove('open');
     pendingLogoBase64 = null;
+    pendingAppLogoBase64 = null;
     const view = global.ArpaViews?.getCurrentView?.() || 'formato';
     document.querySelectorAll('.main-menu-btn').forEach((b) => b.classList.remove('active'));
     const sel = view === 'cotizacion'
@@ -407,7 +456,7 @@
 
   function saveFromModal() {
     clearError();
-    const canBrand = global.ArpaLicense?.canCustomizeBrand?.() ?? false;
+    const canAppBrand = canCustomizeAppBrand();
     const companyName = document.getElementById('settings-company')?.value.trim();
     const nit = document.getElementById('settings-nit')?.value.trim();
     const address = document.getElementById('settings-address')?.value.trim();
@@ -419,17 +468,13 @@
 
     const current = getSettings();
 
-    if (canBrand && (!companyName || !nit || !address || !phone || !bankName || !accountType || !accountNumber)) {
-      showError('Complete todos los campos obligatorios marcados con *.');
-      return;
-    }
-    if (!canBrand && (!nit || !address || !phone || !bankName || !accountType || !accountNumber)) {
+    if (!companyName || !nit || !address || !phone || !bankName || !accountType || !accountNumber) {
       showError('Complete todos los campos obligatorios marcados con *.');
       return;
     }
 
     const settings = {
-      companyName: canBrand ? companyName : (current.companyName || ''),
+      companyName,
       nit,
       address,
       city,
@@ -445,9 +490,13 @@
       accountHolderDocument: document.getElementById('settings-account-holder-doc')?.value.trim() || '',
       technicianName: document.getElementById('settings-technician')?.value.trim() || '',
       technicianDocument: document.getElementById('settings-technician-doc')?.value.trim() || '',
-      logoBase64: canBrand
-        ? (pendingLogoBase64 !== null ? pendingLogoBase64 : (current.logoBase64 || ''))
-        : (current.logoBase64 || '')
+      logoBase64: pendingLogoBase64 !== null ? pendingLogoBase64 : (current.logoBase64 || ''),
+      appBrandName: canAppBrand
+        ? (document.getElementById('settings-app-brand')?.value.trim() || '')
+        : (current.appBrandName || ''),
+      appLogoBase64: canAppBrand
+        ? (pendingAppLogoBase64 !== null ? pendingAppLogoBase64 : (current.appLogoBase64 || ''))
+        : (current.appLogoBase64 || '')
     };
 
     if (!saveSettings(settings)) return;
@@ -461,6 +510,7 @@
     global.ArpaCuentaCobro?.refreshView?.();
 
     pendingLogoBase64 = null;
+    pendingAppLogoBase64 = null;
     applyToUI();
     closeSettings();
   }
@@ -535,10 +585,13 @@
     getSettings,
     saveSettings,
     getLogo,
+    getAppLogo,
+    getAppBrandName,
     applyToUI,
     prepareForPrint,
     restoreAfterPrint,
     previewLogo,
+    previewAppLogo,
     openSettings,
     closeSettings,
     saveFromModal,
@@ -550,6 +603,7 @@
   global.closeSettingsModal = closeSettings;
   global.saveSettingsFromModal = saveFromModal;
   global.previewLogoUpload = previewLogo;
+  global.previewAppLogoUpload = previewAppLogo;
 
   document.addEventListener('DOMContentLoaded', () => {
     purgeLegacyData();

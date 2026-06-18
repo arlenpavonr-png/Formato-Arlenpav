@@ -2202,7 +2202,7 @@ document.documentElement.classList.add('license-checking');
 <div id="license-gate" class="license-gate" role="dialog" aria-modal="true" aria-labelledby="license-gate-title">
   <div class="license-gate-card">
     <div class="license-gate-logo-wrap">
-      <img src="./icon-192x192.png" alt="ARPA Suite">
+      <img id="license-gate-logo" src="./icon-192x192.png" alt="ARPA Suite">
     </div>
     <h1 id="license-gate-title" class="license-gate-title" data-i18n="license_gate.title">ARPA Suite</h1>
     <div id="license-gate-loading" class="license-gate-panel is-visible">
@@ -3084,11 +3084,6 @@ document.documentElement.classList.add('license-checking');
     </div>
     <div class="settings-modal-body">
       <p id="settings-error" class="settings-error" role="alert"></p>
-      <div id="settings-brand-lock" class="settings-brand-lock" hidden>
-        Esta función está disponible solo en el plan White Label.
-        <a href="https://wa.me/573017419558?text=Hola,%20quiero%20información%20sobre%20ARPA%20Suite%20White%20Label" target="_blank" rel="noopener noreferrer">Escríbenos por WhatsApp</a>
-        para conocer cómo activarla.
-      </div>
       <div class="field">
         <label for="settings-company"><span data-i18n="settings.label.company">Nombre Empresa</span> <span class="req">*</span></label>
         <input type="text" id="settings-company" required autocomplete="organization" data-i18n-placeholder="settings.placeholder.company" placeholder="Nombre de su empresa">
@@ -3112,6 +3107,39 @@ document.documentElement.classList.add('license-checking');
       <div class="field">
         <label for="settings-website" data-i18n="settings.label.website_optional">Sitio web (opcional)</label>
         <input type="url" id="settings-website" autocomplete="url" data-i18n-placeholder="settings.placeholder.website" placeholder="https://su-empresa.com">
+      </div>
+      <div class="field">
+        <label for="settings-logo">Logo en documentos (PDF)</label>
+        <div class="logo-upload-box" id="settings-company-logo-box">
+          <div class="logo-upload-preview-wrap">
+            <img id="settings-logo-preview" class="logo-upload-preview" src="./icon-192x192.png" alt="Vista previa del logo en documentos">
+          </div>
+          <p class="logo-upload-hint">Aparece en formatos, cotizaciones y cuentas de cobro. Disponible en todos los planes.</p>
+          <input type="file" id="settings-logo" class="logo-upload-input" accept="image/png,image/jpeg,image/webp,image/gif" onchange="previewLogoUpload(this)">
+        </div>
+      </div>
+      <div class="settings-section-title">Marca de la aplicación</div>
+      <div id="settings-app-brand-section">
+        <div id="settings-brand-lock" class="settings-brand-lock" hidden>
+          Personalizar el nombre y el ícono de la app (pantalla de carga, título y encabezado) está disponible solo en el plan White Label.
+          <a href="https://wa.me/573017419558?text=Hola,%20quiero%20información%20sobre%20ARPA%20Suite%20White%20Label" target="_blank" rel="noopener noreferrer">Escríbenos por WhatsApp</a>
+          para conocer cómo activarla.
+        </div>
+        <div class="field">
+          <label for="settings-app-brand">Nombre de marca en la app</label>
+          <input type="text" id="settings-app-brand" autocomplete="off" placeholder="ARPA Suite">
+          <p class="logo-upload-hint">Pantalla de carga, título del navegador y badge superior.</p>
+        </div>
+        <div class="field">
+          <label for="settings-app-logo">Logo / ícono de la app</label>
+          <div class="logo-upload-box" id="settings-app-logo-box">
+            <div class="logo-upload-preview-wrap">
+              <img id="settings-app-logo-preview" class="logo-upload-preview" src="./icon-192x192.png" alt="Vista previa del logo de la app">
+            </div>
+            <p class="logo-upload-hint">Ícono superior de la app (actualmente ARPA Suite). Solo White Label.</p>
+            <input type="file" id="settings-app-logo" class="logo-upload-input" accept="image/png,image/jpeg,image/webp,image/gif" onchange="previewAppLogoUpload(this)">
+          </div>
+        </div>
       </div>
       <div class="settings-section-title" data-i18n="settings.section.bank">Datos Bancarios</div>
       <div class="field">
@@ -3144,16 +3172,6 @@ document.documentElement.classList.add('license-checking');
       <div class="field">
         <label for="settings-technician-doc" data-i18n="settings.label.technician_doc_optional">Cédula / NIT del técnico (opcional)</label>
         <input type="text" id="settings-technician-doc" data-i18n-placeholder="cc.placeholder.doc_titular" placeholder="Documento del técnico">
-      </div>
-      <div class="field">
-        <label for="settings-logo" data-i18n="settings.label.logo">Logo de su empresa</label>
-        <div class="logo-upload-box">
-          <div class="logo-upload-preview-wrap">
-            <img id="settings-logo-preview" class="logo-upload-preview" src="./icon-192x192.png" alt="Vista previa del logo">
-          </div>
-          <p class="logo-upload-hint" data-i18n="settings.logo.hint">Suba su logo (PNG, JPG o WebP). Si no carga uno, se usará el logo oficial de ARPA Suite.</p>
-          <input type="file" id="settings-logo" class="logo-upload-input" accept="image/png,image/jpeg,image/webp,image/gif" onchange="previewLogoUpload(this)">
-        </div>
       </div>
       <div class="settings-section-title" data-i18n="settings.section.price_list">Lista de Precios</div>
       <p style="font-size:11px;color:var(--muted);line-height:1.4;margin-bottom:4px;" data-i18n="settings.price_list.hint">Valores base para servicios recurrentes. Se aplican en Cotización (editables antes del PDF).</p>
@@ -3538,9 +3556,7 @@ function loadPhotos(input, previewId) {
 
 // Badge de suite (sin llamadas externas)
 window.addEventListener('DOMContentLoaded', () => {
-  const txt = document.getElementById('validation-text');
   const dot = document.getElementById('validation-dot');
-  if (txt) txt.textContent = 'Arpa Suite · Listo';
   if (dot) dot.style.backgroundColor = '#16a34a';
 });
 
