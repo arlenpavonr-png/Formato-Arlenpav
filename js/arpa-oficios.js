@@ -5,6 +5,7 @@
 (function (global) {
   const OFICIO_AUTOMATISMOS = 'automatismos';
   const SEEDED_KEY = 'arpa_oficios_seeded';
+  const ACTIVE_OFICIOS_KEY = 'arpa_active_oficios';
 
   /** @type {{ id: string, i18nKey: string, locked?: boolean }[]} */
   const OFICIOS = [
@@ -191,16 +192,49 @@
     return OFICIOS.find((o) => o.id === normalizeOficioId(id)) || OFICIOS[0];
   }
 
-  function getActiveOficiosFromSettings() {
+  function normalizeActiveOficiosList(raw) {
+    if (!Array.isArray(raw) || !raw.length) return [OFICIO_AUTOMATISMOS];
+    const ids = raw.map(normalizeOficioId).filter((id, i, arr) => arr.indexOf(id) === i);
+    if (!ids.includes(OFICIO_AUTOMATISMOS)) ids.unshift(OFICIO_AUTOMATISMOS);
+    return ids;
+  }
+
+  function readActiveOficiosFromStorage() {
     try {
-      const raw = global.ArpaBrand?.getSettings?.()?.activeOficios;
-      if (!Array.isArray(raw) || !raw.length) return [OFICIO_AUTOMATISMOS];
-      const ids = raw.map(normalizeOficioId).filter((id, i, arr) => arr.indexOf(id) === i);
-      if (!ids.includes(OFICIO_AUTOMATISMOS)) ids.unshift(OFICIO_AUTOMATISMOS);
-      return ids;
+      const fromKey = JSON.parse(localStorage.getItem(ACTIVE_OFICIOS_KEY) || 'null');
+      if (Array.isArray(fromKey) && fromKey.length) {
+        return normalizeActiveOficiosList(fromKey);
+      }
+    } catch (e) { /* ignore */ }
+    try {
+      const fromSettings = global.ArpaBrand?.getSettings?.()?.activeOficios;
+      if (Array.isArray(fromSettings) && fromSettings.length) {
+        return normalizeActiveOficiosList(fromSettings);
+      }
+    } catch (e) { /* ignore */ }
+    return [OFICIO_AUTOMATISMOS];
+  }
+
+  function saveActiveOficios(ids) {
+    const normalized = normalizeActiveOficiosList(ids);
+    try {
+      localStorage.setItem(ACTIVE_OFICIOS_KEY, JSON.stringify(normalized));
     } catch (e) {
-      return [OFICIO_AUTOMATISMOS];
+      console.warn('[arpa-oficios] saveActiveOficios', e);
+      return false;
     }
+    try {
+      const brand = global.ArpaBrand;
+      if (brand?.getSettings && brand?.saveSettings) {
+        const current = brand.getSettings();
+        brand.saveSettings({ ...current, activeOficios: normalized });
+      }
+    } catch (e) { /* ignore */ }
+    return true;
+  }
+
+  function getActiveOficiosFromSettings() {
+    return readActiveOficiosFromStorage();
   }
 
   function getOficioLabel(oficioId) {
@@ -388,23 +422,51 @@
           <span data-i18n="${o.i18nKey}">${getOficioLabel(o.id)}</span>
         </label>`;
     }).join('');
+    bindOficioCheckboxListeners(container);
     global.ArpaI18n?.apply?.(global.ArpaI18n?.getLang?.() || 'es');
   }
 
   function readSettingsCheckboxes(container) {
-    const selected = [OFICIO_AUTOMATISMOS];
-    container?.querySelectorAll('input[name="settings-oficio"]:checked').forEach((el) => {
+    const selected = [];
+    if (!container) return [OFICIO_AUTOMATISMOS];
+    container.querySelectorAll('input[name="settings-oficio"]').forEach((el) => {
+      if (!el.checked) return;
       const id = normalizeOficioId(el.value);
       if (!selected.includes(id)) selected.push(id);
     });
-    return selected;
+    return normalizeActiveOficiosList(selected);
+  }
+
+  function applyOficiosFromSettingsUI(container) {
+    const grid = container || document.getElementById('settings-oficios-grid');
+    const ids = readSettingsCheckboxes(grid);
+    if (!saveActiveOficios(ids)) return false;
+    seedActiveOficios();
+    global.ArpaMiCatalogo?.render?.();
+    return true;
+  }
+
+  function bindOficioCheckboxListeners(container) {
+    if (!container) return;
+    container.querySelectorAll('input[name="settings-oficio"]').forEach((input) => {
+      if (input.disabled || input.dataset.oficioBound === '1') return;
+      input.dataset.oficioBound = '1';
+      input.addEventListener('change', () => {
+        applyOficiosFromSettingsUI(container);
+      });
+    });
   }
 
   global.ArpaOficios = {
     OFICIO_AUTOMATISMOS,
     OFICIOS,
     SEED_CATALOGS,
+    ACTIVE_OFICIOS_KEY,
     normalizeOficioId,
+    normalizeActiveOficiosList,
+    readActiveOficiosFromStorage,
+    saveActiveOficios,
+    applyOficiosFromSettingsUI,
     resolveItemOficioId,
     getOficiosList,
     getOficioById,
@@ -420,4 +482,20 @@
   };
 
   global.precargarCatalogoOficio = precargarCatalogoOficio;
+
+  function migrateActiveOficiosKey() {
+    try {
+      if (localStorage.getItem(ACTIVE_OFICIOS_KEY)) return;
+      const fromSettings = global.ArpaBrand?.getSettings?.()?.activeOficios;
+      if (Array.isArray(fromSettings) && fromSettings.length) {
+        saveActiveOficios(fromSettings);
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  if (typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', migrateActiveOficiosKey);
+  } else {
+    migrateActiveOficiosKey();
+  }
 })(typeof window !== 'undefined' ? window : globalThis);

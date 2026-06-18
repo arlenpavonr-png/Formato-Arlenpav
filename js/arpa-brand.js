@@ -244,6 +244,9 @@
     if (!el) return;
     el.textContent = msg;
     el.classList.add('visible');
+    el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    const body = document.querySelector('#settings-modal .settings-modal-body');
+    if (body) body.scrollTop = 0;
   }
 
   function clearError() {
@@ -517,7 +520,7 @@
       technicianCode: techCode,
       activeOficios: global.ArpaOficios?.readSettingsCheckboxes?.(
         document.getElementById('settings-oficios-grid')
-      ) || ['automatismos'],
+      ) || global.ArpaOficios?.getActiveOficiosFromSettings?.() || ['automatismos'],
       logoBase64: pendingLogoBase64 !== null ? pendingLogoBase64 : (current.logoBase64 || ''),
       appBrandName: canAppBrand
         ? (document.getElementById('settings-app-brand')?.value.trim() || '')
@@ -528,17 +531,22 @@
     };
 
     if (!saveSettings(settings)) return;
+
+    global.ArpaOficios?.saveActiveOficios?.(settings.activeOficios);
+
     try { localStorage.setItem(SETTINGS_CONFIGURED_KEY, 'true'); } catch (e) {}
     try { localStorage.setItem(SALES_ENTRY_KEY, 'true'); } catch (e) {}
 
-    global.ArpaOficios?.seedActiveOficios?.();
-    global.ArpaMiCatalogo?.render?.();
-
-    global.ArpaPricing?.savePriceList?.(global.ArpaPricing.readPriceListFromSettingsForm());
-    global.ArpaCobros?.seedFromPriceList?.('cot');
-    global.ArpaCotizacion?.refreshCobros?.();
-    global.ArpaCuentaCobro?.refreshView?.();
-    global.ArpaCuentaCobro?.refreshView?.();
+    try {
+      global.ArpaOficios?.seedActiveOficios?.();
+      global.ArpaMiCatalogo?.render?.();
+      global.ArpaPricing?.savePriceList?.(global.ArpaPricing.readPriceListFromSettingsForm());
+      global.ArpaCobros?.seedFromPriceList?.('cot');
+      global.ArpaCotizacion?.refreshCobros?.();
+      global.ArpaCuentaCobro?.refreshView?.();
+    } catch (e) {
+      console.warn('[arpa-brand] post-save hooks', e);
+    }
 
     pendingLogoBase64 = null;
     pendingAppLogoBase64 = null;

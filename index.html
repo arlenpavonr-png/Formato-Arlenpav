@@ -1359,7 +1359,12 @@
     border-radius: 8px;
     line-height: 1.4;
   }
-  .settings-error.visible { display: block; }
+  .settings-error.visible {
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
 
   .settings-brand-lock {
     background: #fffbeb;
