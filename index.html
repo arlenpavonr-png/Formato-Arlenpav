@@ -947,6 +947,44 @@
     margin: -4px 0 10px;
     line-height: 1.5;
   }
+  .catalogo-oficio-title { display: none; }
+  .catalogo-oficios-tabs {
+    margin: 0 0 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .catalogo-oficios-tabs[hidden] { display: none !important; }
+  .catalogo-oficios-tabs-list {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 2px 2px 10px;
+  }
+  .catalogo-oficios-tabs-list::-webkit-scrollbar { display: none; }
+  .catalogo-oficio-tab {
+    flex: 0 0 auto;
+    border: 1.5px solid var(--border);
+    background: #fff;
+    color: var(--catalogo-navy, #1a2a4a);
+    border-radius: 999px;
+    padding: 9px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .catalogo-oficio-tab.active {
+    background: var(--catalogo-gold, #c9a84c);
+    border-color: var(--catalogo-gold, #c9a84c);
+    color: #fff;
+  }
+  .catalogo-oficio-tab:active { opacity: 0.92; }
+  .catalogo-oficio-section[hidden] { display: none !important; }
   .settings-oficios-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -2793,6 +2831,9 @@ document.documentElement.classList.add('license-checking');
   </div><!-- /view-cotizacion -->
 
   <div id="view-catalogo" class="suite-view body" hidden>
+    <nav id="catalogo-oficios-tabs" class="catalogo-oficios-tabs" hidden aria-label="Oficios activos">
+      <div id="catalogo-oficios-tabs-list" class="catalogo-oficios-tabs-list" role="tablist"></div>
+    </nav>
     <div id="catalogo-oficios-sections">
     <div id="catalogo-section-automatismos" class="catalogo-oficio-section" data-oficio="automatismos">
     <h2 class="catalogo-oficio-title"><span class="dot"></span><span data-i18n="oficio.automatismos">Automatismos</span></h2>

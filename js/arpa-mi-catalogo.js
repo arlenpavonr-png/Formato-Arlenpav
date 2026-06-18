@@ -11,6 +11,7 @@
   let editingCategoryId = null;
   let editingOficioId = 'automatismos';
   let currentOficioId = 'automatismos';
+  let activeTabOficio = 'automatismos';
   const searchByOficio = {};
   let importPreviewRows = [];
 
@@ -552,6 +553,67 @@
     bindProductCardActions(list, oid);
   }
 
+  function setCatalogoTab(oficioId) {
+    const id = normalizeOficioId(oficioId);
+    activeTabOficio = id;
+    currentOficioId = id;
+    applyCatalogoTabVisibility(getActiveOficios());
+  }
+
+  function applyCatalogoTabVisibility(activeOficios) {
+    const active = Array.isArray(activeOficios) ? activeOficios : getActiveOficios();
+    const multi = active.length > 1;
+    const tabsWrap = document.getElementById('catalogo-oficios-tabs');
+
+    if (!active.includes(activeTabOficio)) {
+      activeTabOficio = active.includes('automatismos') ? 'automatismos' : active[0];
+      currentOficioId = activeTabOficio;
+    }
+
+    if (tabsWrap) tabsWrap.hidden = !multi;
+
+    active.forEach((oid) => {
+      const section = document.getElementById(sectionDomIds(oid).section);
+      if (section) section.hidden = multi && oid !== activeTabOficio;
+    });
+
+    document.querySelectorAll('#catalogo-oficios-tabs-list .catalogo-oficio-tab').forEach((btn) => {
+      const isActive = btn.dataset.oficio === activeTabOficio;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
+  }
+
+  function renderOficioTabs(activeOficios) {
+    const tabsWrap = document.getElementById('catalogo-oficios-tabs');
+    const tabsList = document.getElementById('catalogo-oficios-tabs-list');
+    if (!tabsWrap || !tabsList) {
+      applyCatalogoTabVisibility(activeOficios);
+      return;
+    }
+
+    if (activeOficios.length <= 1) {
+      tabsList.innerHTML = '';
+      applyCatalogoTabVisibility(activeOficios);
+      return;
+    }
+
+    tabsList.innerHTML = activeOficios.map((oficioId) => {
+      const i18nKey = global.ArpaOficios?.getOficioById?.(oficioId)?.i18nKey || '';
+      const label = global.ArpaOficios?.getOficioLabel?.(oficioId) || oficioId;
+      const isActive = oficioId === activeTabOficio;
+      return `<button type="button" class="catalogo-oficio-tab${isActive ? ' active' : ''}" role="tab" data-oficio="${escapeHtml(oficioId)}" aria-selected="${isActive ? 'true' : 'false'}"${i18nKey ? ` data-i18n="${escapeHtml(i18nKey)}"` : ''}>${escapeHtml(label)}</button>`;
+    }).join('');
+
+    global.ArpaI18n?.apply?.(global.ArpaI18n?.getLang?.() || 'es');
+
+    tabsList.querySelectorAll('.catalogo-oficio-tab').forEach((btn) => {
+      btn.addEventListener('click', () => setCatalogoTab(btn.dataset.oficio));
+    });
+
+    applyCatalogoTabVisibility(activeOficios);
+  }
+
   function renderExtraOficioSections(activeOficios) {
     const container = document.getElementById('catalogo-extra-sections');
     if (!container) return;
@@ -613,15 +675,15 @@
     const active = getActiveOficios();
     global.ArpaOficios?.seedActiveOficios?.();
 
-    const autoSection = document.getElementById('catalogo-section-automatismos');
-    if (autoSection) autoSection.hidden = !active.includes('automatismos');
-
     renderExtraOficioSections(active);
+    renderOficioTabs(active);
 
     active.forEach((oficioId) => {
       renderCategoriesPanel(oficioId);
       renderProductGroups(oficioId);
     });
+
+    applyCatalogoTabVisibility(active);
   }
 
   function refreshView() {
