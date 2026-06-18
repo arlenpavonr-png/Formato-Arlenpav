@@ -34,6 +34,7 @@
     technicianName: '',
     technicianDocument: '',
     technicianCode: '',
+    activeOficios: ['automatismos'],
     logoBase64: '',
     appBrandName: '',
     appLogoBase64: ''
@@ -439,6 +440,7 @@
     if (appLogoInput) appLogoInput.value = '';
     applyBrandCustomizationPolicy();
     applyTechnicianCodePolicy();
+    global.ArpaOficios?.renderSettingsCheckboxes?.(document.getElementById('settings-oficios-grid'));
     global.ArpaPricing?.renderPriceListSettings?.();
     document.getElementById('settings-modal')?.classList.add('open');
     if (menuBtn) {
@@ -513,6 +515,9 @@
       technicianName: document.getElementById('settings-technician')?.value.trim() || '',
       technicianDocument: document.getElementById('settings-technician-doc')?.value.trim() || '',
       technicianCode: techCode,
+      activeOficios: global.ArpaOficios?.readSettingsCheckboxes?.(
+        document.getElementById('settings-oficios-grid')
+      ) || ['automatismos'],
       logoBase64: pendingLogoBase64 !== null ? pendingLogoBase64 : (current.logoBase64 || ''),
       appBrandName: canAppBrand
         ? (document.getElementById('settings-app-brand')?.value.trim() || '')
@@ -525,6 +530,9 @@
     if (!saveSettings(settings)) return;
     try { localStorage.setItem(SETTINGS_CONFIGURED_KEY, 'true'); } catch (e) {}
     try { localStorage.setItem(SALES_ENTRY_KEY, 'true'); } catch (e) {}
+
+    global.ArpaOficios?.seedActiveOficios?.();
+    global.ArpaMiCatalogo?.render?.();
 
     global.ArpaPricing?.savePriceList?.(global.ArpaPricing.readPriceListFromSettingsForm());
     global.ArpaCobros?.seedFromPriceList?.('cot');

@@ -9,8 +9,44 @@
 
   let editingProductId = null;
   let editingCategoryId = null;
-  let searchQuery = '';
+  let editingOficioId = 'automatismos';
+  let currentOficioId = 'automatismos';
+  const searchByOficio = {};
   let importPreviewRows = [];
+
+  function normalizeOficioId(oficioId) {
+    return global.ArpaOficios?.normalizeOficioId?.(oficioId) || 'automatismos';
+  }
+
+  function resolveItemOficioId(item) {
+    return global.ArpaOficios?.resolveItemOficioId?.(item) || 'automatismos';
+  }
+
+  function sectionDomIds(oficioId) {
+    const id = normalizeOficioId(oficioId);
+    if (id === 'automatismos') {
+      return {
+        panel: 'catalogo-categorias-panel',
+        list: 'catalogo-list',
+        empty: 'catalogo-empty',
+        count: 'catalogo-count',
+        search: 'catalogo-buscar',
+        section: 'catalogo-section-automatismos'
+      };
+    }
+    return {
+      panel: `catalogo-categorias-panel-${id}`,
+      list: `catalogo-list-${id}`,
+      empty: `catalogo-empty-${id}`,
+      count: `catalogo-count-${id}`,
+      search: `catalogo-buscar-${id}`,
+      section: `catalogo-section-${id}`
+    };
+  }
+
+  function getActiveOficios() {
+    return global.ArpaOficios?.getActiveOficiosFromSettings?.() || ['automatismos'];
+  }
 
   const IMPORT_HEADERS = {
     nombre: 'nom',
@@ -43,7 +79,7 @@
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   }
 
-  function getCategories() {
+  function getAllCategories() {
     try {
       const data = JSON.parse(localStorage.getItem(CATEGORIES_KEY) || '[]');
       return Array.isArray(data) ? data : [];
@@ -52,28 +88,37 @@
     }
   }
 
+  function getCategories(oficioId) {
+    const oid = normalizeOficioId(oficioId);
+    return getAllCategories().filter((c) => resolveItemOficioId(c) === oid);
+  }
+
   function saveCategories(categories) {
     localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
   }
 
-  function hasCategories() {
-    return getCategories().length > 0;
+  function hasCategories(oficioId) {
+    return getCategories(oficioId).length > 0;
   }
 
-  function getCategoryById(id) {
-    return getCategories().find((c) => c.id === id) || null;
+  function getCategoryById(id, oficioId) {
+    const oid = oficioId != null ? normalizeOficioId(oficioId) : null;
+    return getAllCategories().find((c) => {
+      if (c.id !== id) return false;
+      return oid == null || resolveItemOficioId(c) === oid;
+    }) || null;
   }
 
-  function getCategoryName(id) {
+  function getCategoryName(id, oficioId) {
     if (!id || id === SIN_CATEGORIA_ID) return '';
-    return getCategoryById(id)?.name || '';
+    return getCategoryById(id, oficioId)?.name || '';
   }
 
-  function countProductsInCategory(categoryId) {
-    return getProducts().filter((p) => resolveProductCategoryId(p) === categoryId).length;
+  function countProductsInCategory(categoryId, oficioId) {
+    return getProducts(oficioId).filter((p) => resolveProductCategoryId(p) === categoryId).length;
   }
 
-  function getProducts() {
+  function getAllProducts() {
     try {
       const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
       return Array.isArray(data) ? data : [];
@@ -82,21 +127,27 @@
     }
   }
 
+  function getProducts(oficioId) {
+    const oid = normalizeOficioId(oficioId);
+    return getAllProducts().filter((p) => resolveItemOficioId(p) === oid);
+  }
+
   function saveProducts(products) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
     global.ArpaCatalogo?.invalidateListaCache?.();
     global.ArpaCotizacion?.updateCatalogHint?.();
   }
 
-  function hasProducts() {
-    return getProducts().some((p) => (p.nom || '').trim() && (p.cod || '').trim());
+  function hasProducts(oficioId) {
+    return getProducts(oficioId).some((p) => (p.nom || '').trim() && (p.cod || '').trim());
   }
 
   function resolveProductCategoryId(product) {
     if (product.categoriaId) return product.categoriaId;
     const legacy = (product.categoria || '').trim();
     if (!legacy) return SIN_CATEGORIA_ID;
-    const match = getCategories().find(
+    const oid = resolveItemOficioId(product);
+    const match = getCategories(oid).find(
       (c) => c.name.toLowerCase() === legacy.toLowerCase()
     );
     return match ? match.id : SIN_CATEGORIA_ID;
@@ -118,7 +169,7 @@
   }
 
   function getListaFlat() {
-    return getProducts()
+    return getAllProducts()
       .filter((p) => (p.nom || '').trim() && (p.cod || '').trim())
       .map(toFlatProduct);
   }
@@ -127,14 +178,15 @@
     return getListaFlat().find((p) => p.cod === cod) || null;
   }
 
-  function getFilteredProducts() {
-    const q = searchQuery.toLowerCase().trim();
-    const list = getProducts();
+  function getFilteredProducts(oficioId) {
+    const oid = normalizeOficioId(oficioId);
+    const q = (searchByOficio[oid] || '').toLowerCase().trim();
+    const list = getProducts(oid);
     if (!q) return list;
     return list.filter((p) =>
       (p.nom || '').toLowerCase().includes(q) ||
       (p.cod || '').toLowerCase().includes(q) ||
-      getCategoryName(resolveProductCategoryId(p)).toLowerCase().includes(q)
+      getCategoryName(resolveProductCategoryId(p), oid).toLowerCase().includes(q)
     );
   }
 
@@ -143,10 +195,11 @@
     if (fab) fab.hidden = !visible;
   }
 
-  function populateCategorySelect(selectedId) {
+  function populateCategorySelect(selectedId, oficioId) {
     const sel = document.getElementById('cat-form-categoria');
     if (!sel) return;
-    const categories = getCategories();
+    const oid = normalizeOficioId(oficioId || editingOficioId);
+    const categories = getCategories(oid);
     sel.innerHTML = categories.length
       ? categories.map((c) =>
           `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`
@@ -159,9 +212,11 @@
     }
   }
 
-  function openProductForm(product) {
-    if (!hasCategories()) {
-      openCategoryForm(null);
+  function openProductForm(product, oficioId) {
+    editingOficioId = normalizeOficioId(oficioId || resolveItemOficioId(product) || currentOficioId);
+    currentOficioId = editingOficioId;
+    if (!hasCategories(editingOficioId)) {
+      openCategoryForm(null, editingOficioId);
       return;
     }
     editingProductId = product?.id || null;
@@ -178,7 +233,7 @@
     set('cat-form-cod', product?.cod);
     set('cat-form-pvp', product?.pvp != null ? product.pvp : '');
     set('cat-form-marca', product?.marca);
-    populateCategorySelect(product ? resolveProductCategoryId(product) : null);
+    populateCategorySelect(product ? resolveProductCategoryId(product) : null, editingOficioId);
     const unidad = document.getElementById('cat-form-unidad');
     if (unidad) unidad.value = UNIDADES.includes(product?.unidad) ? product.unidad : 'unidad';
 
@@ -230,9 +285,12 @@
       return;
     }
 
-    const products = getProducts();
+    const products = getAllProducts();
+    const oid = editingOficioId;
     const duplicate = products.find((p) =>
-      p.cod.toLowerCase() === data.cod.toLowerCase() && p.id !== editingProductId
+      resolveItemOficioId(p) === oid &&
+      p.cod.toLowerCase() === data.cod.toLowerCase() &&
+      p.id !== editingProductId
     );
     if (duplicate) {
       showProductFormError('Ya existe un producto con esa referencia.');
@@ -245,7 +303,8 @@
       pvp: data.pvp,
       unidad: data.unidad,
       marca: data.marca,
-      categoriaId: data.categoriaId
+      categoriaId: data.categoriaId,
+      oficioId: oid
     };
 
     if (editingProductId) {
@@ -265,15 +324,17 @@
   }
 
   function deleteProduct(id) {
-    const product = getProducts().find((p) => p.id === id);
+    const product = getAllProducts().find((p) => p.id === id);
     if (!product) return;
     const label = product.nom || product.cod || 'este producto';
     if (!confirm(`¿Eliminar "${label}" del catálogo?`)) return;
-    saveProducts(getProducts().filter((p) => p.id !== id));
+    saveProducts(getAllProducts().filter((p) => p.id !== id));
     render();
   }
 
-  function openCategoryForm(category) {
+  function openCategoryForm(category, oficioId) {
+    editingOficioId = normalizeOficioId(oficioId || resolveItemOficioId(category) || currentOficioId);
+    currentOficioId = editingOficioId;
     editingCategoryId = category?.id || null;
     const overlay = document.getElementById('catalogo-cat-modal');
     const title = document.getElementById('catalogo-cat-title');
@@ -305,9 +366,13 @@
       return;
     }
 
-    const categories = getCategories();
+    const categories = getAllCategories();
+    const oid = editingOficioId;
     const duplicate = categories.find(
-      (c) => c.name.toLowerCase() === name.toLowerCase() && c.id !== editingCategoryId
+      (c) =>
+        resolveItemOficioId(c) === oid &&
+        c.name.toLowerCase() === name.toLowerCase() &&
+        c.id !== editingCategoryId
     );
     if (duplicate) {
       showCategoryFormError('Ya existe una categoría con ese nombre.');
@@ -318,7 +383,7 @@
       const idx = categories.findIndex((c) => c.id === editingCategoryId);
       if (idx >= 0) categories[idx] = { ...categories[idx], name };
     } else {
-      categories.push({ id: newId(), name });
+      categories.push({ id: newId(), name, oficioId: oid });
     }
 
     saveCategories(categories);
@@ -330,13 +395,14 @@
   function deleteCategory(id) {
     const category = getCategoryById(id);
     if (!category) return;
-    const count = countProductsInCategory(id);
+    const oid = resolveItemOficioId(category);
+    const count = countProductsInCategory(id, oid);
     if (count > 0) {
       alert(`No se puede eliminar: hay ${count} producto${count !== 1 ? 's' : ''} en esta categoría.`);
       return;
     }
     if (!confirm(`¿Eliminar la categoría "${category.name}"?`)) return;
-    saveCategories(getCategories().filter((c) => c.id !== id));
+    saveCategories(getAllCategories().filter((c) => c.id !== id));
     render();
   }
 
@@ -359,11 +425,12 @@
       </article>`;
   }
 
-  function bindProductCardActions(container) {
+  function bindProductCardActions(container, oficioId) {
+    const oid = normalizeOficioId(oficioId);
     container.querySelectorAll('.btn-catalogo-edit').forEach((btn) => {
       btn.addEventListener('click', () => {
-        const product = getProducts().find((p) => p.id === btn.dataset.id);
-        if (product) openProductForm(product);
+        const product = getProducts(oid).find((p) => p.id === btn.dataset.id);
+        if (product) openProductForm(product, oid);
       });
     });
     container.querySelectorAll('.btn-catalogo-del').forEach((btn) => {
@@ -371,25 +438,28 @@
     });
   }
 
-  function renderCategoriesPanel() {
-    const panel = document.getElementById('catalogo-categorias-panel');
+  function renderCategoriesPanel(oficioId) {
+    const oid = normalizeOficioId(oficioId);
+    const dom = sectionDomIds(oid);
+    const panel = document.getElementById(dom.panel);
     if (!panel) return;
 
-    const categories = getCategories();
+    const categories = getCategories(oid);
     if (!categories.length) {
       panel.innerHTML = `
-        <div class="catalogo-cat-empty">
+        <div class="catalogo-cat-empty" data-i18n="cat.cat_empty">
           Primero crea tus categorías. Ejemplo: Motores, Repuestos, Servicios, Materiales…
         </div>
-        <button type="button" class="btn-catalogo-add-cat" id="btn-catalogo-first-cat">+ Crear primera categoría</button>`;
-      document.getElementById('btn-catalogo-first-cat')?.addEventListener('click', () => openCategoryForm(null));
+        <button type="button" class="btn-catalogo-add-cat" data-oficio="${escapeHtml(oid)}">+ Crear primera categoría</button>`;
+      panel.querySelector('.btn-catalogo-add-cat')?.addEventListener('click', () => openCategoryForm(null, oid));
+      global.ArpaI18n?.apply?.(global.ArpaI18n?.getLang?.() || 'es');
       return;
     }
 
     panel.innerHTML = `
       <div class="catalogo-cat-list">
         ${categories.map((c) => {
-          const n = countProductsInCategory(c.id);
+          const n = countProductsInCategory(c.id, oid);
           const canDelete = n === 0;
           return `
             <div class="catalogo-cat-chip" data-id="${escapeHtml(c.id)}">
@@ -400,13 +470,13 @@
             </div>`;
         }).join('')}
       </div>
-      <button type="button" class="btn-catalogo-add-cat" id="btn-catalogo-add-cat">+ Nueva categoría</button>`;
+      <button type="button" class="btn-catalogo-add-cat" data-oficio="${escapeHtml(oid)}">+ Nueva categoría</button>`;
 
-    document.getElementById('btn-catalogo-add-cat')?.addEventListener('click', () => openCategoryForm(null));
+    panel.querySelector('.btn-catalogo-add-cat')?.addEventListener('click', () => openCategoryForm(null, oid));
     panel.querySelectorAll('.btn-cat-edit').forEach((btn) => {
       btn.addEventListener('click', () => {
-        const cat = getCategoryById(btn.dataset.id);
-        if (cat) openCategoryForm(cat);
+        const cat = getCategoryById(btn.dataset.id, oid);
+        if (cat) openCategoryForm(cat, oid);
       });
     });
     panel.querySelectorAll('.btn-cat-del').forEach((btn) => {
@@ -414,19 +484,22 @@
     });
   }
 
-  function renderProductGroups() {
-    const list = document.getElementById('catalogo-list');
-    const empty = document.getElementById('catalogo-empty');
-    const count = document.getElementById('catalogo-count');
+  function renderProductGroups(oficioId) {
+    const oid = normalizeOficioId(oficioId);
+    const dom = sectionDomIds(oid);
+    const list = document.getElementById(dom.list);
+    const empty = document.getElementById(dom.empty);
+    const count = document.getElementById(dom.count);
     if (!list) return;
 
-    const categories = getCategories();
-    const products = getFilteredProducts();
-    const total = getProducts().length;
+    const categories = getCategories(oid);
+    const products = getFilteredProducts(oid);
+    const total = getProducts(oid).length;
+    const q = (searchByOficio[oid] || '').trim();
 
     if (count) {
       count.textContent = total
-        ? `${total} producto${total !== 1 ? 's' : ''}${searchQuery ? ` · ${products.length} mostrados` : ''}`
+        ? `${total} producto${total !== 1 ? 's' : ''}${q ? ` · ${products.length} mostrados` : ''}`
         : '';
     }
 
@@ -476,24 +549,91 @@
       </section>
     `).join('');
 
-    bindProductCardActions(list);
+    bindProductCardActions(list, oid);
+  }
+
+  function renderExtraOficioSections(activeOficios) {
+    const container = document.getElementById('catalogo-extra-sections');
+    if (!container) return;
+
+    const extras = activeOficios.filter((id) => id !== 'automatismos');
+    container.innerHTML = extras.map((oficioId) => {
+      const i18nKey = global.ArpaOficios?.getOficioById?.(oficioId)?.i18nKey || '';
+      const label = global.ArpaOficios?.getOficioLabel?.(oficioId) || oficioId;
+      return `
+        <div id="catalogo-section-${escapeHtml(oficioId)}" class="catalogo-oficio-section" data-oficio="${escapeHtml(oficioId)}">
+          <h2 class="catalogo-oficio-title"><span class="dot"></span><span${i18nKey ? ` data-i18n="${escapeHtml(i18nKey)}"` : ''}>${escapeHtml(label)}</span></h2>
+          <div class="section catalogo-categorias-block">
+            <div class="section-title"><span class="dot"></span><span data-i18n="cat.section.categorias">Categorías</span></div>
+            <div id="catalogo-categorias-panel-${escapeHtml(oficioId)}"></div>
+          </div>
+          <div class="section">
+            <div class="section-title"><span class="dot"></span><span data-i18n="cat.section.productos">Productos</span></div>
+            <p class="catalogo-oficio-intro" data-i18n="cat.oficio.intro">Catálogo genérico editable. Ajuste precios y productos según su negocio.</p>
+            <div class="catalogo-toolbar">
+              <div class="catalogo-toolbar-row">
+                <input type="search" id="catalogo-buscar-${escapeHtml(oficioId)}" data-i18n-placeholder="cat.placeholder.buscar" placeholder="🔍 Buscar por nombre o referencia…" autocomplete="off" inputmode="search">
+                <button type="button" class="btn-catalogo-import btn-catalogo-add-oficio" data-oficio="${escapeHtml(oficioId)}" data-i18n="cat.btn.agregar_producto">+ Agregar producto</button>
+              </div>
+              <span id="catalogo-count-${escapeHtml(oficioId)}" class="catalogo-count"></span>
+            </div>
+            <div id="catalogo-empty-${escapeHtml(oficioId)}" class="catalogo-empty" hidden data-i18n-html="cat.empty">
+              Aún no hay productos.<br>Pulse <strong>+</strong> para agregar el primero.
+            </div>
+            <div id="catalogo-list-${escapeHtml(oficioId)}" class="catalogo-list"></div>
+          </div>
+        </div>`;
+    }).join('');
+
+    global.ArpaI18n?.apply?.(global.ArpaI18n?.getLang?.() || 'es');
+
+    extras.forEach((oficioId) => {
+      document.getElementById(`catalogo-buscar-${oficioId}`)?.addEventListener('input', (e) => {
+        searchByOficio[oficioId] = e.target.value;
+        currentOficioId = oficioId;
+        renderProductGroups(oficioId);
+      });
+      container.querySelector(`.btn-catalogo-add-oficio[data-oficio="${oficioId}"]`)?.addEventListener('click', () => {
+        currentOficioId = oficioId;
+        onFabClick();
+      });
+      container.querySelector(`#catalogo-section-${oficioId}`)?.addEventListener('focusin', () => {
+        currentOficioId = oficioId;
+      });
+    });
   }
 
   function render() {
-    renderCategoriesPanel();
-    renderProductGroups();
+    const active = getActiveOficios();
+    global.ArpaOficios?.seedActiveOficios?.();
+
+    const autoSection = document.getElementById('catalogo-section-automatismos');
+    if (autoSection) autoSection.hidden = !active.includes('automatismos');
+
+    renderExtraOficioSections(active);
+
+    active.forEach((oficioId) => {
+      renderCategoriesPanel(oficioId);
+      renderProductGroups(oficioId);
+    });
   }
 
   function refreshView() {
-    searchQuery = document.getElementById('catalogo-buscar')?.value || '';
+    searchByOficio.automatismos = document.getElementById('catalogo-buscar')?.value || '';
+    getActiveOficios().forEach((oficioId) => {
+      if (oficioId === 'automatismos') return;
+      const el = document.getElementById(`catalogo-buscar-${oficioId}`);
+      if (el) searchByOficio[oficioId] = el.value;
+    });
     render();
   }
 
   function onFabClick() {
-    if (!hasCategories()) {
-      openCategoryForm(null);
+    const oid = normalizeOficioId(currentOficioId);
+    if (!hasCategories(oid)) {
+      openCategoryForm(null, oid);
     } else {
-      openProductForm(null);
+      openProductForm(null, oid);
     }
   }
 
@@ -608,17 +748,21 @@
       .filter((row) => row.nom || row.cod || row.pvp || row.marca || row.categoria);
   }
 
-  function ensureCategoryByName(name, categories) {
+  function ensureCategoryByName(name, categories, oficioId) {
+    const oid = normalizeOficioId(oficioId || currentOficioId);
     const label = (name || 'General').trim() || 'General';
-    let cat = categories.find((c) => c.name.toLowerCase() === label.toLowerCase());
+    let cat = categories.find(
+      (c) => resolveItemOficioId(c) === oid && c.name.toLowerCase() === label.toLowerCase()
+    );
     if (!cat) {
-      cat = { id: newId(), name: label };
+      cat = { id: newId(), name: label, oficioId: oid };
       categories.push(cat);
     }
     return cat.id;
   }
 
-  function rowsToProducts(rows, categories) {
+  function rowsToProducts(rows, categories, oficioId) {
+    const oid = normalizeOficioId(oficioId || currentOficioId);
     return rows
       .filter((r) => r.valid)
       .map((r) => ({
@@ -628,7 +772,8 @@
         pvp: r.pvp,
         unidad: r.unidad,
         marca: r.marca,
-        categoriaId: ensureCategoryByName(r.categoria, categories)
+        categoriaId: ensureCategoryByName(r.categoria, categories, oid),
+        oficioId: oid
       }));
   }
 
@@ -710,20 +855,23 @@
     const validRows = importPreviewRows.filter((r) => r.valid);
     if (!validRows.length) return;
 
-    const categories = getCategories().slice();
-    const imported = rowsToProducts(validRows, categories);
+    const categories = getAllCategories().slice();
+    const oid = normalizeOficioId(currentOficioId);
+    const imported = rowsToProducts(validRows, categories, oid);
     saveCategories(categories);
 
     let products;
     let skipped = 0;
 
     if (mode === 'replace') {
-      if (!confirm('¿Reemplazar el catálogo actual con estos ' + validRows.length + ' productos?')) return;
-      products = imported;
+      if (!confirm('¿Reemplazar el catálogo de este oficio con estos ' + validRows.length + ' productos?')) return;
+      products = getAllProducts().filter((p) => resolveItemOficioId(p) !== oid).concat(imported);
     } else {
-      if (!confirm('¿Agregar estos ' + validRows.length + ' productos a los existentes?')) return;
-      const existing = getProducts();
-      const codes = new Set(existing.map((p) => p.cod.toLowerCase()));
+      if (!confirm('¿Agregar estos ' + validRows.length + ' productos a los existentes de este oficio?')) return;
+      const existing = getAllProducts();
+      const codes = new Set(
+        existing.filter((p) => resolveItemOficioId(p) === oid).map((p) => p.cod.toLowerCase())
+      );
       products = existing.slice();
       imported.forEach((p) => {
         if (codes.has(p.cod.toLowerCase())) {
@@ -755,8 +903,12 @@
 
   function initMiCatalogo() {
     document.getElementById('catalogo-buscar')?.addEventListener('input', (e) => {
-      searchQuery = e.target.value;
-      renderProductGroups();
+      searchByOficio.automatismos = e.target.value;
+      currentOficioId = 'automatismos';
+      renderProductGroups('automatismos');
+    });
+    document.getElementById('catalogo-section-automatismos')?.addEventListener('focusin', () => {
+      currentOficioId = 'automatismos';
     });
     document.getElementById('btn-catalogo-fab')?.addEventListener('click', onFabClick);
     document.getElementById('btn-catalogo-form-save')?.addEventListener('click', saveProductForm);
@@ -771,7 +923,10 @@
     document.getElementById('catalogo-cat-modal')?.addEventListener('click', (e) => {
       if (e.target.id === 'catalogo-cat-modal') closeCategoryForm();
     });
-    document.getElementById('btn-catalogo-import')?.addEventListener('click', triggerImportPicker);
+    document.getElementById('btn-catalogo-import')?.addEventListener('click', () => {
+      currentOficioId = 'automatismos';
+      triggerImportPicker();
+    });
     document.getElementById('catalogo-import-file')?.addEventListener('change', (e) => {
       handleImportFile(e.target.files?.[0]);
     });

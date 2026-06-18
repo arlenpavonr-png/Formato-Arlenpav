@@ -915,6 +915,66 @@
   }
   .catalogo-fab[hidden] { display: none !important; }
   .catalogo-fab:active { transform: scale(0.96); }
+
+  .catalogo-oficio-section {
+    margin-bottom: 28px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .catalogo-oficio-section:last-child { border-bottom: none; }
+  .catalogo-oficio-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--catalogo-navy, #1a2a4a);
+    margin: 0 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-transform: uppercase;
+  }
+  .catalogo-oficio-title .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--catalogo-gold, #c9a84c);
+    flex-shrink: 0;
+  }
+  .catalogo-oficio-intro {
+    font-size: 12px;
+    color: var(--muted);
+    margin: -4px 0 10px;
+    line-height: 1.5;
+  }
+  .settings-oficios-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  @media (min-width: 480px) {
+    .settings-oficios-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .settings-oficio-chip {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.35;
+    cursor: pointer;
+    background: #fff;
+  }
+  .settings-oficio-chip.is-locked {
+    background: #f8fafc;
+    cursor: default;
+    opacity: 0.92;
+  }
+  .settings-oficio-chip input { margin-top: 2px; flex-shrink: 0; }
+
   #catalogo-form-modal .settings-modal-header h2,
   #catalogo-cat-modal .settings-modal-header h2 {
     font-family: 'Barlow Condensed', sans-serif;
@@ -2728,6 +2788,9 @@ document.documentElement.classList.add('license-checking');
   </div><!-- /view-cotizacion -->
 
   <div id="view-catalogo" class="suite-view body" hidden>
+    <div id="catalogo-oficios-sections">
+    <div id="catalogo-section-automatismos" class="catalogo-oficio-section" data-oficio="automatismos">
+    <h2 class="catalogo-oficio-title"><span class="dot"></span><span data-i18n="oficio.automatismos">Automatismos</span></h2>
     <div class="section catalogo-categorias-block">
       <div class="section-title"><span class="dot"></span><span data-i18n="cat.section.categorias">Categorías</span></div>
       <div id="catalogo-categorias-panel"></div>
@@ -2750,6 +2813,9 @@ document.documentElement.classList.add('license-checking');
         Aún no hay productos.<br>Pulse <strong>+</strong> para agregar el primero.
       </div>
       <div id="catalogo-list" class="catalogo-list"></div>
+    </div>
+    </div>
+    <div id="catalogo-extra-sections"></div>
     </div>
   </div>
 
@@ -3181,6 +3247,9 @@ document.documentElement.classList.add('license-checking');
         <input type="text" id="settings-technician-code" maxlength="4" autocomplete="off" style="text-transform:uppercase;max-width:120px;" data-i18n-placeholder="settings.placeholder.technician_code" placeholder="PJ">
         <p class="logo-upload-hint" data-i18n="settings.technician_code.hint">Plan PYME: obligatorio. Prefija sus documentos (ej. PJ-001). Otros planes: opcional.</p>
       </div>
+      <div class="settings-section-title" data-i18n="settings.section.oficios">Oficios / Actividades</div>
+      <p class="logo-upload-hint" data-i18n="settings.oficios.hint">Seleccione uno o más oficios. Automatismos permanece activo por defecto. Cada oficio tendrá su sección en Mi Catálogo.</p>
+      <div id="settings-oficios-grid" class="settings-oficios-grid"></div>
       <div class="settings-section-title" data-i18n="settings.section.price_list">Lista de Precios</div>
       <p style="font-size:11px;color:var(--muted);line-height:1.4;margin-bottom:4px;" data-i18n="settings.price_list.hint">Valores base para servicios recurrentes. Se aplican en Cotización (editables antes del PDF).</p>
       <div id="settings-price-list" class="servicios-grid"></div>
@@ -3925,6 +3994,7 @@ if ('serviceWorker' in navigator) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" crossorigin="anonymous"></script>
 <script src="./js/arpa-license.js"></script>
+<script src="./js/arpa-oficios.js"></script>
 <script src="./js/arpa-numeracion.js"></script>
 <script src="./js/arpa-brand.js"></script>
 <script src="./js/arpa-pricing.js"></script>

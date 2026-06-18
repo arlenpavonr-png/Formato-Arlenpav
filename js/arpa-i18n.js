@@ -227,6 +227,23 @@
     'cat.btn.importar': '📥 Import Excel/CSV',
     'cat.btn.cargar_bft_nas': '📦 Load BFT + NAS Catalog (333 products)',
     'cat.empty': 'No products yet.<br>Tap <strong>+</strong> to add the first one.',
+    'cat.oficio.intro': 'Editable starter catalog. Adjust prices and products for your business.',
+    'cat.btn.agregar_producto': '+ Add product',
+    'cat.cat_empty': 'Create your categories first. E.g.: Motors, Parts, Services, Materials…',
+
+    'oficio.automatismos': 'Gate Automation',
+    'oficio.electricidad': 'Electrical',
+    'oficio.gas': 'Gas',
+    'oficio.refrigeracion': 'Refrigeration & Air Conditioning',
+    'oficio.cctv': 'CCTV / Electronic Security',
+    'oficio.plomeria': 'Plumbing',
+    'oficio.cerrajeria': 'Locksmith',
+    'oficio.plagas': 'Pest Control / Fumigation',
+    'oficio.linea_blanca': 'White Goods / Appliances',
+    'oficio.solar': 'Solar Energy',
+
+    'settings.section.oficios': 'Trades / Activities',
+    'settings.oficios.hint': 'Select one or more trades. Gate Automation stays active by default. Each trade gets its own section in My Catalog.',
 
     'cc.section.datos_documento': 'Document Details',
     'cc.placeholder.ciudad': 'City',
