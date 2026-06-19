@@ -3683,50 +3683,17 @@ window.addEventListener('DOMContentLoaded', () => {
   if (dot) dot.style.backgroundColor = '#16a34a';
 });
 
-// Registrar el Service Worker + actualización automática invisible
+// Registrar el Service Worker
 if ('serviceWorker' in navigator) {
-  var swReloading = false;
-
-  function silentReloadForUpdate() {
-    if (swReloading) return;
-    swReloading = true;
-    window.location.reload(true);
-  }
-
-  navigator.serviceWorker.addEventListener('controllerchange', function () {
-    if (navigator.serviceWorker.controller) {
-      silentReloadForUpdate();
-    }
-  });
-
-  window.addEventListener('load', function () {
+  window.addEventListener('load', () => {
     navigator.serviceWorker.register('./service-worker.js')
-      .then(function (reg) {
+      .then((reg) => {
         console.log('Service Worker registrado con éxito en scope:', reg.scope);
         reg.update();
-
-        reg.addEventListener('updatefound', function () {
-          var newWorker = reg.installing;
-          if (!newWorker) return;
-
-          newWorker.addEventListener('statechange', function () {
-            if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
-              silentReloadForUpdate();
-            }
-          });
-        });
       })
-      .catch(function (err) {
+      .catch((err) => {
         console.warn('Error al registrar el Service Worker:', err);
       });
-  });
-
-  document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'visible') {
-      navigator.serviceWorker.getRegistration().then(function (reg) {
-        if (reg) reg.update();
-      });
-    }
   });
 }
 </script>

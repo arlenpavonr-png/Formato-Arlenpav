@@ -1,10 +1,10 @@
 {
-  "id": "https://arpa.arpatechnologyglobal.com/",
+  "id": "https://arpatechnologyglobal.com/",
   "name": "ARPA Suite",
   "short_name": "ARPA Suite",
   "description": "Plataforma de gestión de campo para técnicos de automatización",
-  "start_url": "https://arpa.arpatechnologyglobal.com/",
-  "scope": "https://arpa.arpatechnologyglobal.com/",
+  "start_url": "https://arpatechnologyglobal.com/",
+  "scope": "https://arpatechnologyglobal.com/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#1a2a4a",

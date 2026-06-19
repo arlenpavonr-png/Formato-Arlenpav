@@ -286,23 +286,17 @@
     return (name || 'Cliente').replace(/[^\w\s-áéíóúÁÉÍÓÚñÑ]/g, '').replace(/\s+/g, '_').substring(0, 40) || 'Cliente';
   }
 
-  function buildCcWhatsAppMessage(d) {
-    const empresa = d.cobrador.empresa
-      || global.ArpaBrand?.getSettings?.()?.companyName?.trim()
-      || 'su empresa';
-    return `Hola ${d.cliente.nombre || 'cliente'}, le comparto la cuenta de cobro ${d.numero || '—'} con fecha ${d.fechaEmision || '—'} de ${empresa}. Por favor revísela y confírmenos su recepción.`;
-  }
-
-  async function enviarWhatsApp() {
-    await generarPDF();
+  function enviarWhatsApp() {
     const d = getFormSnapshot();
-    const msg = buildCcWhatsAppMessage(d);
-    if (global.ArpaWhatsApp?.alertAndOpenWhatsApp) {
-      global.ArpaWhatsApp.alertAndOpenWhatsApp(msg);
-      return;
-    }
-    alert('PDF guardado en tu dispositivo. Ahora se abrirá WhatsApp — adjunta el archivo desde tu galería.');
-    window.location.href = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    const telRaw = d.cliente.tel.replace(/\D/g, '');
+    const empresa = d.cobrador.empresa || 'nuestra empresa';
+    const telEmp = d.cobrador.tel || '';
+    const msg = `Hola ${d.cliente.nombre || 'cliente'}, le compartimos la ${d.numero} de ${empresa} por un valor de ${formatoPesos(d.total)}. Quedamos atentos para cualquier consulta.\n${empresa} 📞 ${telEmp}`;
+    const text = encodeURIComponent(msg);
+    const url = telRaw.length >= 10
+      ? `https://wa.me/${telRaw.startsWith('57') ? telRaw : '57' + telRaw}?text=${text}`
+      : `https://wa.me/?text=${text}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 
   function loadImageDataUrl(src) {
