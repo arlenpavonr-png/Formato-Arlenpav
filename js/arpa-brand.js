@@ -4,6 +4,8 @@
 (function (global) {
   const SETTINGS_KEY = 'arpa_suite_user_settings';
   const SETTINGS_CONFIGURED_KEY = 'arpa_suite_settings_configured';
+  const LICENSE_CODE_KEY = 'arpa_suite_license_code';
+  const LICENSE_API = 'https://script.google.com/macros/s/AKfycbx4pOeZNxpA5T9hrZNaJgkB9BCEC2DbVjdHfOu0wmMV5RJsGfQAbiCldD3pPa43kuEw/exec';
   const SALES_ENTRY_KEY = 'arpa_suite_sales_entry';
   const FORMATO_DRAFT_KEY = 'arpa_formato_borrador';
   const GLOBAL_BRAND_URL = 'https://arpatechnologyglobal.com';
@@ -210,6 +212,109 @@
       showError('No se pudo guardar. Si subió un logo, pruebe con una imagen más pequeña.');
       return false;
     }
+  }
+
+  let companyApiCounter = 0;
+
+  function getLicenseCode() {
+    try {
+      return (localStorage.getItem(LICENSE_CODE_KEY) || '').trim().toUpperCase();
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function licenseJsonp(params) {
+    return new Promise((resolve, reject) => {
+      companyApiCounter += 1;
+      const cbName = 'arpaCompanyCb' + companyApiCounter + '_' + Date.now();
+      const scriptId = 'arpa-company-jsonp-' + companyApiCounter;
+      const timeout = setTimeout(() => {
+        cleanup();
+        reject(new Error('timeout'));
+      }, 15000);
+
+      function cleanup() {
+        clearTimeout(timeout);
+        delete global[cbName];
+        document.getElementById(scriptId)?.remove();
+      }
+
+      global[cbName] = (data) => {
+        cleanup();
+        resolve(data);
+      };
+
+      const qs = Object.keys(params).map((key) =>
+        encodeURIComponent(key) + '=' + encodeURIComponent(params[key])
+      );
+      qs.push('callback=' + encodeURIComponent(cbName));
+
+      const script = document.createElement('script');
+      script.id = scriptId;
+      script.onerror = () => {
+        cleanup();
+        reject(new Error('network'));
+      };
+      script.src = LICENSE_API + '?' + qs.join('&');
+      document.head.appendChild(script);
+    });
+  }
+
+  function needsCompanyRestoreFromSheets() {
+    const licencia = getLicenseCode();
+    if (!licencia) return false;
+    try {
+      const raw = localStorage.getItem(SETTINGS_KEY);
+      if (!raw || raw === '{}') return true;
+    } catch (e) {
+      return true;
+    }
+    if (!hasUserSettings()) return true;
+    return !String(getSettings().companyName || '').trim();
+  }
+
+  function pushCompanyDataToSheets(settings) {
+    const licencia = getLicenseCode();
+    if (!licencia) return;
+    licenseJsonp({
+      accion: 'saveCompanyData',
+      licencia,
+      nombreEmpresa: settings.companyName || '',
+      nit: settings.nit || '',
+      direccion: settings.address || '',
+      ciudad: settings.city || '',
+      telefono: settings.phone || '',
+      sitioWeb: settings.website || ''
+    }).catch((err) => {
+      console.warn('[arpa-brand] saveCompanyData', err);
+    });
+  }
+
+  function restoreCompanyDataFromSheets() {
+    if (!needsCompanyRestoreFromSheets()) return Promise.resolve(false);
+    const licencia = getLicenseCode();
+    return licenseJsonp({ accion: 'getCompanyData', licencia })
+      .then((data) => {
+        if (!data || !data.encontrado || !String(data.nombreEmpresa || '').trim()) return false;
+        const current = getSettings();
+        const merged = {
+          ...current,
+          companyName: data.nombreEmpresa || '',
+          nit: data.nit || current.nit || '',
+          address: data.direccion || current.address || '',
+          city: data.ciudad || current.city || '',
+          phone: data.telefono || current.phone || '',
+          website: data.sitioWeb || current.website || ''
+        };
+        if (!saveSettings(merged)) return false;
+        try { localStorage.setItem(SETTINGS_CONFIGURED_KEY, 'true'); } catch (e) {}
+        return true;
+      })
+      .catch((err) => {
+        console.warn('[arpa-brand] getCompanyData', err);
+        return false;
+      });
   }
 
   function getLogo(settings) {
@@ -532,6 +637,8 @@
 
     if (!saveSettings(settings)) return;
 
+    pushCompanyDataToSheets(settings);
+
     global.ArpaOficios?.saveActiveOficios?.(settings.activeOficios);
 
     try { localStorage.setItem(SETTINGS_CONFIGURED_KEY, 'true'); } catch (e) {}
@@ -647,8 +754,10 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     purgeLegacyData();
-    applyToUI();
-    protectGlobalSeal();
+    restoreCompanyDataFromSheets().finally(() => {
+      applyToUI();
+      protectGlobalSeal();
+    });
   });
   document.getElementById('settings-modal')?.addEventListener('click', (e) => {
     if (e.target.id === 'settings-modal') closeSettings();

@@ -39,10 +39,11 @@
  *   ?codigo=ARPA-FREE-0001&callback=fn          → validar licencia
 
  *   ?accion=provision_trial&device_id=UUID&callback=fn → trial auto 7 días
-
+ *
+ *   ?accion=saveCompanyData&licencia=...&nombreEmpresa=...&nit=...&direccion=...&ciudad=...&telefono=...&sitioWeb=...&callback=fn
+ *   ?accion=getCompanyData&licencia=...&callback=fn
+ *
  */
-
-
 
 const CONFIG = {
 
@@ -75,6 +76,8 @@ const CONFIG = {
   /** Licencia fundador — nunca expira, exenta de bloqueos. */
   FOUNDER_CODE: 'ARPA-FOUNDER-001',
 
+  EMPRESAS_SHEET_NAME: 'Empresas',
+
 };
 
 
@@ -98,6 +101,18 @@ function doGet(e) {
     const deviceId = String(params.device_id || '').trim();
 
     return respondJsonp_(provisionTrial_(deviceId), callback);
+
+  }
+
+  if (accion === 'savecompanydata') {
+
+    return respondJsonp_(saveCompanyData_(params), callback);
+
+  }
+
+  if (accion === 'getcompanydata') {
+
+    return respondJsonp_(getCompanyData_(params), callback);
 
   }
 
@@ -891,6 +906,166 @@ function getLicenseSheet_() {
   if (!sheet) throw new Error('Pestaña no encontrada: ' + CONFIG.SHEET_NAME);
 
   return sheet;
+
+}
+
+
+
+const EMPRESAS_HEADERS_ = ['Licencia', 'NombreEmpresa', 'NIT', 'Direccion', 'Ciudad', 'Telefono', 'SitioWeb', 'UltimaActualizacion'];
+
+
+
+function getEmpresasSheet_() {
+
+  const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
+
+  let sheet = ss.getSheetByName(CONFIG.EMPRESAS_SHEET_NAME);
+
+  if (!sheet) {
+
+    sheet = ss.insertSheet(CONFIG.EMPRESAS_SHEET_NAME);
+
+    sheet.getRange(1, 1, 1, EMPRESAS_HEADERS_.length).setValues([EMPRESAS_HEADERS_]);
+
+    return sheet;
+
+  }
+
+  const firstCell = String(sheet.getRange(1, 1).getValue() || '').trim();
+
+  if (!firstCell) {
+
+    sheet.getRange(1, 1, 1, EMPRESAS_HEADERS_.length).setValues([EMPRESAS_HEADERS_]);
+
+  }
+
+  return sheet;
+
+}
+
+
+
+function readCompanyParam_(params, camelKey, lowerKey) {
+
+  return String(params[camelKey] || params[lowerKey] || '').trim();
+
+}
+
+
+
+function saveCompanyData_(params) {
+
+  const licencia = String(params.licencia || '').trim().toUpperCase();
+
+  if (!licencia) {
+
+    return { ok: false, mensaje: 'Licencia requerida.' };
+
+  }
+
+  const nombreEmpresa = readCompanyParam_(params, 'nombreEmpresa', 'nombreempresa');
+
+  const nit = readCompanyParam_(params, 'nit', 'nit');
+
+  const direccion = readCompanyParam_(params, 'direccion', 'direccion');
+
+  const ciudad = readCompanyParam_(params, 'ciudad', 'ciudad');
+
+  const telefono = readCompanyParam_(params, 'telefono', 'telefono');
+
+  const sitioWeb = readCompanyParam_(params, 'sitioWeb', 'sitioweb');
+
+  const sheet = getEmpresasSheet_();
+
+  const values = sheet.getDataRange().getValues();
+
+  const now = new Date();
+
+  const row = [licencia, nombreEmpresa, nit, direccion, ciudad, telefono, sitioWeb, now];
+
+  let targetRow = -1;
+
+  for (let i = 1; i < values.length; i++) {
+
+    if (String(values[i][0] || '').trim().toUpperCase() === licencia) {
+
+      targetRow = i + 1;
+
+      break;
+
+    }
+
+  }
+
+  if (targetRow > 0) {
+
+    sheet.getRange(targetRow, 1, targetRow, EMPRESAS_HEADERS_.length).setValues([row]);
+
+  } else {
+
+    sheet.appendRow(row);
+
+  }
+
+  return { ok: true, mensaje: 'Datos de empresa guardados.' };
+
+}
+
+
+
+function getCompanyData_(params) {
+
+  const licencia = String(params.licencia || '').trim().toUpperCase();
+
+  if (!licencia) {
+
+    return { ok: false, encontrado: false, mensaje: 'Licencia requerida.' };
+
+  }
+
+  const sheet = getEmpresasSheet_();
+
+  const values = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < values.length; i++) {
+
+    if (String(values[i][0] || '').trim().toUpperCase() !== licencia) continue;
+
+    const nombreEmpresa = String(values[i][1] || '').trim();
+
+    if (!nombreEmpresa) {
+
+      return { ok: true, encontrado: false };
+
+    }
+
+    return {
+
+      ok: true,
+
+      encontrado: true,
+
+      licencia: licencia,
+
+      nombreEmpresa: nombreEmpresa,
+
+      nit: String(values[i][2] || '').trim(),
+
+      direccion: String(values[i][3] || '').trim(),
+
+      ciudad: String(values[i][4] || '').trim(),
+
+      telefono: String(values[i][5] || '').trim(),
+
+      sitioWeb: String(values[i][6] || '').trim(),
+
+      ultimaActualizacion: values[i][7] || ''
+
+    };
+
+  }
+
+  return { ok: true, encontrado: false };
 
 }
 
