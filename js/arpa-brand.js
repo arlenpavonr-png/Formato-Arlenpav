@@ -5,7 +5,7 @@
   const SETTINGS_KEY = 'arpa_suite_user_settings';
   const SETTINGS_CONFIGURED_KEY = 'arpa_suite_settings_configured';
   const LICENSE_CODE_KEY = 'arpa_suite_license_code';
-  const LICENSE_API = 'https://script.google.com/macros/s/AKfycbx4pOeZNxpA5T9hrZNaJgkB9BCEC2DbVjdHfOu0wmMV5RJsGfQAbiCldD3pPa43kuEw/exec';
+  const LICENSE_API = 'https://script.google.com/macros/s/AKfycbzKBeyDVWVqPG1R47EZTVKmCpa3SOwxs8LXrW4ipvRtiyyRV4trJKg7D4i89_cUTcH2/exec';
   const SALES_ENTRY_KEY = 'arpa_suite_sales_entry';
   const FORMATO_DRAFT_KEY = 'arpa_formato_borrador';
   const GLOBAL_BRAND_URL = 'https://arpatechnologyglobal.com';
