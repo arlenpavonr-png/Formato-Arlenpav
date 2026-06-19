@@ -1,4 +1,4 @@
-const CACHE_NAME = 'arpa-suite-cache-v52';
+const CACHE_NAME = 'ARPA-CACHE-V53';
 const BASE = self.location.pathname.replace(/service-worker\.js$/, '');
 const ASSETS = [
   BASE,
@@ -35,10 +35,10 @@ function isNetworkFirst(url) {
 }
 
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => Promise.allSettled(ASSETS.map((url) => cache.add(url))))
-      .then(() => self.skipWaiting())
   );
 });
 
