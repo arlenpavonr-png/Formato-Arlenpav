@@ -945,7 +945,7 @@ const CATALOGO_HEADERS_ = ['Licencia', 'ProductoId', 'Codigo', 'Nombre', 'Precio
 
 
 
-const HISTORIAL_HEADERS_ = ['Licencia', 'EntradaId', 'Tipo', 'Subtipo', 'Numero', 'Cliente', 'Ciudad', 'Fecha', 'Monto'];
+const HISTORIAL_HEADERS_ = ['Licencia', 'EntradaId', 'Tipo', 'Subtipo', 'Numero', 'Cliente', 'Ciudad', 'Fecha', 'Monto', 'Concepto'];
 
 
 
@@ -1423,7 +1423,9 @@ function saveHistorialEntry_(licencia, entrada) {
 
     String(e.fecha || ''),
 
-    e.monto != null && e.monto !== '' ? Number(e.monto) : ''
+    e.monto != null && e.monto !== '' ? Number(e.monto) : '',
+
+    String(e.concepto || '')
 
   ]);
 
@@ -1509,7 +1511,9 @@ function getHistorial_(licencia) {
 
       fecha: String(values[i][7] || ''),
 
-      monto: monto === '' || monto == null ? '' : Number(monto)
+      monto: monto === '' || monto == null ? '' : Number(monto),
+
+      concepto: String(values[i][9] || '')
 
     });
 

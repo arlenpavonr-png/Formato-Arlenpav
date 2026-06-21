@@ -313,6 +313,20 @@
     };
   }
 
+  function getCotItemLabels() {
+    global.ArpaCobros?.syncFromEditor?.('cot');
+    const labels = [];
+    filas.forEach((f) => {
+      const nom = (f.nom || '').trim();
+      if (nom) labels.push(nom);
+    });
+    getCobrosLineas().forEach((line) => {
+      const desc = (line.nom || line.desc || '').trim();
+      if (desc && desc !== 'Ítem de cobro') labels.push(desc);
+    });
+    return labels;
+  }
+
   function guardarCotPDF() {
     var _numCot = (document.getElementById('numero-cot')?.value || '').trim();
     var _cliente = document.querySelector('#cot-nombre, #cot-cliente, input[name*=nombre]')?.value?.trim() || '';
@@ -450,6 +464,7 @@
     ensureCotNumero,
     guardarCotPDF,
     getCotSnapshot,
+    getCotItemLabels,
     getCatalogoActivo,
     updateCatalogHint,
   };

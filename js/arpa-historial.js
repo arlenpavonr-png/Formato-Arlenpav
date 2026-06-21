@@ -74,6 +74,93 @@
     return modulo === 'cotizacion' || modulo === 'cuenta-cobro';
   }
 
+  const SIN_DESCRIPCION = 'Sin descripción';
+
+  function trimBrief(text, maxLen) {
+    const limit = maxLen || 100;
+    const s = String(text || '').trim();
+    if (!s) return '';
+    return s.length > limit ? s.slice(0, limit - 1) + '…' : s;
+  }
+
+  function firstNonEmpty(values) {
+    for (let i = 0; i < values.length; i += 1) {
+      const t = trimBrief(values[i]);
+      if (t) return t;
+    }
+    return '';
+  }
+
+  function buildConceptoFromItemList(items) {
+    const list = (items || []).map((item) => String(item || '').trim()).filter(Boolean);
+    if (!list.length) return '';
+    const first = list[0];
+    if (list.length > 1) return `${first} + ${list.length - 1} más`;
+    return first;
+  }
+
+  function getConceptoDisplay(record) {
+    const concepto = (record?.concepto || '').trim();
+    return concepto || SIN_DESCRIPCION;
+  }
+
+  function getFormatoBriefDetail() {
+    const refManual = document.getElementById('ref-manual')?.value.trim() || '';
+    const refSelect = readInputLikePdf(document.getElementById('sel-referencia'));
+    const marca = readInputLikePdf(document.getElementById('sel-marca'));
+    const materiales = [];
+    document.querySelectorAll('#view-formato .mat-row input[type="text"]').forEach((input) => {
+      const v = (input.value || '').trim();
+      if (v) materiales.push(v);
+    });
+    return firstNonEmpty([
+      refManual,
+      refSelect && refSelect !== 'Seleccionar referencia...' ? refSelect : '',
+      marca && marca !== 'Seleccionar...' ? marca : '',
+      ...materiales
+    ]);
+  }
+
+  function getFormatoObservaciones() {
+    const lines = [];
+    document.querySelectorAll('#view-formato .obs-lines input').forEach((input) => {
+      const v = (input.value || '').trim();
+      if (v) lines.push(v);
+    });
+    return firstNonEmpty(lines);
+  }
+
+  function buildFormatoConcepto() {
+    const tipoEl = document.querySelector('#view-formato input[name="tipo"]:checked');
+    const tipoKey = tipoEl?.value || 'instalacion';
+    const tipoLabel = TIPO_LABEL[tipoKey] || 'Instalación';
+    const detail = getFormatoBriefDetail();
+    if (detail) return `${tipoLabel} — ${detail}`;
+    const obs = getFormatoObservaciones();
+    if (obs) return obs;
+    return tipoLabel;
+  }
+
+  function buildCotizacionConcepto() {
+    const labels = global.ArpaCotizacion?.getCotItemLabels?.() || [];
+    let concepto = buildConceptoFromItemList(labels);
+    if (!concepto) {
+      const obs = (document.getElementById('cot-obs')?.value || '').trim();
+      if (obs) concepto = trimBrief(obs, 120);
+    }
+    return concepto || SIN_DESCRIPCION;
+  }
+
+  function buildCuentaCobroConcepto(snap) {
+    const d = snap || global.ArpaCuentaCobro?.getFormSnapshot?.();
+    const items = (d?.servicios || [])
+      .map((s) => (s.desc || '').trim())
+      .filter(Boolean);
+    let concepto = buildConceptoFromItemList(items);
+    if (!concepto && d?.observaciones) concepto = trimBrief(d.observaciones, 120);
+    return concepto || SIN_DESCRIPCION;
+  }
+
   function addRecord(record) {
     const records = getRecords();
     records.unshift(record);
@@ -111,6 +198,7 @@
       cliente: snap.cliente,
       ciudad: snap.ciudad,
       fecha: snap.fecha,
+      concepto: buildFormatoConcepto(),
       savedAt: new Date().toISOString()
     });
   }
@@ -130,6 +218,7 @@
       ciudad: d.ciudad || '',
       fecha: d.fecha || '',
       total: d.total,
+      concepto: buildCotizacionConcepto(),
       savedAt: new Date().toISOString()
     });
   }
@@ -149,6 +238,7 @@
       ciudad: d.ciudad || '',
       fecha: d.fechaEmision || '',
       total: d.total,
+      concepto: buildCuentaCobroConcepto(d),
       savedAt: new Date().toISOString()
     });
   }
@@ -198,6 +288,7 @@
         </div>
         <div class="historial-card-body">
           <div class="historial-row"><span>Cliente</span><strong>${escapeHtml(r.cliente || '—')}</strong></div>
+          <div class="historial-row historial-row-concepto"><span>Concepto</span><strong>${escapeHtml(getConceptoDisplay(r))}</strong></div>
           <div class="historial-row"><span>Ciudad</span><strong>${escapeHtml(r.ciudad || '—')}</strong></div>
           <div class="historial-row"><span>Fecha</span><strong>${escapeHtml(r.fecha || '—')}</strong></div>
           ${showTotal ? `<div class="historial-row"><span>Total</span><strong>${escapeHtml(formatoPesos(r.total))}</strong></div>` : ''}
@@ -222,12 +313,13 @@
       return;
     }
 
-    const header = ['Documento', 'Subtipo', 'Numero', 'Cliente', 'Ciudad', 'Fecha', 'Total', 'Guardado'];
+    const header = ['Documento', 'Subtipo', 'Numero', 'Cliente', 'Concepto', 'Ciudad', 'Fecha', 'Total', 'Guardado'];
     const rows = records.map((r) => [
       getDocumentoLabel(r),
       getSubtipoLabel(r),
       r.numeroServicio || r.numero,
       r.cliente,
+      getConceptoDisplay(r),
       r.ciudad,
       r.fecha,
       shouldShowTotal(r) && r.total != null ? r.total : '',
@@ -270,6 +362,10 @@
     getRecords,
     readInputLikePdf,
     readFormSnapshot,
+    buildFormatoConcepto,
+    buildCotizacionConcepto,
+    buildCuentaCobroConcepto,
+    getConceptoDisplay,
     captureFromFormato,
     captureFromCotizacion,
     captureFromCuentaCobro,

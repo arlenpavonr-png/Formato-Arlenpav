@@ -97,7 +97,8 @@
       cliente: record.cliente || '',
       ciudad: record.ciudad || '',
       fecha: record.fecha || '',
-      monto: record.total != null ? record.total : ''
+      monto: record.total != null ? record.total : '',
+      concepto: record.concepto || ''
     };
   }
 
@@ -155,6 +156,7 @@
       fecha: entry.fecha || '',
       savedAt: new Date().toISOString()
     };
+    if (entry.concepto) record.concepto = String(entry.concepto);
     if (monto !== '' && monto != null && !Number.isNaN(Number(monto))) {
       record.total = Number(monto);
     }
