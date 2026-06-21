@@ -362,10 +362,27 @@
   }
 
   function formatBankBlock(s) {
-    if (!hasUserSettings()) {
-      return '<em>Configure datos bancarios en Ajustes ⚙️</em>';
+    const settings = s || getSettings();
+    const bankName = val(settings.bankName, '');
+    const accountType = val(settings.accountType, 'Ahorros');
+    const accountNumber = val(settings.accountNumber, '');
+
+    if (!bankName && !accountNumber) {
+      if (!hasUserSettings()) {
+        return '<em>Configure datos bancarios en Ajustes ⚙️</em>';
+      }
+      return '<em>Complete banco y número de cuenta en Ajustes ⚙️</em>';
     }
-    return `<strong>Datos para consignación:</strong> ${val(s.bankName, '—')} · Cuenta ${val(s.accountType, '—')} · N° ${val(s.accountNumber, '—')}`;
+
+    return `<strong>Datos para consignación:</strong> ${val(bankName, '—')} · Cuenta ${accountType} · N° ${val(accountNumber, '—')}`;
+  }
+
+  function syncBankBlocksForPrint() {
+    const html = formatBankBlock(getSettings());
+    ['brand-bank-block-formato', 'brand-bank-block'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = html;
+    });
   }
 
   function applyToUI() {
@@ -742,7 +759,8 @@
     closeSettings,
     saveFromModal,
     showError,
-    formatBankBlock
+    formatBankBlock,
+    syncBankBlocksForPrint
   };
 
   global.applyUserSettingsToUI = applyToUI;

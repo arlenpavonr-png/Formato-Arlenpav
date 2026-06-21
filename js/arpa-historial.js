@@ -24,19 +24,26 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(records.slice(0, MAX_RECORDS)));
   }
 
+  function readInputLikePdf(el) {
+    if (!el) return '';
+    if (el.tagName === 'SELECT') {
+      return (el.options[el.selectedIndex]?.text || '').trim();
+    }
+    const valor = (el.value || '').trim();
+    return valor || (el.placeholder || '').trim();
+  }
+
   function readFormSnapshot() {
     const tipoEl = document.querySelector('#view-formato input[name="tipo"]:checked');
     const tipoKey = tipoEl?.value || 'instalacion';
-    const clienteEl = document.getElementById('formato-cliente-nombre')
-      || document.querySelector('#view-formato input[placeholder="Nombre completo o razón social"]');
-    const ciudadEl = document.getElementById('formato-cliente-ciudad')
-      || document.querySelector('#view-formato input[placeholder="Medellín"]');
+    const numeroServicio = readInputLikePdf(document.getElementById('numero-formato'));
 
     return {
-      numero: document.getElementById('numero-formato')?.value.trim() || '',
-      cliente: clienteEl?.value.trim() || '',
+      numero: numeroServicio,
+      numeroServicio,
+      cliente: readInputLikePdf(document.getElementById('formato-cliente-nombre')),
       tipo: TIPO_LABEL[tipoKey] || 'Instalación',
-      ciudad: ciudadEl?.value.trim() || '',
+      ciudad: readInputLikePdf(document.getElementById('formato-cliente-ciudad')),
       fecha: document.getElementById('formato-fecha')?.value || ''
     };
   }
@@ -87,7 +94,7 @@
     list.innerHTML = records.map((r) => `
       <article class="historial-card" data-id="${escapeHtml(r.id)}">
         <div class="historial-card-head">
-          <span class="historial-num">N° ${escapeHtml(r.numero || '—')}</span>
+          <span class="historial-num">N° ${escapeHtml(r.numeroServicio || r.numero || '—')}</span>
           <span class="historial-tipo">${escapeHtml(r.tipo)}</span>
         </div>
         <div class="historial-card-body">
@@ -117,7 +124,7 @@
 
     const header = ['Numero', 'Cliente', 'Tipo', 'Ciudad', 'Fecha', 'Guardado'];
     const rows = records.map((r) => [
-      r.numero,
+      r.numeroServicio || r.numero,
       r.cliente,
       r.tipo,
       r.ciudad,
@@ -139,7 +146,6 @@
   }
 
   function guardarPDFYHistorial() {
-    captureFromFormato();
     if (typeof global.guardarPDF === 'function') global.guardarPDF();
   }
 
@@ -160,6 +166,8 @@
   global.ArpaHistorial = {
     STORAGE_KEY,
     getRecords,
+    readInputLikePdf,
+    readFormSnapshot,
     captureFromFormato,
     render,
     exportCSV,

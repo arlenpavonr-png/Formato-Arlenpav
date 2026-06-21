@@ -3027,7 +3027,7 @@ document.documentElement.classList.add('license-checking');
       <button type="button" class="btn-pdf-primary" onclick="guardarPDFYHistorial()" data-i18n="pdf.btn.guardar_formato">
         📄 Guardar como PDF
       </button>
-      <button type="button" class="btn-pdf-whatsapp" onclick="guardarPDFYWhatsApp()" data-i18n="pdf.btn.whatsapp_formato">
+      <button type="button" class="btn-pdf-whatsapp" id="btn-formato-share-wa" hidden onclick="compartirFormatoWhatsApp()">
         📲 Enviar por WhatsApp
       </button>
     </div>
@@ -3378,6 +3378,10 @@ function collectFormatoDraft() {
   });
   const tipo = document.querySelector('#view-formato input[name="tipo"]:checked');
   if (tipo) data._tipo = tipo.value;
+  const numero = document.getElementById('numero-formato');
+  const fecha = document.getElementById('formato-fecha');
+  if (numero) data['numero-formato'] = numero.value;
+  if (fecha) data['formato-fecha'] = fecha.value;
   return data;
 }
 
@@ -3514,8 +3518,20 @@ function restoreVideoQrAfterPrint(block) {
 }
 
 // ── GUARDAR PDF ─────────────────────────────────────────────────────────────
+function validarFirmaClienteFormato() {
+  if (window.ArpaSignature?.hasSignature?.('canvas-firma-cliente')) return true;
+  alert('Falta la firma del cliente para generar el documento.');
+  return false;
+}
+
 function guardarPDF() {
+  if (!validarFirmaClienteFormato()) return;
+
+  window.ArpaWhatsApp?.hideFormatoShareButton?.();
+  window.ArpaHistorial?.captureFromFormato?.();
+
   applyUserSettingsToUI();
+  window.ArpaBrand?.syncBankBlocksForPrint?.();
   document.body.classList.add('is-printing', 'is-printing-formato');
   window.ArpaBrand?.prepareForPrint?.();
   window.ArpaI18n?.preparePdfSpanish?.('view-formato');
@@ -3584,6 +3600,7 @@ function guardarPDF() {
     });
     if (btnPDF) btnPDF.parentElement.style.display = '';
     scheduleFormatoDraftSave();
+    window.ArpaWhatsApp?.showFormatoShareAfterPdf?.();
   }, 1000);
 }
 function getUltimoNumero() {
@@ -4038,6 +4055,7 @@ if ('serviceWorker' in navigator) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js" crossorigin="anonymous"></script>
 <script src="./js/arpa-i18n.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" crossorigin="anonymous"></script>
 <script src="./js/arpa-license.js"></script>
 <script src="./js/arpa-oficios.js"></script>

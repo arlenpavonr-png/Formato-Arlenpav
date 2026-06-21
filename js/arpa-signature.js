@@ -107,10 +107,16 @@
     'canvas-cot-elaborado'
   ];
 
+  function hasSignature(id) {
+    const canvas = document.getElementById(id);
+    return canvas ? canvasHasInk(canvas) : false;
+  }
+
   global.ArpaSignature = {
     initCanvas,
     initAll,
     clear,
+    hasSignature,
     prepareForPrint,
     restoreAfterPrint,
     DEFAULT_CANVASES
