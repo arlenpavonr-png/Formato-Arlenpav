@@ -402,6 +402,7 @@
       if (btnStack) btnStack.style.display = '';
       document.getElementById('cobros-actions-cot')?.style.removeProperty('display');
       renderTablaCot();
+      global.ArpaTrialCapture?.onDocumentSaved?.('cotizacion');
     }, 1000);
   }
 

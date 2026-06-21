@@ -1,5 +1,6 @@
 /**
- * Captura de WhatsApp en primer uso (trial gratis) + sync con Sheets
+ * Captura de WhatsApp en trial gratis + sync con Sheets
+ * Disparadores: primer guardado (modal) o día 3 sin guardar (pantalla completa).
  */
 (function (global) {
   'use strict';
@@ -13,6 +14,8 @@
   const TRIAL_OFICIO_KEY = 'arpa_trial_oficio';
   const TRIAL_ID_KEY = 'arpa_trial_id';
   const TRIAL_SYNCED_KEY = 'arpa_trial_synced';
+  const TRIAL_DOC_SAVED_KEY = 'arpa_trial_doc_saved';
+  const TRIAL_CAPTURED_KEY = 'arpa_trial_captured';
 
   const OFICIO_OPTIONS = [
     { id: 'automatismos', label: 'Automatismos' },
@@ -59,10 +62,53 @@
     }
   }
 
-  function needsCapture() {
-    if (getTrialStartDate()) return false;
-    if (getSavedLicenseCode()) return false;
-    return true;
+  function isCaptureCompleted() {
+    try {
+      if (localStorage.getItem(TRIAL_CAPTURED_KEY) === 'true') return true;
+      const whatsapp = (localStorage.getItem(TRIAL_WHATSAPP_KEY) || '').trim();
+      const nombre = (localStorage.getItem(TRIAL_NOMBRE_KEY) || '').trim();
+      return !!(whatsapp && nombre);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function hasDocumentSaved() {
+    try {
+      return localStorage.getItem(TRIAL_DOC_SAVED_KEY) === 'true';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function getTrialDayIndex() {
+    const start = getTrialStartDate();
+    if (!start) return 0;
+    const startDate = new Date(start + 'T00:00:00');
+    const today = new Date();
+    startDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return Math.floor((today - startDate) / 86400000);
+  }
+
+  function needsBackupCaptureOnLoad() {
+    if (isCaptureCompleted()) return false;
+    if (!getTrialStartDate()) return false;
+    if (hasDocumentSaved()) return false;
+    return getTrialDayIndex() >= 2;
+  }
+
+  function ensureTrialStartSilent() {
+    if (getTrialStartDate()) return;
+    const now = new Date();
+    const fechaInicio = now.toISOString().slice(0, 10);
+    const trialId = 't-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+    try {
+      localStorage.setItem(TRIAL_START_KEY, fechaInicio);
+      localStorage.setItem(TRIAL_ID_KEY, trialId);
+    } catch (e) {
+      console.warn('[arpa-trial-capture] ensureTrialStartSilent', e);
+    }
   }
 
   function normalizePhone(raw) {
@@ -91,8 +137,48 @@
   }
 
   function hideCapture() {
+    const gate = document.getElementById('trial-capture-gate');
+    gate?.classList.remove('trial-capture-gate--modal');
     setCaptureActive(false);
-    document.getElementById('trial-capture-gate')?.setAttribute('hidden', '');
+    gate?.setAttribute('hidden', '');
+  }
+
+  function applyCaptureCopy(options) {
+    const titleEl = document.getElementById('trial-capture-title');
+    const subEl = document.querySelector('#trial-capture-gate .trial-capture-sub');
+    const btn = document.getElementById('trial-capture-submit');
+    if (!titleEl || !subEl) return;
+
+    const variant = options.variant || 'backup';
+
+    if (options.title) {
+      titleEl.textContent = options.title;
+    } else if (variant === 'achievement') {
+      titleEl.textContent = t('trial_capture.title_achievement', '¡Bien hecho!');
+    } else {
+      titleEl.textContent = t('trial_capture.title', 'Bienvenido a ARPA Suite');
+    }
+
+    if (options.subtitle) {
+      subEl.textContent = options.subtitle;
+    } else if (variant === 'achievement') {
+      subEl.textContent = t(
+        'trial_capture.subtitle_achievement',
+        'Guarda tu progreso y te avisamos antes de que venza tu prueba.'
+      );
+    } else {
+      subEl.textContent = t(
+        'trial_capture.subtitle_backup',
+        'Para avisarte antes de que venza tu prueba gratis y poder ayudarte si tienes dudas, déjanos tu WhatsApp.'
+      );
+    }
+
+    if (btn) {
+      btn.textContent = options.btnText ||
+        (variant === 'achievement'
+          ? t('trial_capture.btn_submit', 'Enviar')
+          : t('trial_capture.btn_start', 'Continuar'));
+    }
   }
 
   function postRegisterTrial(payload) {
@@ -140,7 +226,16 @@
     registerTrialUserSilent();
   }
 
-  function showCapture(onComplete) {
+  function showCapture(opts) {
+    let options = {};
+    if (typeof opts === 'function') {
+      options = { onComplete: opts, mode: 'fullscreen', variant: 'backup' };
+    } else {
+      options = opts || {};
+    }
+
+    const mode = options.mode || 'fullscreen';
+    const onComplete = options.onComplete;
     const gate = document.getElementById('trial-capture-gate');
     const nameInput = document.getElementById('trial-capture-name');
     const oficioSelect = document.getElementById('trial-capture-oficio');
@@ -151,8 +246,10 @@
       return;
     }
 
+    applyCaptureCopy(options);
     gate.removeAttribute('hidden');
-    setCaptureActive(true);
+    gate.classList.toggle('trial-capture-gate--modal', mode === 'modal');
+    setCaptureActive(mode === 'fullscreen');
     showCaptureError('');
     populateOficioSelect(oficioSelect);
     if (phoneInput && !phoneInput.value.trim()) phoneInput.value = '+57 ';
@@ -184,16 +281,23 @@
         return;
       }
 
-      const now = new Date();
-      const fechaInicio = now.toISOString().slice(0, 10);
-      const trialId = 't-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
-
+      ensureTrialStartSilent();
+      let fechaInicio = getTrialStartDate();
+      let trialId = '';
       try {
-        localStorage.setItem(TRIAL_START_KEY, fechaInicio);
+        trialId = localStorage.getItem(TRIAL_ID_KEY) || '';
+        if (!trialId) {
+          trialId = 't-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+          localStorage.setItem(TRIAL_ID_KEY, trialId);
+        }
+        if (!fechaInicio) {
+          fechaInicio = new Date().toISOString().slice(0, 10);
+          localStorage.setItem(TRIAL_START_KEY, fechaInicio);
+        }
         localStorage.setItem(TRIAL_WHATSAPP_KEY, phone);
         localStorage.setItem(TRIAL_NOMBRE_KEY, nombre);
         localStorage.setItem(TRIAL_OFICIO_KEY, oficio);
-        localStorage.setItem(TRIAL_ID_KEY, trialId);
+        localStorage.setItem(TRIAL_CAPTURED_KEY, 'true');
         localStorage.setItem(ACTIVE_OFICIOS_KEY, JSON.stringify([oficio]));
         localStorage.removeItem(TRIAL_SYNCED_KEY);
       } catch (e) {
@@ -204,6 +308,7 @@
       finish();
     }
 
+    btn.disabled = false;
     btn.onclick = onSubmit;
     [nameInput, phoneInput].forEach((el) => {
       el?.addEventListener('keydown', (e) => {
@@ -214,13 +319,61 @@
     nameInput?.focus();
   }
 
+  function onDocumentSaved(docType) {
+    try {
+      localStorage.setItem(TRIAL_DOC_SAVED_KEY, 'true');
+    } catch (e) { /* ignore */ }
+
+    if (isCaptureCompleted()) return;
+
+    const docLabel = docType === 'cotizacion'
+      ? t('trial_capture.doc_cotizacion', 'Cotización')
+      : t('trial_capture.doc_formato', 'Formato de Servicio');
+
+    const titleTemplate = t('trial_capture.title_after_save', '¡Tu {doc} quedó guardado!');
+    const title = titleTemplate.replace('{doc}', docLabel);
+
+    showCapture({
+      mode: 'modal',
+      variant: 'achievement',
+      title: title,
+      subtitle: t(
+        'trial_capture.subtitle_after_save',
+        'Para avisarte antes de que venza tu prueba gratis y poder ayudarte si tienes dudas, déjanos tu WhatsApp.'
+      )
+    });
+  }
+
+  function maybeShowBackupCaptureOnLoad(onContinue) {
+    if (!needsBackupCaptureOnLoad()) {
+      if (typeof onContinue === 'function') onContinue();
+      return;
+    }
+    showCapture({
+      mode: 'fullscreen',
+      variant: 'achievement',
+      title: t('trial_capture.title_achievement', '¡Bien hecho!'),
+      subtitle: t(
+        'trial_capture.subtitle_achievement',
+        'Guarda tu progreso y te avisamos antes de que venza tu prueba.'
+      ),
+      btnText: t('trial_capture.btn_start', 'Continuar'),
+      onComplete: onContinue
+    });
+  }
+
   global.ArpaTrialCapture = {
     TRIAL_START_KEY,
     TRIAL_WHATSAPP_KEY,
     TRIAL_NOMBRE_KEY,
     TRIAL_OFICIO_KEY,
     TRIAL_ID_KEY,
-    needsCapture,
+    TRIAL_DOC_SAVED_KEY,
+    TRIAL_CAPTURED_KEY,
+    ensureTrialStartSilent,
+    isCaptureCompleted,
+    onDocumentSaved,
+    maybeShowBackupCaptureOnLoad,
     showCapture,
     retryPendingRegistration,
     registerTrialUserSilent

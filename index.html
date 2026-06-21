@@ -1925,6 +1925,11 @@
   html.trial-capture-active .page,
   html.trial-capture-active .main-menu,
   html.trial-capture-active .settings-overlay { visibility: hidden; }
+  .trial-capture-gate--modal {
+    display: flex !important;
+    z-index: 10002;
+    background: rgba(26, 42, 74, 0.78);
+  }
   .trial-capture-card {
     width: 100%;
     max-width: 400px;
@@ -2404,8 +2409,8 @@ document.documentElement.classList.add('license-checking');
 
 <div id="trial-capture-gate" class="trial-capture-gate" role="dialog" aria-modal="true" aria-labelledby="trial-capture-title" hidden>
   <div class="trial-capture-card">
-    <h1 id="trial-capture-title" class="trial-capture-title" data-i18n="trial_capture.title">Bienvenido a ARPA Suite</h1>
-    <p class="trial-capture-sub" data-i18n="trial_capture.subtitle">Antes de comenzar tu prueba gratis de 7 días, cuéntanos quién eres y déjanos tu WhatsApp para avisarte cuando esté por vencer.</p>
+    <h1 id="trial-capture-title" class="trial-capture-title" data-i18n="trial_capture.title_achievement">¡Bien hecho!</h1>
+    <p class="trial-capture-sub" data-i18n="trial_capture.subtitle_achievement">Guarda tu progreso y te avisamos antes de que venza tu prueba.</p>
     <div class="trial-capture-field">
       <label for="trial-capture-name" data-i18n="trial_capture.label_name">Nombre</label>
       <input type="text" id="trial-capture-name" autocomplete="name" placeholder="Su nombre">
@@ -2419,7 +2424,7 @@ document.documentElement.classList.add('license-checking');
       <input type="tel" id="trial-capture-phone" autocomplete="tel" inputmode="tel" placeholder="+57 300 000 0000" value="+57 ">
     </div>
     <p id="trial-capture-error" class="trial-capture-error" role="alert"></p>
-    <button type="button" id="trial-capture-submit" class="trial-capture-btn" data-i18n="trial_capture.btn_start">Comenzar prueba gratis</button>
+    <button type="button" id="trial-capture-submit" class="trial-capture-btn" data-i18n="trial_capture.btn_submit">Enviar</button>
   </div>
 </div>
 
@@ -3725,6 +3730,7 @@ function guardarPDF() {
     if (btnPDF) btnPDF.parentElement.style.display = '';
     scheduleFormatoDraftSave();
     window.ArpaWhatsApp?.showFormatoShareAfterPdf?.();
+    window.ArpaTrialCapture?.onDocumentSaved?.('formato');
   }, 1000);
 }
 function getUltimoNumero() {
@@ -4039,10 +4045,18 @@ if ('serviceWorker' in navigator) {
     hideLicenseError();
   }
 
-  function handleValidLicense(data) {
-    saveLicenseData(data);
+  function finishAppUnlock() {
     unlockApp();
     tryOnboarding();
+  }
+
+  function handleValidLicense(data) {
+    saveLicenseData(data);
+    if (window.ArpaTrialCapture && typeof window.ArpaTrialCapture.maybeShowBackupCaptureOnLoad === 'function') {
+      window.ArpaTrialCapture.maybeShowBackupCaptureOnLoad(finishAppUnlock);
+      return;
+    }
+    finishAppUnlock();
   }
 
   function handleInvalidLicense(data) {
@@ -4076,8 +4090,11 @@ if ('serviceWorker' in navigator) {
       })
       .catch(function () {
         if (saved && !isLocallyExpired()) {
-          unlockApp();
-          tryOnboarding();
+          if (window.ArpaTrialCapture && typeof window.ArpaTrialCapture.maybeShowBackupCaptureOnLoad === 'function') {
+            window.ArpaTrialCapture.maybeShowBackupCaptureOnLoad(finishAppUnlock);
+          } else {
+            finishAppUnlock();
+          }
           validarLicenciaJsonp(saved).then(function (data) {
             if (data && data.valido === true) saveLicenseData(data);
             else if (data && !data.valido) handleInvalidLicense(data);
@@ -4194,14 +4211,9 @@ if ('serviceWorker' in navigator) {
   }
 
   function bootLicenseGate() {
-    if (window.ArpaTrialCapture && typeof window.ArpaTrialCapture.retryPendingRegistration === 'function') {
-      window.ArpaTrialCapture.retryPendingRegistration();
-    }
-    if (window.ArpaTrialCapture && typeof window.ArpaTrialCapture.needsCapture === 'function' && window.ArpaTrialCapture.needsCapture()) {
-      window.ArpaTrialCapture.showCapture(function () {
-        initLicenseGate();
-      });
-      return;
+    if (window.ArpaTrialCapture) {
+      window.ArpaTrialCapture.retryPendingRegistration?.();
+      window.ArpaTrialCapture.ensureTrialStartSilent?.();
     }
     initLicenseGate();
   }
