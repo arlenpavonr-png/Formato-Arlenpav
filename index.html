@@ -2325,6 +2325,7 @@ document.documentElement.classList.add('license-checking');
     <div id="license-gate-loading" class="license-gate-panel is-visible">
       <div class="license-gate-loading-spinner" aria-hidden="true"></div>
       <p id="license-gate-loading-text" class="license-gate-sub" data-i18n="license_gate.loading">Activando su prueba de 7 días…</p>
+      <p class="license-gate-manual-link"><span data-i18n="license_gate.have_code">¿Ya tiene un código Pro o PYME?</span> <a href="#" id="license-show-manual-loading" data-i18n="license_gate.enter_code">Ingréselo aquí</a></p>
     </div>
     <div id="license-gate-expired" class="license-gate-panel">
       <div class="license-gate-expired-icon" aria-hidden="true">⏱</div>
@@ -3742,6 +3743,8 @@ if ('serviceWorker' in navigator) {
   var DEVICE_STORAGE_KEY = 'arpa_suite_device_id';
   var JSONP_SCRIPT_ID = 'suite-license-jsonp';
   var jsonpCounter = 0;
+  var trialProvisionToken = 0;
+  var ignoreTrialProvisionResult = false;
 
   function t(key, fallback) {
     if (window.ArpaI18n && typeof window.ArpaI18n.t === 'function') {
@@ -3917,6 +3920,15 @@ if ('serviceWorker' in navigator) {
     if (input) input.focus();
   }
 
+  function openManualEntry(e) {
+    if (e) e.preventDefault();
+    ignoreTrialProvisionResult = true;
+    trialProvisionToken += 1;
+    removeJsonpScript();
+    showActivatePanel();
+    hideLicenseError();
+  }
+
   function handleValidLicense(data) {
     saveLicenseData(data);
     unlockApp();
@@ -3968,12 +3980,15 @@ if ('serviceWorker' in navigator) {
   }
 
   function provisionAutoTrial() {
+    ignoreTrialProvisionResult = false;
+    var token = ++trialProvisionToken;
     var deviceId = getOrCreateDeviceId();
     setLoadingText(t('license_gate.loading', 'Activando su prueba de 7 días…'));
     showPanel('loading');
 
     provisionTrialJsonp(deviceId)
       .then(function (data) {
+        if (ignoreTrialProvisionResult || token !== trialProvisionToken) return;
         if (data && data.valido === true) {
           handleValidLicense(data);
           return;
@@ -3986,6 +4001,7 @@ if ('serviceWorker' in navigator) {
         showLicenseError((data && data.mensaje) || t('license_gate.error_trial', 'No se pudo activar la prueba. Ingrese su código o reintente.'));
       })
       .catch(function () {
+        if (ignoreTrialProvisionResult || token !== trialProvisionToken) return;
         showActivatePanel();
         showLicenseError(t('license_gate.error_network', 'No se pudo verificar la licencia. Compruebe su conexión e intente de nuevo.'));
         var retry = document.getElementById('license-retry-trial');
@@ -3998,11 +4014,8 @@ if ('serviceWorker' in navigator) {
     var btn = document.getElementById('license-activate-btn');
     var saved = getSavedCode();
 
-    document.getElementById('license-show-manual')?.addEventListener('click', function (e) {
-      e.preventDefault();
-      showActivatePanel();
-      hideLicenseError();
-    });
+    document.getElementById('license-show-manual')?.addEventListener('click', openManualEntry);
+    document.getElementById('license-show-manual-loading')?.addEventListener('click', openManualEntry);
 
     document.getElementById('license-retry-trial')?.addEventListener('click', function (e) {
       e.preventDefault();
