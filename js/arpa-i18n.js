@@ -28,6 +28,7 @@
     'license_gate.have_code': 'Already have a Pro or PYME code?',
     'license_gate.enter_code': 'Enter it here',
     'license_gate.retry_trial': 'Retry automatic activation',
+    'license_gate.btn_continue_trial': 'Continue with free trial',
     'license_gate.error_required': 'Enter your license code.',
     'license_gate.error_invalid': 'Invalid license code.',
     'license_gate.error_network': 'Could not verify license. Check your connection and try again.',

@@ -2068,7 +2068,14 @@
   .license-gate-manual-link a {
     color: #1a2a4a;
     font-weight: 600;
+    position: relative;
+    z-index: 1;
   }
+  .license-gate-loading-continue {
+    margin-top: 16px;
+    width: 100%;
+  }
+  .license-gate-loading-continue[hidden] { display: none !important; }
   .license-gate-card {
     width: 100%;
     max-width: 400px;
@@ -2438,6 +2445,7 @@ document.documentElement.classList.add('license-checking');
       <div class="license-gate-loading-spinner" aria-hidden="true"></div>
       <p id="license-gate-loading-text" class="license-gate-sub" data-i18n="license_gate.loading">Activando su prueba de 7 días…</p>
       <p class="license-gate-manual-link"><span data-i18n="license_gate.have_code">¿Ya tiene un código Pro o PYME?</span> <a href="#" id="license-show-manual-loading" data-i18n="license_gate.enter_code">Ingréselo aquí</a></p>
+      <button type="button" id="license-loading-continue" class="license-gate-btn license-gate-loading-continue" hidden data-i18n="license_gate.btn_continue_trial">Continuar con prueba gratis</button>
     </div>
     <div id="license-gate-expired" class="license-gate-panel">
       <div class="license-gate-expired-icon" aria-hidden="true">⏱</div>
@@ -3861,6 +3869,105 @@ if ('serviceWorker' in navigator) {
   var jsonpCounter = 0;
   var trialProvisionToken = 0;
   var ignoreTrialProvisionResult = false;
+  var LOADING_MIN_MS = 4000;
+  var loadingStartedAt = 0;
+  var loadingPausedByUser = false;
+  var pendingUnlock = null;
+  var loadingUnlockTimer = null;
+
+  function isTrialLicenseCode(code) {
+    var c = String(code || '').trim().toUpperCase();
+    return !c || c.indexOf('ARPA-FREE-') === 0;
+  }
+
+  function isLoadingPanelVisible() {
+    var el = document.getElementById('license-gate-loading');
+    return el && el.classList.contains('is-visible');
+  }
+
+  function clearLoadingUnlockTimer() {
+    if (loadingUnlockTimer) {
+      clearTimeout(loadingUnlockTimer);
+      loadingUnlockTimer = null;
+    }
+  }
+
+  function hideLoadingContinueBtn() {
+    var btn = document.getElementById('license-loading-continue');
+    if (btn) btn.hidden = true;
+  }
+
+  function showLoadingContinueBtn() {
+    var btn = document.getElementById('license-loading-continue');
+    if (btn) btn.hidden = false;
+  }
+
+  function resetLoadingFlowState() {
+    clearLoadingUnlockTimer();
+    loadingStartedAt = Date.now();
+    loadingPausedByUser = false;
+    pendingUnlock = null;
+    hideLoadingContinueBtn();
+  }
+
+  function shouldDeferLoadingUnlock(kind, code) {
+    if (kind === 'provision') return true;
+    return isTrialLicenseCode(code);
+  }
+
+  function attemptLoadingComplete() {
+    clearLoadingUnlockTimer();
+    if (!pendingUnlock) return;
+    if (loadingPausedByUser) {
+      showLoadingContinueBtn();
+      return;
+    }
+    var code = pendingUnlock.payload.code || '';
+    var minMs = shouldDeferLoadingUnlock(pendingUnlock.kind, code) ? LOADING_MIN_MS : 0;
+    var wait = minMs - (Date.now() - loadingStartedAt);
+    if (wait > 0) {
+      loadingUnlockTimer = setTimeout(attemptLoadingComplete, wait);
+      return;
+    }
+    flushPendingUnlock();
+  }
+
+  function flushPendingUnlock() {
+    var action = pendingUnlock;
+    pendingUnlock = null;
+    clearLoadingUnlockTimer();
+    hideLoadingContinueBtn();
+    loadingPausedByUser = false;
+    if (!action) return;
+    if (action.kind === 'license') {
+      applyValidLicense(action.payload.data);
+    } else if (action.kind === 'offline') {
+      applyOfflineUnlock(action.payload.saved);
+    }
+  }
+
+  function maybeDeferUnlock(kind, payload) {
+    if (!isLoadingPanelVisible()) return false;
+    if (!shouldDeferLoadingUnlock(kind, payload.code)) return false;
+    pendingUnlock = { kind: kind, payload: payload };
+    attemptLoadingComplete();
+    return true;
+  }
+
+  function pauseLoadingOnInteraction() {
+    if (!isLoadingPanelVisible()) return;
+    loadingPausedByUser = true;
+    clearLoadingUnlockTimer();
+    if (pendingUnlock) showLoadingContinueBtn();
+  }
+
+  function bindLoadingPanelInteraction() {
+    var panel = document.getElementById('license-gate-loading');
+    if (!panel || panel.__interactionBound) return;
+    panel.__interactionBound = true;
+    panel.addEventListener('pointerdown', pauseLoadingOnInteraction);
+    panel.addEventListener('touchstart', pauseLoadingOnInteraction, { passive: true });
+  }
 
   function t(key, fallback) {
     if (window.ArpaI18n && typeof window.ArpaI18n.t === 'function') {
@@ -3881,6 +3988,7 @@ if ('serviceWorker' in navigator) {
   }
 
   function showPanel(name) {
+    if (name === 'loading') resetLoadingFlowState();
     ['loading', 'expired', 'activate'].forEach(function (id) {
       var el = document.getElementById('license-gate-' + id);
       if (el) el.classList.toggle('is-visible', id === name);
@@ -4041,6 +4149,7 @@ if ('serviceWorker' in navigator) {
     ignoreTrialProvisionResult = true;
     trialProvisionToken += 1;
     removeJsonpScript();
+    resetLoadingFlowState();
     showActivatePanel();
     hideLicenseError();
   }
@@ -4050,13 +4159,31 @@ if ('serviceWorker' in navigator) {
     tryOnboarding();
   }
 
-  function handleValidLicense(data) {
+  function applyValidLicense(data) {
     saveLicenseData(data);
     if (window.ArpaTrialCapture && typeof window.ArpaTrialCapture.maybeShowBackupCaptureOnLoad === 'function') {
       window.ArpaTrialCapture.maybeShowBackupCaptureOnLoad(finishAppUnlock);
       return;
     }
     finishAppUnlock();
+  }
+
+  function applyOfflineUnlock(saved) {
+    if (window.ArpaTrialCapture && typeof window.ArpaTrialCapture.maybeShowBackupCaptureOnLoad === 'function') {
+      window.ArpaTrialCapture.maybeShowBackupCaptureOnLoad(finishAppUnlock);
+    } else {
+      finishAppUnlock();
+    }
+    validarLicenciaJsonp(saved).then(function (data) {
+      if (data && data.valido === true) saveLicenseData(data);
+      else if (data && !data.valido) handleInvalidLicense(data);
+    }).catch(function () {});
+  }
+
+  function handleValidLicense(data) {
+    var code = (data && data.codigo) || getSavedCode() || '';
+    if (maybeDeferUnlock('validate', { code: code, data: data })) return;
+    applyValidLicense(data);
   }
 
   function handleInvalidLicense(data) {
@@ -4090,15 +4217,8 @@ if ('serviceWorker' in navigator) {
       })
       .catch(function () {
         if (saved && !isLocallyExpired()) {
-          if (window.ArpaTrialCapture && typeof window.ArpaTrialCapture.maybeShowBackupCaptureOnLoad === 'function') {
-            window.ArpaTrialCapture.maybeShowBackupCaptureOnLoad(finishAppUnlock);
-          } else {
-            finishAppUnlock();
-          }
-          validarLicenciaJsonp(saved).then(function (data) {
-            if (data && data.valido === true) saveLicenseData(data);
-            else if (data && !data.valido) handleInvalidLicense(data);
-          }).catch(function () {});
+          if (maybeDeferUnlock('offline', { code: saved, saved: saved })) return;
+          applyOfflineUnlock(saved);
         } else {
           showActivatePanel();
           showLicenseError(t('license_gate.error_network', 'No se pudo verificar la licencia. Compruebe su conexión e intente de nuevo.'));
@@ -4117,7 +4237,8 @@ if ('serviceWorker' in navigator) {
       .then(function (data) {
         if (ignoreTrialProvisionResult || token !== trialProvisionToken) return;
         if (data && data.valido === true) {
-          handleValidLicense(data);
+          if (maybeDeferUnlock('provision', { code: data.codigo || '', data: data })) return;
+          applyValidLicense(data);
           return;
         }
         if (data && (data.vencida || data.trial_usado)) {
@@ -4148,6 +4269,14 @@ if ('serviceWorker' in navigator) {
 
     document.getElementById('license-show-manual')?.addEventListener('click', openManualEntry);
     document.getElementById('license-show-manual-loading')?.addEventListener('click', openManualEntry);
+    bindLoadingPanelInteraction();
+
+    document.getElementById('license-loading-continue')?.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (!pendingUnlock) return;
+      loadingPausedByUser = false;
+      flushPendingUnlock();
+    });
 
     document.getElementById('license-retry-trial')?.addEventListener('click', function (e) {
       e.preventDefault();

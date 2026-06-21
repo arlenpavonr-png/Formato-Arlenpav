@@ -1,4 +1,4 @@
-const CACHE_NAME = 'arpa-suite-cache-v66';
+const CACHE_NAME = 'arpa-suite-cache-v67';
 const BASE = self.location.pathname.replace(/service-worker\.js$/, '');
 const ASSETS = [
   BASE,
