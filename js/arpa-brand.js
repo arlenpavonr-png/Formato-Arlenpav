@@ -277,7 +277,7 @@
   function pushCompanyDataToSheets(settings) {
     const licencia = getLicenseCode();
     if (!licencia) return;
-    licenseJsonp({
+    const payload = {
       accion: 'saveCompanyData',
       licencia,
       nombreEmpresa: settings.companyName || '',
@@ -285,8 +285,17 @@
       direccion: settings.address || '',
       ciudad: settings.city || '',
       telefono: settings.phone || '',
-      sitioWeb: settings.website || ''
-    }).catch((err) => {
+      sitioWeb: settings.website || '',
+      logoBase64: settings.logoBase64 || ''
+    };
+    const logoLen = String(payload.logoBase64 || '').length;
+    if (logoLen > 1500 && global.ArpaCloudSync?.postJson) {
+      global.ArpaCloudSync.postJson(payload).catch((err) => {
+        console.warn('[arpa-brand] saveCompanyData POST', err);
+      });
+      return;
+    }
+    licenseJsonp(payload).catch((err) => {
       console.warn('[arpa-brand] saveCompanyData', err);
     });
   }
@@ -305,7 +314,8 @@
           address: data.direccion || current.address || '',
           city: data.ciudad || current.city || '',
           phone: data.telefono || current.phone || '',
-          website: data.sitioWeb || current.website || ''
+          website: data.sitioWeb || current.website || '',
+          logoBase64: data.logoBase64 || current.logoBase64 || ''
         };
         if (!saveSettings(merged)) return false;
         try { localStorage.setItem(SETTINGS_CONFIGURED_KEY, 'true'); } catch (e) {}
@@ -772,10 +782,12 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     purgeLegacyData();
-    restoreCompanyDataFromSheets().finally(() => {
-      applyToUI();
-      protectGlobalSeal();
-    });
+    restoreCompanyDataFromSheets()
+      .then(() => global.ArpaCloudSync?.restoreCloudDataIfNeeded?.())
+      .finally(() => {
+        applyToUI();
+        protectGlobalSeal();
+      });
   });
   document.getElementById('settings-modal')?.addEventListener('click', (e) => {
     if (e.target.id === 'settings-modal') closeSettings();

@@ -79,6 +79,7 @@
     records.unshift(record);
     saveRecords(records);
     render();
+    global.ArpaCloudSync?.pushHistorialEntry?.(record);
     return record;
   }
 
@@ -155,6 +156,7 @@
   function removeRecord(id) {
     saveRecords(getRecords().filter((r) => r.id !== id));
     render();
+    global.ArpaCloudSync?.deleteHistorialEntry?.(id);
   }
 
   function formatoPesos(n) {

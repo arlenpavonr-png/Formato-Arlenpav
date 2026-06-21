@@ -40,8 +40,16 @@
 
  *   ?accion=provision_trial&device_id=UUID&callback=fn → trial auto 7 días
  *
- *   ?accion=saveCompanyData&licencia=...&nombreEmpresa=...&nit=...&direccion=...&ciudad=...&telefono=...&sitioWeb=...&callback=fn
+ *   ?accion=saveCompanyData&licencia=...&nombreEmpresa=...&nit=...&direccion=...&ciudad=...&telefono=...&sitioWeb=...&logoBase64=...&callback=fn
  *   ?accion=getCompanyData&licencia=...&callback=fn
+ *
+ * POST endpoints (JSON body, Content-Type: text/plain;charset=utf-8):
+ *   { accion: 'saveCompanyData', licencia, nombreEmpresa, nit, ... logoBase64 }
+ *   { accion: 'savecatalogo', licencia, productos: [...] }
+ *   { accion: 'getcatalogo', licencia }
+ *   { accion: 'savehistorialentry', licencia, entrada: {...} }
+ *   { accion: 'deletehistorialentry', licencia, entradaId }
+ *   { accion: 'gethistorial', licencia }
  *
  */
 
@@ -77,6 +85,10 @@ const CONFIG = {
   FOUNDER_CODE: 'ARPA-FOUNDER-001',
 
   EMPRESAS_SHEET_NAME: 'Empresas',
+
+  CATALOGO_SHEET_NAME: 'Catalogo',
+
+  HISTORIAL_SHEET_NAME: 'Historial',
 
 };
 
@@ -505,6 +517,12 @@ function doPost(e) {
 
   try {
 
+    const syncResponse = handleSyncPost_(e);
+
+    if (syncResponse) return syncResponse;
+
+
+
     const payload = parseGumroadPayload_(e);
 
     if (!payload) return textResponse_('Bad payload', 400);
@@ -911,7 +929,15 @@ function getLicenseSheet_() {
 
 
 
-const EMPRESAS_HEADERS_ = ['Licencia', 'NombreEmpresa', 'NIT', 'Direccion', 'Ciudad', 'Telefono', 'SitioWeb', 'UltimaActualizacion'];
+const EMPRESAS_HEADERS_ = ['Licencia', 'NombreEmpresa', 'NIT', 'Direccion', 'Ciudad', 'Telefono', 'SitioWeb', 'UltimaActualizacion', 'LogoBase64'];
+
+
+
+const CATALOGO_HEADERS_ = ['Licencia', 'ProductoId', 'Codigo', 'Nombre', 'Precio', 'Unidad', 'Marca', 'Categoria'];
+
+
+
+const HISTORIAL_HEADERS_ = ['Licencia', 'EntradaId', 'Tipo', 'Subtipo', 'Numero', 'Cliente', 'Ciudad', 'Fecha', 'Monto'];
 
 
 
@@ -975,13 +1001,17 @@ function saveCompanyData_(params) {
 
   const sitioWeb = readCompanyParam_(params, 'sitioWeb', 'sitioweb');
 
+  let logoBase64 = readCompanyParam_(params, 'logoBase64', 'logobase64');
+
+  if (logoBase64.length > 40000) logoBase64 = '';
+
   const sheet = getEmpresasSheet_();
 
   const values = sheet.getDataRange().getValues();
 
   const now = new Date();
 
-  const row = [licencia, nombreEmpresa, nit, direccion, ciudad, telefono, sitioWeb, now];
+  const row = [licencia, nombreEmpresa, nit, direccion, ciudad, telefono, sitioWeb, now, logoBase64];
 
   let targetRow = -1;
 
@@ -1059,6 +1089,8 @@ function getCompanyData_(params) {
 
       sitioWeb: String(values[i][6] || '').trim(),
 
+      logoBase64: String(values[i][8] || '').trim(),
+
       ultimaActualizacion: values[i][7] || ''
 
     };
@@ -1066,6 +1098,412 @@ function getCompanyData_(params) {
   }
 
   return { ok: true, encontrado: false };
+
+}
+
+
+
+// ─── POST: sync catálogo / historial / empresa (JSON fetch desde PWA) ───────
+
+
+
+function parseSyncJsonBody_(e) {
+
+  if (!e || !e.postData || !e.postData.contents) return null;
+
+  try {
+
+    const parsed = JSON.parse(e.postData.contents);
+
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed;
+
+  } catch (err) { /* no es JSON de sync */ }
+
+  return null;
+
+}
+
+
+
+function respondJson_(obj) {
+
+  return ContentService.createTextOutput(JSON.stringify(obj))
+
+    .setMimeType(ContentService.MimeType.JSON);
+
+}
+
+
+
+function handleSyncPost_(e) {
+
+  const body = parseSyncJsonBody_(e);
+
+  if (!body || !body.accion) return null;
+
+  const accion = String(body.accion).trim().toLowerCase();
+
+
+
+  if (accion === 'savecompanydata') {
+
+    return respondJson_(saveCompanyData_(body));
+
+  }
+
+
+
+  const licencia = String(body.licencia || '').trim().toUpperCase();
+
+  if (!licencia) {
+
+    return respondJson_({ ok: false, mensaje: 'Licencia requerida.' });
+
+  }
+
+
+
+  if (accion === 'savecatalogo') {
+
+    return respondJson_(saveCatalogo_(licencia, body.productos));
+
+  }
+
+  if (accion === 'getcatalogo') {
+
+    return respondJson_(getCatalogo_(licencia));
+
+  }
+
+  if (accion === 'savehistorialentry') {
+
+    return respondJson_(saveHistorialEntry_(licencia, body.entrada));
+
+  }
+
+  if (accion === 'deletehistorialentry') {
+
+    return respondJson_(deleteHistorialEntry_(licencia, body.entradaId));
+
+  }
+
+  if (accion === 'gethistorial') {
+
+    return respondJson_(getHistorial_(licencia));
+
+  }
+
+
+
+  return null;
+
+}
+
+
+
+function getCatalogoSheet_() {
+
+  const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
+
+  let sheet = ss.getSheetByName(CONFIG.CATALOGO_SHEET_NAME);
+
+  if (!sheet) {
+
+    sheet = ss.insertSheet(CONFIG.CATALOGO_SHEET_NAME);
+
+    sheet.getRange(1, 1, 1, CATALOGO_HEADERS_.length).setValues([CATALOGO_HEADERS_]);
+
+    return sheet;
+
+  }
+
+  const firstCell = String(sheet.getRange(1, 1).getValue() || '').trim();
+
+  if (!firstCell) {
+
+    sheet.getRange(1, 1, 1, CATALOGO_HEADERS_.length).setValues([CATALOGO_HEADERS_]);
+
+  }
+
+  return sheet;
+
+}
+
+
+
+function getHistorialSheet_() {
+
+  const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
+
+  let sheet = ss.getSheetByName(CONFIG.HISTORIAL_SHEET_NAME);
+
+  if (!sheet) {
+
+    sheet = ss.insertSheet(CONFIG.HISTORIAL_SHEET_NAME);
+
+    sheet.getRange(1, 1, 1, HISTORIAL_HEADERS_.length).setValues([HISTORIAL_HEADERS_]);
+
+    return sheet;
+
+  }
+
+  const firstCell = String(sheet.getRange(1, 1).getValue() || '').trim();
+
+  if (!firstCell) {
+
+    sheet.getRange(1, 1, 1, HISTORIAL_HEADERS_.length).setValues([HISTORIAL_HEADERS_]);
+
+  }
+
+  return sheet;
+
+}
+
+
+
+function deleteRowsForLicencia_(sheet, licencia) {
+
+  const values = sheet.getDataRange().getValues();
+
+  for (let i = values.length - 1; i >= 1; i--) {
+
+    if (String(values[i][0] || '').trim().toUpperCase() === licencia) {
+
+      sheet.deleteRow(i + 1);
+
+    }
+
+  }
+
+}
+
+
+
+function saveCatalogo_(licencia, productos) {
+
+  const sheet = getCatalogoSheet_();
+
+  deleteRowsForLicencia_(sheet, licencia);
+
+
+
+  const list = Array.isArray(productos) ? productos : [];
+
+  if (!list.length) {
+
+    return { ok: true, count: 0 };
+
+  }
+
+
+
+  const rows = list.map(function (p) {
+
+    return [
+
+      licencia,
+
+      String(p.id || ''),
+
+      String(p.cod || p.codigo || ''),
+
+      String(p.nom || p.nombre || ''),
+
+      Number(p.pvp != null ? p.pvp : p.precio) || 0,
+
+      String(p.unidad || ''),
+
+      String(p.marca || ''),
+
+      String(p.categoria || p.category || 'General')
+
+    ];
+
+  });
+
+
+
+  const startRow = sheet.getLastRow() + 1;
+
+  sheet.getRange(startRow, 1, startRow + rows.length - 1, CATALOGO_HEADERS_.length).setValues(rows);
+
+  return { ok: true, count: rows.length };
+
+}
+
+
+
+function getCatalogo_(licencia) {
+
+  const sheet = getCatalogoSheet_();
+
+  const values = sheet.getDataRange().getValues();
+
+  const productos = [];
+
+
+
+  for (let i = 1; i < values.length; i++) {
+
+    if (String(values[i][0] || '').trim().toUpperCase() !== licencia) continue;
+
+    productos.push({
+
+      id: String(values[i][1] || ''),
+
+      cod: String(values[i][2] || ''),
+
+      nom: String(values[i][3] || ''),
+
+      pvp: Number(values[i][4]) || 0,
+
+      unidad: String(values[i][5] || ''),
+
+      marca: String(values[i][6] || ''),
+
+      categoria: String(values[i][7] || 'General')
+
+    });
+
+  }
+
+
+
+  return { ok: true, productos: productos };
+
+}
+
+
+
+function saveHistorialEntry_(licencia, entrada) {
+
+  const e = entrada || {};
+
+  const entradaId = String(e.id || e.entradaId || '').trim();
+
+  if (!entradaId) {
+
+    return { ok: false, mensaje: 'EntradaId requerido.' };
+
+  }
+
+
+
+  const sheet = getHistorialSheet_();
+
+  sheet.appendRow([
+
+    licencia,
+
+    entradaId,
+
+    String(e.tipo || ''),
+
+    String(e.subtipo || ''),
+
+    String(e.numero || ''),
+
+    String(e.cliente || ''),
+
+    String(e.ciudad || ''),
+
+    String(e.fecha || ''),
+
+    e.monto != null && e.monto !== '' ? Number(e.monto) : ''
+
+  ]);
+
+
+
+  return { ok: true };
+
+}
+
+
+
+function deleteHistorialEntry_(licencia, entradaId) {
+
+  const id = String(entradaId || '').trim();
+
+  if (!id) {
+
+    return { ok: false, mensaje: 'EntradaId requerido.' };
+
+  }
+
+
+
+  const sheet = getHistorialSheet_();
+
+  const values = sheet.getDataRange().getValues();
+
+  let deleted = false;
+
+
+
+  for (let i = values.length - 1; i >= 1; i--) {
+
+    if (String(values[i][0] || '').trim().toUpperCase() !== licencia) continue;
+
+    if (String(values[i][1] || '').trim() !== id) continue;
+
+    sheet.deleteRow(i + 1);
+
+    deleted = true;
+
+    break;
+
+  }
+
+
+
+  return { ok: true, deleted: deleted };
+
+}
+
+
+
+function getHistorial_(licencia) {
+
+  const sheet = getHistorialSheet_();
+
+  const values = sheet.getDataRange().getValues();
+
+  const entradas = [];
+
+
+
+  for (let i = 1; i < values.length; i++) {
+
+    if (String(values[i][0] || '').trim().toUpperCase() !== licencia) continue;
+
+    const monto = values[i][8];
+
+    entradas.push({
+
+      id: String(values[i][1] || ''),
+
+      tipo: String(values[i][2] || ''),
+
+      subtipo: String(values[i][3] || ''),
+
+      numero: String(values[i][4] || ''),
+
+      cliente: String(values[i][5] || ''),
+
+      ciudad: String(values[i][6] || ''),
+
+      fecha: String(values[i][7] || ''),
+
+      monto: monto === '' || monto == null ? '' : Number(monto)
+
+    });
+
+  }
+
+
+
+  return { ok: true, entradas: entradas };
 
 }
 

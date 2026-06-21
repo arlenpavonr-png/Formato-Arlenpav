@@ -96,6 +96,7 @@
 
   function saveCategories(categories) {
     localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
+    global.ArpaCloudSync?.scheduleCatalogCloudSync?.();
   }
 
   function hasCategories(oficioId) {
@@ -137,6 +138,7 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
     global.ArpaCatalogo?.invalidateListaCache?.();
     global.ArpaCotizacion?.updateCatalogHint?.();
+    global.ArpaCloudSync?.scheduleCatalogCloudSync?.();
   }
 
   function hasProducts(oficioId) {
