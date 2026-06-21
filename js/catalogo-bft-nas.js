@@ -370,71 +370,10 @@
   }
 
   function precargarCatalogoBFTNAS() {
-    let productosExistentes = [];
-    let categoriasExistentes = [];
-    try {
-      productosExistentes = JSON.parse(localStorage.getItem(CATALOG_KEY) || '[]');
-    } catch (e) {
-      productosExistentes = [];
+    if (global.ArpaOficios?.precargarCatalogoOficio) {
+      return global.ArpaOficios.precargarCatalogoOficio('automatismos');
     }
-    try {
-      categoriasExistentes = JSON.parse(localStorage.getItem(CATEGORIES_KEY) || '[]');
-    } catch (e) {
-      categoriasExistentes = [];
-    }
-
-    const categoryIds = new Map(
-      categoriasExistentes.map((c) => [(c.name || '').trim().toLowerCase(), c.id])
-    );
-    const categorias = categoriasExistentes.slice();
-
-    function ensureCategory(name) {
-      const label = (name || 'General').trim();
-      const key = label.toLowerCase();
-      if (!categoryIds.has(key)) {
-        const cat = { id: newId(), name: label };
-        categorias.push(cat);
-        categoryIds.set(key, cat.id);
-      }
-      return categoryIds.get(key);
-    }
-
-    const codigosExistentes = new Set(
-      productosExistentes
-        .map((p) => canonicalCodigo(String(p.cod || p.codigo || '').trim()))
-        .filter(Boolean)
-    );
-
-    let agregados = 0;
-    const ahora = new Date().toISOString();
-
-    CATALOGO_BFT_NAS.forEach((producto) => {
-      const cod = canonicalCodigo(producto.codigo);
-      if (!cod || codigosExistentes.has(cod)) return;
-      productosExistentes.push({
-        id: newId(),
-        cod,
-        nom: producto.nombre,
-        pvp: Number(producto.precio) || 0,
-        unidad: 'unidad',
-        marca: producto.marca || '',
-        categoriaId: ensureCategory(producto.categoria),
-        proveedor: 'Garajes Prefabricados',
-        fechaAgregado: ahora
-      });
-      codigosExistentes.add(cod);
-      agregados++;
-    });
-
-    localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categorias));
-    localStorage.setItem(CATALOG_KEY, JSON.stringify(productosExistentes));
-
-    global.ArpaCatalogo?.invalidateListaCache?.();
-    global.ArpaCotizacion?.updateCatalogHint?.();
-    global.ArpaMiCatalogo?.refreshView?.();
-
-    alert('Catalogo cargado: ' + agregados + ' productos agregados de BFT y NAS');
-    return agregados;
+    return 0;
   }
 
   global.CATALOGO_BFT_NAS = CATALOGO_BFT_NAS;

@@ -267,13 +267,21 @@
 
   function markOficioSeeded(oficioId) {
     const id = normalizeOficioId(oficioId);
-    if (id === OFICIO_AUTOMATISMOS) return;
     const seeded = getSeededOficios();
     if (seeded.includes(id)) return;
     seeded.push(id);
     try {
       localStorage.setItem(SEEDED_KEY, JSON.stringify(seeded));
     } catch (e) { /* ignore */ }
+  }
+
+  function getSeedProductsForOficio(oficioId) {
+    const id = normalizeOficioId(oficioId);
+    if (id === OFICIO_AUTOMATISMOS) {
+      return global.ArpaCatalogo?.buildAutomatismosSeedProducts?.() || [];
+    }
+    const pack = SEED_CATALOGS[id];
+    return Array.isArray(pack?.products) ? pack.products : [];
   }
 
   function newId() {
@@ -283,13 +291,11 @@
   function importSeedCatalog(oficioId, options) {
     const opts = options || {};
     const id = normalizeOficioId(oficioId);
-    if (id === OFICIO_AUTOMATISMOS) return { added: 0, skipped: true, reason: 'automatismos' };
     if (!opts.force && getSeededOficios().includes(id)) {
       return { added: 0, skipped: true, reason: 'already_seeded' };
     }
 
-    const pack = SEED_CATALOGS[id];
-    const seedProducts = Array.isArray(pack?.products) ? pack.products : [];
+    const seedProducts = getSeedProductsForOficio(id);
     if (!seedProducts.length) {
       return { added: 0, skipped: true, empty: true, total: 0 };
     }
@@ -337,12 +343,19 @@
       const nom = String(item.nom || item.nombre || '').trim();
       if (!cod || !nom) return;
       if (existingCodes.has(cod.toLowerCase())) return;
-      const categoriaId = ensureCategory(item.categoria || item.category || 'General');
+      const categoriaId = ensureCategory(
+        id === OFICIO_AUTOMATISMOS
+          ? (global.ArpaCatalogo?.normalizeAutomatismosCategory?.(item.categoria || item.category) || item.categoria || 'General')
+          : (item.categoria || item.category || 'General')
+      );
+      const seedPvp = id === OFICIO_AUTOMATISMOS
+        ? 0
+        : (Number(item.pvp != null ? item.pvp : item.precio) || 0);
       products.push({
         id: newId(),
         cod,
         nom,
-        pvp: Number(item.pvp != null ? item.pvp : item.precio) || 0,
+        pvp: seedPvp,
         unidad: normalizeSeedUnidad(item.unidad),
         marca: String(item.marca || '').trim(),
         categoriaId,
@@ -371,15 +384,12 @@
   }
 
   function getSeedProductCount(oficioId) {
-    const id = normalizeOficioId(oficioId);
-    const pack = SEED_CATALOGS[id];
-    return Array.isArray(pack?.products) ? pack.products.length : 0;
+    return getSeedProductsForOficio(oficioId).length;
   }
 
   /** Carga manual del catálogo base de un oficio (agrega faltantes, sin duplicar códigos). */
   function precargarCatalogoOficio(oficioId) {
     const id = normalizeOficioId(oficioId);
-    if (id === OFICIO_AUTOMATISMOS) return 0;
 
     const total = getSeedProductCount(id);
     if (!total) {
@@ -475,6 +485,7 @@
     seedOficioIfNeeded,
     seedActiveOficios,
     importSeedCatalog,
+    getSeedProductsForOficio,
     getSeedProductCount,
     precargarCatalogoOficio,
     renderSettingsCheckboxes,
@@ -493,9 +504,20 @@
     } catch (e) { /* ignore */ }
   }
 
+  function bootstrapCatalogSeeds() {
+    seedOficioIfNeeded(OFICIO_AUTOMATISMOS);
+    getActiveOficiosFromSettings().forEach((id) => {
+      if (id !== OFICIO_AUTOMATISMOS) seedOficioIfNeeded(id);
+    });
+  }
+
   if (typeof document !== 'undefined') {
-    document.addEventListener('DOMContentLoaded', migrateActiveOficiosKey);
+    document.addEventListener('DOMContentLoaded', () => {
+      migrateActiveOficiosKey();
+      bootstrapCatalogSeeds();
+    });
   } else {
     migrateActiveOficiosKey();
+    bootstrapCatalogSeeds();
   }
 })(typeof window !== 'undefined' ? window : globalThis);

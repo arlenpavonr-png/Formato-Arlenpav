@@ -117,11 +117,11 @@
 
   function resolveProductPvp(prod, cod, pvpHint) {
     const code = cod || prod?.cod;
-    let pvp = global.ArpaCatalogo?.getPrecioByCod?.(code);
-    if (!pvp) pvp = global.ArpaCatalogo?.getPrecioVenta?.(code, prod);
-    if (!pvp && pvpHint != null) pvp = parsePvp(pvpHint);
-    if (!pvp && prod?.pvp) pvp = prod.pvp;
-    return parsePvp(pvp);
+    const fromCatalog = global.ArpaCatalogo?.getPrecioByCod?.(code);
+    if (fromCatalog > 0) return parsePvp(fromCatalog);
+    if (prod?.pvp != null && prod.pvp !== '') return parsePvp(prod.pvp);
+    if (pvpHint != null) return parsePvp(pvpHint);
+    return 0;
   }
 
   function seleccionarProductoCot(cod, pvpHint) {

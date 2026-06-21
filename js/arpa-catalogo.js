@@ -344,9 +344,17 @@
     }
   }
 
-  function userProductsToFlat() {
+  function userProductsToFlat(oficioId) {
+    const oid = oficioId != null
+      ? (global.ArpaOficios?.normalizeOficioId?.(oficioId) || 'automatismos')
+      : null;
     return getUserProductsRaw()
-      .filter((p) => (p.nom || '').trim() && (p.cod || '').trim())
+      .filter((p) => {
+        if (!(p.nom || '').trim() || !(p.cod || '').trim()) return false;
+        if (!oid) return true;
+        const itemOficio = global.ArpaOficios?.resolveItemOficioId?.(p) || 'automatismos';
+        return itemOficio === oid;
+      })
       .map((p) => {
         const nom = (p.nom || '').trim();
         const marca = (p.marca || '').trim();
@@ -361,8 +369,60 @@
       });
   }
 
+  const AUTO_CATEGORY_ALIASES = {
+    'Levadiza / Seccional': 'Motores Garaje',
+    Corrediza: 'Corredizas',
+    'Batiente 2 hojas': 'Motores Batientes',
+    'Batiente 1 hoja': 'Motores Batientes',
+    'Cortina enrollable': 'Cortinas Enrollables',
+    'Barrera vehicular': 'Barreras',
+    Accesorios: 'Accesorios',
+  };
+
+  function normalizeAutomatismosCategory(raw) {
+    const c = String(raw || '').trim();
+    if (AUTO_CATEGORY_ALIASES[c]) return AUTO_CATEGORY_ALIASES[c];
+    const lower = c.toLowerCase();
+    if (lower.includes('garaje') || lower.includes('levadiza') || lower.includes('seccional')) return 'Motores Garaje';
+    if (lower.includes('corrediz')) return 'Corredizas';
+    if (lower.includes('batiente')) return 'Motores Batientes';
+    if (lower.includes('cortina') || lower.includes('enrollable')) return 'Cortinas Enrollables';
+    if (lower.includes('barrera')) return 'Barreras';
+    if (lower.includes('cabezal') || lower.includes('automaticas')) return 'Cabezales';
+    if (lower.includes('accesorio') || lower.includes('tarjeta') || lower.includes('control') || lower.includes('fotocelda')
+      || lower.includes('rodamiento') || lower.includes('herraje') || lower.includes('cortina de aire')) {
+      return 'Accesorios';
+    }
+    return c || 'General';
+  }
+
+  function splitMarcaNom(nom, marca) {
+    const m = (marca || '').trim();
+    const n = (nom || '').trim();
+    if (m) return { marca: m, nom: n };
+    const sep = n.indexOf(' – ');
+    if (sep > 0) {
+      return { marca: n.slice(0, sep).trim(), nom: n.slice(sep + 3).trim() };
+    }
+    return { marca: '', nom: n };
+  }
+
+  function buildAutomatismosSeedProducts() {
+    return getListaBaseMerged().map((p) => {
+      const { marca, nom } = splitMarcaNom(p.nom, p.marca);
+      return {
+        cod: p.cod,
+        nom,
+        marca,
+        categoria: normalizeAutomatismosCategory(p.categoria),
+        pvp: 0,
+        unidad: p.unidad || 'unidad',
+      };
+    });
+  }
+
   function hasUserCatalog() {
-    return userProductsToFlat().length > 0;
+    return userProductsToFlat('automatismos').length > 0;
   }
 
 
@@ -459,9 +519,7 @@
   }
 
   function getListaProductos() {
-    const user = userProductsToFlat();
-    if (!user.length) return getListaBaseMerged();
-    return mergeCatalogLists(getListaBaseMerged(), user);
+    return userProductsToFlat('automatismos');
   }
 
   function getListaProductosDefault() {
@@ -481,48 +539,25 @@
 
   function getPrecioByCod(cod) {
     const canon = canonicalCodigo(cod);
-    const userItem = userProductsToFlat().find(
+    const userItem = userProductsToFlat('automatismos').find(
       (p) => canonicalCodigo(p.cod) === canon
     );
-    if (userItem) return userItem.pvp || 0;
-    const item = findRawItem(canon);
-    if (item) return getPrecioVenta(canon, item);
-    const bftNas = findInBftNasCatalog(canon);
-    if (bftNas) return bftNas.pvp || 0;
-    return getPrecioVenta(canon, { cod: canon });
+    return userItem ? (Number(userItem.pvp) || 0) : 0;
   }
 
   function findByCod(cod) {
     const canon = canonicalCodigo(cod);
-    const userItem = userProductsToFlat().find(
+    return userProductsToFlat('automatismos').find(
       (p) => canonicalCodigo(p.cod) === canon
-    );
-    if (userItem) return userItem;
-
-    let found = null;
-    Object.entries(CATALOGO_MARCAS).forEach(([marca, categorias]) => {
-      Object.entries(categorias).forEach(([categoria, items]) => {
-        items.forEach((item) => {
-          if (item.cod === canon && !found) {
-            found = {
-              cod: item.cod,
-              nom: `${marca} – ${item.nom}`,
-              marca,
-              categoria,
-              pvp: getPrecioVenta(item.cod, item),
-            };
-          }
-        });
-      });
-    });
-    if (found) return found;
-    return findInBftNasCatalog(canon);
+    ) || null;
   }
 
   global.ArpaCatalogo = {
     getCatalogoMarcas,
     getListaProductos,
     getListaProductosDefault,
+    buildAutomatismosSeedProducts,
+    normalizeAutomatismosCategory,
     hasUserCatalog,
     findByCod,
     getPrecioVenta,
