@@ -505,6 +505,7 @@
   }
 
   function bootstrapCatalogSeeds() {
+    if (global.ArpaOnboarding && !global.ArpaOnboarding.isOnboardingDone()) return;
     seedOficioIfNeeded(OFICIO_AUTOMATISMOS);
     getActiveOficiosFromSettings().forEach((id) => {
       if (id !== OFICIO_AUTOMATISMOS) seedOficioIfNeeded(id);
