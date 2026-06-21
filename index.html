@@ -2260,6 +2260,9 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+    max-height: min(52vh, 480px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .btn-onboarding-rubro {
     width: 100%;
@@ -2486,12 +2489,7 @@ document.documentElement.classList.add('license-checking');
     <div class="onboarding-card">
       <h1 id="onboarding-title" class="onboarding-title" data-i18n="onboarding.title">Bienvenido a ARPA Suite</h1>
       <p class="onboarding-sub" data-i18n="onboarding.subtitle_rubro">¿Cuál es tu rubro principal?</p>
-      <div class="onboarding-rubros">
-        <button type="button" class="btn-onboarding-rubro primary" id="btn-onboarding-rubro-automatizacion" data-onboarding-rubro="automatizacion" data-i18n="onboarding.rubro.automatizacion">Automatización</button>
-        <button type="button" class="btn-onboarding-rubro" id="btn-onboarding-rubro-aire" data-onboarding-rubro="aire-acondicionado" data-i18n="onboarding.rubro.aire_acondicionado">Aire Acondicionado</button>
-        <button type="button" class="btn-onboarding-rubro" id="btn-onboarding-rubro-electricidad" data-onboarding-rubro="electricidad" data-i18n="onboarding.rubro.electricidad">Electricidad</button>
-        <button type="button" class="btn-onboarding-rubro" id="btn-onboarding-rubro-otro" data-onboarding-rubro="otro" data-i18n="onboarding.rubro.otro">Otro</button>
-      </div>
+      <div class="onboarding-rubros" id="onboarding-rubros"></div>
     </div>
   </div>
 </div>
