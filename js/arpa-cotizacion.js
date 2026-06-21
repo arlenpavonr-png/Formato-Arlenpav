@@ -40,7 +40,18 @@
   }
 
   function getCatalogoActivo() {
+    const fromMiCatalogo = global.ArpaMiCatalogo?.getProducts?.('automatismos');
+    if (Array.isArray(fromMiCatalogo) && fromMiCatalogo.length) {
+      return fromMiCatalogo
+        .filter((p) => (p.nom || '').trim() && (p.cod || '').trim())
+        .map((p) => global.ArpaCatalogo?.productToFlatDisplay?.(p) || p);
+    }
     return global.ArpaCatalogo?.getListaProductos?.() || [];
+  }
+
+  function findProductoCot(cod) {
+    const canon = String(cod || '').trim();
+    return getCatalogoActivo().find((p) => p.cod === canon) || null;
   }
 
   function updateCatalogHint() {
@@ -111,24 +122,20 @@
     ).join('');
     res.style.display = 'block';
     res.querySelectorAll('.resultado-item[data-cod]').forEach((el) => {
-      el.addEventListener('click', () => seleccionarProductoCot(el.dataset.cod, el.dataset.pvp));
+      el.addEventListener('click', () => seleccionarProductoCot(el.dataset.cod));
     });
   }
 
-  function resolveProductPvp(prod, cod, pvpHint) {
-    const code = cod || prod?.cod;
-    const fromCatalog = global.ArpaCatalogo?.getPrecioByCod?.(code);
-    if (fromCatalog > 0) return parsePvp(fromCatalog);
-    if (prod?.pvp != null && prod.pvp !== '') return parsePvp(prod.pvp);
-    if (pvpHint != null) return parsePvp(pvpHint);
+  function resolveProductPvp(prod) {
+    if (prod && prod.pvp != null && prod.pvp !== '') return parsePvp(prod.pvp);
     return 0;
   }
 
-  function seleccionarProductoCot(cod, pvpHint) {
-    const prod = global.ArpaCatalogo?.findByCod?.(cod) || getCatalogoActivo().find((p) => p.cod === cod);
+  function seleccionarProductoCot(cod) {
+    const prod = findProductoCot(cod);
     if (!prod) return;
     const cant = parseInt(document.getElementById('cant-input-cot')?.value, 10) || 1;
-    const pvpCatalogo = resolveProductPvp(prod, cod, pvpHint);
+    const pvpCatalogo = resolveProductPvp(prod);
     const existente = filas.find((f) => f.cod === prod.cod);
     if (existente) {
       existente.cant += cant;

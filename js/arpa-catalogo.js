@@ -355,18 +355,7 @@
         const itemOficio = global.ArpaOficios?.resolveItemOficioId?.(p) || 'automatismos';
         return itemOficio === oid;
       })
-      .map((p) => {
-        const nom = (p.nom || '').trim();
-        const marca = (p.marca || '').trim();
-        return {
-          cod: (p.cod || '').trim(),
-          nom: marca ? `${marca} – ${nom}` : nom,
-          marca,
-          categoria: resolveUserCategoryName(p),
-          pvp: Number(p.pvp) || 0,
-          unidad: p.unidad || 'unidad',
-        };
-      });
+      .map((p) => productToFlatDisplay(p));
   }
 
   const AUTO_CATEGORY_ALIASES = {
@@ -398,13 +387,60 @@
 
   function splitMarcaNom(nom, marca) {
     const m = (marca || '').trim();
-    const n = (nom || '').trim();
-    if (m) return { marca: m, nom: n };
-    const sep = n.indexOf(' – ');
+    let n = (nom || '').trim();
+    if (m) {
+      const stripped = stripMarcaPrefix(n, m);
+      if (stripped != null) n = stripped;
+      return { marca: m, nom: n };
+    }
+    const sep = n.search(/\s[–—-]\s/);
     if (sep > 0) {
       return { marca: n.slice(0, sep).trim(), nom: n.slice(sep + 3).trim() };
     }
     return { marca: '', nom: n };
+  }
+
+  function stripMarcaPrefix(nom, marca) {
+    const n = String(nom || '').trim();
+    const m = String(marca || '').trim();
+    if (!m || !n) return null;
+    const re = new RegExp(`^${m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*[–—-]\\s*`, 'i');
+    if (re.test(n)) return n.replace(re, '').trim();
+    return null;
+  }
+
+  function productToFlatDisplay(p) {
+    const { marca, nom } = splitMarcaNom(p.nom, p.marca);
+    return {
+      cod: (p.cod || '').trim(),
+      nom: marca ? `${marca} – ${nom}` : nom,
+      marca,
+      categoria: resolveUserCategoryName(p),
+      pvp: Number(p.pvp) || 0,
+      unidad: p.unidad || 'unidad',
+      _userId: p.id
+    };
+  }
+
+  function migrateStoredProductNames() {
+    const products = getUserProductsRaw();
+    if (!products.length) return false;
+    let changed = false;
+    products.forEach((p) => {
+      const marca = (p.marca || '').trim();
+      if (!marca) return;
+      const stripped = stripMarcaPrefix(p.nom, marca);
+      if (stripped != null && stripped !== (p.nom || '').trim()) {
+        p.nom = stripped;
+        changed = true;
+      }
+    });
+    if (!changed) return false;
+    try {
+      localStorage.setItem(USER_CATALOG_KEY, JSON.stringify(products));
+      invalidateListaCache();
+    } catch (e) { /* ignore */ }
+    return true;
   }
 
   function buildAutomatismosSeedProducts() {
@@ -519,7 +555,13 @@
   }
 
   function getListaProductos() {
-    return userProductsToFlat('automatismos');
+    return getUserProductsRaw()
+      .filter((p) => (p.nom || '').trim() && (p.cod || '').trim())
+      .filter((p) => {
+        const itemOficio = global.ArpaOficios?.resolveItemOficioId?.(p);
+        return !itemOficio || itemOficio === 'automatismos';
+      })
+      .map((p) => productToFlatDisplay(p));
   }
 
   function getListaProductosDefault() {
@@ -558,10 +600,20 @@
     getListaProductosDefault,
     buildAutomatismosSeedProducts,
     normalizeAutomatismosCategory,
+    productToFlatDisplay,
+    migrateStoredProductNames,
     hasUserCatalog,
     findByCod,
     getPrecioVenta,
     getPrecioByCod,
     invalidateListaCache,
   };
+
+  if (typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', () => {
+      migrateStoredProductNames();
+    });
+  } else {
+    migrateStoredProductNames();
+  }
 })(window);
