@@ -50,6 +50,7 @@
  *   { accion: 'savehistorialentry', licencia, entrada: {...} }
  *   { accion: 'deletehistorialentry', licencia, entradaId }
  *   { accion: 'gethistorial', licencia }
+ *   { accion: 'registerTrialUser', nombre, oficio, telefono, fechaInicio, trialId }
  *
  */
 
@@ -89,6 +90,13 @@ const CONFIG = {
   CATALOGO_SHEET_NAME: 'Catalogo',
 
   HISTORIAL_SHEET_NAME: 'Historial',
+
+  TRIALS_SHEET_NAME: 'Trials',
+
+  TRIAL_NOTIFY_EMAIL: 'automatismosarlenpav@gmail.com',
+
+  /** Link Gumroad plan Técnico Independiente ($83 USD) — actualizar si cambia */
+  TRIAL_UPGRADE_GUMROAD_URL: 'https://arpatechnologyglobal.com/',
 
 };
 
@@ -1151,6 +1159,12 @@ function handleSyncPost_(e) {
 
   }
 
+  if (accion === 'registertrialuser') {
+
+    return respondJson_(registerTrialUser_(body));
+
+  }
+
 
 
   const licencia = String(body.licencia || '').trim().toUpperCase();
@@ -1509,6 +1523,336 @@ function getHistorial_(licencia) {
 
 
 
+const TRIALS_HEADERS_ = ['Nombre', 'Oficio', 'Telefono', 'FechaInicio', 'FechaVencimiento', 'TrialId', 'Notificado', 'Convertido'];
+
+
+
+function getTrialsColumnMap_(headerRow) {
+
+  const map = {};
+
+  (headerRow || []).forEach(function (h, i) {
+
+    const key = String(h || '').trim().toLowerCase();
+
+    if (key) map[key] = i;
+
+  });
+
+  return map;
+
+}
+
+
+
+function ensureTrialsSheetHeaders_(sheet) {
+
+  const lastCol = Math.max(sheet.getLastColumn(), TRIALS_HEADERS_.length);
+
+  const row = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+
+  const first = String(row[0] || '').trim();
+
+  if (first === 'Nombre') return getTrialsColumnMap_(row);
+
+  sheet.getRange(1, 1, 1, TRIALS_HEADERS_.length).setValues([TRIALS_HEADERS_]);
+
+  return getTrialsColumnMap_(TRIALS_HEADERS_);
+
+}
+
+
+
+function getTrialsSheet_() {
+
+  const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
+
+  let sheet = ss.getSheetByName(CONFIG.TRIALS_SHEET_NAME);
+
+  if (!sheet) {
+
+    sheet = ss.insertSheet(CONFIG.TRIALS_SHEET_NAME);
+
+    sheet.getRange(1, 1, 1, TRIALS_HEADERS_.length).setValues([TRIALS_HEADERS_]);
+
+    return sheet;
+
+  }
+
+  ensureTrialsSheetHeaders_(sheet);
+
+  return sheet;
+
+}
+
+
+
+function parseDateFromIsoString_(str) {
+
+  const parts = String(str || '').trim().split('-');
+
+  if (parts.length !== 3) return null;
+
+  const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+
+  return isNaN(d.getTime()) ? null : d;
+
+}
+
+
+
+function registerTrialUser_(body) {
+
+  const nombre = String(body.nombre || '').trim();
+
+  const oficio = String(body.oficio || '').trim();
+
+  const telefono = String(body.telefono || '').trim();
+
+  const fechaInicioStr = String(body.fechaInicio || '').trim();
+
+  const trialId = String(body.trialId || '').trim();
+
+  if (!telefono || !fechaInicioStr || !trialId) {
+
+    return { ok: false, mensaje: 'telefono, fechaInicio y trialId requeridos.' };
+
+  }
+
+
+
+  const sheet = getTrialsSheet_();
+
+  const col = ensureTrialsSheetHeaders_(sheet);
+
+  const values = sheet.getDataRange().getValues();
+
+  const trialCol = col.trialid != null ? col.trialid : 5;
+
+  for (let i = 1; i < values.length; i++) {
+
+    if (String(values[i][trialCol] || '').trim() === trialId) {
+
+      return { ok: true, duplicate: true };
+
+    }
+
+  }
+
+
+
+  const fechaInicio = parseDateFromIsoString_(fechaInicioStr) || new Date();
+
+  const fechaVenc = addDays_(fechaInicio, 7);
+
+  const row = new Array(TRIALS_HEADERS_.length).fill('');
+
+  row[col.nombre != null ? col.nombre : 0] = nombre;
+
+  row[col.oficio != null ? col.oficio : 1] = oficio;
+
+  row[col.telefono != null ? col.telefono : 2] = telefono;
+
+  row[col.fechainicio != null ? col.fechainicio : 3] = formatDateIso_(fechaInicio);
+
+  row[col.fechavencimiento != null ? col.fechavencimiento : 4] = formatDateIso_(fechaVenc);
+
+  row[col.trialid != null ? col.trialid : 5] = trialId;
+
+  sheet.appendRow(row);
+
+  return { ok: true };
+
+}
+
+
+
+function normalizePhoneForWaMe_(telefono) {
+
+  let digits = String(telefono || '').replace(/\D/g, '');
+
+  if (!digits) return '';
+
+  if (digits.length === 10) digits = '57' + digits;
+
+  if (digits.length === 11 && digits.charAt(0) === '3') digits = '57' + digits;
+
+  return digits;
+
+}
+
+
+
+function buildTrialDay6WhatsAppMessage_(nombre) {
+
+  const gumroad = CONFIG.TRIAL_UPGRADE_GUMROAD_URL || 'https://arpatechnologyglobal.com/';
+
+  const first = String(nombre || '').trim().split(/\s+/)[0];
+
+  const saludo = first ? ('Hola ' + first + '! ') : 'Hola! ';
+
+  return saludo + 'Vi que llevas usando ARPA Suite estos días. ¿Cómo te ha ido con las cotizaciones? Mañana se vence tu prueba gratis. Si te sirvió, el plan Técnico Independiente queda en $83 USD pago único, de por vida. ¿Quieres que te ayude a activarlo? Aquí está el link: ' + gumroad;
+
+}
+
+
+
+function buildTrialWhatsAppLink_(telefono, message) {
+
+  const phone = normalizePhoneForWaMe_(telefono);
+
+  if (!phone) return '';
+
+  const text = encodeURIComponent(message || buildTrialDay6WhatsAppMessage_());
+
+  return 'https://wa.me/' + phone + '?text=' + text;
+
+}
+
+
+
+/**
+
+ * Revisar trials en día 6 (FechaInicio + 6 días). Marca Notificado y envía email con links WA.
+
+ * Configurar trigger: Time-driven → Day timer → 8am-9am → revisarTrialsDia6
+
+ */
+
+function revisarTrialsDia6() {
+
+  const sheet = getTrialsSheet_();
+
+  const values = sheet.getDataRange().getValues();
+
+  if (values.length < 2) return;
+
+
+
+  const today = stripTime_(new Date());
+
+  const col = ensureTrialsSheetHeaders_(sheet);
+
+  const leads = [];
+
+
+
+  for (let i = 1; i < values.length; i++) {
+
+    const nombre = String(values[i][col.nombre != null ? col.nombre : 0] || '').trim();
+
+    const oficio = String(values[i][col.oficio != null ? col.oficio : 1] || '').trim();
+
+    const telefono = String(values[i][col.telefono != null ? col.telefono : 2] || '').trim();
+
+    const fechaInicioRaw = values[i][col.fechainicio != null ? col.fechainicio : 3];
+
+    const notificado = String(values[i][col.notificado != null ? col.notificado : 6] || '').trim();
+
+    if (!telefono || notificado) continue;
+
+
+
+    let fechaInicio = null;
+
+    if (fechaInicioRaw instanceof Date) {
+
+      fechaInicio = stripTime_(fechaInicioRaw);
+
+    } else {
+
+      fechaInicio = parseDateFromIsoString_(String(fechaInicioRaw || ''));
+
+      if (fechaInicio) fechaInicio = stripTime_(fechaInicio);
+
+    }
+
+    if (!fechaInicio) continue;
+
+
+
+    const day6 = stripTime_(addDays_(fechaInicio, 6));
+
+    if (day6.getTime() !== today.getTime()) continue;
+
+
+
+    const message = buildTrialDay6WhatsAppMessage_(nombre);
+
+    const waLink = buildTrialWhatsAppLink_(telefono, message);
+
+    sheet.getRange(i + 1, (col.notificado != null ? col.notificado : 6) + 1).setValue('Si');
+
+    leads.push({
+
+      nombre: nombre,
+
+      oficio: oficio,
+
+      telefono: telefono,
+
+      trialId: String(values[i][col.trialid != null ? col.trialid : 5] || ''),
+
+      waLink: waLink
+
+    });
+
+  }
+
+
+
+  if (!leads.length) return;
+
+
+
+  const lines = leads.map(function (lead, idx) {
+
+    const label = (lead.nombre || 'Sin nombre') +
+
+      (lead.oficio ? ' · ' + lead.oficio : '') +
+
+      ' · ' + lead.telefono +
+
+      (lead.trialId ? ' (' + lead.trialId + ')' : '');
+
+    return (idx + 1) + '. ' + label + ' — <a href="' + lead.waLink + '">Abrir WhatsApp</a>';
+
+  });
+
+
+
+  const htmlBody =
+
+    '<p>Hola,</p>' +
+
+    '<p>Estos usuarios de trial están en <strong>día 6</strong> (vence mañana). Contactar por WhatsApp:</p>' +
+
+    '<ul><li>' + lines.join('</li><li>') + '</li></ul>' +
+
+    '<p>Ejemplo de mensaje al cliente (personalizado con nombre):</p>' +
+
+    '<blockquote style="border-left:3px solid #ccc;padding-left:12px;color:#444;">' +
+
+    buildTrialDay6WhatsAppMessage_('Juan').replace(/</g, '&lt;') +
+
+    '</blockquote>';
+
+
+
+  MailApp.sendEmail({
+
+    to: CONFIG.TRIAL_NOTIFY_EMAIL,
+
+    subject: 'ARPA Suite — Leads para contactar hoy (día 6)',
+
+    htmlBody: htmlBody
+
+  });
+
+}
+
+
+
 function generateCode_(prefix) {
 
   const values = getLicenseSheet_().getDataRange().getValues();
@@ -1778,6 +2122,14 @@ function runTestPing_(opts) {
 
 
   Logger.log(doPost({ postData: { contents: body } }).getContent());
+
+}
+
+
+
+function testRevisarTrialsDia6() {
+
+  revisarTrialsDia6();
 
 }
 

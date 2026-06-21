@@ -33,6 +33,17 @@
     'license_gate.error_network': 'Could not verify license. Check your connection and try again.',
     'license_gate.error_trial': 'Could not activate trial. Enter your code or retry.',
 
+    'trial_capture.title': 'Welcome to ARPA Suite',
+    'trial_capture.subtitle': 'Before starting your free 7-day trial, tell us who you are and leave your WhatsApp so we can remind you when it is about to expire.',
+    'trial_capture.label_name': 'Name',
+    'trial_capture.label_oficio': 'Trade',
+    'trial_capture.oficio_placeholder': 'Select your trade…',
+    'trial_capture.label_phone': 'WhatsApp',
+    'trial_capture.btn_start': 'Start free trial',
+    'trial_capture.error_name': 'Enter your name.',
+    'trial_capture.error_oficio': 'Select your trade.',
+    'trial_capture.error_phone': 'Enter a valid WhatsApp number with country code.',
+
     'onboarding.title': 'Welcome to ARPA Suite',
     'onboarding.subtitle_rubro': 'What is your main line of business?',
     'onboarding.rubro.automatizacion': 'Automation',

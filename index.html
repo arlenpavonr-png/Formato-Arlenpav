@@ -1910,6 +1910,92 @@
   html:not(.license-ok) .page,
   html:not(.license-ok) .main-menu,
   html:not(.license-ok) .settings-overlay { visibility: hidden; }
+  .trial-capture-gate {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    background: #1a2a4a;
+  }
+  html.trial-capture-active .trial-capture-gate { display: flex; }
+  html.trial-capture-active .license-gate { display: none !important; }
+  html.trial-capture-active .page,
+  html.trial-capture-active .main-menu,
+  html.trial-capture-active .settings-overlay { visibility: hidden; }
+  .trial-capture-card {
+    width: 100%;
+    max-width: 400px;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 28px 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    text-align: center;
+  }
+  .trial-capture-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a2a4a;
+    margin: 0 0 12px;
+  }
+  .trial-capture-sub {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #64748b;
+    margin: 0 0 20px;
+  }
+  .trial-capture-field {
+    text-align: left;
+    margin-bottom: 16px;
+  }
+  .trial-capture-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 6px;
+  }
+  .trial-capture-field input,
+  .trial-capture-field select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 16px;
+    font-family: 'DM Sans', sans-serif;
+    background: #fff;
+  }
+  .trial-capture-field input:focus,
+  .trial-capture-field select:focus {
+    outline: none;
+    border-color: #c9a84c;
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.25);
+  }
+  .trial-capture-error {
+    display: none;
+    font-size: 12px;
+    color: #dc2626;
+    margin: -8px 0 12px;
+    text-align: left;
+  }
+  .trial-capture-error.visible { display: block; }
+  .trial-capture-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: #c9a84c;
+    color: #1a2a4a;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .trial-capture-btn:hover { background: #d4b86a; }
+  .trial-capture-btn:disabled { opacity: 0.6; cursor: not-allowed; }
   .license-gate-panel { display: none; }
   .license-gate-panel.is-visible { display: block; }
   .license-gate-loading-spinner {
@@ -2315,6 +2401,27 @@ document.documentElement.classList.add('license-checking');
 </script>
 </head>
 <body>
+
+<div id="trial-capture-gate" class="trial-capture-gate" role="dialog" aria-modal="true" aria-labelledby="trial-capture-title" hidden>
+  <div class="trial-capture-card">
+    <h1 id="trial-capture-title" class="trial-capture-title" data-i18n="trial_capture.title">Bienvenido a ARPA Suite</h1>
+    <p class="trial-capture-sub" data-i18n="trial_capture.subtitle">Antes de comenzar tu prueba gratis de 7 días, cuéntanos quién eres y déjanos tu WhatsApp para avisarte cuando esté por vencer.</p>
+    <div class="trial-capture-field">
+      <label for="trial-capture-name" data-i18n="trial_capture.label_name">Nombre</label>
+      <input type="text" id="trial-capture-name" autocomplete="name" placeholder="Su nombre">
+    </div>
+    <div class="trial-capture-field">
+      <label for="trial-capture-oficio" data-i18n="trial_capture.label_oficio">Oficio</label>
+      <select id="trial-capture-oficio"></select>
+    </div>
+    <div class="trial-capture-field">
+      <label for="trial-capture-phone" data-i18n="trial_capture.label_phone">WhatsApp</label>
+      <input type="tel" id="trial-capture-phone" autocomplete="tel" inputmode="tel" placeholder="+57 300 000 0000" value="+57 ">
+    </div>
+    <p id="trial-capture-error" class="trial-capture-error" role="alert"></p>
+    <button type="button" id="trial-capture-submit" class="trial-capture-btn" data-i18n="trial_capture.btn_start">Comenzar prueba gratis</button>
+  </div>
+</div>
 
 <div id="license-gate" class="license-gate" role="dialog" aria-modal="true" aria-labelledby="license-gate-title">
   <div class="license-gate-card">
@@ -3732,6 +3839,9 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 
+<!-- Captura WhatsApp trial (debe cargar antes del gate de licencia) -->
+<script src="./js/arpa-trial-capture.js"></script>
+
 <!-- Validación de licencia: trial auto 7 días + revalidación en cada apertura -->
 <script data-cfasync="false" type="text/javascript" charset="utf-8">
 (function () {
@@ -4010,9 +4120,14 @@ if ('serviceWorker' in navigator) {
   }
 
   function initLicenseGate() {
+    if (initLicenseGate.__bound) {
+      startLicenseFlow();
+      return;
+    }
+    initLicenseGate.__bound = true;
+
     var input = document.getElementById('license-code-input');
     var btn = document.getElementById('license-activate-btn');
-    var saved = getSavedCode();
 
     document.getElementById('license-show-manual')?.addEventListener('click', openManualEntry);
     document.getElementById('license-show-manual-loading')?.addEventListener('click', openManualEntry);
@@ -4066,6 +4181,11 @@ if ('serviceWorker' in navigator) {
       });
     }
 
+    startLicenseFlow();
+  }
+
+  function startLicenseFlow() {
+    var saved = getSavedCode();
     if (saved) {
       validateSavedCode(saved);
     } else {
@@ -4073,10 +4193,23 @@ if ('serviceWorker' in navigator) {
     }
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initLicenseGate);
-  } else {
+  function bootLicenseGate() {
+    if (window.ArpaTrialCapture && typeof window.ArpaTrialCapture.retryPendingRegistration === 'function') {
+      window.ArpaTrialCapture.retryPendingRegistration();
+    }
+    if (window.ArpaTrialCapture && typeof window.ArpaTrialCapture.needsCapture === 'function' && window.ArpaTrialCapture.needsCapture()) {
+      window.ArpaTrialCapture.showCapture(function () {
+        initLicenseGate();
+      });
+      return;
+    }
     initLicenseGate();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootLicenseGate);
+  } else {
+    bootLicenseGate();
   }
 })();
 </script>
