@@ -400,15 +400,10 @@
 
   function enviarWhatsApp() {
     const d = getFormSnapshot();
-    const telRaw = d.cliente.tel.replace(/\D/g, '');
     const empresa = d.cobrador.empresa || 'nuestra empresa';
     const telEmp = d.cobrador.tel || '';
     const msg = `Hola ${d.cliente.nombre || 'cliente'}, le compartimos la ${d.numero} de ${empresa} por un valor de ${formatoPesos(d.total)}. Quedamos atentos para cualquier consulta.\n${empresa} 📞 ${telEmp}`;
-    const text = encodeURIComponent(msg);
-    const url = telRaw.length >= 10
-      ? `https://wa.me/${telRaw.startsWith('57') ? telRaw : '57' + telRaw}?text=${text}`
-      : `https://wa.me/?text=${text}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
+    global.ArpaWhatsApp?.openWhatsAppNativeWithFallback?.(d.cliente.tel, msg);
   }
 
   function loadImageDataUrl(src) {

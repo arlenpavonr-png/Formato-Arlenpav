@@ -21,6 +21,42 @@
     window.location.href = url;
   }
 
+  const WHATSAPP_NATIVE_FALLBACK_MS = 1200;
+
+  function buildWhatsAppUrls(telRaw, message) {
+    const tel = String(telRaw || '').replace(/\D/g, '');
+    const text = encodeURIComponent(message);
+    const phone = tel.length >= 10 ? (tel.startsWith('57') ? tel : '57' + tel) : '';
+    const waMeUrl = phone
+      ? `https://wa.me/${phone}?text=${text}`
+      : `https://wa.me/?text=${text}`;
+    const nativeUrl = phone
+      ? `whatsapp://send?phone=${phone}&text=${text}`
+      : `whatsapp://send?text=${text}`;
+    return { waMeUrl, nativeUrl };
+  }
+
+  function openWhatsAppNativeWithFallback(telRaw, message) {
+    const { waMeUrl, nativeUrl } = buildWhatsAppUrls(telRaw, message);
+    let fellBack = false;
+
+    const fallbackTimer = setTimeout(() => {
+      if (fellBack || document.hidden) return;
+      fellBack = true;
+      window.location.href = waMeUrl;
+    }, WHATSAPP_NATIVE_FALLBACK_MS);
+
+    function onVisibilityChange() {
+      if (!document.hidden) return;
+      fellBack = true;
+      clearTimeout(fallbackTimer);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    }
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.location.href = nativeUrl;
+  }
+
   function buildFormatoMessage() {
     const nombre = readFormatoField(document.getElementById('formato-cliente-nombre')) || 'Cliente';
     const numero = readFormatoField(document.getElementById('numero-formato')) || '—';
@@ -123,12 +159,7 @@
 
   function openWhatsAppCot() {
     const telRaw = document.getElementById('cot-tel')?.value || '';
-    const text = encodeURIComponent(buildCotMessage());
-    const tel = telRaw.replace(/\D/g, '');
-    const url = tel.length >= 10
-      ? `https://wa.me/${tel.startsWith('57') ? tel : '57' + tel}?text=${text}`
-      : `https://wa.me/?text=${text}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
+    openWhatsAppNativeWithFallback(telRaw, buildCotMessage());
   }
 
   function guardarCotPDFYWhatsApp() {
@@ -141,7 +172,8 @@
     showFormatoShareAfterPdf,
     compartirFormatoWhatsApp,
     generarFormatoPdfFile,
-    buildFormatoMessage
+    buildFormatoMessage,
+    openWhatsAppNativeWithFallback
   };
 
   global.compartirFormatoWhatsApp = compartirFormatoWhatsApp;
