@@ -1,15 +1,14 @@
 /**
- * Oficios / actividades — selector multi-oficio y catálogos genéricos (anexo).
- * Automatismos permanece como oficio principal; los demás son extensiones opcionales.
+ * Oficios / actividades — selector de oficio y catálogos genéricos (anexo).
  */
 (function (global) {
   const OFICIO_AUTOMATISMOS = 'automatismos';
   const SEEDED_KEY = 'arpa_oficios_seeded';
   const ACTIVE_OFICIOS_KEY = 'arpa_active_oficios';
 
-  /** @type {{ id: string, i18nKey: string, locked?: boolean }[]} */
+  /** @type {{ id: string, i18nKey: string }[]} */
   const OFICIOS = [
-    { id: OFICIO_AUTOMATISMOS, i18nKey: 'oficio.automatismos', locked: true },
+    { id: OFICIO_AUTOMATISMOS, i18nKey: 'oficio.automatismos' },
     { id: 'electricidad', i18nKey: 'oficio.electricidad' },
     { id: 'gas', i18nKey: 'oficio.gas' },
     { id: 'refrigeracion', i18nKey: 'oficio.refrigeracion' },
@@ -192,11 +191,15 @@
     return OFICIOS.find((o) => o.id === normalizeOficioId(id)) || OFICIOS[0];
   }
 
+  function isFounderLicense() {
+    return global.ArpaLicense?.isFounderLicense?.() === true;
+  }
+
   function normalizeActiveOficiosList(raw) {
-    if (!Array.isArray(raw) || !raw.length) return [OFICIO_AUTOMATISMOS];
+    if (!Array.isArray(raw) || !raw.length) return [];
     const ids = raw.map(normalizeOficioId).filter((id, i, arr) => arr.indexOf(id) === i);
-    if (!ids.includes(OFICIO_AUTOMATISMOS)) ids.unshift(OFICIO_AUTOMATISMOS);
-    return ids;
+    if (isFounderLicense()) return ids;
+    return ids.length ? [ids[0]] : [];
   }
 
   function readActiveOficiosFromStorage() {
@@ -212,7 +215,7 @@
         return normalizeActiveOficiosList(fromSettings);
       }
     } catch (e) { /* ignore */ }
-    return [OFICIO_AUTOMATISMOS];
+    return [];
   }
 
   function saveActiveOficios(ids) {
@@ -379,6 +382,65 @@
     return { added, skipped: false, total: seedProducts.length };
   }
 
+  function unmarkOficioSeeded(oficioId) {
+    const id = normalizeOficioId(oficioId);
+    const seeded = getSeededOficios().filter((s) => s !== id);
+    try {
+      localStorage.setItem(SEEDED_KEY, JSON.stringify(seeded));
+    } catch (e) { /* ignore */ }
+  }
+
+  function productBelongsToOficioForRemoval(product, oficioId) {
+    const id = normalizeOficioId(oficioId);
+    const raw = product?.oficioId;
+    if (raw === undefined || raw === null || String(raw).trim() === '') return false;
+    return normalizeOficioId(raw) === id;
+  }
+
+  function categoryBelongsToOficioForRemoval(category, oficioId) {
+    const id = normalizeOficioId(oficioId);
+    const raw = category?.oficioId;
+    if (raw === undefined || raw === null || String(raw).trim() === '') return false;
+    return normalizeOficioId(raw) === id;
+  }
+
+  function unseedOficio(oficioId) {
+    const id = normalizeOficioId(oficioId);
+    const STORAGE_KEY = global.ArpaMiCatalogo?.STORAGE_KEY || 'arpa_catalogo_usuario';
+    const CATEGORIES_KEY = global.ArpaMiCatalogo?.CATEGORIES_KEY || 'arpa_categorias_usuario';
+
+    let products;
+    let categories;
+    try {
+      products = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      categories = JSON.parse(localStorage.getItem(CATEGORIES_KEY) || '[]');
+      if (!Array.isArray(products)) products = [];
+      if (!Array.isArray(categories)) categories = [];
+    } catch (e) {
+      products = [];
+      categories = [];
+    }
+
+    const keptProducts = products.filter((p) => !productBelongsToOficioForRemoval(p, id));
+    const keptCategoryIds = new Set(keptProducts.map((p) => p.categoriaId).filter(Boolean));
+    const keptCategories = categories.filter((c) => {
+      if (!categoryBelongsToOficioForRemoval(c, id)) return true;
+      return keptCategoryIds.has(c.id);
+    });
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(keptProducts));
+      localStorage.setItem(CATEGORIES_KEY, JSON.stringify(keptCategories));
+    } catch (e) {
+      console.warn('[arpa-oficios] unseedOficio', e);
+    }
+
+    unmarkOficioSeeded(id);
+    global.ArpaCatalogo?.invalidateListaCache?.();
+    global.ArpaCotizacion?.updateCatalogHint?.();
+    global.ArpaCloudSync?.scheduleCatalogCloudSync?.();
+  }
+
   function seedOficioIfNeeded(oficioId) {
     return importSeedCatalog(oficioId, { force: false });
   }
@@ -422,13 +484,17 @@
 
   function renderSettingsCheckboxes(container) {
     if (!container) return;
-    const active = new Set(getActiveOficiosFromSettings());
+    const active = getActiveOficiosFromSettings();
+    const activeSet = new Set(active);
+    const founder = isFounderLicense();
+    const inputType = founder ? 'checkbox' : 'radio';
+    const singleActive = active[0] || null;
+
     container.innerHTML = OFICIOS.map((o) => {
-      const checked = active.has(o.id) || o.locked;
-      const disabled = !!o.locked;
+      const checked = founder ? activeSet.has(o.id) : singleActive === o.id;
       return `
-        <label class="settings-oficio-chip${disabled ? ' is-locked' : ''}">
-          <input type="checkbox" name="settings-oficio" value="${o.id}"${checked ? ' checked' : ''}${disabled ? ' disabled' : ''}>
+        <label class="settings-oficio-chip">
+          <input type="${inputType}" name="settings-oficio" value="${o.id}"${checked ? ' checked' : ''}>
           <span data-i18n="${o.i18nKey}">${getOficioLabel(o.id)}</span>
         </label>`;
     }).join('');
@@ -438,13 +504,55 @@
 
   function readSettingsCheckboxes(container) {
     const selected = [];
-    if (!container) return [OFICIO_AUTOMATISMOS];
-    container.querySelectorAll('input[name="settings-oficio"]').forEach((el) => {
-      if (!el.checked) return;
+    if (!container) return [];
+    container.querySelectorAll('input[name="settings-oficio"]:checked').forEach((el) => {
       const id = normalizeOficioId(el.value);
       if (!selected.includes(id)) selected.push(id);
     });
     return normalizeActiveOficiosList(selected);
+  }
+
+  function revertOficioInputs(container, activeIds) {
+    if (!container) return;
+    const activeSet = new Set(activeIds);
+    const single = activeIds[0] || null;
+    container.querySelectorAll('input[name="settings-oficio"]').forEach((el) => {
+      if (isFounderLicense()) {
+        el.checked = activeSet.has(normalizeOficioId(el.value));
+      } else {
+        el.checked = normalizeOficioId(el.value) === single;
+      }
+    });
+  }
+
+  function applyNonFounderOficioChange(container, newOficioId) {
+    const previous = getActiveOficiosFromSettings();
+    const previousSingle = previous[0] || null;
+    const nextId = normalizeOficioId(newOficioId);
+
+    if (previousSingle === nextId) return true;
+
+    if (previousSingle) {
+      const msg =
+        'Vas a cambiar de ' + getOficioLabel(previousSingle) + ' a ' + getOficioLabel(nextId) +
+        '. Esto eliminará los productos de ' + getOficioLabel(previousSingle) +
+        ' de tu catálogo (los que agregaste manualmente en otras categorías no se tocan). ¿Continuar?';
+      if (!confirm(msg)) {
+        revertOficioInputs(container, previous);
+        return false;
+      }
+      unseedOficio(previousSingle);
+    }
+
+    if (!saveActiveOficios([nextId])) {
+      revertOficioInputs(container, previous);
+      return false;
+    }
+
+    seedOficioIfNeeded(nextId);
+    global.ArpaMiCatalogo?.refreshView?.();
+    renderSettingsCheckboxes(container);
+    return true;
   }
 
   function applyOficiosFromSettingsUI(container) {
@@ -452,17 +560,28 @@
     const ids = readSettingsCheckboxes(grid);
     if (!saveActiveOficios(ids)) return false;
     seedActiveOficios();
-    global.ArpaMiCatalogo?.render?.();
+    global.ArpaMiCatalogo?.refreshView?.();
     return true;
   }
 
   function bindOficioCheckboxListeners(container) {
     if (!container) return;
     container.querySelectorAll('input[name="settings-oficio"]').forEach((input) => {
-      if (input.disabled || input.dataset.oficioBound === '1') return;
+      if (input.dataset.oficioBound === '1') return;
       input.dataset.oficioBound = '1';
-      input.addEventListener('change', () => {
-        applyOficiosFromSettingsUI(container);
+      input.addEventListener('change', (e) => {
+        const target = e.target;
+        if (isFounderLicense()) {
+          applyOficiosFromSettingsUI(container);
+          return;
+        }
+
+        if (!target.checked) {
+          target.checked = true;
+          return;
+        }
+
+        applyNonFounderOficioChange(container, target.value);
       });
     });
   }
@@ -489,7 +608,9 @@
     getSeedProductCount,
     precargarCatalogoOficio,
     renderSettingsCheckboxes,
-    readSettingsCheckboxes
+    readSettingsCheckboxes,
+    unseedOficio,
+    isFounderLicense
   };
 
   global.precargarCatalogoOficio = precargarCatalogoOficio;
@@ -506,10 +627,7 @@
 
   function bootstrapCatalogSeeds() {
     if (global.ArpaOnboarding && !global.ArpaOnboarding.isOnboardingDone()) return;
-    seedOficioIfNeeded(OFICIO_AUTOMATISMOS);
-    getActiveOficiosFromSettings().forEach((id) => {
-      if (id !== OFICIO_AUTOMATISMOS) seedOficioIfNeeded(id);
-    });
+    getActiveOficiosFromSettings().forEach((id) => seedOficioIfNeeded(id));
   }
 
   if (typeof document !== 'undefined') {

@@ -243,8 +243,8 @@
     'oficio.linea_blanca': 'White Goods / Appliances',
     'oficio.solar': 'Solar Energy',
 
-    'settings.section.oficios': 'Trades / Activities',
-    'settings.oficios.hint': 'Select one or more trades. Gate Automation stays active by default. Each trade gets its own section in My Catalog.',
+    'settings.section.oficios': 'Your main trade',
+    'settings.oficios.hint': 'Choose your line of business. Only one trade can be active (Founder license excepted). Each trade includes an editable starter catalog in My Catalog.',
 
     'cc.section.datos_documento': 'Document Details',
     'cc.placeholder.ciudad': 'City',

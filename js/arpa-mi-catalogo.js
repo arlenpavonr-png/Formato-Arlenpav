@@ -46,7 +46,8 @@
   }
 
   function getActiveOficios() {
-    return global.ArpaOficios?.getActiveOficiosFromSettings?.() || ['automatismos'];
+    const active = global.ArpaOficios?.getActiveOficiosFromSettings?.();
+    return Array.isArray(active) ? active : [];
   }
 
   const IMPORT_HEADERS = {
@@ -566,17 +567,23 @@
     const active = Array.isArray(activeOficios) ? activeOficios : getActiveOficios();
     const multi = active.length > 1;
     const tabsWrap = document.getElementById('catalogo-oficios-tabs');
+    const allOficios = global.ArpaOficios?.getOficiosList?.().map((o) => o.id) || ['automatismos'];
 
-    if (!active.includes(activeTabOficio)) {
-      activeTabOficio = active.includes('automatismos') ? 'automatismos' : active[0];
+    if (!active.length || !active.includes(activeTabOficio)) {
+      activeTabOficio = active[0] || 'automatismos';
       currentOficioId = activeTabOficio;
     }
 
     if (tabsWrap) tabsWrap.hidden = !multi;
 
-    active.forEach((oid) => {
+    allOficios.forEach((oid) => {
       const section = document.getElementById(sectionDomIds(oid).section);
-      if (section) section.hidden = multi && oid !== activeTabOficio;
+      if (!section) return;
+      if (!active.includes(oid)) {
+        section.hidden = true;
+        return;
+      }
+      section.hidden = multi && oid !== activeTabOficio;
     });
 
     document.querySelectorAll('#catalogo-oficios-tabs-list .catalogo-oficio-tab').forEach((btn) => {
