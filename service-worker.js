@@ -1,4 +1,4 @@
-const CACHE_NAME = 'arpa-suite-cache-v52';
+const CACHE_NAME = 'arpa-suite-cache-v53';
 const BASE = self.location.pathname.replace(/service-worker\.js$/, '');
 const ASSETS = [
   BASE,
@@ -60,9 +60,24 @@ self.addEventListener('fetch', (event) => {
   if (
     url.includes('script.google.com') ||
     url.includes('googleusercontent.com') ||
-    url.includes('cdnjs.cloudflare.com') ||
     url.includes('arpa-license.js')
   ) {
+    return;
+  }
+
+  if (url.includes('cdnjs.cloudflare.com')) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        if (cached) return cached;
+        return fetch(event.request).then((res) => {
+          if (res && res.status === 200) {
+            const clone = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return res;
+        }).catch(() => cached);
+      })
+    );
     return;
   }
 

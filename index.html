@@ -2982,17 +2982,19 @@ document.documentElement.classList.add('license-checking');
       <div class="firmas">
         <div class="firma-box">
           <div class="firma-label" data-i18n="cc.firma.cobrador">Cobrador</div>
-          <div class="cc-firma-line">
-            <span data-i18n="cc.firma.label">Firma</span>
-            <strong id="cc-firma-cobrador-nombre">—</strong>
+          <div class="firma-canvas-wrap">
+            <canvas id="canvas-cc-cobrador" class="firma-canvas" width="600" height="200" data-i18n-aria-label="cc.firma.aria_cobrador" aria-label="Firma cobrador"></canvas>
+            <button type="button" class="btn-firma-clear no-print" onclick="limpiarFirma('canvas-cc-cobrador'); ArpaCuentaCobro?.scheduleCcDraftSave?.(true)" data-i18n="formato.firma.btn_borrar">Borrar</button>
           </div>
+          <strong id="cc-firma-cobrador-nombre" class="firma-name-readonly">—</strong>
         </div>
         <div class="firma-box">
           <div class="firma-label" data-i18n="cc.firma.cliente">Cliente</div>
-          <div class="cc-firma-line">
-            <span data-i18n="cc.firma.label">Firma</span>
-            <strong id="cc-firma-cliente-nombre">—</strong>
+          <div class="firma-canvas-wrap">
+            <canvas id="canvas-cc-cliente" class="firma-canvas" width="600" height="200" data-i18n-aria-label="cc.firma.aria_cliente" aria-label="Firma cliente"></canvas>
+            <button type="button" class="btn-firma-clear no-print" onclick="limpiarFirma('canvas-cc-cliente'); ArpaCuentaCobro?.scheduleCcDraftSave?.(true)" data-i18n="formato.firma.btn_borrar">Borrar</button>
           </div>
+          <strong id="cc-firma-cliente-nombre" class="firma-name-readonly">—</strong>
         </div>
       </div>
     </div>

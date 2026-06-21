@@ -4,11 +4,118 @@
 (function (global) {
   const CC_NUM_KEY = 'arpa_cc_num';
   const SETTINGS_KEY = 'arpa_suite_user_settings';
+  const DRAFT_KEY = 'arpa_cuenta_cobro_draft';
   const NAVY = [15, 32, 68];
   const GOLD = [217, 119, 6];
   const MUTED = [100, 116, 139];
 
   let servicios = [{ desc: '', cant: 1, unit: 0 }];
+  let draftSaveTimer = null;
+
+  function getJsPDF() {
+    return global.jspdf?.jsPDF || null;
+  }
+
+  function collectCcDraft() {
+    return {
+      numero: document.getElementById('cc-numero')?.value || '',
+      ciudad: document.getElementById('cc-ciudad')?.value || '',
+      fechaEmision: document.getElementById('cc-fecha-emision')?.value || '',
+      fechaVencimiento: document.getElementById('cc-fecha-vencimiento')?.value || '',
+      clienteNombre: document.getElementById('cc-cliente-nombre')?.value || '',
+      clienteDoc: document.getElementById('cc-cliente-doc')?.value || '',
+      clienteDir: document.getElementById('cc-cliente-dir')?.value || '',
+      clienteTel: document.getElementById('cc-cliente-tel')?.value || '',
+      obs: document.getElementById('cc-obs')?.value || '',
+      conIva: !!document.getElementById('cc-iva-check')?.checked,
+      conRet: !!document.getElementById('cc-ret-check')?.checked,
+      retPct: document.getElementById('cc-ret-pct')?.value || '11',
+      pago: getPaymentData(),
+      servicios: servicios.map((s) => ({
+        desc: s.desc || '',
+        cant: parseInt(s.cant, 10) || 1,
+        unit: parseNum(s.unit)
+      })),
+      firmaCobrador: global.ArpaSignature?.getDataUrl?.('canvas-cc-cobrador') || '',
+      firmaCliente: global.ArpaSignature?.getDataUrl?.('canvas-cc-cliente') || ''
+    };
+  }
+
+  function applyCcDraft() {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return false;
+      const d = JSON.parse(raw);
+      if (!d || typeof d !== 'object') return false;
+
+      const set = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
+      set('cc-numero', d.numero);
+      set('cc-ciudad', d.ciudad);
+      set('cc-fecha-emision', d.fechaEmision);
+      set('cc-fecha-vencimiento', d.fechaVencimiento);
+      set('cc-cliente-nombre', d.clienteNombre);
+      set('cc-cliente-doc', d.clienteDoc);
+      set('cc-cliente-dir', d.clienteDir);
+      set('cc-cliente-tel', d.clienteTel);
+      set('cc-obs', d.obs);
+      set('cc-ret-pct', d.retPct);
+
+      const ivaCheck = document.getElementById('cc-iva-check');
+      const retCheck = document.getElementById('cc-ret-check');
+      if (ivaCheck) ivaCheck.checked = !!d.conIva;
+      if (retCheck) retCheck.checked = !!d.conRet;
+
+      if (d.pago) {
+        set('cc-pago-banco', d.pago.bankName);
+        set('cc-pago-numero', d.pago.accountNumber);
+        set('cc-pago-titular', d.pago.accountHolder);
+        set('cc-pago-titular-doc', d.pago.accountHolderDocument);
+        set('cc-pago-tipo', d.pago.accountType);
+      }
+
+      if (Array.isArray(d.servicios) && d.servicios.length) {
+        servicios = d.servicios.map((s) => ({
+          desc: s.desc || '',
+          cant: parseInt(s.cant, 10) || 1,
+          unit: parseNum(s.unit)
+        }));
+      }
+
+      if (d.firmaCobrador) global.ArpaSignature?.restoreDataUrl?.('canvas-cc-cobrador', d.firmaCobrador);
+      if (d.firmaCliente) global.ArpaSignature?.restoreDataUrl?.('canvas-cc-cliente', d.firmaCliente);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function clearCcDraft() {
+    localStorage.removeItem(DRAFT_KEY);
+  }
+
+  function scheduleCcDraftSave(immediate) {
+    if (draftSaveTimer) clearTimeout(draftSaveTimer);
+    const delay = immediate ? 0 : 1500;
+    draftSaveTimer = setTimeout(() => {
+      draftSaveTimer = null;
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(collectCcDraft()));
+      } catch (e) { /* quota */ }
+    }, delay);
+  }
+
+  function bindCcDraftListeners() {
+    const root = document.getElementById('view-cuenta-cobro');
+    if (!root || root.__ccDraftBound) return;
+    root.__ccDraftBound = true;
+    root.addEventListener('input', () => scheduleCcDraftSave());
+    root.addEventListener('change', () => scheduleCcDraftSave());
+    ['canvas-cc-cobrador', 'canvas-cc-cliente'].forEach((id) => {
+      const canvas = document.getElementById(id);
+      canvas?.addEventListener('mouseup', () => scheduleCcDraftSave());
+      canvas?.addEventListener('touchend', () => scheduleCcDraftSave());
+    });
+  }
 
   function getRawSettings() {
     try {
@@ -138,6 +245,7 @@
         servicios.splice(Number(btn.dataset.idx), 1);
         renderServicios();
         recalcularTotales();
+        scheduleCcDraftSave();
       });
     });
     recalcularTotales();
@@ -159,6 +267,7 @@
     const totalCell = tr.querySelector('.cc-svc-total');
     if (totalCell) totalCell.textContent = formatoPesos(row.cant * row.unit);
     recalcularTotales();
+    scheduleCcDraftSave();
   }
 
   function getSubtotal() {
@@ -262,6 +371,9 @@
     initFechas();
     renderServicios();
     syncFirmaCliente();
+    global.ArpaSignature?.clear?.('canvas-cc-cobrador');
+    global.ArpaSignature?.clear?.('canvas-cc-cliente');
+    clearCcDraft();
   }
 
   function initFechas() {
@@ -321,14 +433,16 @@
   }
 
   async function generarPDF() {
-    const jsPDF = global.jspdf?.jsPDF;
+    const jsPDF = getJsPDF();
     if (!jsPDF) {
-      alert('No se pudo cargar jsPDF. Verifique su conexión e intente de nuevo.');
+      scheduleCcDraftSave(true);
+      alert('No se pudo cargar jsPDF. Abra la app una vez con internet para habilitar PDF offline, o verifique su conexión e intente de nuevo.');
       return;
     }
 
     const d = getFormSnapshot();
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    try {
+      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     const pw = doc.internal.pageSize.getWidth();
     const ph = doc.internal.pageSize.getHeight();
     const m = 14;
@@ -526,6 +640,16 @@
 
     if (y > ph - 35) { doc.addPage(); y = m; }
     const sigW = (pw - m * 2 - 10) / 2;
+    const sigH = 14;
+    const sigCobrador = global.ArpaSignature?.getDataUrl?.('canvas-cc-cobrador');
+    const sigCliente = global.ArpaSignature?.getDataUrl?.('canvas-cc-cliente');
+    if (sigCobrador) {
+      try { doc.addImage(sigCobrador, 'PNG', m + 2, y, sigW * 0.85, sigH); } catch (e) { /* skip */ }
+    }
+    if (sigCliente) {
+      try { doc.addImage(sigCliente, 'PNG', m + sigW + 12, y, sigW * 0.85, sigH); } catch (e) { /* skip */ }
+    }
+    y += sigH + 2;
     doc.setDrawColor(180, 180, 180);
     doc.line(m, y + 12, m + sigW, y + 12);
     doc.line(m + sigW + 10, y + 12, pw - m, y + 12);
@@ -548,24 +672,37 @@
     doc.text(arpaFooter, pw / 2, ph - 5.5, { align: 'center' });
 
     const filename = `CuentaCobro_${d.numero || 'CC'}_${sanitizeFilename(d.cliente.nombre)}.pdf`;
-    doc.save(filename);
+      doc.save(filename);
+      global.ArpaHistorial?.captureFromCuentaCobro?.(d);
+      clearCcDraft();
+    } catch (e) {
+      scheduleCcDraftSave(true);
+      alert('No se pudo generar el PDF. Los datos del formulario se conservaron; intente de nuevo.');
+    }
   }
 
   function refreshView() {
     renderCobrador();
-    loadPagoFields();
-    loadCiudadFromConfig();
-    renderServicios();
     syncFirmaCliente();
+    recalcularTotales();
   }
 
   function initCuentaCobro() {
-    initFechas();
-    ensureCcNumero();
+    global.ArpaSignature?.initCanvas?.('canvas-cc-cobrador');
+    global.ArpaSignature?.initCanvas?.('canvas-cc-cliente');
+
+    const hadDraft = applyCcDraft();
+    if (!hadDraft) {
+      initFechas();
+      ensureCcNumero();
+      loadPagoFields();
+      loadCiudadFromConfig();
+    }
+
     renderCobrador();
-    loadPagoFields();
-    loadCiudadFromConfig();
     renderServicios();
+    syncFirmaCliente();
+    bindCcDraftListeners();
 
     document.getElementById('cc-pago-tipo')?.addEventListener('change', savePagoToSettings);
     PAGO_FIELD_IDS.forEach((id) => {
@@ -579,6 +716,7 @@
     document.getElementById('btn-cc-add-servicio')?.addEventListener('click', () => {
       servicios.push({ desc: '', cant: 1, unit: 0 });
       renderServicios();
+      scheduleCcDraftSave();
     });
     document.getElementById('btn-cc-limpiar')?.addEventListener('click', limpiarFormulario);
     document.getElementById('btn-cc-whatsapp')?.addEventListener('click', enviarWhatsApp);
@@ -592,7 +730,11 @@
     ensureCcNumero,
     limpiarFormulario,
     enviarWhatsApp,
-    generarPDF
+    generarPDF,
+    getFormSnapshot,
+    collectCcDraft,
+    applyCcDraft,
+    scheduleCcDraftSave
   };
   global.nuevoCcNumero = nuevoCcNumero;
 })(window);

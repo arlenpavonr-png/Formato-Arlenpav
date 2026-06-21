@@ -52,6 +52,7 @@
     const snap = readFormSnapshot();
     const record = {
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+      modulo: 'formato',
       ...snap,
       savedAt: new Date().toISOString()
     };
@@ -59,6 +60,30 @@
     const records = getRecords();
     records.unshift(record);
     saveRecords(records);
+    return record;
+  }
+
+  function captureFromCuentaCobro(snap) {
+    const d = snap || global.ArpaCuentaCobro?.getFormSnapshot?.();
+    if (!d) return null;
+
+    const record = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+      modulo: 'cuenta-cobro',
+      numero: d.numero || '',
+      numeroServicio: d.numero || '',
+      cliente: d.cliente?.nombre || '',
+      tipo: 'Cuenta de Cobro',
+      ciudad: d.ciudad || '',
+      fecha: d.fechaEmision || '',
+      total: d.total,
+      savedAt: new Date().toISOString()
+    };
+
+    const records = getRecords();
+    records.unshift(record);
+    saveRecords(records);
+    render();
     return record;
   }
 
@@ -101,6 +126,7 @@
           <div class="historial-row"><span>Cliente</span><strong>${escapeHtml(r.cliente || '—')}</strong></div>
           <div class="historial-row"><span>Ciudad</span><strong>${escapeHtml(r.ciudad || '—')}</strong></div>
           <div class="historial-row"><span>Fecha</span><strong>${escapeHtml(r.fecha || '—')}</strong></div>
+          ${r.total != null ? `<div class="historial-row"><span>Total</span><strong>${escapeHtml(formatoPesos(r.total))}</strong></div>` : ''}
         </div>
         <button type="button" class="historial-delete" data-id="${escapeHtml(r.id)}" aria-label="Eliminar registro">Eliminar</button>
       </article>
@@ -122,13 +148,14 @@
       return;
     }
 
-    const header = ['Numero', 'Cliente', 'Tipo', 'Ciudad', 'Fecha', 'Guardado'];
+    const header = ['Numero', 'Cliente', 'Tipo', 'Ciudad', 'Fecha', 'Total', 'Guardado'];
     const rows = records.map((r) => [
       r.numeroServicio || r.numero,
       r.cliente,
       r.tipo,
       r.ciudad,
       r.fecha,
+      r.total != null ? r.total : '',
       r.savedAt
     ]);
 
@@ -169,6 +196,7 @@
     readInputLikePdf,
     readFormSnapshot,
     captureFromFormato,
+    captureFromCuentaCobro,
     render,
     exportCSV,
     removeRecord

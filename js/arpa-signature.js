@@ -104,7 +104,9 @@
     'canvas-firma-cliente',
     'canvas-firma-tecnico',
     'canvas-cot-cliente',
-    'canvas-cot-elaborado'
+    'canvas-cot-elaborado',
+    'canvas-cc-cobrador',
+    'canvas-cc-cliente'
   ];
 
   function hasSignature(id) {
@@ -112,11 +114,33 @@
     return canvas ? canvasHasInk(canvas) : false;
   }
 
+  function getDataUrl(id) {
+    const canvas = document.getElementById(id);
+    if (!canvas || !canvasHasInk(canvas)) return '';
+    return canvas.toDataURL('image/png');
+  }
+
+  function restoreDataUrl(id, dataUrl) {
+    if (!dataUrl) return;
+    const canvas = document.getElementById(id);
+    if (!canvas) return;
+    initCanvas(id);
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+    img.src = dataUrl;
+  }
+
   global.ArpaSignature = {
     initCanvas,
     initAll,
     clear,
     hasSignature,
+    getDataUrl,
+    restoreDataUrl,
     prepareForPrint,
     restoreAfterPrint,
     DEFAULT_CANVASES
