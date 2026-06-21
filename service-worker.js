@@ -1,4 +1,4 @@
-const CACHE_NAME = 'arpa-suite-cache-v53';
+const CACHE_NAME = 'arpa-suite-cache-v54';
 const BASE = self.location.pathname.replace(/service-worker\.js$/, '');
 const ASSETS = [
   BASE,
@@ -21,15 +21,15 @@ const ASSETS = [
   BASE + 'js/arpa-onboarding.js',
   BASE + 'js/arpa-historial.js',
   BASE + 'js/arpa-whatsapp.js',
+  BASE + 'js/html2canvas.min.js',
+  BASE + 'js/jspdf.umd.min.js',
   BASE + 'icon-192.png',
   BASE + 'icon-512.png',
   BASE + 'icon-maskable-192.png',
   BASE + 'icon-maskable-512.png',
   BASE + 'apple-touch-icon.png',
   'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap',
-  'https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js'
+  'https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js'
 ];
 
 function isNetworkFirst(url) {

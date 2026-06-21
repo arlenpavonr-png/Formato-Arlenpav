@@ -13,7 +13,7 @@
   let draftSaveTimer = null;
 
   function getJsPDF() {
-    return global.jspdf?.jsPDF || null;
+    return global.jspdf?.jsPDF || global.jsPDF || null;
   }
 
   function collectCcDraft() {
@@ -436,7 +436,7 @@
     const jsPDF = getJsPDF();
     if (!jsPDF) {
       scheduleCcDraftSave(true);
-      alert('No se pudo cargar jsPDF. Abra la app una vez con internet para habilitar PDF offline, o verifique su conexión e intente de nuevo.');
+      alert('No se pudo cargar jsPDF. Recargue la aplicación e intente de nuevo.');
       return;
     }
 

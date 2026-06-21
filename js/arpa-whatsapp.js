@@ -56,7 +56,7 @@
   }
 
   async function generarFormatoPdfFile() {
-    const jsPDF = global.jspdf?.jsPDF;
+    const jsPDF = global.jspdf?.jsPDF || global.jsPDF;
     const html2canvas = global.html2canvas;
     if (!jsPDF || !html2canvas) return null;
 
