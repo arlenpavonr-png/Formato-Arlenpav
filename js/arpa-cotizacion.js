@@ -295,6 +295,24 @@
     });
   }
 
+  function getCotSnapshot() {
+    global.ArpaCobros?.syncFromEditor?.('cot');
+    const subtotalProductos = filas.reduce((s, f) => s + f.pvp * f.cant, 0);
+    const subtotalCobros = getCobrosLineas().reduce((s, f) => s + f.pvp * f.cant, 0);
+    const subtotal = subtotalProductos + subtotalCobros;
+    const conIva = document.getElementById('iva-check-cot')?.checked;
+    const iva = conIva ? subtotal * 0.19 : 0;
+    const total = subtotal + iva;
+
+    return {
+      numero: document.getElementById('numero-cot')?.value.trim() || '',
+      cliente: document.getElementById('cot-nombre')?.value.trim() || '',
+      ciudad: document.getElementById('cot-ciudad')?.value.trim() || '',
+      fecha: document.getElementById('cot-fecha')?.value || '',
+      total
+    };
+  }
+
   function guardarCotPDF() {
     var _numCot = (document.getElementById('numero-cot')?.value || '').trim();
     var _cliente = document.querySelector('#cot-nombre, #cot-cliente, input[name*=nombre]')?.value?.trim() || '';
@@ -307,6 +325,7 @@
     global.applyUserSettingsToUI?.();
     global.ArpaCobros?.syncFromEditor?.('cot');
     renderTablaCot();
+    global.ArpaHistorial?.captureFromCotizacion?.();
 
     const viewRoot = document.getElementById('view-cotizacion');
     const viewWasHidden = viewRoot?.hasAttribute('hidden') ?? false;
@@ -429,6 +448,7 @@
     nuevoCotNumero,
     ensureCotNumero,
     guardarCotPDF,
+    getCotSnapshot,
     getCatalogoActivo,
     updateCatalogHint,
   };

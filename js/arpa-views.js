@@ -72,6 +72,7 @@
 
   function openHistorialView(menuBtn) {
     currentView = 'historial';
+    global.applyUserSettingsToUI?.();
     global.ArpaMiCatalogo?.setFabVisible?.(false);
     document.querySelectorAll('.suite-view').forEach((el) => {
       el.hidden = el.id !== 'view-historial';

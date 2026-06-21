@@ -11,6 +11,12 @@
     reparacion: 'Reparación'
   };
 
+  const DOC_META = {
+    formato: { icon: '📋', label: 'Formato de Servicio', className: 'historial-doc-formato' },
+    cotizacion: { icon: '💰', label: 'Cotización', className: 'historial-doc-cotizacion' },
+    'cuenta-cobro': { icon: '🧾', label: 'Cuenta de Cobro', className: 'historial-doc-cuenta-cobro' }
+  };
+
   function getRecords() {
     try {
       const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
@@ -24,6 +30,10 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(records.slice(0, MAX_RECORDS)));
   }
 
+  function newRecordId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
   function readInputLikePdf(el) {
     if (!el) return '';
     if (el.tagName === 'SELECT') {
@@ -31,6 +41,45 @@
     }
     const valor = (el.value || '').trim();
     return valor || (el.placeholder || '').trim();
+  }
+
+  function inferModulo(record) {
+    if (record?.modulo) return record.modulo;
+    if (record?.tipo === 'Cuenta de Cobro') return 'cuenta-cobro';
+    if (record?.documento === 'Cotización' || record?.tipo === 'Cotización') return 'cotizacion';
+    return 'formato';
+  }
+
+  function getDocumentoMeta(record) {
+    const modulo = inferModulo(record);
+    return DOC_META[modulo] || DOC_META.formato;
+  }
+
+  function getDocumentoLabel(record) {
+    return record?.documento || getDocumentoMeta(record).label;
+  }
+
+  function getSubtipoLabel(record) {
+    if (record?.subtipo) return record.subtipo;
+    const modulo = inferModulo(record);
+    if (modulo === 'formato') {
+      const tipo = record?.tipo || '';
+      if (tipo && tipo !== getDocumentoLabel(record)) return tipo;
+    }
+    return '';
+  }
+
+  function shouldShowTotal(record) {
+    const modulo = inferModulo(record);
+    return modulo === 'cotizacion' || modulo === 'cuenta-cobro';
+  }
+
+  function addRecord(record) {
+    const records = getRecords();
+    records.unshift(record);
+    saveRecords(records);
+    render();
+    return record;
   }
 
   function readFormSnapshot() {
@@ -42,7 +91,7 @@
       numero: numeroServicio,
       numeroServicio,
       cliente: readInputLikePdf(document.getElementById('formato-cliente-nombre')),
-      tipo: TIPO_LABEL[tipoKey] || 'Instalación',
+      subtipo: TIPO_LABEL[tipoKey] || 'Instalación',
       ciudad: readInputLikePdf(document.getElementById('formato-cliente-ciudad')),
       fecha: document.getElementById('formato-fecha')?.value || ''
     };
@@ -50,41 +99,57 @@
 
   function captureFromFormato() {
     const snap = readFormSnapshot();
-    const record = {
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+    return addRecord({
+      id: newRecordId(),
       modulo: 'formato',
-      ...snap,
+      documento: 'Formato de Servicio',
+      subtipo: snap.subtipo,
+      tipo: snap.subtipo,
+      numero: snap.numero,
+      numeroServicio: snap.numeroServicio,
+      cliente: snap.cliente,
+      ciudad: snap.ciudad,
+      fecha: snap.fecha,
       savedAt: new Date().toISOString()
-    };
+    });
+  }
 
-    const records = getRecords();
-    records.unshift(record);
-    saveRecords(records);
-    return record;
+  function captureFromCotizacion(snap) {
+    const d = snap || global.ArpaCotizacion?.getCotSnapshot?.();
+    if (!d) return null;
+
+    return addRecord({
+      id: newRecordId(),
+      modulo: 'cotizacion',
+      documento: 'Cotización',
+      tipo: 'Cotización',
+      numero: d.numero || '',
+      numeroServicio: d.numero || '',
+      cliente: d.cliente || '',
+      ciudad: d.ciudad || '',
+      fecha: d.fecha || '',
+      total: d.total,
+      savedAt: new Date().toISOString()
+    });
   }
 
   function captureFromCuentaCobro(snap) {
     const d = snap || global.ArpaCuentaCobro?.getFormSnapshot?.();
     if (!d) return null;
 
-    const record = {
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+    return addRecord({
+      id: newRecordId(),
       modulo: 'cuenta-cobro',
+      documento: 'Cuenta de Cobro',
+      tipo: 'Cuenta de Cobro',
       numero: d.numero || '',
       numeroServicio: d.numero || '',
       cliente: d.cliente?.nombre || '',
-      tipo: 'Cuenta de Cobro',
       ciudad: d.ciudad || '',
       fecha: d.fechaEmision || '',
       total: d.total,
       savedAt: new Date().toISOString()
-    };
-
-    const records = getRecords();
-    records.unshift(record);
-    saveRecords(records);
-    render();
-    return record;
+    });
   }
 
   function removeRecord(id) {
@@ -116,21 +181,28 @@
     }
 
     if (empty) empty.hidden = true;
-    list.innerHTML = records.map((r) => `
+    list.innerHTML = records.map((r) => {
+      const meta = getDocumentoMeta(r);
+      const subtipo = getSubtipoLabel(r);
+      const showTotal = shouldShowTotal(r) && r.total != null;
+      return `
       <article class="historial-card" data-id="${escapeHtml(r.id)}">
         <div class="historial-card-head">
           <span class="historial-num">N° ${escapeHtml(r.numeroServicio || r.numero || '—')}</span>
-          <span class="historial-tipo">${escapeHtml(r.tipo)}</span>
+          <span class="historial-tipo ${meta.className}">
+            ${meta.icon} ${escapeHtml(getDocumentoLabel(r))}
+            ${subtipo ? `<span class="historial-subtipo">${escapeHtml(subtipo)}</span>` : ''}
+          </span>
         </div>
         <div class="historial-card-body">
           <div class="historial-row"><span>Cliente</span><strong>${escapeHtml(r.cliente || '—')}</strong></div>
           <div class="historial-row"><span>Ciudad</span><strong>${escapeHtml(r.ciudad || '—')}</strong></div>
           <div class="historial-row"><span>Fecha</span><strong>${escapeHtml(r.fecha || '—')}</strong></div>
-          ${r.total != null ? `<div class="historial-row"><span>Total</span><strong>${escapeHtml(formatoPesos(r.total))}</strong></div>` : ''}
+          ${showTotal ? `<div class="historial-row"><span>Total</span><strong>${escapeHtml(formatoPesos(r.total))}</strong></div>` : ''}
         </div>
         <button type="button" class="historial-delete" data-id="${escapeHtml(r.id)}" aria-label="Eliminar registro">Eliminar</button>
-      </article>
-    `).join('');
+      </article>`;
+    }).join('');
 
     list.querySelectorAll('.historial-delete').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -148,14 +220,15 @@
       return;
     }
 
-    const header = ['Numero', 'Cliente', 'Tipo', 'Ciudad', 'Fecha', 'Total', 'Guardado'];
+    const header = ['Documento', 'Subtipo', 'Numero', 'Cliente', 'Ciudad', 'Fecha', 'Total', 'Guardado'];
     const rows = records.map((r) => [
+      getDocumentoLabel(r),
+      getSubtipoLabel(r),
       r.numeroServicio || r.numero,
       r.cliente,
-      r.tipo,
       r.ciudad,
       r.fecha,
-      r.total != null ? r.total : '',
+      shouldShowTotal(r) && r.total != null ? r.total : '',
       r.savedAt
     ]);
 
@@ -196,6 +269,7 @@
     readInputLikePdf,
     readFormSnapshot,
     captureFromFormato,
+    captureFromCotizacion,
     captureFromCuentaCobro,
     render,
     exportCSV,
