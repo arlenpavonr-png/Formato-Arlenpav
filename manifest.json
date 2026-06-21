@@ -1,10 +1,10 @@
 {
-  "id": "https://arpatechnologyglobal.com/",
+  "id": "https://arpa.arpatechnologyglobal.com/",
   "name": "ARPA Suite",
   "short_name": "ARPA Suite",
   "description": "Plataforma de gestión de campo para técnicos de automatización",
-  "start_url": "https://arpatechnologyglobal.com/",
-  "scope": "https://arpatechnologyglobal.com/",
+  "start_url": "https://arpa.arpatechnologyglobal.com/",
+  "scope": "https://arpa.arpatechnologyglobal.com/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#1a2a4a",
@@ -14,25 +14,25 @@
   "categories": ["business", "productivity"],
   "icons": [
     {
-      "src": "/Formato-Arlenpav/icon-192.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/Formato-Arlenpav/icon-512.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/Formato-Arlenpav/icon-maskable-192.png",
+      "src": "icon-maskable-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/Formato-Arlenpav/icon-maskable-512.png",
+      "src": "icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
