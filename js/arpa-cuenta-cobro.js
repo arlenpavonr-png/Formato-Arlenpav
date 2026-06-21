@@ -403,7 +403,7 @@
     const empresa = d.cobrador.empresa || 'nuestra empresa';
     const telEmp = d.cobrador.tel || '';
     const msg = `Hola ${d.cliente.nombre || 'cliente'}, le compartimos la ${d.numero} de ${empresa} por un valor de ${formatoPesos(d.total)}. Quedamos atentos para cualquier consulta.\n${empresa} 📞 ${telEmp}`;
-    global.ArpaWhatsApp?.openWhatsAppNativeWithFallback?.(d.cliente.tel, msg);
+    global.ArpaWhatsApp?.openWhatsAppWithMessage?.(d.cliente.tel, msg);
   }
 
   function loadImageDataUrl(src) {
