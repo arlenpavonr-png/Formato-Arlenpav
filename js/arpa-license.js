@@ -7,6 +7,8 @@
   const FOUNDER_CODE = 'ARPA-FOUNDER-001';
   const WL_PREFIX = 'ARPA-WL-';
   const PYME_PREFIX = 'ARPA-PYME-';
+  const PRO_PREFIX = 'ARPA-PRO-';
+  const FREE_PREFIX = 'ARPA-FREE-';
 
   function normalizeCode(code) {
     return String(code || '').trim().toUpperCase();
@@ -59,6 +61,23 @@
     return getActiveLicensePlan() === 'PYME';
   }
 
+  function isProPlan(code) {
+    const c = normalizeCode(code || getActiveLicenseCode());
+    if (c.indexOf(PRO_PREFIX) === 0) return true;
+    return getActiveLicensePlan() === 'PRO';
+  }
+
+  /** Trial auto 7 días (ARPA-FREE-*). Excluye Founder, Pro, PYME y White Label. */
+  function isFreeTrialLicense(code) {
+    const c = normalizeCode(code || getActiveLicenseCode());
+    if (!c) return false;
+    if (isFounderLicense(c)) return false;
+    if (isWhiteLabelLicense(c)) return false;
+    if (isPymePlan(c)) return false;
+    if (isProPlan(c)) return false;
+    return c.indexOf(FREE_PREFIX) === 0;
+  }
+
   function requiresTechnicianCode(code) {
     return isPymePlan(code);
   }
@@ -67,6 +86,8 @@
     FOUNDER_CODE,
     WL_PREFIX,
     PYME_PREFIX,
+    PRO_PREFIX,
+    FREE_PREFIX,
     LICENSE_PLAN_KEY,
     getActiveLicenseCode,
     getActiveLicensePlan,
@@ -76,6 +97,8 @@
     canCustomizeBrand,
     isExemptFromPlanRestrictions,
     isPymePlan,
+    isProPlan,
+    isFreeTrialLicense,
     requiresTechnicianCode
   };
 })(typeof window !== 'undefined' ? window : globalThis);

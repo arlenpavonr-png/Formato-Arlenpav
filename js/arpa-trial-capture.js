@@ -92,7 +92,7 @@
   }
 
   function needsBackupCaptureOnLoad() {
-    if (isCaptureCompleted()) return false;
+    if (!shouldOfferTrialCapture()) return false;
     if (!getTrialStartDate()) return false;
     if (hasDocumentSaved()) return false;
     return getTrialDayIndex() >= 2;
@@ -119,10 +119,59 @@
     return digits;
   }
 
+  function getPreferredOficioId() {
+    try {
+      const stored = (localStorage.getItem(TRIAL_OFICIO_KEY) || '').trim();
+      if (stored && OFICIO_OPTIONS.some((o) => o.id === stored)) return stored;
+      const raw = localStorage.getItem(ACTIVE_OFICIOS_KEY);
+      if (!raw) return '';
+      const parsed = JSON.parse(raw);
+      const id = Array.isArray(parsed) ? String(parsed[0] || '').trim() : '';
+      return OFICIO_OPTIONS.some((o) => o.id === id) ? id : '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function readOficioSelectValue(select) {
+    if (!select) return '';
+    const value = (select.value || '').trim();
+    if (value) return value;
+    const idx = select.selectedIndex;
+    if (idx > 0 && select.options[idx]) {
+      return (select.options[idx].value || '').trim();
+    }
+    return '';
+  }
+
   function populateOficioSelect(select) {
-    if (!select || select.options.length > 1) return;
+    if (!select) return;
     select.innerHTML = '<option value="">' + t('trial_capture.oficio_placeholder', 'Seleccione su oficio…') + '</option>' +
       OFICIO_OPTIONS.map((o) => `<option value="${o.id}">${o.label}</option>`).join('');
+    const preferred = getPreferredOficioId();
+    if (preferred) {
+      select.value = preferred;
+    } else {
+      select.selectedIndex = 0;
+    }
+  }
+
+  function isFreeTrialUser() {
+    if (global.ArpaLicense && typeof global.ArpaLicense.isFreeTrialLicense === 'function') {
+      return global.ArpaLicense.isFreeTrialLicense();
+    }
+    const code = getSavedLicenseCode().toUpperCase();
+    if (!code) return false;
+    if (code === 'ARPA-FOUNDER-001') return false;
+    if (code.indexOf('ARPA-WL-') === 0) return false;
+    if (code.indexOf('ARPA-PYME-') === 0) return false;
+    if (code.indexOf('ARPA-PRO-') === 0) return false;
+    return code.indexOf('ARPA-FREE-') === 0;
+  }
+
+  function shouldOfferTrialCapture() {
+    if (isCaptureCompleted()) return false;
+    return isFreeTrialUser();
   }
 
   function showCaptureError(msg) {
@@ -262,7 +311,7 @@
 
     function onSubmit() {
       const nombre = (nameInput?.value || '').trim();
-      const oficio = (oficioSelect?.value || '').trim();
+      const oficio = readOficioSelectValue(oficioSelect);
       const phone = normalizePhone(phoneInput?.value || '');
 
       if (!nombre) {
@@ -324,7 +373,7 @@
       localStorage.setItem(TRIAL_DOC_SAVED_KEY, 'true');
     } catch (e) { /* ignore */ }
 
-    if (isCaptureCompleted()) return;
+    if (!shouldOfferTrialCapture()) return;
 
     const docLabel = docType === 'cotizacion'
       ? t('trial_capture.doc_cotizacion', 'Cotización')
