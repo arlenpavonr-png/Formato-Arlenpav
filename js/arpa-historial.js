@@ -5,6 +5,14 @@
   const STORAGE_KEY = 'arpa_suite_servicio_historial';
   const MAX_RECORDS = 200;
 
+  function formatFechaLegible(fechaStr) {
+    if (!fechaStr) return '—';
+    const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    const d = new Date(fechaStr + 'T12:00:00');
+    if (isNaN(d)) return fechaStr;
+    return `${d.getDate()} ${meses[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
   const TIPO_LABEL = {
     instalacion: 'Instalación',
     mantenimiento: 'Mantenimiento',
@@ -100,8 +108,15 @@
   }
 
   function getConceptoDisplay(record) {
+    const partes = [];
+    const subtipo = getSubtipoLabel(record);
+    if (subtipo) partes.push(subtipo);
+    const ciudad = (record?.ciudad || '').trim();
+    if (ciudad) partes.push(ciudad);
     const concepto = (record?.concepto || '').trim();
-    return concepto || SIN_DESCRIPCION;
+    if (concepto) partes.push(concepto);
+    if (!partes.length) return SIN_DESCRIPCION;
+    return partes.join(' · ');
   }
 
   function getFormatoBriefDetail() {
@@ -260,6 +275,95 @@
       .replace(/"/g, '&quot;');
   }
 
+  function renderCard(r) {
+    const meta = getDocumentoMeta(r);
+    const subtipo = getSubtipoLabel(r);
+    const showTotal = shouldShowTotal(r) && r.total != null;
+    return `
+      <article class="historial-card" data-id="${escapeHtml(r.id)}">
+        <div class="historial-card-head">
+          <span class="historial-num">N° ${escapeHtml(r.numeroServicio || r.numero || '—')}</span>
+          <span class="historial-tipo ${meta.className}">
+            ${meta.icon} ${escapeHtml(getDocumentoLabel(r))}
+            ${subtipo ? `<span class="historial-subtipo">${escapeHtml(subtipo)}</span>` : ''}
+          </span>
+        </div>
+        <div class="historial-card-body">
+          <div class="historial-row"><span>Cliente</span><strong>${escapeHtml(r.cliente || '—')}</strong></div>
+          <div class="historial-row historial-row-concepto"><span>Concepto</span><strong>${escapeHtml(getConceptoDisplay(r))}</strong></div>
+          <div class="historial-row"><span>Ciudad</span><strong>${escapeHtml(r.ciudad || '—')}</strong></div>
+          <div class="historial-row"><span>Fecha</span><strong>${escapeHtml(formatFechaLegible(r.fecha))}</strong></div>
+          ${showTotal ? `<div class="historial-row"><span>Total</span><strong>${escapeHtml(formatoPesos(r.total))}</strong></div>` : ''}
+        </div>
+        <button type="button" class="historial-delete" data-id="${escapeHtml(r.id)}" aria-label="Eliminar registro">Eliminar</button>
+        <button type="button" class="btn-ver-doc" onclick="ArpaHistorial.verDocumento('${escapeHtml(r.id)}')">
+          Ver documento 📄
+        </button>
+      </article>`;
+  }
+
+  function verDocumento(id) {
+    const records = getRecords();
+    const r = records.find((rec) => rec.id === id);
+    if (!r) {
+      alert('Registro no encontrado.');
+      return;
+    }
+    const modulo = inferModulo(r);
+
+    if (modulo === 'formato') {
+      document.querySelector('.main-menu-btn[onclick*="scrollToTopMenu"]')?.click();
+      setTimeout(() => {
+        if (r.cliente) {
+          const el = document.getElementById('formato-cliente-nombre');
+          if (el) el.value = r.cliente;
+        }
+        if (r.ciudad) {
+          const el = document.getElementById('formato-cliente-ciudad');
+          if (el) el.value = r.ciudad;
+        }
+        if (r.fecha) {
+          const el = document.getElementById('formato-fecha');
+          if (el) el.value = r.fecha;
+        }
+        window.scrollTo(0, 0);
+        alert('Documento restaurado. Revisa los datos y genera el PDF.');
+      }, 400);
+    } else if (modulo === 'cotizacion') {
+      document.querySelector('.main-menu-btn[onclick*="openCotizacionView"]')?.click();
+      setTimeout(() => {
+        if (r.cliente) {
+          const el = document.getElementById('cot-nombre');
+          if (el) el.value = r.cliente;
+        }
+        if (r.ciudad) {
+          const el = document.getElementById('cot-ciudad');
+          if (el) el.value = r.ciudad;
+        }
+        if (r.fecha) {
+          const el = document.getElementById('cot-fecha');
+          if (el) el.value = r.fecha;
+        }
+        window.scrollTo(0, 0);
+        alert('Documento restaurado. Revisa los datos y genera el PDF.');
+      }, 400);
+    } else {
+      document.querySelector('.main-menu-btn[onclick*="openCuentaCobroView"]')?.click();
+      setTimeout(() => {
+        if (r.cliente) {
+          const el = document.getElementById('cc-cliente-nombre');
+          if (el) el.value = r.cliente;
+        }
+        if (r.fecha) {
+          const el = document.getElementById('cc-fecha-emision');
+          if (el) el.value = r.fecha;
+        }
+        window.scrollTo(0, 0);
+        alert('Documento restaurado. Revisa los datos y genera el PDF.');
+      }, 400);
+    }
+  }
+
   function render() {
     const list = document.getElementById('historial-list');
     const empty = document.getElementById('historial-empty');
@@ -273,29 +377,7 @@
     }
 
     if (empty) empty.hidden = true;
-    list.innerHTML = records.map((r) => {
-      const meta = getDocumentoMeta(r);
-      const subtipo = getSubtipoLabel(r);
-      const showTotal = shouldShowTotal(r) && r.total != null;
-      return `
-      <article class="historial-card" data-id="${escapeHtml(r.id)}">
-        <div class="historial-card-head">
-          <span class="historial-num">N° ${escapeHtml(r.numeroServicio || r.numero || '—')}</span>
-          <span class="historial-tipo ${meta.className}">
-            ${meta.icon} ${escapeHtml(getDocumentoLabel(r))}
-            ${subtipo ? `<span class="historial-subtipo">${escapeHtml(subtipo)}</span>` : ''}
-          </span>
-        </div>
-        <div class="historial-card-body">
-          <div class="historial-row"><span>Cliente</span><strong>${escapeHtml(r.cliente || '—')}</strong></div>
-          <div class="historial-row historial-row-concepto"><span>Concepto</span><strong>${escapeHtml(getConceptoDisplay(r))}</strong></div>
-          <div class="historial-row"><span>Ciudad</span><strong>${escapeHtml(r.ciudad || '—')}</strong></div>
-          <div class="historial-row"><span>Fecha</span><strong>${escapeHtml(r.fecha || '—')}</strong></div>
-          ${showTotal ? `<div class="historial-row"><span>Total</span><strong>${escapeHtml(formatoPesos(r.total))}</strong></div>` : ''}
-        </div>
-        <button type="button" class="historial-delete" data-id="${escapeHtml(r.id)}" aria-label="Eliminar registro">Eliminar</button>
-      </article>`;
-    }).join('');
+    list.innerHTML = records.map((r) => renderCard(r)).join('');
 
     list.querySelectorAll('.historial-delete').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -371,7 +453,8 @@
     captureFromCuentaCobro,
     render,
     exportCSV,
-    removeRecord
+    removeRecord,
+    verDocumento
   };
 
   global.guardarPDFYHistorial = guardarPDFYHistorial;
