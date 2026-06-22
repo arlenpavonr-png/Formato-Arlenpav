@@ -14,7 +14,7 @@
     { id: 'refrigeracion', i18nKey: 'oficio.refrigeracion' },
     { id: 'cctv', i18nKey: 'oficio.cctv' },
     { id: 'plomeria', i18nKey: 'oficio.plomeria' },
-    { id: 'cerrajeria', i18nKey: 'oficio.cerrajeria' },
+    { id: 'metalmecanica', i18nKey: 'oficio.metalmecanica' },
     { id: 'plagas', i18nKey: 'oficio.plagas' },
     { id: 'linea_blanca', i18nKey: 'oficio.linea_blanca' },
     { id: 'solar', i18nKey: 'oficio.solar' }
@@ -142,29 +142,29 @@
     ];
   }
 
-  /** Catálogo base Cerrajería — 20 productos (COP). */
-  function seedCatalog_cerrajeria() {
+  /** Catálogo base Metalmecánica y Soldadura — 20 productos (COP). */
+  function seedCatalog_metalmecanica() {
     return [
-      { cod: 'CER-001', nom: 'Cerradura pomo baño', categoria: 'Cerraduras', pvp: 45000, unidad: 'un' },
-      { cod: 'CER-002', nom: 'Cerradura pomo alcoba', categoria: 'Cerraduras', pvp: 65000, unidad: 'un' },
-      { cod: 'CER-003', nom: 'Cerradura doble seguro', categoria: 'Cerraduras', pvp: 120000, unidad: 'un' },
-      { cod: 'CER-004', nom: 'Cerradura magnética 180kg', categoria: 'Cerraduras', pvp: 280000, unidad: 'un' },
-      { cod: 'CER-005', nom: 'Cerradura digital táctil', categoria: 'Cerraduras', pvp: 450000, unidad: 'un' },
-      { cod: 'CER-006', nom: 'Cerradura biométrica', categoria: 'Cerraduras', pvp: 680000, unidad: 'un' },
-      { cod: 'CER-007', nom: 'Chapa eléctrica', categoria: 'Cerraduras', pvp: 185000, unidad: 'un' },
-      { cod: 'CER-008', nom: 'Manija con pulsador', categoria: 'Accesorios', pvp: 95000, unidad: 'un' },
-      { cod: 'CER-009', nom: 'Bisagra acero inox 4" (par)', categoria: 'Accesorios', pvp: 25000, unidad: 'un' },
-      { cod: 'CER-010', nom: 'Brazo cierre puerta hidráulico', categoria: 'Accesorios', pvp: 145000, unidad: 'un' },
-      { cod: 'CER-011', nom: 'Copia llave sencilla', categoria: 'Servicios', pvp: 8000, unidad: 'servicio' },
-      { cod: 'CER-012', nom: 'Copia llave de seguridad', categoria: 'Servicios', pvp: 25000, unidad: 'servicio' },
-      { cod: 'CER-013', nom: 'Apertura de emergencia', categoria: 'Servicios', pvp: 95000, unidad: 'servicio' },
-      { cod: 'CER-014', nom: 'Cambio de cilindro', categoria: 'Servicios', pvp: 65000, unidad: 'servicio' },
-      { cod: 'CER-015', nom: 'Instalación cerradura sencilla', categoria: 'Servicios', pvp: 55000, unidad: 'servicio' },
-      { cod: 'CER-016', nom: 'Instalación cerradura digital', categoria: 'Servicios', pvp: 95000, unidad: 'servicio' },
-      { cod: 'CER-017', nom: 'Reparación cerradura', categoria: 'Servicios', pvp: 75000, unidad: 'servicio' },
-      { cod: 'CER-018', nom: 'Refuerzo marco puerta', categoria: 'Servicios', pvp: 180000, unidad: 'servicio' },
-      { cod: 'CER-019', nom: 'Control acceso tarjeta RFID', categoria: 'Control Acceso', pvp: 320000, unidad: 'un' },
-      { cod: 'CER-020', nom: 'Visita técnica diagnóstico', categoria: 'Servicios', pvp: 45000, unidad: 'servicio' }
+      { cod: 'MET-001', nom: 'Electrodo 6013 1/8" (kg)', categoria: 'Consumibles', pvp: 18000, unidad: 'kg' },
+      { cod: 'MET-002', nom: 'Electrodo 7018 1/8" (kg)', categoria: 'Consumibles', pvp: 22000, unidad: 'kg' },
+      { cod: 'MET-003', nom: 'Disco de corte 4.5" (unidad)', categoria: 'Consumibles', pvp: 4500, unidad: 'un' },
+      { cod: 'MET-004', nom: 'Disco de desbaste 4.5" (unidad)', categoria: 'Consumibles', pvp: 6500, unidad: 'un' },
+      { cod: 'MET-005', nom: 'Disco de corte 9" (unidad)', categoria: 'Consumibles', pvp: 8500, unidad: 'un' },
+      { cod: 'MET-006', nom: 'Perfil cuadrado 1" calibre 18 (metro)', categoria: 'Perfiles', pvp: 12000, unidad: 'metro' },
+      { cod: 'MET-007', nom: 'Perfil cuadrado 2" calibre 16 (metro)', categoria: 'Perfiles', pvp: 22000, unidad: 'metro' },
+      { cod: 'MET-008', nom: 'Perfil rectangular 1x2" calibre 18 (metro)', categoria: 'Perfiles', pvp: 16000, unidad: 'metro' },
+      { cod: 'MET-009', nom: 'Ángulo 1.5" calibre 14 (metro)', categoria: 'Perfiles', pvp: 18000, unidad: 'metro' },
+      { cod: 'MET-010', nom: 'Lámina cold rolled calibre 18 (m²)', categoria: 'Láminas', pvp: 45000, unidad: 'm2' },
+      { cod: 'MET-011', nom: 'Lámina galvanizada calibre 26 (m²)', categoria: 'Láminas', pvp: 38000, unidad: 'm2' },
+      { cod: 'MET-012', nom: 'Pintura anticorrosiva gris (galón)', categoria: 'Acabados', pvp: 65000, unidad: 'galón' },
+      { cod: 'MET-013', nom: 'Pintura esmalte color (galón)', categoria: 'Acabados', pvp: 72000, unidad: 'galón' },
+      { cod: 'MET-014', nom: 'Bisagra reforzada 4" (par)', categoria: 'Accesorios', pvp: 18000, unidad: 'un' },
+      { cod: 'MET-015', nom: 'Riel puerta corrediza (metro)', categoria: 'Accesorios', pvp: 35000, unidad: 'metro' },
+      { cod: 'MET-016', nom: 'Rueda puerta corrediza (unidad)', categoria: 'Accesorios', pvp: 25000, unidad: 'un' },
+      { cod: 'MET-017', nom: 'Fabricación puerta metálica (m²)', categoria: 'Servicios', pvp: 180000, unidad: 'servicio' },
+      { cod: 'MET-018', nom: 'Fabricación reja ventana (m²)', categoria: 'Servicios', pvp: 120000, unidad: 'servicio' },
+      { cod: 'MET-019', nom: 'Fabricación techo corredizo (m²)', categoria: 'Servicios', pvp: 250000, unidad: 'servicio' },
+      { cod: 'MET-020', nom: 'Instalación estructura metálica', categoria: 'Servicios', pvp: 200000, unidad: 'servicio' }
     ];
   }
 
@@ -251,7 +251,7 @@
     refrigeracion: seedCatalog_refrigeracion,
     cctv: seedCatalog_cctv,
     plomeria: seedCatalog_plomeria,
-    cerrajeria: seedCatalog_cerrajeria,
+    metalmecanica: seedCatalog_metalmecanica,
     plagas: seedCatalog_plagas,
     linea_blanca: seedCatalog_linea_blanca,
     solar: seedCatalog_solar
@@ -283,6 +283,7 @@
   function normalizeOficioId(id) {
     const v = String(id || '').trim().toLowerCase();
     if (!v || v === OFICIO_AUTOMATISMOS) return OFICIO_AUTOMATISMOS;
+    if (v === 'cerrajeria') return 'metalmecanica';
     return OFICIOS.some((o) => o.id === v) ? v : OFICIO_AUTOMATISMOS;
   }
 
@@ -358,7 +359,7 @@
       refrigeracion: 'Refrigeración y Aire Acondicionado',
       cctv: 'Cámaras y CCTV / Seguridad Electrónica',
       plomeria: 'Plomería y Fontanería',
-      cerrajeria: 'Cerrajería',
+      metalmecanica: 'Metalmecánica y Soldadura',
       plagas: 'Control de Plagas / Fumigación',
       linea_blanca: 'Línea Blanca / Electrodomésticos',
       solar: 'Energía Solar'
@@ -666,7 +667,7 @@
     seedCatalog_refrigeracion,
     seedCatalog_cctv,
     seedCatalog_plomeria,
-    seedCatalog_cerrajeria,
+    seedCatalog_metalmecanica,
     seedCatalog_plagas,
     seedCatalog_linea_blanca,
     seedCatalog_solar,
@@ -695,6 +696,55 @@
 
   global.precargarCatalogoOficio = precargarCatalogoOficio;
 
+  function migrateCerrajeriaToMetalmecanica() {
+    const FLAG = 'arpa_oficio_metalmecanica_migrated_v1';
+    try {
+      if (localStorage.getItem(FLAG) === 'true') return;
+    } catch (e) {
+      return;
+    }
+
+    try {
+      const hadCerrajeria = (list) =>
+        Array.isArray(list) && list.some((id) => String(id).toLowerCase() === 'cerrajeria');
+
+      const activeRaw = JSON.parse(localStorage.getItem(ACTIVE_OFICIOS_KEY) || 'null');
+      if (hadCerrajeria(activeRaw)) {
+        saveActiveOficios(activeRaw);
+      }
+
+      const brand = global.ArpaBrand;
+      const fromSettings = brand?.getSettings?.()?.activeOficios;
+      if (hadCerrajeria(fromSettings)) {
+        brand.saveSettings({
+          ...brand.getSettings(),
+          activeOficios: normalizeActiveOficiosList(fromSettings)
+        });
+      }
+
+      let seeded = JSON.parse(localStorage.getItem(SEEDED_KEY) || '[]');
+      if (Array.isArray(seeded)) {
+        seeded = seeded
+          .map((id) => String(id).toLowerCase())
+          .filter((id) => id !== 'cerrajeria' && id !== 'metalmecanica');
+        localStorage.setItem(SEEDED_KEY, JSON.stringify(seeded));
+      }
+
+      localStorage.removeItem('arpa_catalog_cerrajeria');
+      localStorage.removeItem('arpa_categorias_cerrajeria');
+      localStorage.removeItem('arpa_catalog_metalmecanica');
+      localStorage.removeItem('arpa_categorias_metalmecanica');
+
+      if (localStorage.getItem('arpa_trial_oficio') === 'cerrajeria') {
+        localStorage.setItem('arpa_trial_oficio', 'metalmecanica');
+      }
+
+      localStorage.setItem(FLAG, 'true');
+    } catch (e) {
+      console.warn('[arpa-oficios] migrateCerrajeriaToMetalmecanica', e);
+    }
+  }
+
   function migrateActiveOficiosKey() {
     try {
       if (localStorage.getItem(ACTIVE_OFICIOS_KEY)) return;
@@ -712,10 +762,12 @@
 
   if (typeof document !== 'undefined') {
     document.addEventListener('DOMContentLoaded', () => {
+      migrateCerrajeriaToMetalmecanica();
       migrateActiveOficiosKey();
       bootstrapCatalogSeeds();
     });
   } else {
+    migrateCerrajeriaToMetalmecanica();
     migrateActiveOficiosKey();
     bootstrapCatalogSeeds();
   }

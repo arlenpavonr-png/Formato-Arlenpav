@@ -257,7 +257,7 @@
     'oficio.refrigeracion': 'Refrigeration & Air Conditioning',
     'oficio.cctv': 'CCTV / Electronic Security',
     'oficio.plomeria': 'Plumbing',
-    'oficio.cerrajeria': 'Locksmith',
+    'oficio.metalmecanica': 'Metalwork & Welding',
     'oficio.plagas': 'Pest Control / Fumigation',
     'oficio.linea_blanca': 'White Goods / Appliances',
     'oficio.solar': 'Solar Energy',

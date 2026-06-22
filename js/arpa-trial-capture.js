@@ -24,7 +24,7 @@
     { id: 'refrigeracion', label: 'Refrigeración y Aire Acondicionado' },
     { id: 'cctv', label: 'Cámaras y CCTV / Seguridad Electrónica' },
     { id: 'plomeria', label: 'Plomería y Fontanería' },
-    { id: 'cerrajeria', label: 'Cerrajería' },
+    { id: 'metalmecanica', label: 'Metalmecánica y Soldadura' },
     { id: 'plagas', label: 'Control de Plagas / Fumigación' },
     { id: 'linea_blanca', label: 'Línea Blanca / Electrodomésticos' },
     { id: 'solar', label: 'Energía Solar' }
