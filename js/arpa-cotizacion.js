@@ -40,13 +40,17 @@
   }
 
   function getCatalogoActivo() {
-    const fromMiCatalogo = global.ArpaMiCatalogo?.getProducts?.('automatismos');
+    const oid = global.ArpaMiCatalogo?.getActiveOficioId?.()
+      || global.ArpaOficios?.getActiveOficiosFromSettings?.()?.[0]
+      || 'automatismos';
+    const normalized = global.ArpaOficios?.normalizeOficioId?.(oid) || oid;
+    const fromMiCatalogo = global.ArpaMiCatalogo?.getProducts?.(normalized);
     if (Array.isArray(fromMiCatalogo) && fromMiCatalogo.length) {
       return fromMiCatalogo
         .filter((p) => (p.nom || '').trim() && (p.cod || '').trim())
-        .map((p) => global.ArpaCatalogo?.productToFlatDisplay?.(p) || p);
+        .map((p) => global.ArpaCatalogo?.productToFlatDisplay?.(p, normalized) || p);
     }
-    return global.ArpaCatalogo?.getListaProductos?.() || [];
+    return global.ArpaCatalogo?.getListaProductos?.(normalized) || [];
   }
 
   function findProductoCot(cod) {

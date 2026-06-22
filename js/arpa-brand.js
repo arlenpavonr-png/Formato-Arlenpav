@@ -674,6 +674,8 @@
     try {
       global.ArpaOficios?.seedActiveOficios?.();
       global.ArpaMiCatalogo?.render?.();
+      global.ArpaCatalogo?.invalidateListaCache?.();
+      global.ArpaCotizacion?.updateCatalogHint?.();
       global.ArpaPricing?.savePriceList?.(global.ArpaPricing.readPriceListFromSettingsForm());
       global.ArpaCobros?.seedFromPriceList?.('cot');
       global.ArpaCotizacion?.refreshCobros?.();

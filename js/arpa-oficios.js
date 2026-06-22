@@ -303,32 +303,17 @@
       return { added: 0, skipped: true, empty: true, total: 0 };
     }
 
-    const STORAGE_KEY = global.ArpaMiCatalogo?.STORAGE_KEY || 'arpa_catalogo_usuario';
-    const CATEGORIES_KEY = global.ArpaMiCatalogo?.CATEGORIES_KEY || 'arpa_categorias_usuario';
-
-    let categories;
-    let products;
-    try {
-      categories = JSON.parse(localStorage.getItem(CATEGORIES_KEY) || '[]');
-      products = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-      if (!Array.isArray(categories)) categories = [];
-      if (!Array.isArray(products)) products = [];
-    } catch (e) {
-      categories = [];
-      products = [];
-    }
+    let categories = global.ArpaMiCatalogo?.getCategories?.(id) || [];
+    let products = global.ArpaMiCatalogo?.getProducts?.(id) || [];
 
     const existingCodes = new Set(
       products
-        .filter((p) => resolveItemOficioId(p) === id)
         .map((p) => String(p.cod || '').trim().toLowerCase())
         .filter(Boolean)
     );
 
     const catByName = new Map();
-    categories
-      .filter((c) => resolveItemOficioId(c) === id)
-      .forEach((c) => catByName.set(String(c.name || '').trim().toLowerCase(), c.id));
+    categories.forEach((c) => catByName.set(String(c.name || '').trim().toLowerCase(), c.id));
 
     function ensureCategory(name) {
       const label = String(name || 'General').trim() || 'General';
@@ -369,8 +354,8 @@
     });
 
     try {
-      localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+      global.ArpaMiCatalogo?.saveCategories?.(categories, id);
+      global.ArpaMiCatalogo?.saveProducts?.(products, id);
     } catch (e) { /* ignore */ }
 
     markOficioSeeded(id);
@@ -406,39 +391,13 @@
 
   function unseedOficio(oficioId) {
     const id = normalizeOficioId(oficioId);
-    const STORAGE_KEY = global.ArpaMiCatalogo?.STORAGE_KEY || 'arpa_catalogo_usuario';
-    const CATEGORIES_KEY = global.ArpaMiCatalogo?.CATEGORIES_KEY || 'arpa_categorias_usuario';
 
-    let products;
-    let categories;
-    try {
-      products = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-      categories = JSON.parse(localStorage.getItem(CATEGORIES_KEY) || '[]');
-      if (!Array.isArray(products)) products = [];
-      if (!Array.isArray(categories)) categories = [];
-    } catch (e) {
-      products = [];
-      categories = [];
-    }
-
-    const keptProducts = products.filter((p) => !productBelongsToOficioForRemoval(p, id));
-    const keptCategoryIds = new Set(keptProducts.map((p) => p.categoriaId).filter(Boolean));
-    const keptCategories = categories.filter((c) => {
-      if (!categoryBelongsToOficioForRemoval(c, id)) return true;
-      return keptCategoryIds.has(c.id);
-    });
-
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(keptProducts));
-      localStorage.setItem(CATEGORIES_KEY, JSON.stringify(keptCategories));
-    } catch (e) {
-      console.warn('[arpa-oficios] unseedOficio', e);
-    }
+    global.ArpaMiCatalogo?.saveProducts?.([], id);
+    global.ArpaMiCatalogo?.saveCategories?.([], id);
 
     unmarkOficioSeeded(id);
     global.ArpaCatalogo?.invalidateListaCache?.();
     global.ArpaCotizacion?.updateCatalogHint?.();
-    global.ArpaCloudSync?.scheduleCatalogCloudSync?.();
   }
 
   function seedOficioIfNeeded(oficioId) {

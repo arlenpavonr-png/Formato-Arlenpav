@@ -2,8 +2,13 @@
  * Módulo: Mi Catálogo (productos y categorías del usuario en localStorage)
  */
 (function (global) {
-  const STORAGE_KEY = 'arpa_catalogo_usuario';
-  const CATEGORIES_KEY = 'arpa_categorias_usuario';
+  const LEGACY_STORAGE_KEY = 'arpa_catalogo_usuario';
+  const LEGACY_CATEGORIES_KEY = 'arpa_categorias_usuario';
+  const MIGRATION_FLAG_KEY = 'arpa_catalog_per_oficio_migrated_v1';
+  /** @deprecated legacy key name — datos viven en arpa_catalog_{oficio} */
+  const STORAGE_KEY = LEGACY_STORAGE_KEY;
+  /** @deprecated legacy key name — datos viven en arpa_categorias_{oficio} */
+  const CATEGORIES_KEY = LEGACY_CATEGORIES_KEY;
   const UNIDADES = ['unidad', 'metro', 'hora', 'servicio'];
   const SIN_CATEGORIA_ID = '__sin_categoria__';
 
@@ -21,6 +26,131 @@
 
   function resolveItemOficioId(item) {
     return global.ArpaOficios?.resolveItemOficioId?.(item) || 'automatismos';
+  }
+
+  function catalogProductsKey(oficioId) {
+    return 'arpa_catalog_' + normalizeOficioId(oficioId);
+  }
+
+  function catalogCategoriesKey(oficioId) {
+    return 'arpa_categorias_' + normalizeOficioId(oficioId);
+  }
+
+  function resolveStorageOficioId(item) {
+    const raw = item?.oficioId;
+    if (raw === undefined || raw === null || String(raw).trim() === '') {
+      return 'automatismos';
+    }
+    return normalizeOficioId(raw);
+  }
+
+  function migrateLegacyCatalogIfNeeded() {
+    try {
+      if (localStorage.getItem(MIGRATION_FLAG_KEY) === 'true') return;
+    } catch (e) {
+      return;
+    }
+
+    let legacyProducts = [];
+    let legacyCategories = [];
+    try {
+      legacyProducts = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY) || '[]');
+      legacyCategories = JSON.parse(localStorage.getItem(LEGACY_CATEGORIES_KEY) || '[]');
+      if (!Array.isArray(legacyProducts)) legacyProducts = [];
+      if (!Array.isArray(legacyCategories)) legacyCategories = [];
+    } catch (e) {
+      legacyProducts = [];
+      legacyCategories = [];
+    }
+
+    const productsByOficio = {};
+    const categoriesByOficio = {};
+
+    legacyProducts.forEach((p) => {
+      const oid = resolveStorageOficioId(p);
+      if (!productsByOficio[oid]) productsByOficio[oid] = [];
+      productsByOficio[oid].push(p);
+    });
+
+    legacyCategories.forEach((c) => {
+      const oid = resolveStorageOficioId(c);
+      if (!categoriesByOficio[oid]) categoriesByOficio[oid] = [];
+      categoriesByOficio[oid].push(c);
+    });
+
+    const oficioIds = new Set([
+      ...Object.keys(productsByOficio),
+      ...Object.keys(categoriesByOficio)
+    ]);
+
+    oficioIds.forEach((oid) => {
+      try {
+        if (productsByOficio[oid]?.length) {
+          localStorage.setItem(catalogProductsKey(oid), JSON.stringify(productsByOficio[oid]));
+        }
+        if (categoriesByOficio[oid]?.length) {
+          localStorage.setItem(catalogCategoriesKey(oid), JSON.stringify(categoriesByOficio[oid]));
+        }
+      } catch (e) {
+        console.warn('[arpa-mi-catalogo] migrate bucket', oid, e);
+      }
+    });
+
+    try {
+      localStorage.setItem(MIGRATION_FLAG_KEY, 'true');
+    } catch (e) { /* ignore */ }
+  }
+
+  function readProductsRaw(oficioId) {
+    migrateLegacyCatalogIfNeeded();
+    const oid = normalizeOficioId(oficioId);
+    try {
+      const data = JSON.parse(localStorage.getItem(catalogProductsKey(oid)) || '[]');
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function writeProductsRaw(oficioId, products) {
+    migrateLegacyCatalogIfNeeded();
+    const oid = normalizeOficioId(oficioId);
+    try {
+      localStorage.setItem(catalogProductsKey(oid), JSON.stringify(products));
+    } catch (e) {
+      console.warn('[arpa-mi-catalogo] writeProductsRaw', e);
+    }
+    global.ArpaCatalogo?.invalidateListaCache?.();
+    global.ArpaCotizacion?.updateCatalogHint?.();
+  }
+
+  function readCategoriesRaw(oficioId) {
+    migrateLegacyCatalogIfNeeded();
+    const oid = normalizeOficioId(oficioId);
+    try {
+      const data = JSON.parse(localStorage.getItem(catalogCategoriesKey(oid)) || '[]');
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function writeCategoriesRaw(oficioId, categories) {
+    migrateLegacyCatalogIfNeeded();
+    const oid = normalizeOficioId(oficioId);
+    try {
+      localStorage.setItem(catalogCategoriesKey(oid), JSON.stringify(categories));
+    } catch (e) {
+      console.warn('[arpa-mi-catalogo] writeCategoriesRaw', e);
+    }
+  }
+
+  function getActiveOficioId() {
+    const active = global.ArpaOficios?.getActiveOficiosFromSettings?.();
+    if (Array.isArray(active) && active.length) {
+      return normalizeOficioId(active[0]);
+    }
+    return 'automatismos';
   }
 
   function sectionDomIds(oficioId) {
@@ -81,23 +211,13 @@
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   }
 
-  function getAllCategories() {
-    try {
-      const data = JSON.parse(localStorage.getItem(CATEGORIES_KEY) || '[]');
-      return Array.isArray(data) ? data : [];
-    } catch (e) {
-      return [];
-    }
-  }
-
   function getCategories(oficioId) {
-    const oid = normalizeOficioId(oficioId);
-    return getAllCategories().filter((c) => resolveItemOficioId(c) === oid);
+    return readCategoriesRaw(oficioId);
   }
 
-  function saveCategories(categories) {
-    localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
-    global.ArpaCloudSync?.scheduleCatalogCloudSync?.();
+  function saveCategories(categories, oficioId) {
+    const oid = normalizeOficioId(oficioId != null ? oficioId : currentOficioId);
+    writeCategoriesRaw(oid, categories);
   }
 
   function hasCategories(oficioId) {
@@ -106,10 +226,8 @@
 
   function getCategoryById(id, oficioId) {
     const oid = oficioId != null ? normalizeOficioId(oficioId) : null;
-    return getAllCategories().find((c) => {
-      if (c.id !== id) return false;
-      return oid == null || resolveItemOficioId(c) === oid;
-    }) || null;
+    const pool = oid != null ? getCategories(oid) : getCategories(currentOficioId);
+    return pool.find((c) => c.id === id) || null;
   }
 
   function getCategoryName(id, oficioId) {
@@ -121,25 +239,13 @@
     return getProducts(oficioId).filter((p) => resolveProductCategoryId(p) === categoryId).length;
   }
 
-  function getAllProducts() {
-    try {
-      const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-      return Array.isArray(data) ? data : [];
-    } catch (e) {
-      return [];
-    }
-  }
-
   function getProducts(oficioId) {
-    const oid = normalizeOficioId(oficioId);
-    return getAllProducts().filter((p) => resolveItemOficioId(p) === oid);
+    return readProductsRaw(oficioId);
   }
 
-  function saveProducts(products) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-    global.ArpaCatalogo?.invalidateListaCache?.();
-    global.ArpaCotizacion?.updateCatalogHint?.();
-    global.ArpaCloudSync?.scheduleCatalogCloudSync?.();
+  function saveProducts(products, oficioId) {
+    const oid = normalizeOficioId(oficioId != null ? oficioId : currentOficioId);
+    writeProductsRaw(oid, products);
   }
 
   function hasProducts(oficioId) {
@@ -172,8 +278,9 @@
     };
   }
 
-  function getListaFlat() {
-    return getAllProducts()
+  function getListaFlat(oficioId) {
+    const oid = oficioId != null ? normalizeOficioId(oficioId) : getActiveOficioId();
+    return getProducts(oid)
       .filter((p) => (p.nom || '').trim() && (p.cod || '').trim())
       .map(toFlatProduct);
   }
@@ -272,6 +379,7 @@
 
   function saveProductForm() {
     const data = readProductFormData();
+    const oid = editingOficioId;
     if (!data.nom) {
       showProductFormError('El nombre es obligatorio.');
       return;
@@ -284,15 +392,13 @@
       showProductFormError('Ingrese un precio unitario válido.');
       return;
     }
-    if (!data.categoriaId || !getCategoryById(data.categoriaId)) {
+    if (!data.categoriaId || !getCategoryById(data.categoriaId, oid)) {
       showProductFormError('Seleccione una categoría válida.');
       return;
     }
 
-    const products = getAllProducts();
-    const oid = editingOficioId;
+    const products = getProducts(oid);
     const duplicate = products.find((p) =>
-      resolveItemOficioId(p) === oid &&
       p.cod.toLowerCase() === data.cod.toLowerCase() &&
       p.id !== editingProductId
     );
@@ -321,18 +427,28 @@
       products.unshift({ id: newId(), ...payload });
     }
 
-    saveProducts(products);
+    saveProducts(products, oid);
     showProductFormError('');
     closeProductForm();
     render();
   }
 
   function deleteProduct(id) {
-    const product = getAllProducts().find((p) => p.id === id);
+    let productOficio = normalizeOficioId(currentOficioId);
+    let product = getProducts(productOficio).find((p) => p.id === id);
+    if (!product) {
+      for (const oid of getActiveOficios()) {
+        product = getProducts(oid).find((p) => p.id === id);
+        if (product) {
+          productOficio = oid;
+          break;
+        }
+      }
+    }
     if (!product) return;
     const label = product.nom || product.cod || 'este producto';
     if (!confirm(`¿Eliminar "${label}" del catálogo?`)) return;
-    saveProducts(getAllProducts().filter((p) => p.id !== id));
+    saveProducts(getProducts(productOficio).filter((p) => p.id !== id), productOficio);
     render();
   }
 
@@ -365,16 +481,15 @@
 
   function saveCategoryForm() {
     const name = document.getElementById('cat-cat-nombre')?.value.trim() || '';
+    const oid = editingOficioId;
     if (!name) {
       showCategoryFormError('El nombre de la categoría es obligatorio.');
       return;
     }
 
-    const categories = getAllCategories();
-    const oid = editingOficioId;
+    const categories = getCategories(oid);
     const duplicate = categories.find(
       (c) =>
-        resolveItemOficioId(c) === oid &&
         c.name.toLowerCase() === name.toLowerCase() &&
         c.id !== editingCategoryId
     );
@@ -390,14 +505,15 @@
       categories.push({ id: newId(), name, oficioId: oid });
     }
 
-    saveCategories(categories);
+    saveCategories(categories, oid);
     showCategoryFormError('');
     closeCategoryForm();
     render();
   }
 
   function deleteCategory(id) {
-    const category = getCategoryById(id);
+    const category = getCategoryById(id, currentOficioId)
+      || getActiveOficios().map((oid) => getCategoryById(id, oid)).find(Boolean);
     if (!category) return;
     const oid = resolveItemOficioId(category);
     const count = countProductsInCategory(id, oid);
@@ -406,7 +522,7 @@
       return;
     }
     if (!confirm(`¿Eliminar la categoría "${category.name}"?`)) return;
-    saveCategories(getAllCategories().filter((c) => c.id !== id));
+    saveCategories(getCategories(oid).filter((c) => c.id !== id), oid);
     render();
   }
 
@@ -932,23 +1048,21 @@
     const validRows = importPreviewRows.filter((r) => r.valid);
     if (!validRows.length) return;
 
-    const categories = getAllCategories().slice();
     const oid = normalizeOficioId(currentOficioId);
+    const categories = getCategories(oid).slice();
     const imported = rowsToProducts(validRows, categories, oid);
-    saveCategories(categories);
+    saveCategories(categories, oid);
 
     let products;
     let skipped = 0;
 
     if (mode === 'replace') {
       if (!confirm('¿Reemplazar el catálogo de este oficio con estos ' + validRows.length + ' productos?')) return;
-      products = getAllProducts().filter((p) => resolveItemOficioId(p) !== oid).concat(imported);
+      products = imported;
     } else {
       if (!confirm('¿Agregar estos ' + validRows.length + ' productos a los existentes de este oficio?')) return;
-      const existing = getAllProducts();
-      const codes = new Set(
-        existing.filter((p) => resolveItemOficioId(p) === oid).map((p) => p.cod.toLowerCase())
-      );
+      const existing = getProducts(oid);
+      const codes = new Set(existing.map((p) => p.cod.toLowerCase()));
       products = existing.slice();
       imported.forEach((p) => {
         if (codes.has(p.cod.toLowerCase())) {
@@ -960,7 +1074,7 @@
       });
     }
 
-    saveProducts(products);
+    saveProducts(products, oid);
     closeImportModal();
     render();
 
@@ -1020,9 +1134,14 @@
   global.ArpaMiCatalogo = {
     STORAGE_KEY,
     CATEGORIES_KEY,
+    MIGRATION_FLAG_KEY,
+    catalogProductsKey,
+    catalogCategoriesKey,
+    getActiveOficioId,
     getProducts,
     getCategories,
     saveProducts,
+    saveCategories,
     hasProducts,
     hasCategories,
     getListaFlat,
