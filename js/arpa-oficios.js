@@ -38,8 +38,227 @@
     return v || 'unidad';
   }
 
+  /** Catálogo base Gas — 20 productos (COP). */
+  function seedCatalog_gas() {
+    return [
+      { cod: 'GAS-001', nom: 'Tubería cobre 1/2" (metro)', categoria: 'Tubería', pvp: 18000, unidad: 'metro' },
+      { cod: 'GAS-002', nom: 'Tubería cobre 3/4" (metro)', categoria: 'Tubería', pvp: 25000, unidad: 'metro' },
+      { cod: 'GAS-003', nom: 'Válvula de paso 1/2"', categoria: 'Válvulas', pvp: 35000, unidad: 'un' },
+      { cod: 'GAS-004', nom: 'Válvula de paso 3/4"', categoria: 'Válvulas', pvp: 48000, unidad: 'un' },
+      { cod: 'GAS-005', nom: 'Regulador de presión doméstico', categoria: 'Reguladores', pvp: 65000, unidad: 'un' },
+      { cod: 'GAS-006', nom: 'Manómetro de presión', categoria: 'Instrumentos', pvp: 45000, unidad: 'un' },
+      { cod: 'GAS-007', nom: 'Conector flexible 60cm', categoria: 'Conectores', pvp: 28000, unidad: 'un' },
+      { cod: 'GAS-008', nom: 'Codo cobre 1/2"', categoria: 'Accesorios', pvp: 8000, unidad: 'un' },
+      { cod: 'GAS-009', nom: 'Te cobre 1/2"', categoria: 'Accesorios', pvp: 12000, unidad: 'un' },
+      { cod: 'GAS-010', nom: 'Abrazadera metálica', categoria: 'Accesorios', pvp: 5000, unidad: 'un' },
+      { cod: 'GAS-011', nom: 'Detector de gas natural', categoria: 'Seguridad', pvp: 85000, unidad: 'un' },
+      { cod: 'GAS-012', nom: 'Detector de gas propano', categoria: 'Seguridad', pvp: 85000, unidad: 'un' },
+      { cod: 'GAS-013', nom: 'Sellador de teflón gas', categoria: 'Accesorios', pvp: 6000, unidad: 'un' },
+      { cod: 'GAS-014', nom: 'Llave de estufa 4 puestos', categoria: 'Equipos', pvp: 120000, unidad: 'un' },
+      { cod: 'GAS-015', nom: 'Calentador paso a paso 6L', categoria: 'Equipos', pvp: 380000, unidad: 'un' },
+      { cod: 'GAS-016', nom: 'Calentador paso a paso 10L', categoria: 'Equipos', pvp: 520000, unidad: 'un' },
+      { cod: 'GAS-017', nom: 'Quemador industrial sencillo', categoria: 'Equipos', pvp: 95000, unidad: 'un' },
+      { cod: 'GAS-018', nom: 'Prueba de hermeticidad', categoria: 'Servicios', pvp: 80000, unidad: 'servicio' },
+      { cod: 'GAS-019', nom: 'Instalación punto de gas', categoria: 'Servicios', pvp: 150000, unidad: 'servicio' },
+      { cod: 'GAS-020', nom: 'Visita técnica diagnóstico', categoria: 'Servicios', pvp: 65000, unidad: 'servicio' }
+    ];
+  }
+
+  /** Catálogo base Refrigeración y AC — 20 productos (COP). */
+  function seedCatalog_refrigeracion() {
+    return [
+      { cod: 'RAC-001', nom: 'Aire split 9000 BTU instalado', categoria: 'Equipos', pvp: 1850000, unidad: 'un' },
+      { cod: 'RAC-002', nom: 'Aire split 12000 BTU instalado', categoria: 'Equipos', pvp: 2200000, unidad: 'un' },
+      { cod: 'RAC-003', nom: 'Aire split 18000 BTU instalado', categoria: 'Equipos', pvp: 2900000, unidad: 'un' },
+      { cod: 'RAC-004', nom: 'Aire split 24000 BTU instalado', categoria: 'Equipos', pvp: 3500000, unidad: 'un' },
+      { cod: 'RAC-005', nom: 'Gas refrigerante R410A (libra)', categoria: 'Refrigerantes', pvp: 45000, unidad: 'libra' },
+      { cod: 'RAC-006', nom: 'Gas refrigerante R22 (libra)', categoria: 'Refrigerantes', pvp: 55000, unidad: 'libra' },
+      { cod: 'RAC-007', nom: 'Tubería cobre 1/4" (metro)', categoria: 'Tubería', pvp: 22000, unidad: 'metro' },
+      { cod: 'RAC-008', nom: 'Tubería cobre 3/8" (metro)', categoria: 'Tubería', pvp: 28000, unidad: 'metro' },
+      { cod: 'RAC-009', nom: 'Filtro deshidratador', categoria: 'Repuestos', pvp: 35000, unidad: 'un' },
+      { cod: 'RAC-010', nom: 'Condensador universal', categoria: 'Repuestos', pvp: 180000, unidad: 'un' },
+      { cod: 'RAC-011', nom: 'Compresor 9000 BTU', categoria: 'Repuestos', pvp: 450000, unidad: 'un' },
+      { cod: 'RAC-012', nom: 'Termostato digital', categoria: 'Repuestos', pvp: 85000, unidad: 'un' },
+      { cod: 'RAC-013', nom: 'Control remoto universal AC', categoria: 'Accesorios', pvp: 45000, unidad: 'un' },
+      { cod: 'RAC-014', nom: 'Soporte exterior unidad condensadora', categoria: 'Accesorios', pvp: 75000, unidad: 'un' },
+      { cod: 'RAC-015', nom: 'Mantenimiento preventivo split', categoria: 'Servicios', pvp: 120000, unidad: 'servicio' },
+      { cod: 'RAC-016', nom: 'Carga de gas refrigerante', categoria: 'Servicios', pvp: 180000, unidad: 'servicio' },
+      { cod: 'RAC-017', nom: 'Limpieza profunda evaporador', categoria: 'Servicios', pvp: 95000, unidad: 'servicio' },
+      { cod: 'RAC-018', nom: 'Instalación punto eléctrico AC', categoria: 'Servicios', pvp: 150000, unidad: 'servicio' },
+      { cod: 'RAC-019', nom: 'Diagnóstico técnico AC', categoria: 'Servicios', pvp: 65000, unidad: 'servicio' },
+      { cod: 'RAC-020', nom: 'Revisión sistema frío nevera', categoria: 'Servicios', pvp: 95000, unidad: 'servicio' }
+    ];
+  }
+
+  /** Catálogo base Cámaras y CCTV — 20 productos (COP). */
+  function seedCatalog_cctv() {
+    return [
+      { cod: 'CAM-001', nom: 'Cámara domo HD 2MP interior', categoria: 'Cámaras', pvp: 95000, unidad: 'un' },
+      { cod: 'CAM-002', nom: 'Cámara bala HD 2MP exterior', categoria: 'Cámaras', pvp: 110000, unidad: 'un' },
+      { cod: 'CAM-003', nom: 'Cámara domo 4MP exterior', categoria: 'Cámaras', pvp: 165000, unidad: 'un' },
+      { cod: 'CAM-004', nom: 'Cámara PTZ 5MP motorizada', categoria: 'Cámaras', pvp: 450000, unidad: 'un' },
+      { cod: 'CAM-005', nom: 'DVR 4 canales 1080P', categoria: 'Grabadores', pvp: 280000, unidad: 'un' },
+      { cod: 'CAM-006', nom: 'DVR 8 canales 1080P', categoria: 'Grabadores', pvp: 380000, unidad: 'un' },
+      { cod: 'CAM-007', nom: 'NVR 8 canales IP', categoria: 'Grabadores', pvp: 420000, unidad: 'un' },
+      { cod: 'CAM-008', nom: 'Disco duro 1TB vigilancia', categoria: 'Almacenamiento', pvp: 220000, unidad: 'un' },
+      { cod: 'CAM-009', nom: 'Cable UTP cat6 (metro)', categoria: 'Cableado', pvp: 2500, unidad: 'metro' },
+      { cod: 'CAM-010', nom: 'Conector RJ45 (unidad)', categoria: 'Cableado', pvp: 800, unidad: 'un' },
+      { cod: 'CAM-011', nom: 'Fuente poder 12V 5A', categoria: 'Accesorios', pvp: 45000, unidad: 'un' },
+      { cod: 'CAM-012', nom: 'Caja de paso metálica', categoria: 'Accesorios', pvp: 18000, unidad: 'un' },
+      { cod: 'CAM-013', nom: 'Sensor de movimiento PIR', categoria: 'Alarmas', pvp: 35000, unidad: 'un' },
+      { cod: 'CAM-014', nom: 'Sirena exterior con flash', categoria: 'Alarmas', pvp: 85000, unidad: 'un' },
+      { cod: 'CAM-015', nom: 'Panel de alarma 8 zonas', categoria: 'Alarmas', pvp: 220000, unidad: 'un' },
+      { cod: 'CAM-016', nom: 'Teclado LCD alarma', categoria: 'Alarmas', pvp: 95000, unidad: 'un' },
+      { cod: 'CAM-017', nom: 'Instalación cámara (unidad)', categoria: 'Servicios', pvp: 85000, unidad: 'servicio' },
+      { cod: 'CAM-018', nom: 'Configuración acceso remoto', categoria: 'Servicios', pvp: 65000, unidad: 'servicio' },
+      { cod: 'CAM-019', nom: 'Mantenimiento sistema CCTV', categoria: 'Servicios', pvp: 120000, unidad: 'servicio' },
+      { cod: 'CAM-020', nom: 'Visita técnica diagnóstico', categoria: 'Servicios', pvp: 65000, unidad: 'servicio' }
+    ];
+  }
+
+  /** Catálogo base Plomería — 20 productos (COP). */
+  function seedCatalog_plomeria() {
+    return [
+      { cod: 'PLO-001', nom: 'Tubo PVC 1/2" presión (metro)', categoria: 'Tubería', pvp: 8500, unidad: 'metro' },
+      { cod: 'PLO-002', nom: 'Tubo PVC 3/4" presión (metro)', categoria: 'Tubería', pvp: 12000, unidad: 'metro' },
+      { cod: 'PLO-003', nom: 'Tubo PVC 1" presión (metro)', categoria: 'Tubería', pvp: 18000, unidad: 'metro' },
+      { cod: 'PLO-004', nom: 'Llave de paso 1/2"', categoria: 'Válvulas', pvp: 28000, unidad: 'un' },
+      { cod: 'PLO-005', nom: 'Llave de paso 3/4"', categoria: 'Válvulas', pvp: 38000, unidad: 'un' },
+      { cod: 'PLO-006', nom: 'Grifo monomando lavamanos', categoria: 'Grifería', pvp: 185000, unidad: 'un' },
+      { cod: 'PLO-007', nom: 'Grifo monomando cocina', categoria: 'Grifería', pvp: 220000, unidad: 'un' },
+      { cod: 'PLO-008', nom: 'Ducha eléctrica sencilla', categoria: 'Equipos', pvp: 95000, unidad: 'un' },
+      { cod: 'PLO-009', nom: 'Sanitario one piece', categoria: 'Sanitarios', pvp: 380000, unidad: 'un' },
+      { cod: 'PLO-010', nom: 'Lavamanos empotrar', categoria: 'Sanitarios', pvp: 220000, unidad: 'un' },
+      { cod: 'PLO-011', nom: 'Sifón PVC lavaplatos', categoria: 'Accesorios', pvp: 18000, unidad: 'un' },
+      { cod: 'PLO-012', nom: 'Codo PVC 1/2" 90°', categoria: 'Accesorios', pvp: 2500, unidad: 'un' },
+      { cod: 'PLO-013', nom: 'Te PVC 1/2"', categoria: 'Accesorios', pvp: 3200, unidad: 'un' },
+      { cod: 'PLO-014', nom: 'Unión PVC 1/2"', categoria: 'Accesorios', pvp: 1800, unidad: 'un' },
+      { cod: 'PLO-015', nom: 'Pegante PVC 250cc', categoria: 'Accesorios', pvp: 22000, unidad: 'un' },
+      { cod: 'PLO-016', nom: 'Teflón rollo grande', categoria: 'Accesorios', pvp: 4500, unidad: 'un' },
+      { cod: 'PLO-017', nom: 'Destape químico profesional', categoria: 'Servicios', pvp: 35000, unidad: 'servicio' },
+      { cod: 'PLO-018', nom: 'Instalación punto hidráulico', categoria: 'Servicios', pvp: 120000, unidad: 'servicio' },
+      { cod: 'PLO-019', nom: 'Destape tubería (punto)', categoria: 'Servicios', pvp: 85000, unidad: 'servicio' },
+      { cod: 'PLO-020', nom: 'Visita técnica diagnóstico', categoria: 'Servicios', pvp: 65000, unidad: 'servicio' }
+    ];
+  }
+
+  /** Catálogo base Cerrajería — 20 productos (COP). */
+  function seedCatalog_cerrajeria() {
+    return [
+      { cod: 'CER-001', nom: 'Cerradura pomo baño', categoria: 'Cerraduras', pvp: 45000, unidad: 'un' },
+      { cod: 'CER-002', nom: 'Cerradura pomo alcoba', categoria: 'Cerraduras', pvp: 65000, unidad: 'un' },
+      { cod: 'CER-003', nom: 'Cerradura doble seguro', categoria: 'Cerraduras', pvp: 120000, unidad: 'un' },
+      { cod: 'CER-004', nom: 'Cerradura magnética 180kg', categoria: 'Cerraduras', pvp: 280000, unidad: 'un' },
+      { cod: 'CER-005', nom: 'Cerradura digital táctil', categoria: 'Cerraduras', pvp: 450000, unidad: 'un' },
+      { cod: 'CER-006', nom: 'Cerradura biométrica', categoria: 'Cerraduras', pvp: 680000, unidad: 'un' },
+      { cod: 'CER-007', nom: 'Chapa eléctrica', categoria: 'Cerraduras', pvp: 185000, unidad: 'un' },
+      { cod: 'CER-008', nom: 'Manija con pulsador', categoria: 'Accesorios', pvp: 95000, unidad: 'un' },
+      { cod: 'CER-009', nom: 'Bisagra acero inox 4" (par)', categoria: 'Accesorios', pvp: 25000, unidad: 'un' },
+      { cod: 'CER-010', nom: 'Brazo cierre puerta hidráulico', categoria: 'Accesorios', pvp: 145000, unidad: 'un' },
+      { cod: 'CER-011', nom: 'Copia llave sencilla', categoria: 'Servicios', pvp: 8000, unidad: 'servicio' },
+      { cod: 'CER-012', nom: 'Copia llave de seguridad', categoria: 'Servicios', pvp: 25000, unidad: 'servicio' },
+      { cod: 'CER-013', nom: 'Apertura de emergencia', categoria: 'Servicios', pvp: 95000, unidad: 'servicio' },
+      { cod: 'CER-014', nom: 'Cambio de cilindro', categoria: 'Servicios', pvp: 65000, unidad: 'servicio' },
+      { cod: 'CER-015', nom: 'Instalación cerradura sencilla', categoria: 'Servicios', pvp: 55000, unidad: 'servicio' },
+      { cod: 'CER-016', nom: 'Instalación cerradura digital', categoria: 'Servicios', pvp: 95000, unidad: 'servicio' },
+      { cod: 'CER-017', nom: 'Reparación cerradura', categoria: 'Servicios', pvp: 75000, unidad: 'servicio' },
+      { cod: 'CER-018', nom: 'Refuerzo marco puerta', categoria: 'Servicios', pvp: 180000, unidad: 'servicio' },
+      { cod: 'CER-019', nom: 'Control acceso tarjeta RFID', categoria: 'Control Acceso', pvp: 320000, unidad: 'un' },
+      { cod: 'CER-020', nom: 'Visita técnica diagnóstico', categoria: 'Servicios', pvp: 45000, unidad: 'servicio' }
+    ];
+  }
+
+  /** Catálogo base Control de Plagas — 20 productos (COP). */
+  function seedCatalog_plagas() {
+    return [
+      { cod: 'PLA-001', nom: 'Fumigación apartamento hasta 60m²', categoria: 'Fumigación', pvp: 180000, unidad: 'servicio' },
+      { cod: 'PLA-002', nom: 'Fumigación casa hasta 120m²', categoria: 'Fumigación', pvp: 280000, unidad: 'servicio' },
+      { cod: 'PLA-003', nom: 'Fumigación local comercial', categoria: 'Fumigación', pvp: 220000, unidad: 'servicio' },
+      { cod: 'PLA-004', nom: 'Control de cucarachas (punto)', categoria: 'Control', pvp: 120000, unidad: 'servicio' },
+      { cod: 'PLA-005', nom: 'Control de hormigas', categoria: 'Control', pvp: 95000, unidad: 'servicio' },
+      { cod: 'PLA-006', nom: 'Control de moscas', categoria: 'Control', pvp: 110000, unidad: 'servicio' },
+      { cod: 'PLA-007', nom: 'Control de zancudos/mosquitos', categoria: 'Control', pvp: 130000, unidad: 'servicio' },
+      { cod: 'PLA-008', nom: 'Control de roedores (trampa)', categoria: 'Roedores', pvp: 85000, unidad: 'servicio' },
+      { cod: 'PLA-009', nom: 'Control de ratas (cebadero)', categoria: 'Roedores', pvp: 95000, unidad: 'servicio' },
+      { cod: 'PLA-010', nom: 'Desratización completa local', categoria: 'Roedores', pvp: 350000, unidad: 'servicio' },
+      { cod: 'PLA-011', nom: 'Control de pulgas y garrapatas', categoria: 'Control', pvp: 160000, unidad: 'servicio' },
+      { cod: 'PLA-012', nom: 'Control de termitas', categoria: 'Control', pvp: 450000, unidad: 'servicio' },
+      { cod: 'PLA-013', nom: 'Nebulización exterior', categoria: 'Fumigación', pvp: 200000, unidad: 'servicio' },
+      { cod: 'PLA-014', nom: 'Desinfección superficies', categoria: 'Desinfección', pvp: 180000, unidad: 'servicio' },
+      { cod: 'PLA-015', nom: 'Certificado sanitario', categoria: 'Documentos', pvp: 85000, unidad: 'servicio' },
+      { cod: 'PLA-016', nom: 'Visita de inspección', categoria: 'Servicios', pvp: 65000, unidad: 'servicio' },
+      { cod: 'PLA-017', nom: 'Plan trimestral apartamento', categoria: 'Planes', pvp: 480000, unidad: 'servicio' },
+      { cod: 'PLA-018', nom: 'Plan trimestral local comercial', categoria: 'Planes', pvp: 650000, unidad: 'servicio' },
+      { cod: 'PLA-019', nom: 'Gel para cucarachas (punto)', categoria: 'Insumos', pvp: 45000, unidad: 'un' },
+      { cod: 'PLA-020', nom: 'Trampa luminosa insectos', categoria: 'Equipos', pvp: 220000, unidad: 'un' }
+    ];
+  }
+
+  /** Catálogo base Línea Blanca — 20 productos (COP). */
+  function seedCatalog_linea_blanca() {
+    return [
+      { cod: 'LB-001', nom: 'Diagnóstico técnico lavadora', categoria: 'Diagnósticos', pvp: 65000, unidad: 'servicio' },
+      { cod: 'LB-002', nom: 'Diagnóstico técnico nevera', categoria: 'Diagnósticos', pvp: 65000, unidad: 'servicio' },
+      { cod: 'LB-003', nom: 'Diagnóstico técnico horno/estufa', categoria: 'Diagnósticos', pvp: 65000, unidad: 'servicio' },
+      { cod: 'LB-004', nom: 'Diagnóstico técnico lavavajillas', categoria: 'Diagnósticos', pvp: 65000, unidad: 'servicio' },
+      { cod: 'LB-005', nom: 'Reparación lavadora (mano obra)', categoria: 'Reparaciones', pvp: 180000, unidad: 'servicio' },
+      { cod: 'LB-006', nom: 'Reparación nevera (mano obra)', categoria: 'Reparaciones', pvp: 200000, unidad: 'servicio' },
+      { cod: 'LB-007', nom: 'Reparación microondas', categoria: 'Reparaciones', pvp: 120000, unidad: 'servicio' },
+      { cod: 'LB-008', nom: 'Cambio motor lavadora', categoria: 'Repuestos', pvp: 280000, unidad: 'un' },
+      { cod: 'LB-009', nom: 'Cambio bomba lavadora', categoria: 'Repuestos', pvp: 150000, unidad: 'un' },
+      { cod: 'LB-010', nom: 'Cambio compresor nevera', categoria: 'Repuestos', pvp: 450000, unidad: 'un' },
+      { cod: 'LB-011', nom: 'Carga gas nevera', categoria: 'Servicios', pvp: 180000, unidad: 'servicio' },
+      { cod: 'LB-012', nom: 'Cambio resistencia horno', categoria: 'Repuestos', pvp: 95000, unidad: 'un' },
+      { cod: 'LB-013', nom: 'Cambio temporizador lavadora', categoria: 'Repuestos', pvp: 120000, unidad: 'un' },
+      { cod: 'LB-014', nom: 'Cambio tarjeta electrónica', categoria: 'Repuestos', pvp: 320000, unidad: 'un' },
+      { cod: 'LB-015', nom: 'Instalación lavadora', categoria: 'Servicios', pvp: 85000, unidad: 'servicio' },
+      { cod: 'LB-016', nom: 'Instalación lavavajillas', categoria: 'Servicios', pvp: 120000, unidad: 'servicio' },
+      { cod: 'LB-017', nom: 'Mantenimiento preventivo lavadora', categoria: 'Servicios', pvp: 95000, unidad: 'servicio' },
+      { cod: 'LB-018', nom: 'Mantenimiento preventivo nevera', categoria: 'Servicios', pvp: 95000, unidad: 'servicio' },
+      { cod: 'LB-019', nom: 'Visita a domicilio', categoria: 'Servicios', pvp: 55000, unidad: 'servicio' },
+      { cod: 'LB-020', nom: 'Repuesto genérico (ítem manual)', categoria: 'Repuestos', pvp: 0, unidad: 'un' }
+    ];
+  }
+
+  /** Catálogo base Energía Solar — 20 productos (COP). */
+  function seedCatalog_solar() {
+    return [
+      { cod: 'SOL-001', nom: 'Panel solar monocristalino 400W', categoria: 'Paneles', pvp: 850000, unidad: 'un' },
+      { cod: 'SOL-002', nom: 'Panel solar policristalino 300W', categoria: 'Paneles', pvp: 620000, unidad: 'un' },
+      { cod: 'SOL-003', nom: 'Inversor solar 1000W', categoria: 'Inversores', pvp: 680000, unidad: 'un' },
+      { cod: 'SOL-004', nom: 'Inversor solar 3000W', categoria: 'Inversores', pvp: 1850000, unidad: 'un' },
+      { cod: 'SOL-005', nom: 'Inversor solar 5000W', categoria: 'Inversores', pvp: 2800000, unidad: 'un' },
+      { cod: 'SOL-006', nom: 'Batería gel 100Ah 12V', categoria: 'Baterías', pvp: 680000, unidad: 'un' },
+      { cod: 'SOL-007', nom: 'Batería litio 100Ah', categoria: 'Baterías', pvp: 1450000, unidad: 'un' },
+      { cod: 'SOL-008', nom: 'Controlador de carga MPPT 30A', categoria: 'Controladores', pvp: 280000, unidad: 'un' },
+      { cod: 'SOL-009', nom: 'Controlador de carga MPPT 60A', categoria: 'Controladores', pvp: 420000, unidad: 'un' },
+      { cod: 'SOL-010', nom: 'Estructura soporte panel (unidad)', categoria: 'Estructuras', pvp: 185000, unidad: 'un' },
+      { cod: 'SOL-011', nom: 'Cable solar 6mm (metro)', categoria: 'Cableado', pvp: 12000, unidad: 'metro' },
+      { cod: 'SOL-012', nom: 'Conector MC4 (par)', categoria: 'Accesorios', pvp: 8500, unidad: 'un' },
+      { cod: 'SOL-013', nom: 'Caja de combinación 4 entradas', categoria: 'Accesorios', pvp: 220000, unidad: 'un' },
+      { cod: 'SOL-014', nom: 'Medidor bidireccional', categoria: 'Equipos', pvp: 380000, unidad: 'un' },
+      { cod: 'SOL-015', nom: 'Instalación panel solar (unidad)', categoria: 'Servicios', pvp: 180000, unidad: 'servicio' },
+      { cod: 'SOL-016', nom: 'Diseño sistema solar residencial', categoria: 'Servicios', pvp: 350000, unidad: 'servicio' },
+      { cod: 'SOL-017', nom: 'Mantenimiento sistema solar', categoria: 'Servicios', pvp: 220000, unidad: 'servicio' },
+      { cod: 'SOL-018', nom: 'Limpieza paneles (unidad)', categoria: 'Servicios', pvp: 45000, unidad: 'servicio' },
+      { cod: 'SOL-019', nom: 'Diagnóstico sistema existente', categoria: 'Servicios', pvp: 120000, unidad: 'servicio' },
+      { cod: 'SOL-020', nom: 'Visita técnica gratuita', categoria: 'Servicios', pvp: 0, unidad: 'servicio' }
+    ];
+  }
+
+  const SEED_CATALOG_BUILDERS = {
+    gas: seedCatalog_gas,
+    refrigeracion: seedCatalog_refrigeracion,
+    cctv: seedCatalog_cctv,
+    plomeria: seedCatalog_plomeria,
+    cerrajeria: seedCatalog_cerrajeria,
+    plagas: seedCatalog_plagas,
+    linea_blanca: seedCatalog_linea_blanca,
+    solar: seedCatalog_solar
+  };
+
   /**
-   * Catálogos genéricos precargados por oficio (punto de partida editable).
+   * Catálogo base Electricidad (sin cambios).
    * Formato por ítem: { cod, nom, categoria, pvp, unidad?, marca? }
    */
   const SEED_CATALOGS = {
@@ -57,118 +276,6 @@
         { cod: 'ELE-010', nom: 'Caja octogonal PVC', categoria: 'Accesorios', pvp: 3500, unidad: 'un' },
         { cod: 'ELE-011', nom: 'Tubería EMT 1/2 pulgada', categoria: 'Cableado', pvp: 8500, unidad: 'un' },
         { cod: 'ELE-012', nom: 'Totalizador 2x40A', categoria: 'Protección', pvp: 65000, unidad: 'un' }
-      ]
-    },
-    gas: {
-      products: [
-        { cod: 'GAS-001', nom: 'Válvula de corte 1/2 pulgada', categoria: 'Válvulas', pvp: 25000, unidad: 'un' },
-        { cod: 'GAS-002', nom: 'Regulador de presión doméstico', categoria: 'Reguladores', pvp: 38000, unidad: 'un' },
-        { cod: 'GAS-003', nom: 'Manguera flexible para gas 1m', categoria: 'Mangueras', pvp: 22000, unidad: 'un' },
-        { cod: 'GAS-004', nom: 'Detector de fugas de gas', categoria: 'Seguridad', pvp: 85000, unidad: 'un' },
-        { cod: 'GAS-005', nom: 'Calentador de gas instantáneo', categoria: 'Calentadores', pvp: 450000, unidad: 'un' },
-        { cod: 'GAS-006', nom: 'Tubería de cobre 1/2 pulgada', categoria: 'Tubería', pvp: 14000, unidad: 'metro' },
-        { cod: 'GAS-007', nom: 'Llave de paso para estufa', categoria: 'Válvulas', pvp: 32000, unidad: 'un' },
-        { cod: 'GAS-008', nom: 'Empaque/junta para conexión gas', categoria: 'Accesorios', pvp: 3000, unidad: 'un' },
-        { cod: 'GAS-009', nom: 'Medidor de gas residencial', categoria: 'Medición', pvp: 180000, unidad: 'un' },
-        { cod: 'GAS-010', nom: 'Certificado RETIE/revisión técnica', categoria: 'Servicios', pvp: 120000, unidad: 'servicio' }
-      ]
-    },
-    refrigeracion: {
-      products: [
-        { cod: 'REF-001', nom: 'Gas refrigerante R410A (libra)', categoria: 'Refrigerantes', pvp: 35000, unidad: 'libra' },
-        { cod: 'REF-002', nom: 'Gas refrigerante R22 (libra)', categoria: 'Refrigerantes', pvp: 45000, unidad: 'libra' },
-        { cod: 'REF-003', nom: 'Compresor 1/4 HP', categoria: 'Compresores', pvp: 280000, unidad: 'un' },
-        { cod: 'REF-004', nom: 'Termostato digital', categoria: 'Controles', pvp: 65000, unidad: 'un' },
-        { cod: 'REF-005', nom: 'Capacitor de arranque', categoria: 'Eléctricos', pvp: 28000, unidad: 'un' },
-        { cod: 'REF-006', nom: 'Filtro secador', categoria: 'Accesorios', pvp: 18000, unidad: 'un' },
-        { cod: 'REF-007', nom: 'Tubería de cobre refrigeración 1/4', categoria: 'Tubería', pvp: 12000, unidad: 'metro' },
-        { cod: 'REF-008', nom: 'Mantenimiento preventivo split', categoria: 'Servicios', pvp: 80000, unidad: 'servicio' },
-        { cod: 'REF-009', nom: 'Instalación split 12000 BTU', categoria: 'Servicios', pvp: 250000, unidad: 'servicio' },
-        { cod: 'REF-010', nom: 'Soportes para unidad exterior', categoria: 'Accesorios', pvp: 45000, unidad: 'un' }
-      ]
-    },
-    cctv: {
-      products: [
-        { cod: 'CCT-001', nom: 'Cámara domo 2MP interior', categoria: 'Cámaras', pvp: 85000, unidad: 'un' },
-        { cod: 'CCT-002', nom: 'Cámara bullet 4MP exterior', categoria: 'Cámaras', pvp: 135000, unidad: 'un' },
-        { cod: 'CCT-003', nom: 'DVR 8 canales', categoria: 'Grabación', pvp: 280000, unidad: 'un' },
-        { cod: 'CCT-004', nom: 'NVR 8 canales PoE', categoria: 'Grabación', pvp: 420000, unidad: 'un' },
-        { cod: 'CCT-005', nom: 'Disco duro 1TB vigilancia', categoria: 'Almacenamiento', pvp: 165000, unidad: 'un' },
-        { cod: 'CCT-006', nom: 'Cable UTP cat6 (caja 305m)', categoria: 'Cableado', pvp: 380000, unidad: 'caja' },
-        { cod: 'CCT-007', nom: 'Conector RJ45', categoria: 'Accesorios', pvp: 1500, unidad: 'un' },
-        { cod: 'CCT-008', nom: 'Fuente de poder 12V 5A', categoria: 'Energía', pvp: 35000, unidad: 'un' },
-        { cod: 'CCT-009', nom: 'Instalación cámara + configuración', categoria: 'Servicios', pvp: 60000, unidad: 'servicio' },
-        { cod: 'CCT-010', nom: 'Switch PoE 8 puertos', categoria: 'Redes', pvp: 195000, unidad: 'un' }
-      ]
-    },
-    plomeria: {
-      products: [
-        { cod: 'PLO-001', nom: 'Tubo PVC presión 1/2 pulgada (6m)', categoria: 'Tubería', pvp: 22000, unidad: 'un' },
-        { cod: 'PLO-002', nom: 'Llave terminal lavamanos', categoria: 'Llaves', pvp: 45000, unidad: 'un' },
-        { cod: 'PLO-003', nom: 'Sifón para lavaplatos', categoria: 'Accesorios', pvp: 18000, unidad: 'un' },
-        { cod: 'PLO-004', nom: 'Tanque sanitario completo', categoria: 'Sanitarios', pvp: 220000, unidad: 'un' },
-        { cod: 'PLO-005', nom: 'Codo PVC 1/2 pulgada', categoria: 'Accesorios', pvp: 1800, unidad: 'un' },
-        { cod: 'PLO-006', nom: 'Cinta teflón', categoria: 'Accesorios', pvp: 2500, unidad: 'un' },
-        { cod: 'PLO-007', nom: 'Destapada de tubería (servicio)', categoria: 'Servicios', pvp: 70000, unidad: 'servicio' },
-        { cod: 'PLO-008', nom: 'Instalación de calentador eléctrico', categoria: 'Servicios', pvp: 90000, unidad: 'servicio' },
-        { cod: 'PLO-009', nom: 'Llave de paso 1/2 pulgada', categoria: 'Llaves', pvp: 25000, unidad: 'un' },
-        { cod: 'PLO-010', nom: 'Manguera flexible para lavadora', categoria: 'Accesorios', pvp: 15000, unidad: 'un' }
-      ]
-    },
-    cerrajeria: {
-      products: [
-        { cod: 'CER-001', nom: 'Cerradura de pomo estándar', categoria: 'Cerraduras', pvp: 55000, unidad: 'un' },
-        { cod: 'CER-002', nom: 'Cerradura de seguridad multipunto', categoria: 'Cerraduras', pvp: 180000, unidad: 'un' },
-        { cod: 'CER-003', nom: 'Cilindro de seguridad', categoria: 'Cilindros', pvp: 65000, unidad: 'un' },
-        { cod: 'CER-004', nom: 'Control de acceso con tarjeta', categoria: 'Control de Acceso', pvp: 320000, unidad: 'un' },
-        { cod: 'CER-005', nom: 'Cerradura electrónica con huella', categoria: 'Cerraduras', pvp: 450000, unidad: 'un' },
-        { cod: 'CER-006', nom: 'Apertura de cerradura (servicio)', categoria: 'Servicios', pvp: 50000, unidad: 'servicio' },
-        { cod: 'CER-007', nom: 'Duplicado de llave', categoria: 'Servicios', pvp: 8000, unidad: 'servicio' },
-        { cod: 'CER-008', nom: 'Cambio de cilindro (servicio)', categoria: 'Servicios', pvp: 35000, unidad: 'servicio' },
-        { cod: 'CER-009', nom: 'Candado de seguridad alta resistencia', categoria: 'Cerraduras', pvp: 48000, unidad: 'un' },
-        { cod: 'CER-010', nom: 'Bisagra reforzada', categoria: 'Accesorios', pvp: 12000, unidad: 'un' }
-      ]
-    },
-    plagas: {
-      products: [
-        { cod: 'PLA-001', nom: 'Fumigación residencial (servicio)', categoria: 'Servicios', pvp: 120000, unidad: 'servicio' },
-        { cod: 'PLA-002', nom: 'Control de roedores (servicio)', categoria: 'Servicios', pvp: 150000, unidad: 'servicio' },
-        { cod: 'PLA-003', nom: 'Trampa para roedores', categoria: 'Equipos', pvp: 15000, unidad: 'un' },
-        { cod: 'PLA-004', nom: 'Cebo en gel para cucarachas', categoria: 'Insecticidas', pvp: 28000, unidad: 'un' },
-        { cod: 'PLA-005', nom: 'Insecticida residual (galón)', categoria: 'Insecticidas', pvp: 85000, unidad: 'galón' },
-        { cod: 'PLA-006', nom: 'Equipo de aspersión manual', categoria: 'Equipos', pvp: 120000, unidad: 'un' },
-        { cod: 'PLA-007', nom: 'Control de termitas (servicio)', categoria: 'Servicios', pvp: 280000, unidad: 'servicio' },
-        { cod: 'PLA-008', nom: 'Certificado de fumigación', categoria: 'Servicios', pvp: 20000, unidad: 'servicio' },
-        { cod: 'PLA-009', nom: 'Trampa de luz UV para insectos', categoria: 'Equipos', pvp: 65000, unidad: 'un' },
-        { cod: 'PLA-010', nom: 'Mantenimiento mensual (contrato)', categoria: 'Servicios', pvp: 90000, unidad: 'servicio' }
-      ]
-    },
-    linea_blanca: {
-      products: [
-        { cod: 'LIB-001', nom: 'Compresor para nevera', categoria: 'Repuestos Nevera', pvp: 220000, unidad: 'un' },
-        { cod: 'LIB-002', nom: 'Termostato para nevera', categoria: 'Repuestos Nevera', pvp: 35000, unidad: 'un' },
-        { cod: 'LIB-003', nom: 'Correa para lavadora', categoria: 'Repuestos Lavadora', pvp: 18000, unidad: 'un' },
-        { cod: 'LIB-004', nom: 'Motor para lavadora', categoria: 'Repuestos Lavadora', pvp: 180000, unidad: 'un' },
-        { cod: 'LIB-005', nom: 'Resistencia para estufa eléctrica', categoria: 'Repuestos Estufa', pvp: 45000, unidad: 'un' },
-        { cod: 'LIB-006', nom: 'Tarjeta electrónica universal', categoria: 'Repuestos Generales', pvp: 120000, unidad: 'un' },
-        { cod: 'LIB-007', nom: 'Diagnóstico de electrodoméstico', categoria: 'Servicios', pvp: 30000, unidad: 'servicio' },
-        { cod: 'LIB-008', nom: 'Reparación de nevera (mano de obra)', categoria: 'Servicios', pvp: 80000, unidad: 'servicio' },
-        { cod: 'LIB-009', nom: 'Reparación de lavadora (mano de obra)', categoria: 'Servicios', pvp: 70000, unidad: 'servicio' },
-        { cod: 'LIB-010', nom: 'Bisagra para nevera', categoria: 'Repuestos Nevera', pvp: 25000, unidad: 'un' }
-      ]
-    },
-    solar: {
-      products: [
-        { cod: 'SOL-001', nom: 'Panel solar monocristalino 450W', categoria: 'Paneles', pvp: 650000, unidad: 'un' },
-        { cod: 'SOL-002', nom: 'Inversor híbrido 3000W', categoria: 'Inversores', pvp: 1800000, unidad: 'un' },
-        { cod: 'SOL-003', nom: 'Batería de litio 100Ah', categoria: 'Baterías', pvp: 2200000, unidad: 'un' },
-        { cod: 'SOL-004', nom: 'Estructura de montaje para techo', categoria: 'Estructuras', pvp: 280000, unidad: 'un' },
-        { cod: 'SOL-005', nom: 'Controlador de carga MPPT', categoria: 'Controladores', pvp: 350000, unidad: 'un' },
-        { cod: 'SOL-006', nom: 'Cable solar 6mm (metro)', categoria: 'Cableado', pvp: 4500, unidad: 'metro' },
-        { cod: 'SOL-007', nom: 'Conector MC4', categoria: 'Accesorios', pvp: 8000, unidad: 'un' },
-        { cod: 'SOL-008', nom: 'Instalación sistema solar residencial', categoria: 'Servicios', pvp: 800000, unidad: 'servicio' },
-        { cod: 'SOL-009', nom: 'Estudio de consumo energético', categoria: 'Servicios', pvp: 100000, unidad: 'servicio' },
-        { cod: 'SOL-010', nom: 'Mantenimiento panel solar (servicio)', categoria: 'Servicios', pvp: 120000, unidad: 'servicio' }
       ]
     }
   };
@@ -283,8 +390,13 @@
     if (id === OFICIO_AUTOMATISMOS) {
       return global.ArpaCatalogo?.buildAutomatismosSeedProducts?.() || [];
     }
-    const pack = SEED_CATALOGS[id];
-    return Array.isArray(pack?.products) ? pack.products : [];
+    if (id === 'electricidad') {
+      return Array.isArray(SEED_CATALOGS.electricidad?.products)
+        ? SEED_CATALOGS.electricidad.products
+        : [];
+    }
+    const builder = SEED_CATALOG_BUILDERS[id];
+    return builder ? builder() : [];
   }
 
   function newId() {
@@ -549,6 +661,15 @@
     OFICIO_AUTOMATISMOS,
     OFICIOS,
     SEED_CATALOGS,
+    SEED_CATALOG_BUILDERS,
+    seedCatalog_gas,
+    seedCatalog_refrigeracion,
+    seedCatalog_cctv,
+    seedCatalog_plomeria,
+    seedCatalog_cerrajeria,
+    seedCatalog_plagas,
+    seedCatalog_linea_blanca,
+    seedCatalog_solar,
     ACTIVE_OFICIOS_KEY,
     normalizeOficioId,
     normalizeActiveOficiosList,
