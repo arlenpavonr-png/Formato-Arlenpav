@@ -1748,9 +1748,50 @@
     body.is-printing #view-cuenta-cobro .tabla-productos tbody td:last-child {
       display: none !important;
     }
-    body.is-printing-formato .mat-row {
-      page-break-inside: avoid !important;
-      break-inside: avoid-page !important;
+    body.is-printing-formato .page {
+      overflow: visible !important;
+    }
+    body.is-printing-formato .dims {
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 8px !important;
+    }
+    body.is-printing-formato .dim-field {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: stretch !important;
+      min-width: 0 !important;
+    }
+    body.is-printing-formato .dim-field label {
+      text-align: center !important;
+    }
+    body.is-printing-formato .dim-field .pdf-valor {
+      text-align: center !important;
+      font-family: 'DM Mono', monospace !important;
+      font-weight: 600 !important;
+      border-bottom: 1px solid #d1d5db !important;
+      min-height: 32px !important;
+      padding: 6px 4px !important;
+    }
+    body.is-printing-formato .obs-box,
+    body.is-printing-formato .obs-lines {
+      overflow: visible !important;
+      page-break-inside: auto !important;
+      break-inside: auto !important;
+    }
+    body.is-printing-formato .obs-lines .pdf-valor {
+      display: block !important;
+      width: 100% !important;
+      min-height: 24px !important;
+      padding: 4px 2px 6px !important;
+      border-bottom: 1px solid #d1d5db !important;
+      white-space: normal !important;
+      overflow: visible !important;
+    }
+    body.is-printing-formato #formato-section-observaciones {
+      page-break-inside: auto !important;
+      break-inside: auto !important;
+      overflow: visible !important;
     }
     .btn-quitar, .btn-add-item, .extra-items-editor .field label { display: none !important; }
     .extra-item-row { display: none !important; }
@@ -2696,25 +2737,6 @@ document.documentElement.classList.add('license-checking');
       </div>
     </div>
 
-    <!-- 7. MATERIALES -->
-    <div class="section">
-      <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.materiales">Materiales Utilizados</span></div>
-      <div class="mat-wrap">
-        <div class="materials-grid">
-          <div class="mat-header">
-            <div data-i18n="formato.mat.header.descripcion">Material / Descripción</div>
-            <div style="text-align:center" data-i18n="formato.mat.header.unidad">Unidad</div>
-            <div style="text-align:center" data-i18n="formato.mat.header.cant">Cant.</div>
-          </div>
-          <div class="mat-row"><div><input type="text" data-i18n-placeholder="formato.mat.placeholder.ej1" placeholder="Ej: Tubería conduit 1/2&quot;"></div><div><input type="text" data-i18n-placeholder="formato.mat.placeholder.ml" placeholder="ml" style="text-align:center"></div><div><input type="number" data-i18n-placeholder="formato.mat.placeholder.cero" placeholder="0" style="text-align:center"></div></div>
-          <div class="mat-row"><div><input type="text" data-i18n-placeholder="formato.mat.placeholder.ej2" placeholder="Ej: Tubo rectangular 40x20"></div><div><input type="text" data-i18n-placeholder="formato.mat.placeholder.ml" placeholder="ml" style="text-align:center"></div><div><input type="number" data-i18n-placeholder="formato.mat.placeholder.cero" placeholder="0" style="text-align:center"></div></div>
-          <div class="mat-row"><div><input type="text" data-i18n-placeholder="formato.mat.placeholder.ej3" placeholder="Ej: Cable encauchetado #12"></div><div><input type="text" data-i18n-placeholder="formato.mat.placeholder.ml" placeholder="ml" style="text-align:center"></div><div><input type="number" data-i18n-placeholder="formato.mat.placeholder.cero" placeholder="0" style="text-align:center"></div></div>
-          <div class="mat-row"><div><input type="text" data-i18n-placeholder="formato.mat.placeholder.ej4" placeholder="Ej: Tornillería y anclajes"></div><div><input type="text" data-i18n-placeholder="formato.mat.placeholder.und" placeholder="und" style="text-align:center"></div><div><input type="number" data-i18n-placeholder="formato.mat.placeholder.cero" placeholder="0" style="text-align:center"></div></div>
-          <div class="mat-row"><div><input type="text" data-i18n-placeholder="formato.mat.placeholder.otro" placeholder="Otro material..."></div><div><input type="text" style="text-align:center"></div><div><input type="number" data-i18n-placeholder="formato.mat.placeholder.cero" placeholder="0" style="text-align:center"></div></div>
-        </div>
-      </div>
-    </div>
-
     <!-- 8. FOTOS -->
     <div class="section">
       <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.fotos">Registro Fotográfico</span></div>
@@ -2748,7 +2770,7 @@ document.documentElement.classList.add('license-checking');
     </div>
 
     <!-- 9. OBSERVACIONES -->
-    <div class="section">
+    <div class="section" id="formato-section-observaciones">
       <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.observaciones">Observaciones y Recomendaciones</span></div>
       <div class="obs-box">
         <div class="obs-lines">
@@ -2763,7 +2785,7 @@ document.documentElement.classList.add('license-checking');
     <!-- NOTA -->
     <div class="nota">
       <strong data-i18n="formato.nota.label">Nota:</strong> <span data-i18n-html="formato.nota.body">El cliente debe suministrar punto eléctrico (110V–220V) con polo a tierra para la instalación,
-      incluyendo cableado y tubería para sensores si se requieren. De no cumplir con estos requisitos, tendrá un costo adicional.</span>
+      incluyendo cableado y tubería para sensores si se requieren.</span>
     </div>
 
     <!-- GARANTÍA -->
@@ -3694,16 +3716,16 @@ function guardarPDF() {
     const valor = el.tagName === 'SELECT'
       ? el.options[el.selectedIndex]?.text || ''
       : el.value || '';
+    const inObs = !!el.closest('.obs-lines');
+    const inDims = !!el.closest('.dims');
     const span = document.createElement('span');
     span.className = 'pdf-valor';
-    span.textContent = valor || el.placeholder || '';
-    span.style.cssText = `
-      display:inline-block; width:100%;
-      font-size:13px; color: ${valor ? '#1e293b' : '#9ca3af'};
-      padding: 8px 10px; font-family:'DM Sans',sans-serif;
-      border-bottom: 1px solid #d1d5db;
-      min-height: 36px;
-    `;
+    span.textContent = valor || (inObs ? '' : (el.placeholder || ''));
+    span.style.cssText = inDims
+      ? `display:block; width:100%; font-size:13px; color:${valor ? '#1e293b' : '#9ca3af'}; padding:6px 4px; font-family:'DM Mono',monospace; font-weight:600; text-align:center; border-bottom:1px solid #d1d5db; min-height:32px;`
+      : inObs
+        ? `display:block; width:100%; font-size:13px; color:${valor ? '#1e293b' : '#9ca3af'}; padding:4px 2px 6px; font-family:'DM Sans',sans-serif; border-bottom:1px solid #d1d5db; min-height:24px; white-space:normal;`
+        : `display:inline-block; width:100%; font-size:13px; color:${valor ? '#1e293b' : '#9ca3af'}; padding:8px 10px; font-family:'DM Sans',sans-serif; border-bottom:1px solid #d1d5db; min-height:36px;`;
     respaldos.push({ el, parent: el.parentNode, next: el.nextSibling });
     el.parentNode.replaceChild(span, el);
   });
@@ -3723,18 +3745,10 @@ function guardarPDF() {
   const settingsModal = document.getElementById('settings-modal');
   if (settingsModal) settingsModal.classList.remove('open');
 
-  window.ArpaSignature?.prepareForPrint?.([
-    'canvas-firma-cliente',
-    'canvas-firma-tecnico'
-  ]);
-
   const qrBlock = prepareVideoQrForPrint();
   if (qrBlock) document.body.classList.add('formato-has-video-qr');
 
-  window.print();
-
-  // Restaura todo después de imprimir
-  setTimeout(() => {
+  const finishPrintRestore = () => {
     document.body.classList.remove('is-printing', 'is-printing-formato', 'formato-has-video-qr');
     window.ArpaI18n?.restorePdfSpanish?.();
     window.ArpaBrand?.restoreAfterPrint?.();
@@ -3752,7 +3766,18 @@ function guardarPDF() {
     scheduleFormatoDraftSave();
     window.ArpaWhatsApp?.showFormatoShareAfterPdf?.();
     window.ArpaTrialCapture?.onDocumentSaved?.('formato');
-  }, 1000);
+  };
+
+  const printReady = window.ArpaSignature?.prepareForPrint?.([
+    'canvas-firma-cliente',
+    'canvas-firma-tecnico'
+  ]);
+  Promise.resolve(printReady).then(() => {
+    requestAnimationFrame(() => {
+      window.print();
+      setTimeout(finishPrintRestore, 1000);
+    });
+  });
 }
 function getUltimoNumero() {
   const N = window.ArpaNumeracion;

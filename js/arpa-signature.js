@@ -72,20 +72,38 @@
 
   function prepareForPrint(canvasIds) {
     restoreAfterPrint();
+    const pending = [];
+
     canvasIds.forEach((id) => {
       const canvas = document.getElementById(id);
       if (!canvas || !canvasHasInk(canvas)) return;
 
+      const dataUrl = canvas.toDataURL('image/png');
       const img = document.createElement('img');
-      img.src = canvas.toDataURL('image/png');
+      img.src = dataUrl;
       img.alt = 'Firma';
       img.className = 'firma-print-img';
       img.setAttribute('data-firma-for', id);
+      img.style.width = '100%';
+      img.style.height = '110px';
+      img.style.objectFit = 'contain';
 
       canvas.classList.add('firma-canvas-hidden-print');
       canvas.parentNode.insertBefore(img, canvas.nextSibling);
       printBackups.push({ canvas, img });
+
+      pending.push(new Promise((resolve) => {
+        if (img.complete) {
+          resolve();
+          return;
+        }
+        img.onload = () => resolve();
+        img.onerror = () => resolve();
+      }));
     });
+
+    if (!pending.length) return Promise.resolve();
+    return Promise.all(pending);
   }
 
   function restoreAfterPrint() {

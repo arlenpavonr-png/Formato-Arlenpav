@@ -174,7 +174,7 @@
     'formato.placeholder.obs3': 'Note 3...',
     'formato.placeholder.obs4': 'Note 4...',
     'formato.nota.label': 'Note:',
-    'formato.nota.body': 'The client must provide an electrical outlet (110V–220V) with ground for installation, including wiring and conduit for sensors if required. Failure to meet these requirements will incur additional cost.',
+    'formato.nota.body': 'The client must provide an electrical outlet (110V–220V) with ground for installation, including wiring and conduit for sensors if required.',
     'formato.section.garantia': 'Warranty Terms',
     'formato.garantia.header_static': 'Warranty Terms',
     'formato.garantia.header': 'Warranty – {company}',
