@@ -146,7 +146,7 @@
 
   function populateOficioSelect(select) {
     if (!select) return;
-    select.innerHTML = '<option value="">' + t('trial_capture.oficio_placeholder', 'Seleccione su oficio…') + '</option>' +
+    select.innerHTML = '<option value="">' + t('trial_capture.oficio_placeholder', 'Seleccione su oficio principal…') + '</option>' +
       OFICIO_OPTIONS.map((o) => `<option value="${o.id}">${o.label}</option>`).join('');
     const preferred = getPreferredOficioId();
     if (preferred) {
@@ -203,7 +203,7 @@
     if (options.title) {
       titleEl.textContent = options.title;
     } else if (variant === 'achievement') {
-      titleEl.textContent = t('trial_capture.title_achievement', '¡Bien hecho!');
+      titleEl.textContent = t('trial_capture.title_achievement', '¡Sigue avanzando con ARPA Suite!');
     } else {
       titleEl.textContent = t('trial_capture.title', 'Bienvenido a ARPA Suite');
     }
@@ -213,20 +213,20 @@
     } else if (variant === 'achievement') {
       subEl.textContent = t(
         'trial_capture.subtitle_achievement',
-        'Guarda tu progreso y te avisamos antes de que venza tu prueba.'
+        'Completa el formulario en menos de un minuto. Te avisamos por WhatsApp antes de que venza tu prueba gratis.'
       );
     } else {
       subEl.textContent = t(
         'trial_capture.subtitle_backup',
-        'Para avisarte antes de que venza tu prueba gratis y poder ayudarte si tienes dudas, déjanos tu WhatsApp.'
+        'Para recordarte antes de que termine tu prueba y poder ayudarte, déjanos un WhatsApp de contacto.'
       );
     }
 
     if (btn) {
       btn.textContent = options.btnText ||
         (variant === 'achievement'
-          ? t('trial_capture.btn_submit', 'Enviar')
-          : t('trial_capture.btn_start', 'Continuar'));
+          ? t('trial_capture.btn_submit', 'Guardar y continuar')
+          : t('trial_capture.btn_start', 'Continuar a la app'));
     }
   }
 
@@ -388,8 +388,9 @@
       title: title,
       subtitle: t(
         'trial_capture.subtitle_after_save',
-        'Para avisarte antes de que venza tu prueba gratis y poder ayudarte si tienes dudas, déjanos tu WhatsApp.'
-      )
+        'Para acompañarte durante la prueba, confirma tu nombre, oficio y un WhatsApp de contacto.'
+      ),
+      btnText: t('trial_capture.btn_submit_modal', 'Enviar datos')
     });
   }
 
@@ -401,12 +402,12 @@
     showCapture({
       mode: 'fullscreen',
       variant: 'achievement',
-      title: t('trial_capture.title_achievement', '¡Bien hecho!'),
+      title: t('trial_capture.title_achievement', '¡Sigue avanzando con ARPA Suite!'),
       subtitle: t(
         'trial_capture.subtitle_achievement',
-        'Guarda tu progreso y te avisamos antes de que venza tu prueba.'
+        'Completa el formulario en menos de un minuto. Te avisamos por WhatsApp antes de que venza tu prueba gratis.'
       ),
-      btnText: t('trial_capture.btn_start', 'Continuar'),
+      btnText: t('trial_capture.btn_start', 'Continuar a la app'),
       onComplete: onContinue
     });
   }

@@ -2549,22 +2549,22 @@ document.documentElement.classList.add('license-checking');
 
 <div id="trial-capture-gate" class="trial-capture-gate" role="dialog" aria-modal="true" aria-labelledby="trial-capture-title" hidden>
   <div class="trial-capture-card">
-    <h1 id="trial-capture-title" class="trial-capture-title" data-i18n="trial_capture.title_achievement">¡Bien hecho!</h1>
-    <p class="trial-capture-sub" data-i18n="trial_capture.subtitle_achievement">Guarda tu progreso y te avisamos antes de que venza tu prueba.</p>
+    <h1 id="trial-capture-title" class="trial-capture-title" data-i18n="trial_capture.title_achievement">¡Sigue avanzando con ARPA Suite!</h1>
+    <p class="trial-capture-sub" data-i18n="trial_capture.subtitle_achievement">Completa el formulario en menos de un minuto. Te avisamos por WhatsApp antes de que venza tu prueba gratis.</p>
     <div class="trial-capture-field">
-      <label for="trial-capture-name" data-i18n="trial_capture.label_name">Nombre</label>
-      <input type="text" id="trial-capture-name" autocomplete="name" placeholder="Su nombre">
+      <label for="trial-capture-name" data-i18n="trial_capture.label_name">Nombre completo</label>
+      <input type="text" id="trial-capture-name" autocomplete="name" placeholder="Ej: Juan Pérez" data-i18n-placeholder="trial_capture.placeholder_name">
     </div>
     <div class="trial-capture-field">
-      <label for="trial-capture-oficio" data-i18n="trial_capture.label_oficio">Oficio</label>
-      <select id="trial-capture-oficio"></select>
+      <label for="trial-capture-oficio" data-i18n="trial_capture.label_oficio">Oficio principal</label>
+      <select id="trial-capture-oficio" data-i18n-aria-label="trial_capture.label_oficio" aria-label="Oficio principal"></select>
     </div>
     <div class="trial-capture-field">
-      <label for="trial-capture-phone" data-i18n="trial_capture.label_phone">WhatsApp</label>
-      <input type="tel" id="trial-capture-phone" autocomplete="tel" inputmode="tel" placeholder="+57 300 000 0000" value="+57 ">
+      <label for="trial-capture-phone" data-i18n="trial_capture.label_phone">WhatsApp (con indicativo)</label>
+      <input type="tel" id="trial-capture-phone" autocomplete="tel" inputmode="tel" placeholder="+57 300 123 4567" value="+57 " data-i18n-placeholder="trial_capture.placeholder_phone">
     </div>
     <p id="trial-capture-error" class="trial-capture-error" role="alert"></p>
-    <button type="button" id="trial-capture-submit" class="trial-capture-btn" data-i18n="trial_capture.btn_submit">Enviar</button>
+    <button type="button" id="trial-capture-submit" class="trial-capture-btn" data-i18n="trial_capture.btn_submit">Guardar y continuar</button>
   </div>
 </div>
 
