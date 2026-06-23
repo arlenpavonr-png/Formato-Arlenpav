@@ -93,7 +93,7 @@ const CONFIG = {
 
   TRIALS_SHEET_NAME: 'Trials',
 
-  TRIAL_NOTIFY_EMAIL: 'automatismosarlenpav@gmail.com',
+  TRIAL_NOTIFY_EMAIL: 'support@arpatechnologyglobal.com',
 
   /** Link Gumroad plan Técnico Independiente ($83 USD) — actualizar si cambia */
   TRIAL_UPGRADE_GUMROAD_URL: 'https://arpatechnologyglobal.com/',
