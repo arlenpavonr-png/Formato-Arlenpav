@@ -3110,8 +3110,10 @@ document.documentElement.classList.add('license-checking');
         <div class="catalogo-toolbar-row">
           <input type="search" id="catalogo-buscar" data-i18n-placeholder="cat.placeholder.buscar" placeholder="🔍 Buscar por nombre o referencia…" autocomplete="off" inputmode="search">
           <button type="button" class="btn-catalogo-import" id="btn-catalogo-import" data-i18n="cat.btn.importar">📥 Importar Excel/CSV</button>
-          <button type="button" class="btn-catalogo-import" onclick="precargarCatalogoBFTNAS()" data-i18n="cat.btn.cargar_bft_nas">📦 Cargar Catálogo BFT + NAS (333 productos)</button>
-          <button type="button" class="btn-catalogo-import" onclick="precargarCatalogoPPA()" data-i18n="cat.btn.cargar_ppa">📦 Cargar Catálogo PPA (29 productos)</button>
+          <button type="button" class="btn-catalogo-import" onclick="precargarCatalogoAccessmatic()" data-i18n="cat.btn.cargar_accessmatic">📦 Cargar Accessmatic</button>
+          <button type="button" class="btn-catalogo-import" onclick="precargarCatalogoElite()" data-i18n="cat.btn.cargar_elite">📦 Cargar Elite</button>
+          <button type="button" class="btn-catalogo-import" onclick="precargarCatalogoBFTNAS()" data-i18n="cat.btn.cargar_bft_nas">📦 Cargar BFT + NAS</button>
+          <button type="button" class="btn-catalogo-import" onclick="precargarCatalogoPPA()" data-i18n="cat.btn.cargar_ppa">📦 Cargar PPA</button>
         </div>
         <input type="file" id="catalogo-import-file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden>
         <span id="catalogo-count" class="catalogo-count"></span>

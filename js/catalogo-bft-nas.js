@@ -2,8 +2,33 @@
  * Catálogo BFT + NAS (333 productos) — Garajes Prefabricados
  */
 (function (global) {
-  const CATALOG_KEY = 'arpa_catalogo_usuario';
-  const CATEGORIES_KEY = 'arpa_categorias_usuario';
+  const OFICIO_AUTOMATISMOS = 'automatismos';
+  const ACTIVE_BRAND_KEY = 'arpa_catalogo_marca_activa';
+  const LEGACY_CATALOG_KEY = 'arpa_catalogo_usuario';
+  const LEGACY_CATEGORIES_KEY = 'arpa_categorias_usuario';
+
+  const BRAND_STORAGE = {
+    accessmatic: {
+      label: 'Accessmatic',
+      productsKey: 'arpa_catalogo_accessmatic',
+      categoriesKey: 'arpa_categorias_accessmatic'
+    },
+    elite: {
+      label: 'Elite',
+      productsKey: 'arpa_catalogo_elite',
+      categoriesKey: 'arpa_categorias_elite'
+    },
+    bft_nas: {
+      label: 'BFT + NAS',
+      productsKey: 'arpa_catalogo_bft_nas',
+      categoriesKey: 'arpa_categorias_bft_nas'
+    },
+    ppa: {
+      label: 'PPA',
+      productsKey: 'arpa_catalogo_ppa',
+      categoriesKey: 'arpa_categorias_ppa'
+    }
+  };
 
   const CODIGO_ALIASES = {
     'KPHOBOBTA25-1': 'K2PHOBOSBT-A25',
@@ -369,14 +394,181 @@
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   }
 
-  function precargarCatalogoBFTNAS() {
-    if (global.ArpaOficios?.precargarCatalogoOficio) {
-      return global.ArpaOficios.precargarCatalogoOficio('automatismos');
-    }
-    return 0;
+  function allBrandStorageKeys() {
+    const keys = [];
+    Object.values(BRAND_STORAGE).forEach((brand) => {
+      keys.push(brand.productsKey, brand.categoriesKey);
+    });
+    return keys;
   }
 
+  function clearAllBrandCatalogs() {
+    allBrandStorageKeys().forEach((key) => {
+      try { localStorage.removeItem(key); } catch (e) { /* ignore */ }
+    });
+    try { localStorage.removeItem(ACTIVE_BRAND_KEY); } catch (e) { /* ignore */ }
+    try { localStorage.removeItem(LEGACY_CATALOG_KEY); } catch (e) { /* ignore */ }
+    try { localStorage.removeItem(LEGACY_CATEGORIES_KEY); } catch (e) { /* ignore */ }
+    global.ArpaMiCatalogo?.saveProducts?.([], OFICIO_AUTOMATISMOS);
+    global.ArpaMiCatalogo?.saveCategories?.([], OFICIO_AUTOMATISMOS);
+  }
+
+  function buildCatalogFromRows(rows, options) {
+    const opts = options || {};
+    const defaultMarca = opts.defaultMarca || '';
+    const categoryIds = new Map();
+    const categories = [];
+    const products = [];
+    const seen = new Set();
+    const ahora = new Date().toISOString();
+
+    function ensureCategory(name) {
+      const label = String(name || 'General').trim() || 'General';
+      const key = label.toLowerCase();
+      if (!categoryIds.has(key)) {
+        const cat = { id: newId(), name: label, oficioId: OFICIO_AUTOMATISMOS };
+        categories.push(cat);
+        categoryIds.set(key, cat.id);
+      }
+      return categoryIds.get(key);
+    }
+
+    (rows || []).forEach((row) => {
+      const cod = canonicalCodigo(row.codigo || row.cod);
+      const nom = String(row.nombre || row.nom || '').trim();
+      if (!cod || !nom || seen.has(cod)) return;
+      seen.add(cod);
+      let categoria = String(row.categoria || row.category || 'General').trim() || 'General';
+      if (opts.normalizeCategory !== false && global.ArpaCatalogo?.normalizeAutomatismosCategory) {
+        categoria = global.ArpaCatalogo.normalizeAutomatismosCategory(categoria);
+      }
+      products.push({
+        id: newId(),
+        cod,
+        nom,
+        pvp: Number(row.precio != null ? row.precio : row.pvp) || 0,
+        unidad: String(row.unidad || 'unidad').trim() || 'unidad',
+        marca: String(row.marca || defaultMarca || '').trim(),
+        categoriaId: ensureCategory(categoria),
+        oficioId: OFICIO_AUTOMATISMOS,
+        fechaAgregado: ahora
+      });
+    });
+
+    return { products, categories };
+  }
+
+  function installBrandCatalog(brandId, rows, options) {
+    const brand = BRAND_STORAGE[brandId];
+    if (!brand) return 0;
+
+    clearAllBrandCatalogs();
+    const built = buildCatalogFromRows(rows, options);
+
+    try {
+      localStorage.setItem(brand.productsKey, JSON.stringify(built.products));
+      localStorage.setItem(brand.categoriesKey, JSON.stringify(built.categories));
+      localStorage.setItem(ACTIVE_BRAND_KEY, brandId);
+    } catch (e) {
+      console.warn('[catalogo-marcas] install', brandId, e);
+      alert('No se pudo guardar el catálogo. Intente de nuevo.');
+      return 0;
+    }
+
+    global.ArpaMiCatalogo?.saveCategories?.(built.categories, OFICIO_AUTOMATISMOS);
+    global.ArpaMiCatalogo?.saveProducts?.(built.products, OFICIO_AUTOMATISMOS);
+    global.ArpaCatalogo?.invalidateListaCache?.();
+    global.ArpaCotizacion?.updateCatalogHint?.();
+    global.ArpaMiCatalogo?.refreshView?.();
+    return built.products.length;
+  }
+
+  function flattenMarcaFromArpaCatalogo(marcaName) {
+    const marcas = global.ArpaCatalogo?.getCatalogoMarcas?.();
+    const categorias = marcas?.[marcaName];
+    if (!categorias) return [];
+    const rows = [];
+    Object.entries(categorias).forEach(([categoria, items]) => {
+      (items || []).forEach((item) => {
+        rows.push({
+          cod: item.cod,
+          nom: item.nom,
+          marca: marcaName,
+          categoria,
+          pvp: Number(item.pvp) || 0
+        });
+      });
+    });
+    return rows;
+  }
+
+  function restoreActiveBrandCatalog() {
+    let brandId = '';
+    try { brandId = localStorage.getItem(ACTIVE_BRAND_KEY) || ''; } catch (e) { /* ignore */ }
+    const brand = BRAND_STORAGE[brandId];
+    if (!brand) return false;
+
+    let products = [];
+    let categories = [];
+    try {
+      products = JSON.parse(localStorage.getItem(brand.productsKey) || '[]');
+      categories = JSON.parse(localStorage.getItem(brand.categoriesKey) || '[]');
+      if (!Array.isArray(products)) products = [];
+      if (!Array.isArray(categories)) categories = [];
+    } catch (e) {
+      return false;
+    }
+    if (!products.length) return false;
+
+    global.ArpaMiCatalogo?.saveCategories?.(categories, OFICIO_AUTOMATISMOS);
+    global.ArpaMiCatalogo?.saveProducts?.(products, OFICIO_AUTOMATISMOS);
+    global.ArpaCatalogo?.invalidateListaCache?.();
+    return true;
+  }
+
+  function precargarCatalogoAccessmatic() {
+    const count = installBrandCatalog('accessmatic', flattenMarcaFromArpaCatalogo('Accessmatic'));
+    alert('Catálogo Accessmatic cargado: ' + count + ' productos.');
+    return count;
+  }
+
+  function precargarCatalogoElite() {
+    const count = installBrandCatalog('elite', flattenMarcaFromArpaCatalogo('Elite'));
+    alert('Catálogo Elite cargado: ' + count + ' productos.');
+    return count;
+  }
+
+  function precargarCatalogoBFTNAS() {
+    const count = installBrandCatalog('bft_nas', CATALOGO_BFT_NAS, { normalizeCategory: false });
+    alert('Catálogo BFT + NAS cargado: ' + count + ' productos.');
+    return count;
+  }
+
+  global.ArpaCatalogoMarcas = {
+    BRAND_STORAGE,
+    ACTIVE_BRAND_KEY,
+    OFICIO_AUTOMATISMOS,
+    clearAllBrandCatalogs,
+    buildCatalogFromRows,
+    installBrandCatalog,
+    restoreActiveBrandCatalog,
+    getActiveBrandId() {
+      try { return localStorage.getItem(ACTIVE_BRAND_KEY) || ''; } catch (e) { return ''; }
+    }
+  };
+
   global.CATALOGO_BFT_NAS = CATALOGO_BFT_NAS;
+  global.precargarCatalogoAccessmatic = precargarCatalogoAccessmatic;
+  global.precargarCatalogoElite = precargarCatalogoElite;
   global.precargarCatalogoBFTNAS = precargarCatalogoBFTNAS;
+
+  if (typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', () => {
+      restoreActiveBrandCatalog();
+    });
+  } else {
+    restoreActiveBrandCatalog();
+  }
+
   global.ArpaCatalogo?.invalidateListaCache?.();
 })(typeof window !== 'undefined' ? window : globalThis);

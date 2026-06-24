@@ -2,17 +2,6 @@
  * Catálogo PPA (29 productos) — Automatismos
  */
 (function (global) {
-  const CATALOG_KEY = 'arpa_catalogo_usuario';
-  const CATEGORIES_KEY = 'arpa_categorias_usuario';
-  const OFICIO_AUTOMATISMOS = 'automatismos';
-
-  const CODIGO_ALIASES = {};
-
-  function canonicalCodigo(cod) {
-    const c = String(cod || '').trim().toUpperCase();
-    return CODIGO_ALIASES[c] || c;
-  }
-
   const CATALOGO_PPA = [
   { codigo: "PPA-DZ-HOME-JF-350", nombre: "DZ Home Jetflex 350kg", precio: 0, categoria: "Motores Corredizos", marca: "PPA" },
   { codigo: "PPA-DZ-STARK-400-WF", nombre: "DZ Stark Home 400kg WiFi", precio: 0, categoria: "Motores Corredizos", marca: "PPA" },
@@ -45,101 +34,17 @@
   { codigo: "PPA-BTN-SALIDA", nombre: "Botón de Salida Metálico", precio: 0, categoria: "Accesorios", marca: "PPA" }
   ];
 
-  function newId() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-  }
-
-  function readCatalogState() {
-    if (global.ArpaMiCatalogo?.getProducts) {
-      return {
-        products: (global.ArpaMiCatalogo.getProducts(OFICIO_AUTOMATISMOS) || []).slice(),
-        categories: (global.ArpaMiCatalogo.getCategories(OFICIO_AUTOMATISMOS) || []).slice()
-      };
-    }
-    let products = [];
-    let categories = [];
-    try {
-      products = JSON.parse(localStorage.getItem(CATALOG_KEY) || '[]');
-    } catch (e) {
-      products = [];
-    }
-    try {
-      categories = JSON.parse(localStorage.getItem(CATEGORIES_KEY) || '[]');
-    } catch (e) {
-      categories = [];
-    }
-    return { products, categories };
-  }
-
-  function writeCatalogState(products, categories) {
-    if (global.ArpaMiCatalogo?.saveProducts) {
-      global.ArpaMiCatalogo.saveCategories(categories, OFICIO_AUTOMATISMOS);
-      global.ArpaMiCatalogo.saveProducts(products, OFICIO_AUTOMATISMOS);
-      return;
-    }
-    localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
-    localStorage.setItem(CATALOG_KEY, JSON.stringify(products));
-  }
-
   function precargarCatalogoPPA() {
-    const state = readCatalogState();
-    const productosExistentes = state.products;
-    const categoriasExistentes = state.categories;
-
-    const categoryIds = new Map(
-      categoriasExistentes.map((c) => [(c.name || '').trim().toLowerCase(), c.id])
-    );
-    const categorias = categoriasExistentes.slice();
-
-    function ensureCategory(name) {
-      const label = (name || 'General').trim();
-      const key = label.toLowerCase();
-      if (!categoryIds.has(key)) {
-        const cat = { id: newId(), name: label, oficioId: OFICIO_AUTOMATISMOS };
-        categorias.push(cat);
-        categoryIds.set(key, cat.id);
-      }
-      return categoryIds.get(key);
+    const install = global.ArpaCatalogoMarcas?.installBrandCatalog;
+    if (!install) {
+      alert('El módulo de catálogos por marca no está disponible.');
+      return 0;
     }
-
-    const codigosExistentes = new Set(
-      productosExistentes
-        .map((p) => canonicalCodigo(String(p.cod || p.codigo || '').trim()))
-        .filter(Boolean)
-    );
-
-    let agregados = 0;
-    const ahora = new Date().toISOString();
-
-    CATALOGO_PPA.forEach((producto) => {
-      const cod = canonicalCodigo(producto.codigo);
-      if (!cod || codigosExistentes.has(cod)) return;
-      productosExistentes.push({
-        id: newId(),
-        cod,
-        nom: producto.nombre,
-        pvp: Number(producto.precio) || 0,
-        unidad: 'unidad',
-        marca: producto.marca || '',
-        categoriaId: ensureCategory(producto.categoria),
-        oficioId: OFICIO_AUTOMATISMOS,
-        fechaAgregado: ahora
-      });
-      codigosExistentes.add(cod);
-      agregados++;
-    });
-
-    writeCatalogState(productosExistentes, categorias);
-
-    global.ArpaCatalogo?.invalidateListaCache?.();
-    global.ArpaCotizacion?.updateCatalogHint?.();
-    global.ArpaMiCatalogo?.refreshView?.();
-
-    alert('Catálogo cargado: ' + agregados + ' productos agregados de PPA');
-    return agregados;
+    const count = install('ppa', CATALOGO_PPA, { normalizeCategory: false, defaultMarca: 'PPA' });
+    alert('Catálogo PPA cargado: ' + count + ' productos.');
+    return count;
   }
 
   global.CATALOGO_PPA = CATALOGO_PPA;
   global.precargarCatalogoPPA = precargarCatalogoPPA;
-  global.ArpaCatalogo?.invalidateListaCache?.();
 })(typeof window !== 'undefined' ? window : globalThis);
