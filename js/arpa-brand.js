@@ -204,8 +204,10 @@
   }
 
   function saveSettings(data) {
+    if (!data || typeof data !== 'object') return false;
     try {
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(data));
+      const merged = { ...getSettings(), ...data };
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(merged));
       return true;
     } catch (e) {
       console.warn('[arpa-brand]', e);
@@ -264,14 +266,15 @@
   function needsCompanyRestoreFromSheets() {
     const licencia = getLicenseCode();
     if (!licencia) return false;
+    const current = getSettings();
+    if (String(current.companyName || '').trim()) return false;
     try {
       const raw = localStorage.getItem(SETTINGS_KEY);
       if (!raw || raw === '{}') return true;
     } catch (e) {
       return true;
     }
-    if (!hasUserSettings()) return true;
-    return !String(getSettings().companyName || '').trim();
+    return !hasUserSettings();
   }
 
   function pushCompanyDataToSheets(settings) {
@@ -307,8 +310,7 @@
       .then((data) => {
         if (!data || !data.encontrado || !String(data.nombreEmpresa || '').trim()) return false;
         const current = getSettings();
-        const merged = {
-          ...current,
+        const patch = {
           companyName: data.nombreEmpresa || '',
           nit: data.nit || current.nit || '',
           address: data.direccion || current.address || '',
@@ -317,7 +319,7 @@
           website: data.sitioWeb || current.website || '',
           logoBase64: data.logoBase64 || current.logoBase64 || ''
         };
-        if (!saveSettings(merged)) return false;
+        if (!saveSettings(patch)) return false;
         try { localStorage.setItem(SETTINGS_CONFIGURED_KEY, 'true'); } catch (e) {}
         return true;
       })
