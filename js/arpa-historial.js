@@ -178,11 +178,31 @@
 
   function addRecord(record) {
     const records = getRecords();
-    records.unshift(record);
+    const numero = String(record.numero || '').trim();
+    const modulo = inferModulo(record);
+
+    let finalRecord = record;
+    if (numero) {
+      const existingIdx = records.findIndex(
+        (r) => inferModulo(r) === modulo && String(r.numero || '').trim() === numero
+      );
+      if (existingIdx !== -1) {
+        const existing = records[existingIdx];
+        finalRecord = { ...existing, ...record, id: existing.id };
+        records.splice(existingIdx, 1);
+        records.unshift(finalRecord);
+        saveRecords(records);
+        render();
+        global.ArpaCloudSync?.pushHistorialEntry?.(finalRecord);
+        return finalRecord;
+      }
+    }
+
+    records.unshift(finalRecord);
     saveRecords(records);
     render();
-    global.ArpaCloudSync?.pushHistorialEntry?.(record);
-    return record;
+    global.ArpaCloudSync?.pushHistorialEntry?.(finalRecord);
+    return finalRecord;
   }
 
   function readFormSnapshot() {
