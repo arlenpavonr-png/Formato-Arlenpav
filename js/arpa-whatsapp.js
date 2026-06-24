@@ -131,11 +131,6 @@
     openWhatsAppWithMessage(telRaw, buildCotMessage());
   }
 
-  function guardarCotPDFYWhatsApp() {
-    if (typeof global.guardarCotPDF === 'function') global.guardarCotPDF();
-    setTimeout(openWhatsAppCot, 600);
-  }
-
   global.ArpaWhatsApp = {
     hideFormatoShareButton,
     showFormatoShareAfterPdf,
@@ -146,6 +141,5 @@
   };
 
   global.compartirFormatoWhatsApp = compartirFormatoWhatsApp;
-  global.guardarCotPDFYWhatsApp = guardarCotPDFYWhatsApp;
   global.abrirWhatsAppCot = openWhatsAppCot;
 })(window);

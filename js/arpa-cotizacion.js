@@ -331,20 +331,22 @@
     return labels;
   }
 
-  function guardarCotPDF() {
-    var _numCot = (document.getElementById('numero-cot')?.value || '').trim();
-    var _cliente = document.querySelector('#cot-nombre, #cot-cliente, input[name*=nombre]')?.value?.trim() || '';
-    var _telefono = document.querySelector('#cot-tel, #cot-telefono, input[name*=tel]')?.value?.trim() || '';
-    var _total = document.querySelector('#total-val-cot, #cot-total, .cot-total')?.textContent?.trim() || '';
-    var _fecha = document.getElementById('cot-fecha')?.value?.trim()
+  function saveCotMetadata() {
+    const numCot = (document.getElementById('numero-cot')?.value || '').trim();
+    const cliente = document.querySelector('#cot-nombre, #cot-cliente, input[name*=nombre]')?.value?.trim() || '';
+    const telefono = document.querySelector('#cot-tel, #cot-telefono, input[name*=tel]')?.value?.trim() || '';
+    const total = document.querySelector('#total-val-cot, #cot-total, .cot-total')?.textContent?.trim() || '';
+    const fecha = document.getElementById('cot-fecha')?.value?.trim()
       || new Date().toISOString().split('T')[0];
-    guardarEnSheets(_numCot, _cliente, _telefono, _total, _fecha);
+    guardarEnSheets(numCot, cliente, telefono, total, fecha);
 
     global.applyUserSettingsToUI?.();
     global.ArpaCobros?.syncFromEditor?.('cot');
     renderTablaCot();
     global.ArpaHistorial?.captureFromCotizacion?.();
+  }
 
+  function beginCotPdfExport() {
     const viewRoot = document.getElementById('view-cotizacion');
     const viewWasHidden = viewRoot?.hasAttribute('hidden') ?? false;
     if (viewRoot) viewRoot.removeAttribute('hidden');
@@ -390,8 +392,10 @@
     });
 
     const btnStack = document.querySelector('#pdf-actions-cot .pdf-actions-stack');
+    const btnStackDisplay = btnStack ? btnStack.style.display : '';
     if (btnStack) btnStack.style.display = 'none';
-    document.getElementById('cobros-actions-cot')?.style.setProperty('display', 'none');
+    const cobrosActions = document.getElementById('cobros-actions-cot');
+    if (cobrosActions) cobrosActions.style.setProperty('display', 'none');
     document.getElementById('settings-modal')?.classList.remove('open');
 
     window.ArpaSignature?.prepareForPrint?.([
@@ -399,29 +403,146 @@
       'canvas-cot-elaborado'
     ]);
 
-    const tituloRespaldo = document.title;
+    return {
+      viewRoot,
+      viewWasHidden,
+      rowPrintBackups,
+      respaldos,
+      btnStack,
+      btnStackDisplay,
+      cobrosActions,
+      tituloRespaldo: document.title
+    };
+  }
+
+  function endCotPdfExport(ctx, options) {
+    const {
+      viewRoot,
+      viewWasHidden,
+      rowPrintBackups,
+      respaldos,
+      btnStack,
+      btnStackDisplay,
+      cobrosActions,
+      tituloRespaldo
+    } = ctx;
+
+    document.title = tituloRespaldo;
+    if (viewRoot && viewWasHidden) viewRoot.setAttribute('hidden', '');
+    document.body.classList.remove('is-printing');
+    global.ArpaI18n?.restorePdfSpanish?.();
+    global.ArpaBrand?.restoreAfterPrint?.();
+    unlockCotRowsForPrint(rowPrintBackups);
+    global.ArpaSignature?.restoreAfterPrint?.();
+    respaldos.forEach(({ el, parent }) => {
+      const span = parent.querySelector('.pdf-valor');
+      if (span) parent.replaceChild(el, span);
+    });
+    if (btnStack) btnStack.style.display = btnStackDisplay;
+    if (cobrosActions) cobrosActions.style.removeProperty('display');
+    renderTablaCot();
+    if (options?.trialCapture) global.ArpaTrialCapture?.onDocumentSaved?.('cotizacion');
+  }
+
+  function sanitizeCotFilenamePart(text) {
+    return String(text || '')
+      .replace(/[^\w\s-áéíóúÁÉÍÓÚñÑ]/g, '')
+      .replace(/\s+/g, '_')
+      .substring(0, 40) || 'Cotizacion';
+  }
+
+  function buildCotShareMessage() {
+    const nombre = (document.getElementById('cot-nombre')?.value.trim() || 'Cliente').split(' ')[0];
+    const numero = document.getElementById('numero-cot')?.value.trim() || '—';
+    const company = global.ArpaBrand?.getSettings?.()?.companyName?.trim() || 'su empresa';
+    return `Hola ${nombre}, le comparto la cotización N°${numero} de ${company}. Por favor revísela y confírmenos su recepción.`;
+  }
+
+  async function generarCotPdfFile() {
+    const jsPDF = global.jspdf?.jsPDF || global.jsPDF;
+    const html2canvas = global.html2canvas;
+    const viewRoot = document.getElementById('view-cotizacion');
+    if (!jsPDF || !html2canvas || !viewRoot) return null;
+
+    const ctx = beginCotPdfExport();
+    try {
+      const canvas = await html2canvas(viewRoot, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
+      const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      const blob = pdf.output('blob');
+      const numero = document.getElementById('numero-cot')?.value.trim() || 'Cotizacion';
+      const cliente = document.getElementById('cot-nombre')?.value.trim() || 'Cliente';
+      const filename = `Cotizacion_${sanitizeCotFilenamePart(numero)}_${sanitizeCotFilenamePart(cliente)}.pdf`;
+      return new File([blob], filename, { type: 'application/pdf' });
+    } finally {
+      endCotPdfExport(ctx);
+    }
+  }
+
+  function guardarCotPDF() {
+    saveCotMetadata();
+
+    const ctx = beginCotPdfExport();
     const numCot = document.getElementById('numero-cot')?.value.trim() || 'Cotización';
     document.title = numCot;
 
     window.print();
 
-    setTimeout(() => {
-      document.title = tituloRespaldo;
-      if (viewRoot && viewWasHidden) viewRoot.setAttribute('hidden', '');
-      document.body.classList.remove('is-printing');
-      global.ArpaI18n?.restorePdfSpanish?.();
-      global.ArpaBrand?.restoreAfterPrint?.();
-      unlockCotRowsForPrint(rowPrintBackups);
-      global.ArpaSignature?.restoreAfterPrint?.();
-      respaldos.forEach(({ el, parent }) => {
-        const span = parent.querySelector('.pdf-valor');
-        if (span) parent.replaceChild(el, span);
-      });
-      if (btnStack) btnStack.style.display = '';
-      document.getElementById('cobros-actions-cot')?.style.removeProperty('display');
-      renderTablaCot();
-      global.ArpaTrialCapture?.onDocumentSaved?.('cotizacion');
-    }, 1000);
+    setTimeout(() => endCotPdfExport(ctx, { trialCapture: true }), 1000);
+  }
+
+  async function guardarCotPDFYWhatsApp() {
+    saveCotMetadata();
+
+    const telRaw = document.getElementById('cot-tel')?.value.trim() || '';
+    const message = buildCotShareMessage();
+
+    try {
+      const file = await generarCotPdfFile();
+      if (file && navigator.share && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: file.name,
+          text: message
+        });
+        global.ArpaTrialCapture?.onDocumentSaved?.('cotizacion');
+        return;
+      }
+    } catch (err) {
+      if (err?.name === 'AbortError') return;
+      console.warn('[arpa-cotizacion] share', err);
+    }
+
+    alert('Adjunte el PDF manualmente desde su galería o archivos recientes.');
+    global.ArpaWhatsApp?.openWhatsAppWithMessage?.(
+      telRaw,
+      message + ' (Adjunte el PDF desde su dispositivo.)'
+    );
+    global.ArpaTrialCapture?.onDocumentSaved?.('cotizacion');
   }
 
   function refreshCobros() {
@@ -467,6 +588,7 @@
     nuevoCotNumero,
     ensureCotNumero,
     guardarCotPDF,
+    guardarCotPDFYWhatsApp,
     getCotSnapshot,
     getCotItemLabels,
     getCatalogoActivo,
@@ -474,6 +596,7 @@
   };
 
   global.guardarCotPDF = guardarCotPDF;
+  global.guardarCotPDFYWhatsApp = guardarCotPDFYWhatsApp;
   global.nuevoCotNumero = nuevoCotNumero;
   global.ensureCotNumero = ensureCotNumero;
 })(window);
