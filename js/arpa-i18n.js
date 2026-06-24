@@ -248,6 +248,7 @@
     'cat.placeholder.buscar': '🔍 Search by name or reference…',
     'cat.btn.importar': '📥 Import Excel/CSV',
     'cat.btn.cargar_bft_nas': '📦 Load BFT + NAS Catalog (333 products)',
+    'cat.btn.cargar_ppa': '📦 Load PPA Catalog (29 products)',
     'cat.empty': 'No products yet.<br>Tap <strong>+</strong> to add the first one.',
     'cat.oficio.intro': 'Editable starter catalog. Adjust prices and products for your business.',
     'cat.btn.agregar_producto': '+ Add product',
