@@ -107,16 +107,21 @@
     return first;
   }
 
-  function getConceptoDisplay(record) {
+  function truncateConcepto(text, maxLen) {
+    const limit = maxLen || 60;
+    const s = String(text || '').trim();
+    return s.length > limit ? s.slice(0, limit) + '...' : s;
+  }
+
+  function getConceptoDisplay(record, options) {
     const partes = [];
     const subtipo = getSubtipoLabel(record);
     if (subtipo) partes.push(subtipo);
-    const ciudad = (record?.ciudad || '').trim();
-    if (ciudad) partes.push(ciudad);
     const concepto = (record?.concepto || '').trim();
     if (concepto) partes.push(concepto);
     if (!partes.length) return SIN_DESCRIPCION;
-    return partes.join(' · ');
+    const texto = partes.join(' · ');
+    return options?.full ? texto : truncateConcepto(texto);
   }
 
   function getFormatoBriefDetail() {
@@ -446,7 +451,7 @@
       getSubtipoLabel(r),
       r.numeroServicio || r.numero,
       r.cliente,
-      getConceptoDisplay(r),
+      getConceptoDisplay(r, { full: true }),
       r.ciudad,
       r.fecha,
       shouldShowTotal(r) && r.total != null ? r.total : '',
