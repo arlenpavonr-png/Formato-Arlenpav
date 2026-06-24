@@ -284,6 +284,31 @@
     global.ArpaCloudSync?.deleteHistorialEntry?.(id);
   }
 
+  function dedupeRecords() {
+    const records = getRecords();
+    if (records.length < 2) return false;
+
+    const seen = new Set();
+    const result = [];
+    const removedIds = [];
+    records.forEach((r) => {
+      const numero = String(r.numero || '').trim();
+      if (!numero) { result.push(r); return; }
+      const key = inferModulo(r) + '|' + numero;
+      if (seen.has(key)) {
+        removedIds.push(r.id);
+        return;
+      }
+      seen.add(key);
+      result.push(r);
+    });
+
+    if (!removedIds.length) return false;
+    saveRecords(result);
+    removedIds.forEach((id) => global.ArpaCloudSync?.deleteHistorialEntry?.(id));
+    return true;
+  }
+
   function formatoPesos(n) {
     return global.ArpaPricing?.formatoPesos(n) || ('$ ' + (Number(n) || 0).toLocaleString('es-CO'));
   }
@@ -471,6 +496,7 @@
     captureFromFormato,
     captureFromCotizacion,
     captureFromCuentaCobro,
+    dedupeRecords,
     render,
     exportCSV,
     removeRecord,
@@ -482,6 +508,7 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     patchCloseSettingsForHistorial();
+    dedupeRecords();
     render();
     document.getElementById('btn-exportar-historial')?.addEventListener('click', exportCSV);
   });
