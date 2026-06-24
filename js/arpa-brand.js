@@ -478,6 +478,62 @@
 
     document.title = document.title.includes('–') ? document.title : (configured ? `${appBrandName} – ${company}` : appBrandName);
     if (!configured) resetUnconfiguredFormFields();
+    applyCuentaCobroFromSettings(s, { fillPago: 'if-empty' });
+  }
+
+  function applyCuentaCobroFromSettings(s, options) {
+    s = s || getSettings();
+    const opts = options || {};
+    const fillPago = opts.fillPago || 'if-empty';
+    const configured = hasUserSettings() && Boolean(s.companyName?.trim());
+    const setText = (id, text) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = (text || '').trim() || '—';
+    };
+
+    setText('cc-cobrador-nombre', configured ? s.technicianName : '');
+    setText('cc-cobrador-doc', configured ? s.technicianDocument : '');
+    setText('cc-cobrador-empresa', configured ? s.companyName : '');
+    setText('cc-cobrador-nit', configured ? s.nit : '');
+    setText('cc-cobrador-tel', configured ? s.phone : '');
+    setText('cc-cobrador-dir', configured ? s.address : '');
+    const website = configured ? (s.website || '').trim() : '';
+    setText('cc-cobrador-web', website && !isInternalAppUrl(website) ? website : '');
+
+    const ccLogo = document.getElementById('cc-brand-logo');
+    if (ccLogo) {
+      ccLogo.src = getLogo(s);
+      ccLogo.alt = configured ? (s.companyName || 'Logo empresa') : 'Logo empresa';
+      ccLogo.hidden = !configured;
+    }
+
+    const firmaNom = document.getElementById('cc-firma-cobrador-nombre');
+    if (firmaNom) firmaNom.textContent = configured ? (s.technicianName || '').trim() || '—' : '—';
+
+    if (!configured || fillPago === 'never') return;
+
+    const assignPago = (id, value) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const next = (value || '').trim();
+      if (fillPago === 'always' || !el.value.trim()) el.value = next;
+    };
+    assignPago('cc-pago-banco', s.bankName);
+    assignPago('cc-pago-numero', s.accountNumber);
+    assignPago('cc-pago-titular', s.accountHolder);
+    assignPago('cc-pago-titular-doc', s.accountHolderDocument);
+    const tipo = document.getElementById('cc-pago-tipo');
+    if (tipo && (fillPago === 'always' || !tipo.value)) tipo.value = s.accountType || 'Ahorros';
+
+    const ciudad = document.getElementById('cc-ciudad');
+    if (ciudad && (fillPago === 'always' || !ciudad.value.trim())) {
+      let city = (s.city || '').trim();
+      if (!city && (s.address || '').trim()) {
+        const tail = String(s.address).split(/[–—-]/).pop()?.trim() || '';
+        city = tail.split(',')[0]?.trim() || '';
+      }
+      if (city) ciudad.value = city;
+    }
   }
 
   function readLogoFile(input, onLoad) {
@@ -765,6 +821,7 @@
     getAppLogo,
     getAppBrandName,
     applyToUI,
+    applyCuentaCobroFromSettings,
     prepareForPrint,
     restoreAfterPrint,
     previewLogo,

@@ -45,6 +45,7 @@
       global.ArpaCotizacion?.updateCatalogHint?.();
     }
     if (view === 'cuenta-cobro') {
+      global.applyUserSettingsToUI?.();
       global.ArpaCuentaCobro?.refreshView?.();
       global.ArpaCuentaCobro?.ensureCcNumero?.();
     }

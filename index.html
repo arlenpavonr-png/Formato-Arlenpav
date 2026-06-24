@@ -1059,6 +1059,17 @@
   }
 
   /* ── CUENTA DE COBRO ── */
+  .cc-brand-logo-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  #cc-brand-logo {
+    max-width: 120px;
+    max-height: 72px;
+    object-fit: contain;
+    object-position: center;
+  }
   .cc-info-panel {
     background: var(--light);
     border: 1px solid var(--border);
@@ -3142,6 +3153,7 @@ document.documentElement.classList.add('license-checking');
     <div class="section">
       <div class="section-title"><span class="dot"></span><span data-i18n="cc.section.cobrador">Cobrador</span></div>
       <p style="font-size:11px;color:var(--muted);margin:-4px 0 10px;line-height:1.45;" data-i18n="cc.cobrador.hint">Datos desde Configuración de Empresa.</p>
+      <div class="cc-brand-logo-wrap"><img id="cc-brand-logo" src="./icon-192x192.png" alt="Logo empresa" hidden></div>
       <div class="cc-info-panel">
         <div class="cc-info-row"><span data-i18n="cc.cobrador.tecnico_dueno">Técnico / Dueño</span><strong id="cc-cobrador-nombre">—</strong></div>
         <div class="cc-info-row"><span data-i18n="cc.cobrador.cedula_nit">Cédula / NIT personal</span><strong id="cc-cobrador-doc">—</strong></div>
@@ -3149,6 +3161,7 @@ document.documentElement.classList.add('license-checking');
         <div class="cc-info-row"><span data-i18n="cc.cobrador.nit_empresa">NIT empresa</span><strong id="cc-cobrador-nit">—</strong></div>
         <div class="cc-info-row"><span data-i18n="cc.cobrador.telefono">Teléfono</span><strong id="cc-cobrador-tel">—</strong></div>
         <div class="cc-info-row"><span data-i18n="cc.cobrador.direccion">Dirección</span><strong id="cc-cobrador-dir">—</strong></div>
+        <div class="cc-info-row"><span data-i18n="settings.label.website_optional">Sitio web</span><strong id="cc-cobrador-web">—</strong></div>
       </div>
     </div>
 

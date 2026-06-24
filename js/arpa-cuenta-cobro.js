@@ -128,20 +128,7 @@
   const PAGO_FIELD_IDS = ['cc-pago-banco', 'cc-pago-numero', 'cc-pago-titular', 'cc-pago-titular-doc'];
 
   function loadPagoFields() {
-    if (!global.ArpaBrand?.hasUserSettings?.()) {
-      PAGO_FIELD_IDS.forEach((id) => { const el = document.getElementById(id); if (el) el.value = ''; });
-      const tipo = document.getElementById('cc-pago-tipo');
-      if (tipo) tipo.value = 'Ahorros';
-      return;
-    }
-    const r = getRawSettings();
-    const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
-    set('cc-pago-banco', r.bankName);
-    set('cc-pago-numero', r.accountNumber);
-    set('cc-pago-titular', r.accountHolder);
-    set('cc-pago-titular-doc', r.accountHolderDocument);
-    const tipo = document.getElementById('cc-pago-tipo');
-    if (tipo) tipo.value = r.accountType || 'Ahorros';
+    global.ArpaBrand?.applyCuentaCobroFromSettings?.(undefined, { fillPago: 'always' });
   }
 
   function savePagoToSettings() {
@@ -158,19 +145,7 @@
   }
 
   function loadCiudadFromConfig() {
-    const el = document.getElementById('cc-ciudad');
-    if (!el) return;
-    if (!global.ArpaBrand?.hasUserSettings?.()) {
-      el.value = '';
-      return;
-    }
-    const r = getRawSettings();
-    let city = (r.city || '').trim();
-    if (!city && (r.address || '').trim()) {
-      const tail = String(r.address).split(/[–—-]/).pop()?.trim() || '';
-      city = tail.split(',')[0]?.trim() || '';
-    }
-    el.value = city;
+    global.ArpaBrand?.applyCuentaCobroFromSettings?.(undefined, { fillPago: 'always' });
   }
 
   function formatoPesos(n) {
@@ -205,22 +180,7 @@
   }
 
   function renderCobrador() {
-    const configured = global.ArpaBrand?.hasUserSettings?.();
-    const r = configured ? getRawSettings() : {};
-    const map = {
-      'cc-cobrador-nombre': r.technicianName,
-      'cc-cobrador-doc': r.technicianDocument,
-      'cc-cobrador-empresa': r.companyName,
-      'cc-cobrador-nit': r.nit,
-      'cc-cobrador-tel': r.phone,
-      'cc-cobrador-dir': r.address
-    };
-    Object.entries(map).forEach(([id, val]) => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = (val || '').trim() || '—';
-    });
-    const firmaNom = document.getElementById('cc-firma-cobrador-nombre');
-    if (firmaNom) firmaNom.textContent = (r.technicianName || '').trim() || '—';
+    global.ArpaBrand?.applyCuentaCobroFromSettings?.(undefined, { fillPago: 'never' });
   }
 
   function renderServicios() {
@@ -315,7 +275,7 @@
     const iva = conIva ? subtotal * 0.19 : 0;
     const retencion = conRet ? subtotal * (retPct / 100) : 0;
     const total = subtotal + iva - retencion;
-    const r = getRawSettings();
+    const r = global.ArpaBrand?.getSettings?.() || getRawSettings();
     const clienteNombre = document.getElementById('cc-cliente-nombre')?.value.trim() || '';
 
     return {
@@ -329,7 +289,8 @@
         empresa: (r.companyName || '').trim(),
         nit: (r.nit || '').trim(),
         tel: (r.phone || '').trim(),
-        dir: (r.address || '').trim()
+        dir: (r.address || '').trim(),
+        web: (r.website || '').trim()
       },
       cliente: {
         nombre: clienteNombre,
@@ -398,12 +359,47 @@
     return (name || 'Cliente').replace(/[^\w\s-áéíóúÁÉÍÓÚñÑ]/g, '').replace(/\s+/g, '_').substring(0, 40) || 'Cliente';
   }
 
-  function enviarWhatsApp() {
-    const d = getFormSnapshot();
+  function buildCcShareMessage(d) {
     const empresa = d.cobrador.empresa || 'nuestra empresa';
     const telEmp = d.cobrador.tel || '';
-    const msg = `Hola ${d.cliente.nombre || 'cliente'}, le compartimos la ${d.numero} de ${empresa} por un valor de ${formatoPesos(d.total)}. Quedamos atentos para cualquier consulta.\n${empresa} 📞 ${telEmp}`;
-    global.ArpaWhatsApp?.openWhatsAppWithMessage?.(d.cliente.tel, msg);
+    return `Hola ${d.cliente.nombre || 'cliente'}, le compartimos la ${d.numero} de ${empresa} por un valor de ${formatoPesos(d.total)}. Quedamos atentos para cualquier consulta.\n${empresa} 📞 ${telEmp}`;
+  }
+
+  async function enviarWhatsApp() {
+    const jsPDF = getJsPDF();
+    if (!jsPDF) {
+      scheduleCcDraftSave(true);
+      alert('No se pudo cargar jsPDF. Recargue la aplicación e intente de nuevo.');
+      return;
+    }
+
+    const d = getFormSnapshot();
+    const msg = buildCcShareMessage(d);
+
+    try {
+      const { doc, filename } = await renderCcToPdf(d, jsPDF);
+      const file = new File([doc.output('blob')], filename, { type: 'application/pdf' });
+      if (file && navigator.share && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: filename,
+          text: msg
+        });
+        global.ArpaHistorial?.captureFromCuentaCobro?.(d);
+        clearCcDraft();
+        return;
+      }
+    } catch (err) {
+      if (err?.name === 'AbortError') return;
+      console.warn('[arpa-cuenta-cobro] share', err);
+    }
+
+    alert('Adjunte el PDF manualmente desde su galería o archivos recientes.');
+    global.ArpaWhatsApp?.openWhatsAppWithMessage?.(
+      d.cliente.tel,
+      msg + ' (Adjunte el PDF desde su dispositivo.)'
+    );
+    global.ArpaHistorial?.captureFromCuentaCobro?.(d);
   }
 
   function loadImageDataUrl(src) {
@@ -427,17 +423,8 @@
     });
   }
 
-  async function generarPDF() {
-    const jsPDF = getJsPDF();
-    if (!jsPDF) {
-      scheduleCcDraftSave(true);
-      alert('No se pudo cargar jsPDF. Recargue la aplicación e intente de nuevo.');
-      return;
-    }
-
-    const d = getFormSnapshot();
-    try {
-      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  async function renderCcToPdf(d, jsPDF) {
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     const pw = doc.internal.pageSize.getWidth();
     const ph = doc.internal.pageSize.getHeight();
     const m = 14;
@@ -517,7 +504,8 @@
       ['Empresa', d.cobrador.empresa],
       ['NIT', d.cobrador.nit],
       ['Tel', d.cobrador.tel],
-      ['Dir', d.cobrador.dir]
+      ['Dir', d.cobrador.dir],
+      ['Web', d.cobrador.web]
     ]);
     yR = blockLines(rightX, yR, [
       ['Nombre', d.cliente.nombre],
@@ -667,6 +655,20 @@
     doc.text(arpaFooter, pw / 2, ph - 5.5, { align: 'center' });
 
     const filename = `CuentaCobro_${d.numero || 'CC'}_${sanitizeFilename(d.cliente.nombre)}.pdf`;
+    return { doc, filename };
+  }
+
+  async function generarPDF() {
+    const jsPDF = getJsPDF();
+    if (!jsPDF) {
+      scheduleCcDraftSave(true);
+      alert('No se pudo cargar jsPDF. Recargue la aplicación e intente de nuevo.');
+      return;
+    }
+
+    const d = getFormSnapshot();
+    try {
+      const { doc, filename } = await renderCcToPdf(d, jsPDF);
       doc.save(filename);
       global.ArpaHistorial?.captureFromCuentaCobro?.(d);
       clearCcDraft();
@@ -677,7 +679,7 @@
   }
 
   function refreshView() {
-    renderCobrador();
+    global.ArpaBrand?.applyCuentaCobroFromSettings?.(undefined, { fillPago: 'if-empty' });
     syncFirmaCliente();
     recalcularTotales();
   }
@@ -690,11 +692,11 @@
     if (!hadDraft) {
       initFechas();
       ensureCcNumero();
-      loadPagoFields();
-      loadCiudadFromConfig();
     }
+    global.ArpaBrand?.applyCuentaCobroFromSettings?.(undefined, {
+      fillPago: hadDraft ? 'if-empty' : 'always'
+    });
 
-    renderCobrador();
     renderServicios();
     syncFirmaCliente();
     bindCcDraftListeners();
