@@ -521,9 +521,15 @@
     const telRaw = document.getElementById('cot-tel')?.value.trim() || '';
     const message = buildCotShareMessage();
 
+    let file = null;
     try {
-      const file = await generarCotPdfFile();
-      if (file && navigator.share && navigator.canShare?.({ files: [file] })) {
+      file = await generarCotPdfFile();
+    } catch (err) {
+      console.warn('[arpa-cotizacion] pdf', err);
+    }
+
+    if (file && navigator.share && navigator.canShare?.({ files: [file] })) {
+      try {
         await navigator.share({
           files: [file],
           title: file.name,
@@ -531,18 +537,38 @@
         });
         global.ArpaTrialCapture?.onDocumentSaved?.('cotizacion');
         return;
+      } catch (err) {
+        if (err?.name === 'AbortError') return;
+        console.warn('[arpa-cotizacion] share', err);
       }
-    } catch (err) {
-      if (err?.name === 'AbortError') return;
-      console.warn('[arpa-cotizacion] share', err);
     }
 
-    alert('Adjunte el PDF manualmente desde su galería o archivos recientes.');
+    if (file) {
+      downloadPdfFile(file);
+      alert('Se descargó el PDF de la cotización. Adjúntelo en el chat de WhatsApp que se abrirá a continuación.');
+    } else {
+      alert('No se pudo generar el PDF. Adjúntelo manualmente desde su galería o archivos recientes.');
+    }
     global.ArpaWhatsApp?.openWhatsAppWithMessage?.(
       telRaw,
-      message + ' (Adjunte el PDF desde su dispositivo.)'
+      message + ' (Adjunte el PDF descargado.)'
     );
     global.ArpaTrialCapture?.onDocumentSaved?.('cotizacion');
+  }
+
+  function downloadPdfFile(file) {
+    try {
+      const url = URL.createObjectURL(file);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.warn('[arpa-cotizacion] download', err);
+    }
   }
 
   function refreshCobros() {
