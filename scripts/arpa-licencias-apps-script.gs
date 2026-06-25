@@ -40,7 +40,7 @@
 
  *   ?accion=provision_trial&device_id=UUID&callback=fn → trial auto 7 días
  *
- *   ?accion=saveCompanyData&licencia=...&nombreEmpresa=...&nit=...&direccion=...&ciudad=...&telefono=...&sitioWeb=...&logoBase64=...&callback=fn
+ *   ?accion=saveCompanyData&licencia=...&nombreEmpresa=...&nit=...&direccion=...&ciudad=...&telefono=...&sitioWeb=...&logoBase64=...&banco=...&tipoCuenta=...&numeroCuenta=...&titularCuenta=...&documentoTitular=...&nombreTecnico=...&documentoTecnico=...&codigoTecnico=...&callback=fn
  *   ?accion=getCompanyData&licencia=...&callback=fn
  *
  * POST endpoints (JSON body, Content-Type: text/plain;charset=utf-8):
@@ -937,7 +937,11 @@ function getLicenseSheet_() {
 
 
 
-const EMPRESAS_HEADERS_ = ['Licencia', 'NombreEmpresa', 'NIT', 'Direccion', 'Ciudad', 'Telefono', 'SitioWeb', 'UltimaActualizacion', 'LogoBase64'];
+const EMPRESAS_HEADERS_ = [
+  'Licencia', 'NombreEmpresa', 'NIT', 'Direccion', 'Ciudad', 'Telefono', 'SitioWeb',
+  'UltimaActualizacion', 'LogoBase64', 'Banco', 'TipoCuenta', 'NumeroCuenta',
+  'TitularCuenta', 'DocumentoTitular', 'NombreTecnico', 'DocumentoTecnico', 'CodigoTecnico'
+];
 
 
 
@@ -948,6 +952,22 @@ const CATALOGO_HEADERS_ = ['Licencia', 'ProductoId', 'Codigo', 'Nombre', 'Precio
 const HISTORIAL_HEADERS_ = ['Licencia', 'EntradaId', 'Tipo', 'Subtipo', 'Numero', 'Cliente', 'Ciudad', 'Fecha', 'Monto', 'Concepto'];
 
 
+
+function ensureEmpresasSheetHeaders_(sheet) {
+  const needed = EMPRESAS_HEADERS_.length;
+  const lastCol = Math.max(sheet.getLastColumn(), needed);
+  const row = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  const first = String(row[0] || '').trim();
+  if (first !== 'Licencia') {
+    sheet.getRange(1, 1, 1, needed).setValues([EMPRESAS_HEADERS_]);
+    return;
+  }
+  for (let i = 0; i < needed; i++) {
+    if (String(row[i] || '').trim() !== EMPRESAS_HEADERS_[i]) {
+      sheet.getRange(1, i + 1).setValue(EMPRESAS_HEADERS_[i]);
+    }
+  }
+}
 
 function getEmpresasSheet_() {
 
@@ -965,13 +985,7 @@ function getEmpresasSheet_() {
 
   }
 
-  const firstCell = String(sheet.getRange(1, 1).getValue() || '').trim();
-
-  if (!firstCell) {
-
-    sheet.getRange(1, 1, 1, EMPRESAS_HEADERS_.length).setValues([EMPRESAS_HEADERS_]);
-
-  }
+  ensureEmpresasSheetHeaders_(sheet);
 
   return sheet;
 
@@ -1009,6 +1023,22 @@ function saveCompanyData_(params) {
 
   const sitioWeb = readCompanyParam_(params, 'sitioWeb', 'sitioweb');
 
+  const banco = readCompanyParam_(params, 'banco', 'banco');
+
+  const tipoCuenta = readCompanyParam_(params, 'tipoCuenta', 'tipocuenta');
+
+  const numeroCuenta = readCompanyParam_(params, 'numeroCuenta', 'numerocuenta');
+
+  const titularCuenta = readCompanyParam_(params, 'titularCuenta', 'titularcuenta');
+
+  const documentoTitular = readCompanyParam_(params, 'documentoTitular', 'documentotitular');
+
+  const nombreTecnico = readCompanyParam_(params, 'nombreTecnico', 'nombretecnico');
+
+  const documentoTecnico = readCompanyParam_(params, 'documentoTecnico', 'documentotecnico');
+
+  const codigoTecnico = readCompanyParam_(params, 'codigoTecnico', 'codigotecnico');
+
   let logoBase64 = readCompanyParam_(params, 'logoBase64', 'logobase64');
 
   if (logoBase64.length > 40000) logoBase64 = '';
@@ -1019,7 +1049,11 @@ function saveCompanyData_(params) {
 
   const now = new Date();
 
-  const row = [licencia, nombreEmpresa, nit, direccion, ciudad, telefono, sitioWeb, now, logoBase64];
+  const row = [
+    licencia, nombreEmpresa, nit, direccion, ciudad, telefono, sitioWeb, now, logoBase64,
+    banco, tipoCuenta, numeroCuenta, titularCuenta, documentoTitular,
+    nombreTecnico, documentoTecnico, codigoTecnico
+  ];
 
   let targetRow = -1;
 
@@ -1098,6 +1132,22 @@ function getCompanyData_(params) {
       sitioWeb: String(values[i][6] || '').trim(),
 
       logoBase64: String(values[i][8] || '').trim(),
+
+      banco: String(values[i][9] || '').trim(),
+
+      tipoCuenta: String(values[i][10] || '').trim(),
+
+      numeroCuenta: String(values[i][11] || '').trim(),
+
+      titularCuenta: String(values[i][12] || '').trim(),
+
+      documentoTitular: String(values[i][13] || '').trim(),
+
+      nombreTecnico: String(values[i][14] || '').trim(),
+
+      documentoTecnico: String(values[i][15] || '').trim(),
+
+      codigoTecnico: String(values[i][16] || '').trim(),
 
       ultimaActualizacion: values[i][7] || ''
 
