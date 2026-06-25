@@ -289,7 +289,15 @@
       ciudad: settings.city || '',
       telefono: settings.phone || '',
       sitioWeb: settings.website || '',
-      logoBase64: settings.logoBase64 || ''
+      logoBase64: settings.logoBase64 || '',
+      banco: settings.bankName || '',
+      tipoCuenta: settings.accountType || '',
+      numeroCuenta: settings.accountNumber || '',
+      titularCuenta: settings.accountHolder || '',
+      documentoTitular: settings.accountHolderDocument || '',
+      nombreTecnico: settings.technicianName || '',
+      documentoTecnico: settings.technicianDocument || '',
+      codigoTecnico: settings.technicianCode || ''
     };
     const logoLen = String(payload.logoBase64 || '').length;
     if (logoLen > 1500 && global.ArpaCloudSync?.postJson) {
@@ -317,7 +325,15 @@
           city: data.ciudad || current.city || '',
           phone: data.telefono || current.phone || '',
           website: data.sitioWeb || current.website || '',
-          logoBase64: data.logoBase64 || current.logoBase64 || ''
+          logoBase64: data.logoBase64 || current.logoBase64 || '',
+          bankName: data.banco || current.bankName || '',
+          accountType: data.tipoCuenta || current.accountType || '',
+          accountNumber: data.numeroCuenta || current.accountNumber || '',
+          accountHolder: data.titularCuenta || current.accountHolder || '',
+          accountHolderDocument: data.documentoTitular || current.accountHolderDocument || '',
+          technicianName: data.nombreTecnico || current.technicianName || '',
+          technicianDocument: data.documentoTecnico || current.technicianDocument || '',
+          technicianCode: data.codigoTecnico || current.technicianCode || ''
         };
         if (!saveSettings(patch)) return false;
         try { localStorage.setItem(SETTINGS_CONFIGURED_KEY, 'true'); } catch (e) {}
