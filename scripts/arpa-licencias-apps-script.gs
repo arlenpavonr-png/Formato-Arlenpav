@@ -1071,7 +1071,7 @@ function saveCompanyData_(params) {
 
   if (targetRow > 0) {
 
-    sheet.getRange(targetRow, 1, targetRow, EMPRESAS_HEADERS_.length).setValues([row]);
+    sheet.getRange(targetRow, 1, 1, EMPRESAS_HEADERS_.length).setValues([row]);
 
   } else {
 
