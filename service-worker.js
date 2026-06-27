@@ -1,4 +1,4 @@
-const CACHE_NAME = 'arpa-suite-cache-v86';
+const CACHE_NAME = 'arpa-suite-cache-v87';
 const BASE = self.location.pathname.replace(/service-worker\.js$/, '');
 const ASSETS = [
   BASE,
@@ -39,11 +39,15 @@ function isNetworkFirst(url) {
   return url.includes('/js/') || url.endsWith('.html') || url.endsWith('/');
 }
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => Promise.allSettled(ASSETS.map((url) => cache.add(url))))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then(cache => {
+      return Promise.allSettled(
+        ASSETS.map(url =>
+          cache.add(url).catch(() => {})
+        )
+      );
+    }).then(() => self.skipWaiting())
   );
 });
 
