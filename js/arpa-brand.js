@@ -8,6 +8,7 @@
   const LICENSE_API = 'https://script.google.com/macros/s/AKfycbzKBeyDVWVqPG1R47EZTVKmCpa3SOwxs8LXrW4ipvRtiyyRV4trJKg7D4i89_cUTcH2/exec';
   const SALES_ENTRY_KEY = 'arpa_suite_sales_entry';
   const FORMATO_DRAFT_KEY = 'arpa_formato_borrador';
+  const LOGO_STORAGE_KEY = 'arpa_logo';
   const GLOBAL_BRAND_URL = 'https://arpatechnologyglobal.com';
   const GLOBAL_FOOTER_TEXT = '© 2026 ARPA Technology Global · arpatechnologyglobal.com · Todos los derechos reservados.';
   const COT_NOTA_LEGAL_HTML = '<strong>Nota:</strong> Cotización válida por <strong>15 días calendario</strong>. Precios en pesos colombianos (COP).';
@@ -179,9 +180,45 @@
     }
   }
 
+  function getDedicatedLogo() {
+    try {
+      return localStorage.getItem(LOGO_STORAGE_KEY) || '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function setDedicatedLogo(logo) {
+    try {
+      const value = String(logo || '').trim();
+      if (value) localStorage.setItem(LOGO_STORAGE_KEY, value);
+      else localStorage.removeItem(LOGO_STORAGE_KEY);
+    } catch (e) {}
+  }
+
+  function migrateDedicatedLogoFromSettings() {
+    try {
+      if (getDedicatedLogo()) return;
+      const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      const logo = String(saved.logoBase64 || '').trim();
+      if (logo) setDedicatedLogo(logo);
+    } catch (e) {}
+  }
+
+  function resolveLogoFromSettings(settings) {
+    const dedicated = getDedicatedLogo();
+    const fromSettings = String(settings?.logoBase64 || '').trim();
+    return dedicated || fromSettings || '';
+  }
+
   function purgeLegacyData() {
     try {
+      const logoBackup = getDedicatedLogo();
       const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      if (!logoBackup) {
+        const fromSettings = String(saved.logoBase64 || '').trim();
+        if (fromSettings) setDedicatedLogo(fromSettings);
+      }
       if (shouldPurgeSettings(saved)) {
         localStorage.removeItem(SETTINGS_KEY);
         localStorage.removeItem(SETTINGS_CONFIGURED_KEY);
@@ -197,16 +234,30 @@
   function getSettings() {
     try {
       const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
-      return { ...EMPTY_SETTINGS, ...saved };
+      const merged = { ...EMPTY_SETTINGS, ...saved };
+      const logo = resolveLogoFromSettings(merged);
+      if (logo) merged.logoBase64 = logo;
+      return merged;
     } catch (e) {
-      return { ...EMPTY_SETTINGS };
+      const merged = { ...EMPTY_SETTINGS };
+      const logo = resolveLogoFromSettings(merged);
+      if (logo) merged.logoBase64 = logo;
+      return merged;
     }
   }
 
   function saveSettings(data) {
     if (!data || typeof data !== 'object') return false;
     try {
-      const merged = { ...getSettings(), ...data };
+      const current = getSettings();
+      const merged = { ...current, ...data };
+      const dedicatedLogo = getDedicatedLogo() || String(current.logoBase64 || '').trim();
+      if ('logoBase64' in data && !String(data.logoBase64 || '').trim() && dedicatedLogo) {
+        merged.logoBase64 = dedicatedLogo;
+      }
+      if (String(merged.logoBase64 || '').trim()) {
+        setDedicatedLogo(merged.logoBase64);
+      }
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(merged));
       return true;
     } catch (e) {
@@ -336,6 +387,7 @@
           technicianCode: data.codigoTecnico || current.technicianCode || ''
         };
         if (!saveSettings(patch)) return false;
+        if (String(patch.logoBase64 || '').trim()) setDedicatedLogo(patch.logoBase64);
         try { localStorage.setItem(SETTINGS_CONFIGURED_KEY, 'true'); } catch (e) {}
         return true;
       })
@@ -346,7 +398,8 @@
   }
 
   function getLogo(settings) {
-    return settings?.logoBase64 || DEFAULT_LOGO;
+    const logo = resolveLogoFromSettings(settings);
+    return logo || DEFAULT_LOGO;
   }
 
   function canCustomizeAppBrand() {
@@ -574,6 +627,7 @@
   function previewLogo(input) {
     readLogoFile(input, (dataUrl) => {
       pendingLogoBase64 = dataUrl;
+      setDedicatedLogo(dataUrl);
       const preview = document.getElementById('settings-logo-preview');
       if (preview) preview.src = dataUrl;
     });
@@ -858,6 +912,7 @@
   global.previewAppLogoUpload = previewAppLogo;
 
   document.addEventListener('DOMContentLoaded', () => {
+    migrateDedicatedLogoFromSettings();
     purgeLegacyData();
     restoreCompanyDataFromSheets()
       .then(() => global.ArpaCloudSync?.restoreCloudDataIfNeeded?.())

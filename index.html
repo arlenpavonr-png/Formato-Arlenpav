@@ -2494,9 +2494,15 @@
         return false;
       }
       var saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      var logoBackup = '';
+      try { logoBackup = localStorage.getItem('arpa_logo') || ''; } catch (e) {}
+      if (!logoBackup && saved.logoBase64) logoBackup = saved.logoBase64;
       if (legacyText(JSON.stringify(saved))) {
         localStorage.removeItem(SETTINGS_KEY);
         localStorage.removeItem(CONFIGURED_KEY);
+        if (logoBackup) {
+          try { localStorage.setItem('arpa_logo', logoBackup); } catch (e) {}
+        }
       }
       var draft = localStorage.getItem('arpa_formato_borrador') || '';
       if (legacyText(draft)) localStorage.removeItem('arpa_formato_borrador');
@@ -3663,10 +3669,12 @@ function collectFormatoDraft() {
   return data;
 }
 
-function clearFormatoForm() {
+function clearFormatoDocumentFields(options) {
+  const preserveNumero = options?.preserveNumero;
   const root = document.getElementById('view-formato');
   if (!root) return;
   root.querySelectorAll('input:not([type=file]):not([type=radio])').forEach((el) => {
+    if (preserveNumero && el.id === 'numero-formato') return;
     if (el.type === 'checkbox') el.checked = false;
     else el.value = '';
   });
@@ -3674,8 +3682,10 @@ function clearFormatoForm() {
   root.querySelectorAll('textarea').forEach((el) => { el.value = ''; });
   const t1 = document.getElementById('t1');
   if (t1) t1.checked = true;
-  const numero = document.getElementById('numero-formato');
-  if (numero) numero.value = '';
+  if (!preserveNumero) {
+    const numero = document.getElementById('numero-formato');
+    if (numero) numero.value = '';
+  }
   const fecha = document.getElementById('formato-fecha');
   if (fecha) fecha.value = new Date().toISOString().slice(0, 10);
   ['foto-antes-preview', 'foto-despues-preview'].forEach((id) => {
@@ -3688,6 +3698,10 @@ function clearFormatoForm() {
   });
   global.ArpaSignature?.clear?.('canvas-firma-cliente');
   global.ArpaSignature?.clear?.('canvas-firma-tecnico');
+}
+
+function clearFormatoForm() {
+  clearFormatoDocumentFields();
 }
 
 function shouldSkipFormatoDraft() {
@@ -3902,13 +3916,17 @@ function formatearNumero(n) {
 function nuevoNumero() {
   if (!window.ArpaNumeracion?.blockIfPymeMissingCode?.()) return;
   const field = document.getElementById('numero-formato');
-  const { value, sequence } = window.ArpaNumeracion.nextNumber('formato', field?.value);
+  const { value } = window.ArpaNumeracion.nextNumber('formato', field?.value);
   if (field) field.value = value;
-  const cliente = document.querySelector('input[placeholder="Nombre completo o razón social"]').value;
-  const tipo = document.querySelector('input[name="tipo"]:checked').value;
+  clearFormatoDocumentFields({ preserveNumero: true });
+  try { localStorage.removeItem(FORMATO_DRAFT_KEY); } catch (e) {}
+  applyUserSettingsToUI?.();
+  scheduleFormatoDraftSave();
+  const cliente = document.getElementById('formato-cliente-nombre')?.value || '';
+  const tipo = document.querySelector('input[name="tipo"]:checked')?.value || 'instalacion';
   const prefijo = tipo === 'mantenimiento' ? 'Mant' : tipo === 'reparacion' ? 'Rep' : 'FI';
-  const fecha = new Date().toISOString().slice(0,10);
-  const nombre = cliente ? '-' + cliente.replace(/\s+/g,'-').substring(0,20) : '';
+  const fecha = new Date().toISOString().slice(0, 10);
+  const nombre = cliente ? '-' + cliente.replace(/\s+/g, '-').substring(0, 20) : '';
   document.title = `${prefijo}-${value}${nombre}-${fecha}`;
 }
 
