@@ -535,6 +535,8 @@ function doPost(e) {
 
     if (!payload) return textResponse_('Bad payload', 400);
 
+    debugLog_('payload_recibido', payload);
+
 
 
     if (payload.resource_name && payload.resource_name !== 'sale') {
@@ -557,6 +559,7 @@ function doPost(e) {
 
     if (expectedSeller && payload.seller_id !== expectedSeller) {
 
+      debugLog_('seller_invalido', { recibido: payload.seller_id, esperado: expectedSeller });
       return textResponse_('Invalid seller', 403);
 
     }
@@ -567,6 +570,7 @@ function doPost(e) {
 
     if (!plan) {
 
+      debugLog_('producto_desconocido', { product_id: payload.product_id, price: payload.price });
       return textResponse_('Unknown product', 200);
 
     }
@@ -631,10 +635,12 @@ function doPost(e) {
 
     Logger.log('Licencia creada: ' + codigo + ' (' + plan.planLabel + ') → ' + email);
 
+    debugLog_('licencia_creada', { codigo: codigo, plan: plan.planLabel, email: email });
     return textResponse_('OK', 200);
 
   } catch (err) {
 
+    debugLog_('error_doPost', { mensaje: err.message });
     Logger.log('doPost error: ' + err.stack || err);
 
     return textResponse_('Error: ' + err.message, 500);
@@ -1983,6 +1989,27 @@ function markSaleProcessed_(saleId) {
 
   PropertiesService.getScriptProperties().setProperty('sale_' + saleId, '1');
 
+}
+
+
+
+function getOrCreateDebugSheet_() {
+  const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
+  let sheet = ss.getSheetByName('Debug');
+  if (!sheet) {
+    sheet = ss.insertSheet('Debug');
+    sheet.appendRow(['TIMESTAMP', 'ETAPA', 'DETALLE']);
+  }
+  return sheet;
+}
+
+function debugLog_(etapa, datos) {
+  try {
+    const sheet = getOrCreateDebugSheet_();
+    sheet.appendRow([new Date(), etapa, JSON.stringify(datos)]);
+  } catch (e) {
+    Logger.log('debugLog_ error: ' + e.message);
+  }
 }
 
 
