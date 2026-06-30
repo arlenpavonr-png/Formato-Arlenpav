@@ -193,7 +193,12 @@
       const value = String(logo || '').trim();
       if (value) localStorage.setItem(LOGO_STORAGE_KEY, value);
       else localStorage.removeItem(LOGO_STORAGE_KEY);
-    } catch (e) {}
+      return true;
+    } catch (e) {
+      console.warn('[arpa-brand] setDedicatedLogo', e);
+      showError('No se pudo guardar el logo. Intente con una imagen más pequeña o en otro formato.');
+      return false;
+    }
   }
 
   function migrateDedicatedLogoFromSettings() {
@@ -248,21 +253,28 @@
 
   function saveSettings(data) {
     if (!data || typeof data !== 'object') return false;
+    let hasLogoPayload = false;
     try {
       const current = getSettings();
       const merged = { ...current, ...data };
+      hasLogoPayload = Boolean(String(merged.logoBase64 || '').trim());
       const dedicatedLogo = getDedicatedLogo() || String(current.logoBase64 || '').trim();
       if ('logoBase64' in data && !String(data.logoBase64 || '').trim() && dedicatedLogo) {
         merged.logoBase64 = dedicatedLogo;
       }
-      if (String(merged.logoBase64 || '').trim()) {
-        setDedicatedLogo(merged.logoBase64);
+      if (hasLogoPayload) {
+        if (!setDedicatedLogo(merged.logoBase64)) return false;
       }
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(merged));
       return true;
     } catch (e) {
       console.warn('[arpa-brand]', e);
-      showError('No se pudo guardar. Si subió un logo, pruebe con una imagen más pequeña.');
+      const isQuota = e && (e.name === 'QuotaExceededError' || e.code === 22);
+      showError(
+        hasLogoPayload && isQuota
+          ? 'No se pudo guardar el logo. Intente con una imagen más pequeña o en otro formato.'
+          : 'No se pudo guardar la configuración. Si subió un logo, pruebe con una imagen más pequeña.'
+      );
       return false;
     }
   }
@@ -605,6 +617,49 @@
     }
   }
 
+  function imageHasTransparency(ctx, width, height) {
+    const pixels = ctx.getImageData(0, 0, width, height).data;
+    for (let i = 3; i < pixels.length; i += 4) {
+      if (pixels[i] < 255) return true;
+    }
+    return false;
+  }
+
+  function compressLogoDataUrl(dataUrl) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const maxSide = 400;
+          let width = img.naturalWidth || img.width;
+          let height = img.naturalHeight || img.height;
+          if (!width || !height) {
+            resolve(dataUrl);
+            return;
+          }
+          const scale = Math.min(1, maxSide / Math.max(width, height));
+          width = Math.max(1, Math.round(width * scale));
+          height = Math.max(1, Math.round(height * scale));
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(dataUrl);
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          const usePng = imageHasTransparency(ctx, width, height);
+          resolve(usePng ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.75));
+        } catch (err) {
+          reject(err);
+        }
+      };
+      img.onerror = () => reject(new Error('image-load'));
+      img.src = dataUrl;
+    });
+  }
+
   function readLogoFile(input, onLoad) {
     const file = input.files?.[0];
     if (!file) return;
@@ -613,21 +668,36 @@
       input.value = '';
       return;
     }
-    if (file.size > 800000) {
-      showError('Logo muy pesado. Máximo ~800 KB.');
+    if (file.size > 15000000) {
+      showError('La imagen es demasiado grande. Máximo ~15 MB.');
       input.value = '';
       return;
     }
     clearError();
     const reader = new FileReader();
-    reader.onload = (e) => onLoad(e.target.result);
+    reader.onload = (e) => {
+      compressLogoDataUrl(e.target.result)
+        .then(onLoad)
+        .catch(() => {
+          showError('No se pudo procesar la imagen. Pruebe con otra foto.');
+          input.value = '';
+        });
+    };
+    reader.onerror = () => {
+      showError('No se pudo leer la imagen.');
+      input.value = '';
+    };
     reader.readAsDataURL(file);
   }
 
   function previewLogo(input) {
     readLogoFile(input, (dataUrl) => {
       pendingLogoBase64 = dataUrl;
-      setDedicatedLogo(dataUrl);
+      if (!setDedicatedLogo(dataUrl)) {
+        pendingLogoBase64 = null;
+        input.value = '';
+        return;
+      }
       const preview = document.getElementById('settings-logo-preview');
       if (preview) preview.src = dataUrl;
     });
