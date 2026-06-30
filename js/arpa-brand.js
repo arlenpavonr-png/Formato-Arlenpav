@@ -491,7 +491,10 @@
 
     const set = (id, fn) => { const el = document.getElementById(id); if (el) fn(el); };
 
-    set('brand-logo', (el) => { el.src = appLogo; el.alt = appBrandName + ' – Logo'; });
+    set('brand-logo', (el) => {
+      el.src = companyLogo;
+      el.alt = configured ? (company + ' – Logo') : (appBrandName + ' – Logo');
+    });
     set('license-gate-logo', (el) => { el.src = appLogo; el.alt = appBrandName; });
     set('settings-logo-preview', (el) => { el.src = companyLogo; el.alt = 'Vista previa del logo en documentos'; });
     set('settings-app-logo-preview', (el) => { el.src = appLogo; el.alt = 'Vista previa del logo de la app'; });
