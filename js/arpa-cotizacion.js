@@ -107,11 +107,11 @@
       updateCatalogHint();
       return;
     }
-    const encontrados = catalogo.filter((p) =>
-      p.nom.toLowerCase().includes(q) ||
-      p.cod.toLowerCase().includes(q) ||
-      (p.marca && p.marca.toLowerCase().includes(q))
-    ).slice(0, 10);
+    const palabras = q.split(/\s+/).filter(Boolean);
+    const encontrados = catalogo.filter((p) => {
+      const texto = [p.nom, p.cod, p.marca].filter(Boolean).join(' ').toLowerCase();
+      return palabras.every((palabra) => texto.includes(palabra));
+    }).slice(0, 10);
     if (!encontrados.length) {
       res.innerHTML = '<div class="resultado-item"><span class="resultado-nom" style="color:var(--muted)">Sin resultados</span></div>';
       res.style.display = 'block';
