@@ -903,6 +903,8 @@ function resolvePlanFromPayload_(payload) {
 
   const pymeId = props.getProperty('GUMROAD_PRODUCT_PYME') || '';
 
+  const wlId = props.getProperty('GUMROAD_PRODUCT_WL') || '';
+
 
 
   if (freeId && productId === freeId) return CONFIG.PLANS.FREE;
@@ -910,6 +912,8 @@ function resolvePlanFromPayload_(payload) {
   if (proId && productId === proId) return CONFIG.PLANS.PRO;
 
   if (pymeId && productId === pymeId) return CONFIG.PLANS.PYME;
+
+  if (wlId && productId === wlId) return CONFIG.PLANS.WL;
 
 
 
