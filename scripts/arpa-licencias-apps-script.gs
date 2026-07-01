@@ -891,7 +891,7 @@ function resolvePlanFromPayload_(payload) {
 
   const props = PropertiesService.getScriptProperties();
 
-  const productId = String(payload.product_id || '');
+  const productId = String(payload.permalink || payload.product_id || '');
 
   const priceCents = parseInt(String(payload.price || '0'), 10);
 
