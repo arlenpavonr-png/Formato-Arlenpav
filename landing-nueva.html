@@ -632,12 +632,9 @@
   <div class="container fade-in">
     <h2 class="section-title on-navy">¿Quieres ver cómo le llega el documento a tu cliente?</h2>
     <p class="section-sub" style="color:var(--gold);font-weight:600;">Te enviamos un ejemplo real por WhatsApp. Gratis.</p>
-    <form class="wa-form" id="wa-form" novalidate>
-      <input type="text" id="wa-nombre" name="nombre" placeholder="Tu nombre" autocomplete="name">
-      <input type="text" id="wa-telefono" name="whatsapp" placeholder="WhatsApp (Ej: +57 300 000 0000)" autocomplete="tel" inputmode="tel">
-      <button type="submit" class="btn btn-gold btn-lg" id="wa-submit">Envíame el ejemplo →</button>
-    </form>
-    <div class="wa-msg" id="wa-msg" role="status" aria-live="polite"></div>
+    <div style="text-align:center;">
+      <a class="btn btn-gold btn-lg" href="https://wa.me/573017419558?text=Hola%2C%20quiero%20ver%20un%20ejemplo%20de%20ARPA%20Suite" target="_blank" rel="noopener">Envíame el ejemplo →</a>
+    </div>
   </div>
 </section>
 
@@ -678,52 +675,8 @@
     faders.forEach(function (el) { observer.observe(el); });
   })();
 
-  // ── Formulario WhatsApp ──
-  (function () {
-    var WEBHOOK_URL = 'https://script.google.com/macros/s/PENDIENTE_URL/exec';
-    var form = document.getElementById('wa-form');
-    var msg = document.getElementById('wa-msg');
-    var submitBtn = document.getElementById('wa-submit');
-    if (!form) return;
+  // ── (Sección WhatsApp ahora es link directo, sin JS necesario) ──
 
-    function showMsg(type, text) {
-      msg.className = 'wa-msg ' + type;
-      msg.textContent = text;
-    }
-
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var nombre = document.getElementById('wa-nombre').value.trim();
-      var whatsapp = document.getElementById('wa-telefono').value.trim();
-
-      if (!nombre || !whatsapp) {
-        showMsg('error', 'Por favor completa tu nombre y tu número de WhatsApp.');
-        return;
-      }
-
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Enviando...';
-
-      fetch(WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre: nombre, whatsapp: whatsapp, fuente: 'landing-whatsapp' })
-      })
-        .then(function (res) {
-          if (!res.ok) throw new Error('HTTP ' + res.status);
-          return res;
-        })
-        .then(function () {
-          form.style.display = 'none';
-          showMsg('success', '¡Listo! En unos minutos te llega el ejemplo por WhatsApp.');
-        })
-        .catch(function () {
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Envíame el ejemplo →';
-          showMsg('error', 'Hubo un problema. Escríbenos al +57 300 568 3914');
-        });
-    });
-  })();
 </script>
 
 </body>
