@@ -74,11 +74,11 @@ const CONFIG = {
 
     FREE: { prefix: 'ARPA-FREE-', planLabel: 'Free', days: 7 },
 
-    PRO:  { prefix: 'ARPA-PRO-',  planLabel: 'Pro',  days: 30 },
+    PRO:  { prefix: 'ARPA-PRO-',  planLabel: 'Pro',  days: 365 },
 
-    PYME: { prefix: 'ARPA-PYME-', planLabel: 'PYME', days: 30 },
+    PYME: { prefix: 'ARPA-PYME-', planLabel: 'PYME', days: 365 },
 
-    WL:   { prefix: 'ARPA-WL-',   planLabel: 'White Label', days: 36500 },
+    WL:   { prefix: 'ARPA-WL-',   planLabel: 'White Label', days: 365 },
 
   },
 
@@ -334,11 +334,36 @@ function buildValidationResult_(row, cols, codigo) {
 
         const isTrial = String(codigo || '').indexOf('ARPA-FREE-') === 0;
 
+        if (isTrial) {
+
+          return {
+
+            valido: false,
+
+            mensaje: 'Período de prueba vencido.',
+
+            codigo: codigo,
+
+            plan: plan,
+
+            vencimiento: vencStr,
+
+            trial_usado: true,
+
+            vencida: true,
+
+          };
+
+        }
+
+        // Licencia paga: el vencimiento es solo del PMA (soporte/actualizaciones).
+        // La licencia es perpetua — el uso de la app NUNCA se bloquea por esto.
+
         return {
 
-          valido: false,
+          valido: true,
 
-          mensaje: 'Licencia vencida.',
+          mensaje: 'Licencia válida. Mantenimiento (PMA) vencido.',
 
           codigo: codigo,
 
@@ -346,9 +371,11 @@ function buildValidationResult_(row, cols, codigo) {
 
           vencimiento: vencStr,
 
-          trial_usado: isTrial,
+          pma_vencido: true,
 
-          vencida: true,
+          founder: codigo === CONFIG.FOUNDER_CODE,
+
+          white_label: String(codigo || '').indexOf('ARPA-WL-') === 0,
 
         };
 
