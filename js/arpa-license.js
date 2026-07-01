@@ -31,9 +31,15 @@
     return normalizeCode(code || getActiveLicenseCode()).indexOf(WL_PREFIX) === 0;
   }
 
-  /** No expira localmente (solo founder hoy; extensible). */
+  /** No expira localmente: Founder y cualquier plan pago (Pro/PYME/White Label).
+   *  Solo el trial gratuito (FREE) debe expirar y bloquear el uso local.
+   *  La licencia es perpetua — el vencimiento guardado es solo la fecha de PMA
+   *  (mantenimiento/soporte), y su paso NUNCA debe bloquear el uso de la app. */
   function isNeverExpiring(code) {
-    return isFounderLicense(code);
+    const c = normalizeCode(code || getActiveLicenseCode());
+    if (!c) return false;
+    if (c.indexOf(FREE_PREFIX) === 0) return false;
+    return true;
   }
 
   /** Cambio de nombre de marca / logo de la app. */
