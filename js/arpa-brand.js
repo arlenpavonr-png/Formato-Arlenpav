@@ -10,7 +10,8 @@
   const FORMATO_DRAFT_KEY = 'arpa_formato_borrador';
   const LOGO_STORAGE_KEY = 'arpa_logo';
   const GLOBAL_BRAND_URL = 'https://arpatechnologyglobal.com';
-  const GLOBAL_FOOTER_TEXT = '© 2026 ARPA Technology Global · arpatechnologyglobal.com · Todos los derechos reservados.';
+  const GLOBAL_FOOTER_TEXT = 'Generado con ARPA Suite · Pruébala gratis en arpatechnologyglobal.com · © 2026';
+  const WL_FOOTER_TEXT = '';
   const COT_NOTA_LEGAL_HTML = '<strong>Nota:</strong> Cotización válida por <strong>15 días calendario</strong>. Precios en pesos colombianos (COP).';
 
   function getCotNotaLegalHtml() {
@@ -908,7 +909,8 @@
     const seal = document.getElementById('arpa-global-seal');
     if (seal) {
       printUiBackup.sealHtml = seal.innerHTML;
-      seal.innerHTML = `<p class="suite-footer-global-text">${GLOBAL_FOOTER_TEXT}</p>`;
+      const isWL = global.ArpaLicense?.isWhiteLabelLicense?.() ?? false;
+      seal.innerHTML = isWL ? '' : `<p class="suite-footer-global-text">${GLOBAL_FOOTER_TEXT}</p>`;
     }
     document.querySelectorAll('#suite-footer a[href]').forEach((a) => {
       const span = document.createElement('span');
@@ -931,8 +933,13 @@
     const seal = document.getElementById('arpa-global-seal');
     if (!seal || seal.dataset.arpaCore !== 'immutable') return;
     new MutationObserver(() => {
+      const isWL = global.ArpaLicense?.isWhiteLabelLicense?.() ?? false;
+      if (isWL) {
+        if (seal.textContent.trim() !== '') seal.innerHTML = '';
+        return;
+      }
       const text = seal.textContent.replace(/\s+/g, ' ').trim();
-      if (!text.includes('ARPA Technology Global') || !text.includes('arpatechnologyglobal.com')) {
+      if (!text.includes('arpatechnologyglobal.com')) {
         seal.innerHTML = `<p class="suite-footer-global-text">${GLOBAL_FOOTER_TEXT}</p>`;
       }
       seal.querySelectorAll('a[href*="github.io"], a[href*="Formato-Arlenpav"]').forEach((a) => a.remove());
