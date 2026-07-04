@@ -64,7 +64,9 @@
     global.ArpaOficios?.saveActiveOficios?.([oficioId]);
   }
 
-  function finishOnboarding(oficioId, opts) {
+  let pendingFinish_ = null;
+
+  function completeFinishOnboarding_(oficioId, opts) {
     localStorage.setItem(ONBOARDING_KEY, 'true');
     localStorage.setItem(RUBRO_KEY, oficioId);
     activateOficio(oficioId);
@@ -80,6 +82,57 @@
       global.openCatalogoView?.(btn);
       global.ArpaMiCatalogo?.refreshView?.();
     }
+  }
+
+  function sendTrialRegistration_(nombre, telefono, oficioId) {
+    try {
+      const deviceId = localStorage.getItem('arpa_suite_device_id') || '';
+      const fecha = new Date().toISOString().slice(0, 10);
+      const payload = {
+        accion: 'registertrialuser',
+        nombre: nombre,
+        telefono: telefono,
+        oficio: oficioId,
+        fechaInicio: fecha,
+        trialId: deviceId
+      };
+      global.ArpaCloudSync?.postJson?.(payload)?.catch?.(function (err) {
+        console.warn('[onboarding] registro trial', err);
+      });
+    } catch (e) {
+      console.warn('[onboarding] registro trial error', e);
+    }
+  }
+
+  function showContactModal() {
+    document.getElementById('onboarding-contact-modal')?.classList.add('open');
+  }
+
+  function hideContactModal() {
+    document.getElementById('onboarding-contact-modal')?.classList.remove('open');
+  }
+
+  function submitContactModal_() {
+    const nombreInput = document.getElementById('onboarding-contact-nombre');
+    const telefonoInput = document.getElementById('onboarding-contact-telefono');
+    const nombre = (nombreInput?.value || '').trim();
+    const telefono = (telefonoInput?.value || '').trim();
+    if (!nombre || !telefono) {
+      if (!nombre) nombreInput?.focus();
+      else telefonoInput?.focus();
+      return;
+    }
+    hideContactModal();
+    const pending = pendingFinish_ || { oficioId: '', opts: {} };
+    pendingFinish_ = null;
+    sendTrialRegistration_(nombre, telefono, pending.oficioId);
+    completeFinishOnboarding_(pending.oficioId, pending.opts);
+  }
+
+  function finishOnboarding(oficioId, opts) {
+    pendingFinish_ = { oficioId: oficioId, opts: opts };
+    closeStepModals();
+    showContactModal();
   }
 
   function onOficioSelected(oficioId) {
@@ -128,6 +181,10 @@
 
     document.getElementById('btn-onboarding-demo-skip')?.addEventListener('click', () => {
       finishOnboarding(OFICIO_AUTOMATISMOS);
+    });
+
+    document.getElementById('btn-onboarding-contact-continue')?.addEventListener('click', () => {
+      submitContactModal_();
     });
   }
 
