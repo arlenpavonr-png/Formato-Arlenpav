@@ -10,6 +10,8 @@ const ASSETS = [
   BASE + 'js/arpa-trial-capture.js',
   BASE + 'js/arpa-cloud-sync.js',
   BASE + 'js/arpa-license.js',
+  BASE + 'js/arpa-oficios.js',
+  BASE + 'js/arpa-formato-tipo.js',
   BASE + 'js/arpa-numeracion.js',
   BASE + 'js/arpa-catalogo.js',
   BASE + 'js/arpa-pricing.js',

@@ -239,6 +239,7 @@
       ciudad: snap.ciudad,
       fecha: snap.fecha,
       concepto: buildFormatoConcepto(),
+      formatoOficio: global.ArpaFormatoTipo?.getDocumentFormatoOficio?.() || 'automatismos',
       savedAt: new Date().toISOString()
     });
   }
