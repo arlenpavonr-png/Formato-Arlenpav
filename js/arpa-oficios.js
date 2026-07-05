@@ -6,18 +6,168 @@
   const SEEDED_KEY = 'arpa_oficios_seeded';
   const ACTIVE_OFICIOS_KEY = 'arpa_active_oficios';
 
-  /** @type {{ id: string, i18nKey: string }[]} */
+  const FORMATO_AUTOMATISMOS_OPCIONES = [
+    { id: 'c1', label: 'Corrediza', i18nKey: 'formato.puerta.corrediza', catalogKey: 'Corrediza' },
+    { id: 'c2', label: 'Batiente 1 hoja', i18nKey: 'formato.puerta.batiente_1', catalogKey: 'Batiente 1 hoja' },
+    { id: 'c3', label: 'Batiente 2 hojas', i18nKey: 'formato.puerta.batiente_2', catalogKey: 'Batiente 2 hojas' },
+    { id: 'c4', label: 'Levadiza', i18nKey: 'formato.puerta.levadiza', catalogKey: 'Levadiza / Seccional' },
+    { id: 'c5', label: 'Seccional', i18nKey: 'formato.puerta.seccional', catalogKey: 'Levadiza / Seccional' },
+    { id: 'c6', label: 'Barrera vehicular', i18nKey: 'formato.puerta.barrera', catalogKey: 'Barrera vehicular' },
+    { id: 'c7', label: 'Techo corredizo', i18nKey: 'formato.puerta.techo_corredizo', catalogKey: 'Corrediza' },
+    { id: 'c9', label: 'Cortina enrollable', i18nKey: 'formato.puerta.cortina_enrollable', catalogKey: 'Cortina enrollable' },
+    { id: 'c8', label: 'Otra', i18nKey: 'formato.puerta.otra', otra: true }
+  ];
+
+  function buildFormatoOpciones(prefix, items) {
+    return items.map((item, index) => ({
+      id: prefix + (index + 1),
+      label: item.label,
+      i18nKey: item.i18nKey,
+      catalogKey: item.catalogKey || '',
+      otra: !!item.otra
+    }));
+  }
+
+  /** @type {{ id: string, i18nKey: string, formatoTitulo: string, formatoTituloI18nKey: string, formatoOpciones: object[] }[]} */
   const OFICIOS = [
-    { id: OFICIO_AUTOMATISMOS, i18nKey: 'oficio.automatismos' },
-    { id: 'electricidad', i18nKey: 'oficio.electricidad' },
-    { id: 'gas', i18nKey: 'oficio.gas' },
-    { id: 'refrigeracion', i18nKey: 'oficio.refrigeracion' },
-    { id: 'cctv', i18nKey: 'oficio.cctv' },
-    { id: 'plomeria', i18nKey: 'oficio.plomeria' },
-    { id: 'metalmecanica', i18nKey: 'oficio.metalmecanica' },
-    { id: 'plagas', i18nKey: 'oficio.plagas' },
-    { id: 'linea_blanca', i18nKey: 'oficio.linea_blanca' },
-    { id: 'solar', i18nKey: 'oficio.solar' }
+    {
+      id: OFICIO_AUTOMATISMOS,
+      i18nKey: 'oficio.automatismos',
+      formatoTitulo: 'Tipo de Puerta / Motor',
+      formatoTituloI18nKey: 'formato.section.tipo_puerta',
+      formatoOpciones: FORMATO_AUTOMATISMOS_OPCIONES
+    },
+    {
+      id: 'electricidad',
+      i18nKey: 'oficio.electricidad',
+      formatoTitulo: 'Tipo de Trabajo Eléctrico',
+      formatoTituloI18nKey: 'formato.titulo.electricidad',
+      formatoOpciones: buildFormatoOpciones('fe', [
+        { label: 'Instalación residencial', i18nKey: 'formato.electricidad.residencial' },
+        { label: 'Comercial/industrial', i18nKey: 'formato.electricidad.comercial' },
+        { label: 'Tablero eléctrico', i18nKey: 'formato.electricidad.tablero' },
+        { label: 'Acometida', i18nKey: 'formato.electricidad.acometida' },
+        { label: 'Iluminación', i18nKey: 'formato.electricidad.iluminacion' },
+        { label: 'Tomas y circuitos', i18nKey: 'formato.electricidad.tomas' },
+        { label: 'Puesta a tierra', i18nKey: 'formato.electricidad.tierra' },
+        { label: 'Otra', i18nKey: 'formato.puerta.otra', otra: true }
+      ])
+    },
+    {
+      id: 'gas',
+      i18nKey: 'oficio.gas',
+      formatoTitulo: 'Tipo de Trabajo de Gas',
+      formatoTituloI18nKey: 'formato.titulo.gas',
+      formatoOpciones: buildFormatoOpciones('fgas', [
+        { label: 'Instalación interna', i18nKey: 'formato.gas.interna' },
+        { label: 'Gasodoméstico', i18nKey: 'formato.gas.domestico' },
+        { label: 'Revisión reglamentaria', i18nKey: 'formato.gas.revision' },
+        { label: 'Reparación de fuga', i18nKey: 'formato.gas.fuga' },
+        { label: 'Calentador', i18nKey: 'formato.gas.calentador' },
+        { label: 'Otra', i18nKey: 'formato.puerta.otra', otra: true }
+      ])
+    },
+    {
+      id: 'refrigeracion',
+      i18nKey: 'oficio.refrigeracion',
+      formatoTitulo: 'Tipo de Equipo',
+      formatoTituloI18nKey: 'formato.titulo.refrigeracion',
+      formatoOpciones: buildFormatoOpciones('fref', [
+        { label: 'Nevera/congelador', i18nKey: 'formato.refrigeracion.nevera' },
+        { label: 'Aire split', i18nKey: 'formato.refrigeracion.split' },
+        { label: 'Aire central', i18nKey: 'formato.refrigeracion.central' },
+        { label: 'Cuarto frío', i18nKey: 'formato.refrigeracion.cuarto_frio' },
+        { label: 'Refrigeración comercial', i18nKey: 'formato.refrigeracion.comercial' },
+        { label: 'Otra', i18nKey: 'formato.puerta.otra', otra: true }
+      ])
+    },
+    {
+      id: 'cctv',
+      i18nKey: 'oficio.cctv',
+      formatoTitulo: 'Tipo de Sistema de Seguridad',
+      formatoTituloI18nKey: 'formato.titulo.cctv',
+      formatoOpciones: buildFormatoOpciones('fcctv', [
+        { label: 'Cámaras análogas', i18nKey: 'formato.cctv.analogas' },
+        { label: 'Cámaras IP', i18nKey: 'formato.cctv.ip' },
+        { label: 'DVR/NVR', i18nKey: 'formato.cctv.dvr' },
+        { label: 'Alarma', i18nKey: 'formato.cctv.alarma' },
+        { label: 'Control de acceso', i18nKey: 'formato.cctv.acceso' },
+        { label: 'Videoportero', i18nKey: 'formato.cctv.videoportero' },
+        { label: 'Otra', i18nKey: 'formato.puerta.otra', otra: true }
+      ])
+    },
+    {
+      id: 'plomeria',
+      i18nKey: 'oficio.plomeria',
+      formatoTitulo: 'Tipo de Trabajo Hidráulico',
+      formatoTituloI18nKey: 'formato.titulo.plomeria',
+      formatoOpciones: buildFormatoOpciones('fplo', [
+        { label: 'Red hidráulica', i18nKey: 'formato.plomeria.hidraulica' },
+        { label: 'Red sanitaria', i18nKey: 'formato.plomeria.sanitaria' },
+        { label: 'Fuga/reparación', i18nKey: 'formato.plomeria.fuga' },
+        { label: 'Calentador', i18nKey: 'formato.plomeria.calentador' },
+        { label: 'Grifería/sanitarios', i18nKey: 'formato.plomeria.griferia' },
+        { label: 'Bomba/presión', i18nKey: 'formato.plomeria.bomba' },
+        { label: 'Otra', i18nKey: 'formato.puerta.otra', otra: true }
+      ])
+    },
+    {
+      id: 'metalmecanica',
+      i18nKey: 'oficio.metalmecanica',
+      formatoTitulo: 'Tipo de Trabajo Metalmecánico',
+      formatoTituloI18nKey: 'formato.titulo.metalmecanica',
+      formatoOpciones: buildFormatoOpciones('fmet', [
+        { label: 'Puerta/portón metálico', i18nKey: 'formato.metalmecanica.puerta' },
+        { label: 'Reja/cerramiento', i18nKey: 'formato.metalmecanica.reja' },
+        { label: 'Escalera/baranda', i18nKey: 'formato.metalmecanica.escalera' },
+        { label: 'Estructura metálica', i18nKey: 'formato.metalmecanica.estructura' },
+        { label: 'Soldadura/reparación', i18nKey: 'formato.metalmecanica.soldadura' },
+        { label: 'Otra', i18nKey: 'formato.puerta.otra', otra: true }
+      ])
+    },
+    {
+      id: 'plagas',
+      i18nKey: 'oficio.plagas',
+      formatoTitulo: 'Tipo de Servicio',
+      formatoTituloI18nKey: 'formato.titulo.plagas',
+      formatoOpciones: buildFormatoOpciones('fpla', [
+        { label: 'Desinsectación', i18nKey: 'formato.plagas.desinsectacion' },
+        { label: 'Desratización', i18nKey: 'formato.plagas.desratizacion' },
+        { label: 'Desinfección', i18nKey: 'formato.plagas.desinfeccion' },
+        { label: 'Fumigación general', i18nKey: 'formato.plagas.fumigacion' },
+        { label: 'Control preventivo', i18nKey: 'formato.plagas.preventivo' },
+        { label: 'Otra', i18nKey: 'formato.puerta.otra', otra: true }
+      ])
+    },
+    {
+      id: 'linea_blanca',
+      i18nKey: 'oficio.linea_blanca',
+      formatoTitulo: 'Tipo de Electrodoméstico',
+      formatoTituloI18nKey: 'formato.titulo.linea_blanca',
+      formatoOpciones: buildFormatoOpciones('flb', [
+        { label: 'Lavadora', i18nKey: 'formato.linea_blanca.lavadora' },
+        { label: 'Nevera', i18nKey: 'formato.linea_blanca.nevera' },
+        { label: 'Estufa/horno', i18nKey: 'formato.linea_blanca.estufa' },
+        { label: 'Secadora', i18nKey: 'formato.linea_blanca.secadora' },
+        { label: 'Lavavajillas', i18nKey: 'formato.linea_blanca.lavavajillas' },
+        { label: 'Otra', i18nKey: 'formato.puerta.otra', otra: true }
+      ])
+    },
+    {
+      id: 'solar',
+      i18nKey: 'oficio.solar',
+      formatoTitulo: 'Tipo de Sistema Solar',
+      formatoTituloI18nKey: 'formato.titulo.solar',
+      formatoOpciones: buildFormatoOpciones('fsol', [
+        { label: 'Panel solar', i18nKey: 'formato.solar.panel' },
+        { label: 'Inversor', i18nKey: 'formato.solar.inversor' },
+        { label: 'Baterías', i18nKey: 'formato.solar.baterias' },
+        { label: 'Estructura/montaje', i18nKey: 'formato.solar.estructura' },
+        { label: 'Cableado DC/AC', i18nKey: 'formato.solar.cableado' },
+        { label: 'Mantenimiento/limpieza', i18nKey: 'formato.solar.mantenimiento' },
+        { label: 'Otra', i18nKey: 'formato.puerta.otra', otra: true }
+      ])
+    }
   ];
 
   function normalizeSeedUnidad(val) {
@@ -299,6 +449,70 @@
     return OFICIOS.find((o) => o.id === normalizeOficioId(id)) || OFICIOS[0];
   }
 
+  function resolveFormatoOficioId(oficioId) {
+    try {
+      const id = normalizeOficioId(oficioId);
+      const oficio = getOficioById(id);
+      if (oficio?.formatoOpciones?.length) return oficio.id;
+    } catch (e) { /* ignore */ }
+    return OFICIO_AUTOMATISMOS;
+  }
+
+  function getActiveFormatoOficioId() {
+    const active = getActiveOficiosFromSettings();
+    if (Array.isArray(active) && active.length) {
+      return resolveFormatoOficioId(active[0]);
+    }
+    return OFICIO_AUTOMATISMOS;
+  }
+
+  function getFormatoConfig(oficioId) {
+    const id = resolveFormatoOficioId(oficioId);
+    const oficio = getOficioById(id);
+    return {
+      oficioId: id,
+      titulo: oficio.formatoTitulo || 'Tipo de Puerta / Motor',
+      tituloI18nKey: oficio.formatoTituloI18nKey || 'formato.section.tipo_puerta',
+      opciones: Array.isArray(oficio.formatoOpciones) ? oficio.formatoOpciones.slice() : FORMATO_AUTOMATISMOS_OPCIONES.slice(),
+      showMedidas: id === OFICIO_AUTOMATISMOS || id === 'metalmecanica'
+    };
+  }
+
+  function getFormatoMapaTipos(oficioId) {
+    const config = getFormatoConfig(oficioId);
+    if (config.oficioId !== OFICIO_AUTOMATISMOS) return {};
+    const map = {};
+    config.opciones.forEach((op) => {
+      if (op.catalogKey && !op.otra) map[op.id] = op.catalogKey;
+    });
+    return map;
+  }
+
+  function getFormatoOpcionLabel(oficioId, optionId) {
+    const config = getFormatoConfig(oficioId);
+    const op = config.opciones.find((item) => item.id === optionId);
+    if (!op) return '';
+    const translated = global.ArpaI18n?.t?.(op.i18nKey);
+    if (translated && translated !== op.i18nKey) return translated;
+    return op.label || '';
+  }
+
+  function getFormatoCheckedLabels(oficioId) {
+    const config = getFormatoConfig(oficioId);
+    const labels = [];
+    config.opciones.forEach((op) => {
+      const el = document.getElementById(op.id);
+      if (!el || el.type !== 'checkbox' || !el.checked) return;
+      let label = getFormatoOpcionLabel(oficioId, op.id);
+      if (op.otra) {
+        const otraText = (document.getElementById('formato-tipo-otra-texto')?.value || '').trim();
+        if (otraText) label = label + ': ' + otraText;
+      }
+      if (label) labels.push(label);
+    });
+    return labels;
+  }
+
   function isFounderLicense() {
     return global.ArpaLicense?.isFounderLicense?.() === true;
   }
@@ -340,6 +554,9 @@
         const current = brand.getSettings();
         brand.saveSettings({ ...current, activeOficios: normalized });
       }
+    } catch (e) { /* ignore */ }
+    try {
+      global.dispatchEvent(new CustomEvent('arpa-active-oficio-changed', { detail: { ids: normalized } }));
     } catch (e) { /* ignore */ }
     return true;
   }
@@ -680,6 +897,12 @@
     resolveItemOficioId,
     getOficiosList,
     getOficioById,
+    resolveFormatoOficioId,
+    getActiveFormatoOficioId,
+    getFormatoConfig,
+    getFormatoMapaTipos,
+    getFormatoOpcionLabel,
+    getFormatoCheckedLabels,
     getActiveOficiosFromSettings,
     getOficioLabel,
     seedOficioIfNeeded,
