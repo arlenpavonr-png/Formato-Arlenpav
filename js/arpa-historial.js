@@ -125,20 +125,23 @@
   }
 
   function getFormatoBriefDetail() {
-    const refManual = document.getElementById('ref-manual')?.value.trim() || '';
-    const refSelect = readInputLikePdf(document.getElementById('sel-referencia'));
-    const marca = readInputLikePdf(document.getElementById('sel-marca'));
+    const oficioId = global.ArpaFormatoTipo?.getDocumentFormatoOficio?.()
+      || global.ArpaOficios?.getActiveFormatoOficioId?.()
+      || 'automatismos';
+    const equipo = global.ArpaFormatoTipo?.getFormatoEquipoValues?.(oficioId);
     const materiales = [];
     document.querySelectorAll('#view-formato .mat-row input[type="text"]').forEach((input) => {
       const v = (input.value || '').trim();
       if (v) materiales.push(v);
     });
-    return firstNonEmpty([
-      refManual,
-      refSelect && refSelect !== 'Seleccionar referencia...' ? refSelect : '',
-      marca && marca !== 'Seleccionar...' ? marca : '',
-      ...materiales
-    ]);
+    if (equipo) {
+      return firstNonEmpty([
+        equipo.referencia,
+        equipo.marca,
+        ...materiales
+      ]);
+    }
+    return firstNonEmpty([...materiales]);
   }
 
   function getFormatoObservaciones() {

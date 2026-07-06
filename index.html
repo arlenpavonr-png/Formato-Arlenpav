@@ -174,6 +174,15 @@
   .span4 { grid-column: span 4; }
 
   .field { display: flex; flex-direction: column; gap: 3px; }
+  .field[hidden],
+  #formato-equipo-section[hidden],
+  #formato-equipo-accesorios[hidden],
+  #formato-medidas-section[hidden] {
+    display: none !important;
+  }
+  body.is-printing-formato #formato-tipo-otra-wrap:not([hidden]) {
+    display: block !important;
+  }
   .field label { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
   .field input, .field select, .field textarea {
     border: 1.5px solid var(--border);
@@ -2804,10 +2813,10 @@ document.documentElement.classList.add('license-checking');
     </div>
 
     <!-- 6. EQUIPO -->
-    <div class="section">
+    <div class="section" id="formato-equipo-section">
       <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.equipo">Equipo Instalado</span></div>
       <div class="grid g2">
-        <div class="field"><label data-i18n="formato.label.marca_motor">Marca del motor</label>
+        <div class="field" id="formato-equipo-marca-motor" data-formato-equipo-motor><label data-i18n="formato.label.marca_motor">Marca del motor</label>
           <select id="sel-marca" onchange="actualizarReferencias()">
             <option value="" data-i18n="formato.select.seleccionar">Seleccionar...</option>
             <option value="Accessmatic">Accessmatic</option>
@@ -2820,11 +2829,20 @@ document.documentElement.classList.add('license-checking');
             <option value="Otra" data-i18n="formato.select.otra_marca">Otra</option>
           </select>
         </div>
-        <div class="field"><label data-i18n="formato.label.referencia_modelo">Referencia / Modelo</label>
+        <div class="field" id="formato-equipo-marca-generico" hidden data-formato-equipo-generico>
+          <label data-i18n="formato.label.marca" data-i18n-default="Marca">Marca</label>
+          <input id="formato-equipo-marca-text" type="text" data-i18n-placeholder="formato.placeholder.marca" placeholder="Ej: Samsung, LG...">
+        </div>
+        <div class="field" id="formato-equipo-ref-motor" data-formato-equipo-motor>
+          <label data-i18n="formato.label.referencia_modelo">Referencia / Modelo</label>
           <select id="sel-referencia" style="display:none">
             <option value="" data-i18n="formato.select.seleccionar_referencia">Seleccionar referencia...</option>
           </select>
           <input id="ref-manual" type="text" data-i18n-placeholder="formato.placeholder.referencia_manual" placeholder="Ej: ARES 1500">
+        </div>
+        <div class="field" id="formato-equipo-ref-generico" hidden data-formato-equipo-generico>
+          <label data-i18n="formato.label.referencia_modelo">Referencia / Modelo</label>
+          <input id="formato-equipo-ref-text" type="text" data-i18n-placeholder="formato.placeholder.referencia_manual" placeholder="Ej: ARES 1500">
         </div>
         <div class="field"><label data-i18n="formato.label.serie_codigo">Serie / Código</label><input type="text" data-i18n-placeholder="formato.placeholder.serie" placeholder="N° de serie"></div>
         <div class="field"><label data-i18n="formato.label.voltaje">Voltaje</label>
@@ -2833,7 +2851,7 @@ document.documentElement.classList.add('license-checking');
           </select>
         </div>
       </div>
-      <div style="margin-top:10px;">
+      <div id="formato-equipo-accesorios" style="margin-top:10px;">
         <div class="field"><label style="margin-bottom:6px; display:block;" data-i18n="formato.label.accesorios">Accesorios incluidos</label>
           <div class="check-group">
             <label class="check-item"><input type="checkbox"><span data-i18n="formato.accesorio.control_remoto">Control remoto</span></label>
@@ -3611,6 +3629,10 @@ function getTipoPuerta() {
 }
 
 function actualizarReferencias() {
+  const oficioId = ArpaFormatoTipo?.getDocumentFormatoOficio?.() || 'automatismos';
+  const modo = ArpaOficios.getFormatoConfig?.(oficioId)?.equipoModo;
+  if (modo !== 'motor') return;
+
   const marca = document.getElementById("sel-marca").value;
   const selRef = document.getElementById("sel-referencia");
   const inputManual = document.getElementById("ref-manual");
@@ -3628,6 +3650,7 @@ function actualizarReferencias() {
       items.forEach(p => productos.push({ cod: p.cod, nom: `[${cat}] ${p.nom}` }))
     );
   }
+  const previous = selRef.value;
   selRef.innerHTML = '<option value="">Seleccionar referencia...</option>';
   productos.forEach(p => {
     const o = document.createElement("option");
@@ -3635,6 +3658,9 @@ function actualizarReferencias() {
     o.textContent = p.cod + " – " + p.nom;
     selRef.appendChild(o);
   });
+  if (previous && productos.some((p) => p.cod === previous)) {
+    selRef.value = previous;
+  }
   selRef.style.display = "";
   inputManual.style.display = "none";
 }
@@ -3747,6 +3773,11 @@ function initFormatoDraftPersistence() {
   }
   window.ArpaBrand?.scrubLegacyInputValues?.(document.getElementById('view-formato'));
   window.ArpaBrand?.resetUnconfiguredFormFields?.();
+  const formatoOficioId = window.ArpaFormatoTipo?.getDocumentFormatoOficio?.()
+    || window.ArpaOficios?.getActiveFormatoOficioId?.()
+    || 'automatismos';
+  window.ArpaFormatoTipo?.updateEquipoSection?.(formatoOficioId);
+  window.ArpaFormatoTipo?.updateMedidasVisibility?.(formatoOficioId);
   if (!window.__arpaFormatoOficioBound) {
     window.__arpaFormatoOficioBound = true;
     window.addEventListener('arpa-active-oficio-changed', () => {
@@ -3825,17 +3856,20 @@ function guardarPDF() {
   try {
     localStorage.setItem(FORMATO_DRAFT_KEY, JSON.stringify(collectFormatoDraft()));
   } catch (e) {}
-  window.ArpaFormatoTipo?.ensureDocumentFormatoTipoForPrint?.();
+  const formatoPrintSnapshot = window.ArpaFormatoTipo?.capturePrintSnapshot?.();
   document.body.classList.add('is-printing', 'is-printing-formato');
   window.ArpaBrand?.prepareForPrint?.();
   window.ArpaI18n?.preparePdfSpanish?.('view-formato');
-  window.ArpaFormatoTipo?.prepareFormatoTipoForPrint?.();
+  window.ArpaFormatoTipo?.prepareFormatoTipoForPrint?.(formatoPrintSnapshot);
+  window.ArpaFormatoTipo?.applyPrintSnapshot?.(formatoPrintSnapshot);
 
   const viewRoot = document.getElementById('view-formato');
   const elementos = viewRoot.querySelectorAll('input:not([type=file]):not([type=radio]):not([type=checkbox]), select, textarea');
   const respaldos = [];
 
   elementos.forEach(el => {
+    if (window.ArpaFormatoTipo?.shouldIncludePdfField?.(el) === false) return;
+
     const valor = el.tagName === 'SELECT'
       ? el.options[el.selectedIndex]?.text || ''
       : el.value || '';

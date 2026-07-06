@@ -28,6 +28,30 @@
     }));
   }
 
+  /** motor = catálogo motores; generico = marca/modelo texto; none = ocultar sección */
+  const FORMATO_EQUIPO_MODO = {
+    automatismos: 'motor',
+    metalmecanica: 'generico',
+    refrigeracion: 'generico',
+    cctv: 'generico',
+    solar: 'generico',
+    linea_blanca: 'generico'
+  };
+
+  const FORMATO_EQUIPO_REF_DEFAULT = {
+    i18nKey: 'formato.placeholder.referencia_manual',
+    default: 'Ej: ARES 1500'
+  };
+
+  const FORMATO_EQUIPO_REF_PLACEHOLDER = {
+    automatismos: FORMATO_EQUIPO_REF_DEFAULT,
+    metalmecanica: { i18nKey: 'formato.placeholder.ref.metalmecanica', default: 'Ej: Portón 3x2.5m' },
+    refrigeracion: { i18nKey: 'formato.placeholder.ref.refrigeracion', default: 'Ej: Midea 12,000 BTU' },
+    cctv: { i18nKey: 'formato.placeholder.ref.cctv', default: 'Ej: Hikvision DS-2CD2043G2' },
+    solar: { i18nKey: 'formato.placeholder.ref.solar', default: 'Ej: JA Solar 450W' },
+    linea_blanca: { i18nKey: 'formato.placeholder.ref.linea_blanca', default: 'Ej: Lavadora Samsung 18kg' }
+  };
+
   /** @type {{ id: string, i18nKey: string, formatoTitulo: string, formatoTituloI18nKey: string, formatoOpciones: object[] }[]} */
   const OFICIOS = [
     {
@@ -474,7 +498,11 @@
       titulo: oficio.formatoTitulo || 'Tipo de Puerta / Motor',
       tituloI18nKey: oficio.formatoTituloI18nKey || 'formato.section.tipo_puerta',
       opciones: Array.isArray(oficio.formatoOpciones) ? oficio.formatoOpciones.slice() : FORMATO_AUTOMATISMOS_OPCIONES.slice(),
-      showMedidas: id === OFICIO_AUTOMATISMOS || id === 'metalmecanica'
+      showMedidas: id === OFICIO_AUTOMATISMOS || id === 'metalmecanica',
+      equipoModo: oficio.formatoEquipoModo || FORMATO_EQUIPO_MODO[id] || 'none',
+      equipoRefPlaceholder: oficio.formatoEquipoRefPlaceholder
+        || FORMATO_EQUIPO_REF_PLACEHOLDER[id]
+        || FORMATO_EQUIPO_REF_DEFAULT
     };
   }
 
