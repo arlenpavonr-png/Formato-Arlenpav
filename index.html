@@ -3653,7 +3653,7 @@ function collectFormatoDraft() {
   const fecha = document.getElementById('formato-fecha');
   if (numero) data['numero-formato'] = numero.value;
   if (fecha) data['formato-fecha'] = fecha.value;
-  data._formatoOficio = global.ArpaFormatoTipo?.getDocumentFormatoOficio?.() || 'automatismos';
+  data._formatoOficio = window.ArpaFormatoTipo?.getDocumentFormatoOficio?.() || 'automatismos';
   return data;
 }
 
@@ -3684,8 +3684,8 @@ function clearFormatoDocumentFields(options) {
     const ph = document.getElementById(id);
     if (ph) ph.style.display = '';
   });
-  global.ArpaSignature?.clear?.('canvas-firma-cliente');
-  global.ArpaSignature?.clear?.('canvas-firma-tecnico');
+  window.ArpaSignature?.clear?.('canvas-firma-cliente');
+  window.ArpaSignature?.clear?.('canvas-firma-tecnico');
 }
 
 function clearFormatoForm() {
@@ -3693,14 +3693,14 @@ function clearFormatoForm() {
 }
 
 function shouldSkipFormatoDraft() {
-  if (!global.ArpaBrand?.hasUserSettings?.()) return true;
+  if (!window.ArpaBrand?.hasUserSettings?.()) return true;
   try {
     const raw = localStorage.getItem(FORMATO_DRAFT_KEY) || '';
     if (!raw || raw === '{}') return true;
-    if (global.ArpaBrand.containsLegacyBrandText?.(raw)) return true;
+    if (window.ArpaBrand.containsLegacyBrandText?.(raw)) return true;
     const data = JSON.parse(raw);
     const values = Object.values(data);
-    if (values.some((v) => global.ArpaBrand.isLegacyFieldValue?.(String(v)))) return true;
+    if (values.some((v) => window.ArpaBrand.isLegacyFieldValue?.(String(v)))) return true;
   } catch (e) {
     return true;
   }
@@ -3734,23 +3734,23 @@ function scheduleFormatoDraftSave() {
 }
 
 function initFormatoDraftPersistence() {
-  global.ArpaBrand?.purgeLegacyData?.();
+  window.ArpaBrand?.purgeLegacyData?.();
   if (shouldSkipFormatoDraft()) {
     try { localStorage.removeItem(FORMATO_DRAFT_KEY); } catch (e) {}
     clearFormatoForm();
-    global.ArpaFormatoTipo?.ensureDocumentOficioForNewForm?.();
+    window.ArpaFormatoTipo?.ensureDocumentOficioForNewForm?.();
   } else {
     let draft = {};
     try { draft = JSON.parse(localStorage.getItem(FORMATO_DRAFT_KEY) || '{}'); } catch (e) {}
-    global.ArpaFormatoTipo?.initFromDraft?.(draft);
+    window.ArpaFormatoTipo?.initFromDraft?.(draft);
     applyFormatoDraft();
   }
-  global.ArpaBrand?.scrubLegacyInputValues?.(document.getElementById('view-formato'));
-  global.ArpaBrand?.resetUnconfiguredFormFields?.();
-  if (!global.__arpaFormatoOficioBound) {
-    global.__arpaFormatoOficioBound = true;
-    global.addEventListener('arpa-active-oficio-changed', () => {
-      global.ArpaFormatoTipo?.refreshForActiveOficio?.({ clearSelections: true });
+  window.ArpaBrand?.scrubLegacyInputValues?.(document.getElementById('view-formato'));
+  window.ArpaBrand?.resetUnconfiguredFormFields?.();
+  if (!window.__arpaFormatoOficioBound) {
+    window.__arpaFormatoOficioBound = true;
+    window.addEventListener('arpa-active-oficio-changed', () => {
+      window.ArpaFormatoTipo?.refreshForActiveOficio?.({ clearSelections: true });
     });
   }
   const root = document.getElementById('view-formato');
@@ -3825,11 +3825,11 @@ function guardarPDF() {
   try {
     localStorage.setItem(FORMATO_DRAFT_KEY, JSON.stringify(collectFormatoDraft()));
   } catch (e) {}
-  global.ArpaFormatoTipo?.ensureDocumentFormatoTipoForPrint?.();
+  window.ArpaFormatoTipo?.ensureDocumentFormatoTipoForPrint?.();
   document.body.classList.add('is-printing', 'is-printing-formato');
   window.ArpaBrand?.prepareForPrint?.();
   window.ArpaI18n?.preparePdfSpanish?.('view-formato');
-  global.ArpaFormatoTipo?.prepareFormatoTipoForPrint?.();
+  window.ArpaFormatoTipo?.prepareFormatoTipoForPrint?.();
 
   const viewRoot = document.getElementById('view-formato');
   const elementos = viewRoot.querySelectorAll('input:not([type=file]):not([type=radio]):not([type=checkbox]), select, textarea');
@@ -3877,7 +3877,7 @@ function guardarPDF() {
   const finishPrintRestore = () => {
     document.body.classList.remove('is-printing', 'is-printing-formato', 'formato-has-video-qr');
     window.ArpaI18n?.restorePdfSpanish?.();
-    global.ArpaFormatoTipo?.restoreFormatoTipoAfterPrint?.();
+    window.ArpaFormatoTipo?.restoreFormatoTipoAfterPrint?.();
     window.ArpaBrand?.restoreAfterPrint?.();
     restoreVideoQrAfterPrint(qrBlock);
     window.ArpaSignature?.restoreAfterPrint?.();
@@ -3924,7 +3924,7 @@ function nuevoNumero() {
   if (field) field.value = value;
   clearFormatoDocumentFields({ preserveNumero: true });
   try { localStorage.removeItem(FORMATO_DRAFT_KEY); } catch (e) {}
-  global.ArpaFormatoTipo?.ensureDocumentOficioForNewForm?.();
+  window.ArpaFormatoTipo?.ensureDocumentOficioForNewForm?.();
   applyUserSettingsToUI?.();
   scheduleFormatoDraftSave();
   const cliente = document.getElementById('formato-cliente-nombre')?.value || '';
