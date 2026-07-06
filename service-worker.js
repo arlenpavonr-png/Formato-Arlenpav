@@ -34,7 +34,7 @@ const ASSETS = [
   BASE + 'icon-maskable-512.png',
   BASE + 'apple-touch-icon.png',
   'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap',
-  'https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js'
+  'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js'
 ];
 
 function isNetworkFirst(url) {

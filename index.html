@@ -3937,7 +3937,11 @@ function nuevoNumero() {
 
 // Al cargar, mostrar el número actual (sin incrementar) o sugerir el siguiente
 window.addEventListener('DOMContentLoaded', () => {
-  initFormatoDraftPersistence();
+  try {
+    initFormatoDraftPersistence();
+  } catch (e) {
+    console.warn('[formato] initFormatoDraftPersistence', e);
+  }
   const ultimo = getUltimoNumero();
   const campo = document.getElementById('numero-formato');
   const fechaFormato = document.getElementById('formato-fecha');
@@ -3950,8 +3954,9 @@ window.addEventListener('DOMContentLoaded', () => {
     campo.placeholder = `Último: ${formatearNumero(ultimo)}`;
   }
   // Actualizar título cuando cambie cliente o tipo
-  document.querySelector('input[placeholder="Nombre completo o razón social"]')
-    .addEventListener('input', actualizarTitulo);
+  const nombreInput = document.querySelector('#view-formato #formato-cliente-nombre')
+    || document.querySelector('input[placeholder="Nombre completo o razón social"]');
+  nombreInput?.addEventListener('input', actualizarTitulo);
   document.querySelectorAll('input[name="tipo"]')
     .forEach(r => r.addEventListener('change', actualizarTitulo));
 });
@@ -4109,10 +4114,12 @@ if ('serviceWorker' in navigator) {
     hideLoadingContinueBtn();
     loadingPausedByUser = false;
     if (!action) return;
-    if (action.kind === 'license') {
-      applyValidLicense(action.payload.data);
-    } else if (action.kind === 'offline') {
+    if (action.kind === 'offline') {
       applyOfflineUnlock(action.payload.saved);
+      return;
+    }
+    if (action.payload && action.payload.data) {
+      applyValidLicense(action.payload.data);
     }
   }
 
@@ -4525,7 +4532,7 @@ if ('serviceWorker' in navigator) {
 })();
 </script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" crossorigin="anonymous"></script>
 <script src="./js/arpa-i18n.js"></script>
 <script src="./js/html2canvas.min.js"></script>
 <script src="./js/jspdf.umd.min.js"></script>
