@@ -1845,16 +1845,18 @@
       box-sizing: border-box !important;
     }
     body.is-printing-formato .dims-extra {
-      display: grid !important;
-      grid-template-columns: 1fr 1fr !important;
-      gap: 8px !important;
+      display: table !important;
+      width: 100% !important;
+      table-layout: fixed !important;
+      border-collapse: collapse !important;
       margin-top: 10px !important;
     }
     body.is-printing-formato .dim-field {
-      display: flex !important;
-      flex-direction: column !important;
-      align-items: stretch !important;
-      min-width: 0 !important;
+      display: table-cell !important;
+      width: 50% !important;
+      vertical-align: top !important;
+      padding: 0 4px !important;
+      box-sizing: border-box !important;
     }
     body.is-printing-formato .dim-field label {
       text-align: center !important;
