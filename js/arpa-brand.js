@@ -140,21 +140,6 @@
 
   function resetUnconfiguredFormFields() {
     if (hasUserSettings()) return;
-    [
-      'campo-tecnico-responsable',
-      'campo-tecnico-firma',
-      'formato-cliente-nombre',
-      'formato-cliente-tel',
-      'formato-cliente-ciudad',
-      'cot-elaborado-nombre',
-      'cot-elaborado-tel',
-      'cot-nombre',
-      'cc-cobrador-nombre',
-      'cc-cobrador-empresa'
-    ].forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) el.value = '';
-    });
     scrubLegacyInputValues(document.getElementById('view-formato'));
     scrubLegacyInputValues(document.getElementById('view-cotizacion'));
     scrubLegacyInputValues(document.getElementById('view-cuenta-cobro'));
