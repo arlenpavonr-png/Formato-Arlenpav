@@ -1775,7 +1775,7 @@
     .servicio-row .cot-servicio-valor { grid-column: span 2; }
   }
   @page {
-    size: A4;
+    size: letter;
     margin: 15mm;
   }
   @media print {
@@ -3963,7 +3963,7 @@ function guardarPDF() {
 }
 function forzarSaltoSiSeCorta() {
   try {
-    const PAGE_H_MM = 297;
+    const PAGE_H_MM = 279.4;
     const MARGIN_MM = 15;
     const PX_PER_MM = 96 / 25.4;
     const usableHeightPx = (PAGE_H_MM - MARGIN_MM * 2) * PX_PER_MM;
