@@ -3787,6 +3787,17 @@ function initFormatoDraftPersistence() {
   } else {
     let draft = {};
     try { draft = JSON.parse(localStorage.getItem(window.ArpaBrand.FORMATO_DRAFT_KEY) || '{}'); } catch (e) {}
+    const activeOficioId = window.ArpaOficios?.getActiveFormatoOficioId?.() || 'automatismos';
+    const draftOficioKey = window.ArpaFormatoTipo?.DRAFT_OFICIO_KEY || '_formatoOficio';
+    const draftOficioRaw = draft[draftOficioKey];
+    const draftOficioResolved = draftOficioRaw
+      ? (window.ArpaOficios?.resolveFormatoOficioId?.(draftOficioRaw) || draftOficioRaw)
+      : null;
+    if (draftOficioResolved && draftOficioResolved !== activeOficioId) {
+      draft[draftOficioKey] = activeOficioId;
+      try { localStorage.setItem(window.ArpaBrand.FORMATO_DRAFT_KEY, JSON.stringify(draft)); } catch (e) {}
+      window.ArpaFormatoTipo?.clearEquipoFields?.();
+    }
     window.ArpaFormatoTipo?.initFromDraft?.(draft);
     applyFormatoDraft();
   }
