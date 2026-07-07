@@ -1774,6 +1774,10 @@
     .servicio-row { grid-template-columns: auto 1fr; }
     .servicio-row .cot-servicio-valor { grid-column: span 2; }
   }
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
   @media print {
     .tabla-productos {
       min-width: 0;
@@ -3919,6 +3923,11 @@ function guardarPDF() {
 
   const finishPrintRestore = () => {
     document.body.classList.remove('is-printing', 'is-printing-formato', 'formato-has-video-qr');
+    const medidasSection = document.getElementById('formato-medidas-section');
+    if (medidasSection) {
+      medidasSection.style.breakBefore = '';
+      medidasSection.style.pageBreakBefore = '';
+    }
     window.ArpaI18n?.restorePdfSpanish?.();
     window.ArpaFormatoTipo?.restoreFormatoTipoAfterPrint?.();
     window.ArpaBrand?.restoreAfterPrint?.();
@@ -3944,10 +3953,35 @@ function guardarPDF() {
   ]);
   Promise.resolve(printReady).then(() => {
     requestAnimationFrame(() => {
+      forzarSaltoSiSeCorta();
       window.print();
       setTimeout(finishPrintRestore, 1000);
     });
   });
+}
+function forzarSaltoSiSeCorta() {
+  try {
+    const PAGE_H_MM = 297;
+    const MARGIN_MM = 15;
+    const PX_PER_MM = 96 / 25.4;
+    const usableHeightPx = (PAGE_H_MM - MARGIN_MM * 2) * PX_PER_MM;
+    const pageEl = document.querySelector('.page');
+    const section = document.getElementById('formato-medidas-section');
+    if (!pageEl || !section) return;
+    const pageTop = pageEl.getBoundingClientRect().top;
+    const secRect = section.getBoundingClientRect();
+    const top = secRect.top - pageTop;
+    const bottom = secRect.bottom - pageTop;
+    const startPage = Math.floor(top / usableHeightPx);
+    const endPage = Math.floor((bottom - 1) / usableHeightPx);
+    if (startPage !== endPage) {
+      section.style.breakBefore = 'page';
+      section.style.pageBreakBefore = 'always';
+    } else {
+      section.style.breakBefore = '';
+      section.style.pageBreakBefore = '';
+    }
+  } catch (e) {}
 }
 function getUltimoNumero() {
   const N = window.ArpaNumeracion;
