@@ -772,7 +772,7 @@
 
     const total = getSeedProductCount(id);
     if (!total) {
-      alert('No hay catálogo base disponible para este oficio.');
+      alert(window.ArpaI18n.t('alert.oficios.sin_catalogo_base'));
       return 0;
     }
 
@@ -781,16 +781,9 @@
     global.ArpaMiCatalogo?.refreshView?.();
 
     if (result.added > 0) {
-      alert(
-        'Catálogo base cargado: ' + result.added + ' producto' +
-        (result.added !== 1 ? 's' : '') + ' agregado' +
-        (result.added !== 1 ? 's' : '') + ' en ' + label + '.'
-      );
+      alert(window.ArpaI18n.t('alert.oficios.catalogo_base_cargado', { count: result.added, label }));
     } else {
-      alert(
-        'El catálogo base de ' + label + ' ya estaba cargado (' + total +
-        ' productos). No se agregaron duplicados.'
-      );
+      alert(window.ArpaI18n.t('alert.oficios.catalogo_ya_cargado', { label, total }));
     }
     return result.added;
   }
@@ -850,10 +843,10 @@
     if (previousSingle === nextId) return true;
 
     if (previousSingle) {
-      const msg =
-        'Vas a cambiar de ' + getOficioLabel(previousSingle) + ' a ' + getOficioLabel(nextId) +
-        '. Esto eliminará los productos de ' + getOficioLabel(previousSingle) +
-        ' de tu catálogo (los que agregaste manualmente en otras categorías no se tocan). ¿Continuar?';
+      const msg = window.ArpaI18n.t('confirm.oficios.cambiar_oficio', {
+        from: getOficioLabel(previousSingle),
+        to: getOficioLabel(nextId)
+      });
       if (!confirm(msg)) {
         revertOficioInputs(container, previous);
         return false;

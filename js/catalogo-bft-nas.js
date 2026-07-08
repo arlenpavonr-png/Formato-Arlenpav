@@ -471,7 +471,7 @@
       localStorage.setItem(ACTIVE_BRAND_KEY, brandId);
     } catch (e) {
       console.warn('[catalogo-marcas] install', brandId, e);
-      alert('No se pudo guardar el catálogo. Intente de nuevo.');
+      alert(window.ArpaI18n.t('alert.catalogo.no_guardado'));
       return 0;
     }
 
@@ -528,19 +528,19 @@
 
   function precargarCatalogoAccessmatic() {
     const count = installBrandCatalog('accessmatic', flattenMarcaFromArpaCatalogo('Accessmatic'));
-    alert('Catálogo Accessmatic cargado: ' + count + ' productos.');
+    alert(window.ArpaI18n.t('alert.catalogo.marca_cargado', { marca: 'Accessmatic', count }));
     return count;
   }
 
   function precargarCatalogoElite() {
     const count = installBrandCatalog('elite', flattenMarcaFromArpaCatalogo('Elite'));
-    alert('Catálogo Elite cargado: ' + count + ' productos.');
+    alert(window.ArpaI18n.t('alert.catalogo.marca_cargado', { marca: 'Elite', count }));
     return count;
   }
 
   function precargarCatalogoBFTNAS() {
     const count = installBrandCatalog('bft_nas', CATALOGO_BFT_NAS, { normalizeCategory: false });
-    alert('Catálogo BFT + NAS cargado: ' + count + ' productos.');
+    alert(window.ArpaI18n.t('alert.catalogo.marca_cargado', { marca: 'BFT + NAS', count }));
     return count;
   }
 

@@ -101,7 +101,7 @@
         'En plan PYME indique las iniciales o código del técnico (ej. PJ) y guarde la configuración.'
       );
     } else {
-      alert('En plan PYME configure las iniciales del técnico en Configuración.');
+      alert(window.ArpaI18n.t('alert.numeracion.configure_iniciales_pyme'));
     }
     return false;
   }

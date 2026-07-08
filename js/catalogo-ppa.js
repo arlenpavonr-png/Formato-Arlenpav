@@ -37,11 +37,11 @@
   function precargarCatalogoPPA() {
     const install = global.ArpaCatalogoMarcas?.installBrandCatalog;
     if (!install) {
-      alert('El módulo de catálogos por marca no está disponible.');
+      alert(window.ArpaI18n.t('alert.catalogo.modulo_no_disponible'));
       return 0;
     }
     const count = install('ppa', CATALOGO_PPA, { normalizeCategory: false, defaultMarca: 'PPA' });
-    alert('Catálogo PPA cargado: ' + count + ' productos.');
+    alert(window.ArpaI18n.t('alert.catalogo.marca_cargado', { marca: 'PPA', count }));
     return count;
   }
 

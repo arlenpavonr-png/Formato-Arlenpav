@@ -360,7 +360,7 @@
     const records = getRecords();
     const r = records.find((rec) => rec.id === id);
     if (!r) {
-      alert('Registro no encontrado.');
+      alert(window.ArpaI18n.t('alert.historial.registro_no_encontrado'));
       return;
     }
     const modulo = inferModulo(r);
@@ -381,7 +381,7 @@
           if (el) el.value = r.fecha;
         }
         window.scrollTo(0, 0);
-        alert('Documento restaurado. Revisa los datos y genera el PDF.');
+        alert(window.ArpaI18n.t('alert.historial.documento_restaurado'));
       }, 400);
     } else if (modulo === 'cotizacion') {
       document.querySelector('.main-menu-btn[onclick*="openCotizacionView"]')?.click();
@@ -399,7 +399,7 @@
           if (el) el.value = r.fecha;
         }
         window.scrollTo(0, 0);
-        alert('Documento restaurado. Revisa los datos y genera el PDF.');
+        alert(window.ArpaI18n.t('alert.historial.documento_restaurado'));
       }, 400);
     } else {
       document.querySelector('.main-menu-btn[onclick*="openCuentaCobroView"]')?.click();
@@ -413,7 +413,7 @@
           if (el) el.value = r.fecha;
         }
         window.scrollTo(0, 0);
-        alert('Documento restaurado. Revisa los datos y genera el PDF.');
+        alert(window.ArpaI18n.t('alert.historial.documento_restaurado'));
       }, 400);
     }
   }
@@ -435,7 +435,7 @@
 
     list.querySelectorAll('.historial-delete').forEach((btn) => {
       btn.addEventListener('click', () => {
-        if (confirm('¿Eliminar este registro del historial?')) {
+        if (confirm(window.ArpaI18n.t('confirm.historial.eliminar_registro'))) {
           removeRecord(btn.dataset.id);
         }
       });
@@ -445,7 +445,7 @@
   function exportCSV() {
     const records = getRecords();
     if (!records.length) {
-      alert('No hay registros para exportar.');
+      alert(window.ArpaI18n.t('alert.historial.no_hay_registros'));
       return;
     }
 

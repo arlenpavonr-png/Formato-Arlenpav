@@ -122,7 +122,7 @@
       console.warn('[arpa-whatsapp] share', err);
     }
 
-    alert('Adjunte el PDF manualmente desde su galería o archivos recientes.');
+    alert(window.ArpaI18n.t('alert.pdf.adjuntar_manual'));
     openWhatsAppWithMessage(telRaw, message + ' (Adjunte el PDF desde su dispositivo.)');
   }
 

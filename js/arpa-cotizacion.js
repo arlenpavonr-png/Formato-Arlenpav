@@ -545,9 +545,9 @@
 
     if (file) {
       downloadPdfFile(file);
-      alert('Se descargó el PDF de la cotización. Adjúntelo en el chat de WhatsApp que se abrirá a continuación.');
+      alert(window.ArpaI18n.t('alert.cotizacion.pdf_descargado_wa'));
     } else {
-      alert('No se pudo generar el PDF. Adjúntelo manualmente desde su galería o archivos recientes.');
+      alert(window.ArpaI18n.t('alert.pdf.no_generado_manual'));
     }
     global.ArpaWhatsApp?.openWhatsAppWithMessage?.(
       telRaw,

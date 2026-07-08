@@ -369,7 +369,7 @@
     const jsPDF = getJsPDF();
     if (!jsPDF) {
       scheduleCcDraftSave(true);
-      alert('No se pudo cargar jsPDF. Recargue la aplicación e intente de nuevo.');
+      alert(window.ArpaI18n.t('alert.pdf.jspdf_no_cargo'));
       return;
     }
 
@@ -394,7 +394,7 @@
       console.warn('[arpa-cuenta-cobro] share', err);
     }
 
-    alert('Adjunte el PDF manualmente desde su galería o archivos recientes.');
+    alert(window.ArpaI18n.t('alert.pdf.adjuntar_manual'));
     global.ArpaWhatsApp?.openWhatsAppWithMessage?.(
       d.cliente.tel,
       msg + ' (Adjunte el PDF desde su dispositivo.)'
@@ -662,7 +662,7 @@
     const jsPDF = getJsPDF();
     if (!jsPDF) {
       scheduleCcDraftSave(true);
-      alert('No se pudo cargar jsPDF. Recargue la aplicación e intente de nuevo.');
+      alert(window.ArpaI18n.t('alert.pdf.jspdf_no_cargo'));
       return;
     }
 
@@ -674,7 +674,7 @@
       clearCcDraft();
     } catch (e) {
       scheduleCcDraftSave(true);
-      alert('No se pudo generar el PDF. Los datos del formulario se conservaron; intente de nuevo.');
+      alert(window.ArpaI18n.t('alert.cuenta_cobro.pdf_no_generado'));
     }
   }
 

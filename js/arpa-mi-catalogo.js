@@ -447,7 +447,7 @@
     }
     if (!product) return;
     const label = product.nom || product.cod || 'este producto';
-    if (!confirm(`¿Eliminar "${label}" del catálogo?`)) return;
+    if (!confirm(window.ArpaI18n.t('confirm.catalogo.eliminar_producto', { label }))) return;
     saveProducts(getProducts(productOficio).filter((p) => p.id !== id), productOficio);
     render();
   }
@@ -518,10 +518,10 @@
     const oid = resolveItemOficioId(category);
     const count = countProductsInCategory(id, oid);
     if (count > 0) {
-      alert(`No se puede eliminar: hay ${count} producto${count !== 1 ? 's' : ''} en esta categoría.`);
+      alert(window.ArpaI18n.t('alert.catalogo.no_eliminar_categoria', { count }));
       return;
     }
-    if (!confirm(`¿Eliminar la categoría "${category.name}"?`)) return;
+    if (!confirm(window.ArpaI18n.t('confirm.catalogo.eliminar_categoria', { name: category.name }))) return;
     saveCategories(getCategories(oid).filter((c) => c.id !== id), oid);
     render();
   }
@@ -1029,18 +1029,18 @@
         const buffer = await file.arrayBuffer();
         rawRows = parseExcelArrayBuffer(buffer);
       } else {
-        alert('Formato no soportado. Use .xlsx, .xls o .csv');
+        alert(window.ArpaI18n.t('alert.catalogo.formato_no_soportado'));
         return;
       }
 
       const preview = buildImportPreview(rawRows);
       if (!preview.length) {
-        alert('No se encontraron productos. Verifique que la primera fila tenga las columnas: Nombre, Referencia, Precio, Unidad, Marca, Categoría.');
+        alert(window.ArpaI18n.t('alert.catalogo.sin_productos_encontrados'));
         return;
       }
       renderImportPreview(preview);
     } catch (e) {
-      alert('Error al leer el archivo: ' + (e.message || 'formato inválido'));
+      alert(window.ArpaI18n.t('alert.catalogo.error_leer_archivo', { detail: e.message || window.ArpaI18n.t('alert.catalogo.formato_invalido') }));
     }
   }
 
@@ -1057,10 +1057,10 @@
     let skipped = 0;
 
     if (mode === 'replace') {
-      if (!confirm('¿Reemplazar el catálogo de este oficio con estos ' + validRows.length + ' productos?')) return;
+      if (!confirm(window.ArpaI18n.t('confirm.catalogo.reemplazar', { count: validRows.length }))) return;
       products = imported;
     } else {
-      if (!confirm('¿Agregar estos ' + validRows.length + ' productos a los existentes de este oficio?')) return;
+      if (!confirm(window.ArpaI18n.t('confirm.catalogo.agregar', { count: validRows.length }))) return;
       const existing = getProducts(oid);
       const codes = new Set(existing.map((p) => p.cod.toLowerCase()));
       products = existing.slice();
@@ -1079,9 +1079,9 @@
     render();
 
     let msg = mode === 'replace'
-      ? `Catálogo reemplazado: ${imported.length} productos importados.`
-      : `${imported.length - skipped} productos agregados.`;
-    if (skipped) msg += ` ${skipped} omitidos por referencia duplicada.`;
+      ? window.ArpaI18n.t('alert.catalogo.reemplazado', { count: imported.length })
+      : window.ArpaI18n.t('alert.catalogo.agregados', { count: imported.length - skipped });
+    if (skipped) msg += ' ' + window.ArpaI18n.t('alert.catalogo.omitidos', { count: skipped });
     alert(msg);
   }
 
