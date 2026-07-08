@@ -758,6 +758,8 @@
       const el = document.getElementById(id);
       if (el) el.value = v || '';
     });
+    const currencySelect = document.getElementById('settings-currency');
+    if (currencySelect) currencySelect.value = s.currency || window.ArpaPricing?.getDefaultCurrency?.() || 'COP';
     const preview = document.getElementById('settings-logo-preview');
     if (preview) preview.src = getLogo(s);
     const appPreview = document.getElementById('settings-app-logo-preview');
@@ -803,6 +805,7 @@
     const address = document.getElementById('settings-address')?.value.trim();
     const city = document.getElementById('settings-city')?.value.trim();
     const phone = document.getElementById('settings-phone')?.value.trim();
+    const currency = document.getElementById('settings-currency')?.value.trim() || 'COP';
     const bankName = document.getElementById('settings-bank')?.value.trim();
     const accountType = document.getElementById('settings-account-type')?.value.trim();
     const accountNumber = document.getElementById('settings-account-number')?.value.trim();
@@ -831,6 +834,7 @@
       address,
       city,
       phone,
+      currency,
       website: (() => {
         const w = document.getElementById('settings-website')?.value.trim() || '';
         return isInternalAppUrl(w) ? '' : w;

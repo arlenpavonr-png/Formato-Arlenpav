@@ -555,7 +555,14 @@
     'brand.footer.global': 'Generated with ARPA Suite · Try it free at arpatechnologyglobal.com · © 2026',
     'brand.company_name.placeholder': 'YOUR COMPANY NAME',
     'brand.company_contact.placeholder': 'Set up your company in <strong>⚙️ Settings</strong> to personalize this document.',
-    'brand.screen_footer.placeholder': 'Set up your company details in ⚙️ Settings'
+    'brand.screen_footer.placeholder': 'Set up your company details in ⚙️ Settings',
+    'settings.section.currency': 'Currency',
+    'settings.label.currency': 'Currency for your documents',
+    'currency.cop': '🇨🇴 COP — Colombian peso',
+    'currency.usd': '🇺🇸 USD — US dollar',
+    'currency.mxn': '🇲🇽 MXN — Mexican peso',
+    'currency.pen': '🇵🇪 PEN — Peruvian sol',
+    'currency.clp': '🇨🇱 CLP — Chilean peso'
   };
 
   var DOC_TYPE_KEYS = {
@@ -710,7 +717,14 @@
       'brand.footer.global': 'Generado con ARPA Suite · Pruébala gratis en arpatechnologyglobal.com · © 2026',
       'brand.company_name.placeholder': 'NOMBRE DE TU EMPRESA',
       'brand.company_contact.placeholder': 'Configure su empresa en <strong>⚙️ Ajustes</strong> para personalizar este documento.',
-      'brand.screen_footer.placeholder': 'Configure los datos de su empresa en ⚙️ Ajustes'
+      'brand.screen_footer.placeholder': 'Configure los datos de su empresa en ⚙️ Ajustes',
+      'settings.section.currency': 'Moneda',
+      'settings.label.currency': 'Moneda de tus documentos',
+      'currency.cop': '🇨🇴 COP — Peso colombiano',
+      'currency.usd': '🇺🇸 USD — Dólar estadounidense',
+      'currency.mxn': '🇲🇽 MXN — Peso mexicano',
+      'currency.pen': '🇵🇪 PEN — Sol peruano',
+      'currency.clp': '🇨🇱 CLP — Peso chileno'
     });
   }
 

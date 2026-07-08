@@ -69,17 +69,45 @@
       .replace(/>/g, '&gt;');
   }
 
-  function formatoPesos(n) {
-    return '$ ' + (Number(n) || 0).toLocaleString('es-CO');
+  const CURRENCIES = {
+    COP: { locale: 'es-CO', symbol: '$' },
+    USD: { locale: 'en-US', symbol: '$' },
+    MXN: { locale: 'es-MX', symbol: '$' },
+    PEN: { locale: 'es-PE', symbol: 'S/' },
+    CLP: { locale: 'es-CL', symbol: '$' }
+  };
+  function detectDefaultCurrencyFromLocale() {
+    try {
+      const lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+      if (lang.includes('mx')) return 'MXN';
+      if (lang.includes('pe')) return 'PEN';
+      if (lang.includes('cl')) return 'CLP';
+      if (lang.includes('us') || lang === 'en') return 'USD';
+      return 'COP';
+    } catch (e) {
+      return 'COP';
+    }
   }
-
+  function getDefaultCurrency() {
+    const saved = window.ArpaBrand?.getSettings?.()?.currency;
+    if (saved && CURRENCIES[saved]) return saved;
+    return detectDefaultCurrencyFromLocale();
+  }
+  function formatoPesos(n, currencyCode) {
+    const code = (currencyCode && CURRENCIES[currencyCode]) ? currencyCode : getDefaultCurrency();
+    const cfg = CURRENCIES[code] || CURRENCIES.COP;
+    return cfg.symbol + ' ' + (Number(n) || 0).toLocaleString(cfg.locale);
+  }
   global.ArpaPricing = {
     PRICE_LIST_KEY,
     DEFAULT_PRICE_LIST,
+    CURRENCIES,
     getPriceList,
     savePriceList,
     readPriceListFromSettingsForm,
     renderPriceListSettings,
+    detectDefaultCurrencyFromLocale,
+    getDefaultCurrency,
     formatoPesos
   };
 })(window);
