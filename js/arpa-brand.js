@@ -182,7 +182,7 @@
       return true;
     } catch (e) {
       console.warn('[arpa-brand] setDedicatedLogo', e);
-      showError(global.ArpaI18n.t('alert.brand.logo_no_guardado_quota'));
+      showError(window.ArpaI18n.t('alert.brand.logo_no_guardado_quota'));
       return false;
     }
   }
@@ -258,8 +258,8 @@
       const isQuota = e && (e.name === 'QuotaExceededError' || e.code === 22);
       showError(
         hasLogoPayload && isQuota
-          ? global.ArpaI18n.t('alert.brand.logo_no_guardado_quota')
-          : global.ArpaI18n.t('alert.brand.config_no_guardada')
+          ? window.ArpaI18n.t('alert.brand.logo_no_guardado_quota')
+          : window.ArpaI18n.t('alert.brand.config_no_guardada')
       );
       return false;
     }
@@ -653,12 +653,12 @@
     const file = input.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      showError(global.ArpaI18n.t('alert.brand.imagen_invalida'));
+      showError(window.ArpaI18n.t('alert.brand.imagen_invalida'));
       input.value = '';
       return;
     }
     if (file.size > 15000000) {
-      showError(global.ArpaI18n.t('alert.brand.imagen_muy_grande'));
+      showError(window.ArpaI18n.t('alert.brand.imagen_muy_grande'));
       input.value = '';
       return;
     }
@@ -668,12 +668,12 @@
       compressLogoDataUrl(e.target.result)
         .then(onLoad)
         .catch(() => {
-          showError(global.ArpaI18n.t('alert.brand.imagen_no_procesada'));
+          showError(window.ArpaI18n.t('alert.brand.imagen_no_procesada'));
           input.value = '';
         });
     };
     reader.onerror = () => {
-      showError(global.ArpaI18n.t('alert.brand.imagen_no_leida'));
+      showError(window.ArpaI18n.t('alert.brand.imagen_no_leida'));
       input.value = '';
     };
     reader.readAsDataURL(file);
@@ -804,18 +804,18 @@
     const current = getSettings();
 
     if (!companyName || !nit || !address || !phone || !bankName || !accountType || !accountNumber) {
-      showError(global.ArpaI18n.t('alert.brand.campos_obligatorios'));
+      showError(window.ArpaI18n.t('alert.brand.campos_obligatorios'));
       return;
     }
 
     const techCodeRaw = document.getElementById('settings-technician-code')?.value.trim() || '';
     const techCode = global.ArpaNumeracion?.normalizeTechnicianCode?.(techCodeRaw) || '';
     if (global.ArpaLicense?.requiresTechnicianCode?.() && !techCode) {
-      showError(global.ArpaI18n.t('alert.brand.pyme_codigo_requerido'));
+      showError(window.ArpaI18n.t('alert.brand.pyme_codigo_requerido'));
       return;
     }
     if (techCodeRaw && !techCode) {
-      showError(global.ArpaI18n.t('alert.brand.codigo_tecnico_formato'));
+      showError(window.ArpaI18n.t('alert.brand.codigo_tecnico_formato'));
       return;
     }
 

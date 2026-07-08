@@ -82,9 +82,7 @@
     return modulo === 'cotizacion' || modulo === 'cuenta-cobro';
   }
 
-  function sinDescripcionLabel() {
-    return global.ArpaI18n?.t?.('ui.historial.sin_descripcion') || 'Sin descripción';
-  }
+  function getSinDescripcion() { return window.ArpaI18n.t('ui.historial.sin_descripcion'); }
 
   function trimBrief(text, maxLen) {
     const limit = maxLen || 100;
@@ -121,7 +119,7 @@
     if (subtipo) partes.push(subtipo);
     const concepto = (record?.concepto || '').trim();
     if (concepto) partes.push(concepto);
-    if (!partes.length) return sinDescripcionLabel();
+    if (!partes.length) return getSinDescripcion();
     const texto = partes.join(' · ');
     return options?.full ? texto : truncateConcepto(texto);
   }
@@ -173,7 +171,7 @@
       const obs = (document.getElementById('cot-obs')?.value || '').trim();
       if (obs) concepto = trimBrief(obs, 120);
     }
-    return concepto || sinDescripcionLabel();
+    return concepto || getSinDescripcion();
   }
 
   function buildCuentaCobroConcepto(snap) {
@@ -183,7 +181,7 @@
       .filter(Boolean);
     let concepto = buildConceptoFromItemList(items);
     if (!concepto && d?.observaciones) concepto = trimBrief(d.observaciones, 120);
-    return concepto || sinDescripcionLabel();
+    return concepto || getSinDescripcion();
   }
 
   function addRecord(record) {
@@ -345,15 +343,15 @@
           </span>
         </div>
         <div class="historial-card-body">
-          <div class="historial-row"><span>${escapeHtml(global.ArpaI18n.t('ui.historial.cliente'))}</span><strong>${escapeHtml(r.cliente || '—')}</strong></div>
-          <div class="historial-row historial-row-concepto"><span>${escapeHtml(global.ArpaI18n.t('ui.historial.concepto'))}</span><strong>${escapeHtml(getConceptoDisplay(r))}</strong></div>
-          <div class="historial-row"><span>${escapeHtml(global.ArpaI18n.t('ui.historial.ciudad'))}</span><strong>${escapeHtml(r.ciudad || '—')}</strong></div>
-          <div class="historial-row"><span>${escapeHtml(global.ArpaI18n.t('ui.historial.fecha'))}</span><strong>${escapeHtml(formatFechaLegible(r.fecha))}</strong></div>
-          ${showTotal ? `<div class="historial-row"><span>${escapeHtml(global.ArpaI18n.t('ui.historial.total'))}</span><strong>${escapeHtml(formatoPesos(r.total))}</strong></div>` : ''}
+          <div class="historial-row"><span>${escapeHtml(window.ArpaI18n.t('ui.historial.cliente'))}</span><strong>${escapeHtml(r.cliente || '—')}</strong></div>
+          <div class="historial-row historial-row-concepto"><span>${escapeHtml(window.ArpaI18n.t('ui.historial.concepto'))}</span><strong>${escapeHtml(getConceptoDisplay(r))}</strong></div>
+          <div class="historial-row"><span>${escapeHtml(window.ArpaI18n.t('ui.historial.ciudad'))}</span><strong>${escapeHtml(r.ciudad || '—')}</strong></div>
+          <div class="historial-row"><span>${escapeHtml(window.ArpaI18n.t('ui.historial.fecha'))}</span><strong>${escapeHtml(formatFechaLegible(r.fecha))}</strong></div>
+          ${showTotal ? `<div class="historial-row"><span>${escapeHtml(window.ArpaI18n.t('ui.historial.total'))}</span><strong>${escapeHtml(formatoPesos(r.total))}</strong></div>` : ''}
         </div>
-        <button type="button" class="historial-delete" data-id="${escapeHtml(r.id)}" aria-label="${escapeHtml(global.ArpaI18n.t('aria.historial.eliminar_registro'))}">${escapeHtml(global.ArpaI18n.t('ui.historial.eliminar'))}</button>
+        <button type="button" class="historial-delete" data-id="${escapeHtml(r.id)}" aria-label="${escapeHtml(window.ArpaI18n.t('aria.historial.eliminar_registro'))}">${escapeHtml(window.ArpaI18n.t('ui.historial.eliminar'))}</button>
         <button type="button" class="btn-ver-doc" onclick="ArpaHistorial.verDocumento('${escapeHtml(r.id)}')">
-          ${escapeHtml(global.ArpaI18n.t('ui.historial.ver_documento'))} 📄
+          ${escapeHtml(window.ArpaI18n.t('ui.historial.ver_documento'))} 📄
         </button>
       </article>`;
   }

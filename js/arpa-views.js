@@ -12,14 +12,18 @@
     const pdfFormato = document.getElementById('pdf-actions-formato');
     const pdfCot = document.getElementById('pdf-actions-cot');
 
-    const labels = {
-      formato: 'Formato de Servicio',
-      cotizacion: '💰 Cotización',
-      catalogo: '📦 Mi Catálogo',
-      'cuenta-cobro': '🧾 Cuenta de Cobro',
-      historial: '📋 Historial de Servicios'
-    };
-    if (docType) docType.textContent = labels[view] || labels.formato;
+    if (window.ArpaI18n?.refreshDocTypeLabel) {
+      window.ArpaI18n.refreshDocTypeLabel();
+    } else {
+      const labels = {
+        formato: 'Formato de Servicio',
+        cotizacion: '💰 Cotización',
+        catalogo: '📦 Mi Catálogo',
+        'cuenta-cobro': '🧾 Cuenta de Cobro',
+        historial: '📋 Historial de Servicios'
+      };
+      if (docType) docType.textContent = labels[view] || labels.formato;
+    }
     if (metaFormato) metaFormato.hidden = view !== 'formato';
     if (metaCot) metaCot.hidden = view !== 'cotizacion';
     if (metaCc) metaCc.hidden = view !== 'cuenta-cobro';

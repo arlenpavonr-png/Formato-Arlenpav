@@ -98,7 +98,7 @@
     if (global.ArpaBrand?.openSettings) {
       global.ArpaBrand.openSettings();
       global.ArpaBrand.showError?.(
-        global.ArpaI18n.t('alert.numeracion.pyme_codigo_y_guardar')
+        window.ArpaI18n.t('alert.numeracion.pyme_codigo_y_guardar')
       );
     } else {
       alert(window.ArpaI18n.t('alert.numeracion.configure_iniciales_pyme'));
