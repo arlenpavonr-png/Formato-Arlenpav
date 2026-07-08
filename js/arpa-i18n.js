@@ -308,7 +308,7 @@
     'cot.firma.elaborado_named': 'Prepared by – {name}',
     'cot.firma.aria_cliente': 'Client quote signature',
     'cot.firma.aria_elaborado': 'Prepared-by quote signature',
-    'cot.nota_legal': '<strong>Nota:</strong> Cotización válida por <strong>15 días calendario</strong>. Precios en pesos colombianos (COP).',
+    'cot.nota_legal': '<strong>Note:</strong> Quote valid for <strong>15 calendar days</strong>. Prices in {moneda_nombre} ({moneda_codigo}).',
 
     'cat.section.categorias': 'Categories',
     'cat.section.productos': 'Products',
@@ -544,7 +544,7 @@
     'cobros.vacio': 'No charge items. Use + to add one.',
     'cobros.descripcion': 'Description',
     'cobros.descripcion_placeholder': 'Item description',
-    'cobros.valor_cop': 'Value (COP)',
+    'cobros.valor_cop': 'Value ({moneda})',
     'cobros.quitar': 'Remove',
     'cobros.item_generico': 'Charge item',
     'pricing.default.instalacion': 'Installation',
@@ -562,7 +562,12 @@
     'currency.usd': '🇺🇸 USD — US dollar',
     'currency.mxn': '🇲🇽 MXN — Mexican peso',
     'currency.pen': '🇵🇪 PEN — Peruvian sol',
-    'currency.clp': '🇨🇱 CLP — Chilean peso'
+    'currency.clp': '🇨🇱 CLP — Chilean peso',
+    'currency.name.cop': 'Colombian pesos',
+    'currency.name.usd': 'US dollars',
+    'currency.name.mxn': 'Mexican pesos',
+    'currency.name.pen': 'Peruvian soles',
+    'currency.name.clp': 'Chilean pesos'
   };
 
   var DOC_TYPE_KEYS = {
@@ -628,7 +633,7 @@
       'formato.titulo.gas': 'Tipo de Trabajo de Gas',
       'formato.titulo.plagas': 'Tipo de Servicio',
       'formato.titulo.linea_blanca': 'Tipo de Electrodoméstico',
-      'cot.nota_legal': '<strong>Nota:</strong> Cotización válida por <strong>15 días calendario</strong>. Precios en pesos colombianos (COP).',
+      'cot.nota_legal': '<strong>Nota:</strong> Cotización válida por <strong>15 días calendario</strong>. Precios en {moneda_nombre} ({moneda_codigo}).',
       'alert.cotizacion.pdf_descargado_wa': 'Se descargó el PDF de la cotización. Adjúntelo en el chat de WhatsApp que se abrirá a continuación.',
       'alert.pdf.no_generado_manual': 'No se pudo generar el PDF. Adjúntelo manualmente desde su galería o archivos recientes.',
       'alert.pdf.jspdf_no_cargo': 'No se pudo cargar jsPDF. Recargue la aplicación e intente de nuevo.',
@@ -706,7 +711,7 @@
       'cobros.vacio': 'Sin ítems de cobro. Use + para agregar.',
       'cobros.descripcion': 'Descripción',
       'cobros.descripcion_placeholder': 'Descripción del ítem',
-      'cobros.valor_cop': 'Valor (COP)',
+      'cobros.valor_cop': 'Valor ({moneda})',
       'cobros.quitar': 'Quitar',
       'cobros.item_generico': 'Ítem de cobro',
       'pricing.default.instalacion': 'Instalación',
@@ -724,7 +729,12 @@
       'currency.usd': '🇺🇸 USD — Dólar estadounidense',
       'currency.mxn': '🇲🇽 MXN — Peso mexicano',
       'currency.pen': '🇵🇪 PEN — Sol peruano',
-      'currency.clp': '🇨🇱 CLP — Peso chileno'
+      'currency.clp': '🇨🇱 CLP — Peso chileno',
+      'currency.name.cop': 'pesos colombianos',
+      'currency.name.usd': 'dólares estadounidenses',
+      'currency.name.mxn': 'pesos mexicanos',
+      'currency.name.pen': 'soles peruanos',
+      'currency.name.clp': 'pesos chilenos'
     });
   }
 

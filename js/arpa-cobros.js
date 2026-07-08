@@ -31,7 +31,7 @@
           <input type="text" class="cobro-desc" value="${escapeAttr(line.desc)}" placeholder="${escapeAttr(window.ArpaI18n.t('cobros.descripcion_placeholder'))}">
         </div>
         <div class="field cobro-valor-field">
-          <label>${window.ArpaI18n.t('cobros.valor_cop')}</label>
+          <label>${window.ArpaI18n.t('cobros.valor_cop', { moneda: window.ArpaPricing?.getDefaultCurrency?.() || 'COP' })}</label>
           <input type="number" class="cobro-valor" min="0" step="1000" inputmode="numeric" value="${line.value || ''}" placeholder="0">
         </div>
         <button type="button" class="btn-quitar-extra cobro-remove" data-index="${index}" aria-label="${escapeAttr(window.ArpaI18n.t('cobros.quitar'))}">✕</button>
