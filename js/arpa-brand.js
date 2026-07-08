@@ -554,6 +554,7 @@
     document.title = document.title.includes('–') ? document.title : (configured ? `${appBrandName} – ${company}` : appBrandName);
     if (!configured) resetUnconfiguredFormFields();
     applyCuentaCobroFromSettings(s, { fillPago: 'if-empty' });
+    window.ArpaI18n?.refreshBrandTexts?.();
   }
 
   function applyCuentaCobroFromSettings(s, options) {
