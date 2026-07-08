@@ -19,7 +19,7 @@
     const store = getStore(storeId);
 
     if (!store.lines.length) {
-      container.innerHTML = '<p class="extra-items-empty">Sin ítems de cobro. Use + para agregar.</p>';
+      container.innerHTML = '<p class="extra-items-empty">' + window.ArpaI18n.t('cobros.vacio') + '</p>';
       notifyChange(storeId);
       return;
     }
@@ -27,14 +27,14 @@
     container.innerHTML = store.lines.map((line, index) => `
       <div class="cobro-row" data-index="${index}">
         <div class="field cobro-desc-field">
-          <label>Descripción</label>
-          <input type="text" class="cobro-desc" value="${escapeAttr(line.desc)}" placeholder="Descripción del ítem">
+          <label>${window.ArpaI18n.t('cobros.descripcion')}</label>
+          <input type="text" class="cobro-desc" value="${escapeAttr(line.desc)}" placeholder="${escapeAttr(window.ArpaI18n.t('cobros.descripcion_placeholder'))}">
         </div>
         <div class="field cobro-valor-field">
-          <label>Valor (COP)</label>
+          <label>${window.ArpaI18n.t('cobros.valor_cop')}</label>
           <input type="number" class="cobro-valor" min="0" step="1000" inputmode="numeric" value="${line.value || ''}" placeholder="0">
         </div>
-        <button type="button" class="btn-quitar-extra cobro-remove" data-index="${index}" aria-label="Quitar">✕</button>
+        <button type="button" class="btn-quitar-extra cobro-remove" data-index="${index}" aria-label="${escapeAttr(window.ArpaI18n.t('cobros.quitar'))}">✕</button>
       </div>
     `).join('');
 
@@ -91,7 +91,7 @@
       .filter((l) => l.desc.trim() || l.value > 0)
       .map((l, index) => ({
         cod: `COBRO-${index + 1}`,
-        nom: l.desc.trim() || 'Ítem de cobro',
+        nom: l.desc.trim() || window.ArpaI18n.t('cobros.item_generico'),
         pvp: Number(l.value) || 0,
         cant: 1,
         tipo: 'cobro'

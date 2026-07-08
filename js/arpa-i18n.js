@@ -536,7 +536,23 @@
     'ui.cotizacion.tabla_vacia': 'Add products or invoice items',
     'alert.firma.falta_firma_cliente': 'The customer signature is missing to generate the document.',
     'onboarding.demo.titulo': 'Accessmatic, BFT, Elite and NAS Catalog',
-    'onboarding.demo.pregunta': 'Do you want to preload {count} products?'
+    'onboarding.demo.pregunta': 'Do you want to preload {count} products?',
+
+    'brand.banco.configurar': 'Set up your bank details in Settings ⚙️',
+    'brand.banco.completar': 'Complete the bank name and account number in Settings ⚙️',
+    'brand.banco.linea': 'Payment details: {bank} · {tipo} Account · No. {numero}',
+    'cobros.vacio': 'No charge items. Use + to add one.',
+    'cobros.descripcion': 'Description',
+    'cobros.descripcion_placeholder': 'Item description',
+    'cobros.valor_cop': 'Value (COP)',
+    'cobros.quitar': 'Remove',
+    'cobros.item_generico': 'Charge item',
+    'pricing.default.instalacion': 'Installation',
+    'pricing.default.visita_tecnica': 'Technical Visit',
+    'pricing.default.mantenimiento': 'Preventive Maintenance',
+    'pricing.default.reparacion': 'Repair',
+    'pricing.default.mano_obra': 'Labor (hour)',
+    'brand.footer.global': 'Generated with ARPA Suite · Try it free at arpatechnologyglobal.com · © 2026'
   };
 
   var DOC_TYPE_KEYS = {
@@ -673,7 +689,22 @@
       'ui.cotizacion.tabla_vacia': 'Agregue productos o ítems de cobro',
       'alert.firma.falta_firma_cliente': 'Falta la firma del cliente para generar el documento.',
       'onboarding.demo.titulo': 'Catálogo BFT, Accessmatic, Elite y NAS',
-      'onboarding.demo.pregunta': '¿Deseas precargar {count} productos?'
+      'onboarding.demo.pregunta': '¿Deseas precargar {count} productos?',
+      'brand.banco.configurar': 'Configure datos bancarios en Ajustes ⚙️',
+      'brand.banco.completar': 'Complete banco y número de cuenta en Ajustes ⚙️',
+      'brand.banco.linea': 'Datos para consignación: {bank} · Cuenta {tipo} · N° {numero}',
+      'cobros.vacio': 'Sin ítems de cobro. Use + para agregar.',
+      'cobros.descripcion': 'Descripción',
+      'cobros.descripcion_placeholder': 'Descripción del ítem',
+      'cobros.valor_cop': 'Valor (COP)',
+      'cobros.quitar': 'Quitar',
+      'cobros.item_generico': 'Ítem de cobro',
+      'pricing.default.instalacion': 'Instalación',
+      'pricing.default.visita_tecnica': 'Visita Técnica',
+      'pricing.default.mantenimiento': 'Mantenimiento Preventivo',
+      'pricing.default.reparacion': 'Reparación',
+      'pricing.default.mano_obra': 'Mano de Obra (hora)',
+      'brand.footer.global': 'Generado con ARPA Suite · Pruébala gratis en arpatechnologyglobal.com · © 2026'
     });
   }
 

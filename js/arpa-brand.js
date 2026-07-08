@@ -11,11 +11,14 @@
   const LOGO_STORAGE_KEY = 'arpa_logo';
   const GLOBAL_BRAND_URL = 'https://arpatechnologyglobal.com';
   const GLOBAL_FOOTER_TEXT = 'Generado con ARPA Suite · Pruébala gratis en arpatechnologyglobal.com · © 2026';
+  function getGlobalFooterText() {
+    return window.ArpaI18n?.t?.('brand.footer.global') || GLOBAL_FOOTER_TEXT;
+  }
   const WL_FOOTER_TEXT = '';
   const COT_NOTA_LEGAL_HTML = '<strong>Nota:</strong> Cotización válida por <strong>15 días calendario</strong>. Precios en pesos colombianos (COP).';
 
   function getCotNotaLegalHtml() {
-    return COT_NOTA_LEGAL_HTML;
+    return window.ArpaI18n?.t?.('cot.nota_legal') || COT_NOTA_LEGAL_HTML;
   }
 
   function isInternalAppUrl(url) {
@@ -448,12 +451,14 @@
 
     if (!bankName && !accountNumber) {
       if (!hasUserSettings()) {
-        return '<em>Configure datos bancarios en Ajustes ⚙️</em>';
+        return '<em>' + window.ArpaI18n.t('brand.banco.configurar') + '</em>';
       }
-      return '<em>Complete banco y número de cuenta en Ajustes ⚙️</em>';
+      return '<em>' + window.ArpaI18n.t('brand.banco.completar') + '</em>';
     }
-
-    return `<strong>Datos para consignación:</strong> ${val(bankName, '—')} · Cuenta ${accountType} · N° ${val(accountNumber, '—')}`;
+    const accountTypeKey = accountType === 'Corriente' ? 'cc.cuenta.corriente' : 'cc.cuenta.ahorros';
+    const accountTypeLabel = window.ArpaI18n?.t?.(accountTypeKey) || accountType;
+    return window.ArpaI18n.t('brand.banco.linea', { bank: val(bankName, '—'), tipo: accountTypeLabel, numero: val(accountNumber, '—') })
+      .replace(/^(.*?):/, '<strong>$1:</strong>');
   }
 
   function syncBankBlocksForPrint() {
@@ -895,7 +900,7 @@
     if (seal) {
       printUiBackup.sealHtml = seal.innerHTML;
       const isWL = global.ArpaLicense?.isWhiteLabelLicense?.() ?? false;
-      seal.innerHTML = isWL ? '' : `<p class="suite-footer-global-text">${GLOBAL_FOOTER_TEXT}</p>`;
+      seal.innerHTML = isWL ? '' : `<p class="suite-footer-global-text">${getGlobalFooterText()}</p>`;
     }
     document.querySelectorAll('#suite-footer a[href]').forEach((a) => {
       const span = document.createElement('span');
@@ -925,7 +930,7 @@
       }
       const text = seal.textContent.replace(/\s+/g, ' ').trim();
       if (!text.includes('arpatechnologyglobal.com')) {
-        seal.innerHTML = `<p class="suite-footer-global-text">${GLOBAL_FOOTER_TEXT}</p>`;
+        seal.innerHTML = `<p class="suite-footer-global-text">${getGlobalFooterText()}</p>`;
       }
       seal.querySelectorAll('a[href*="github.io"], a[href*="Formato-Arlenpav"]').forEach((a) => a.remove());
     }).observe(seal, { childList: true, subtree: true, characterData: true });

@@ -5,12 +5,16 @@
   const PRICE_LIST_KEY = 'arpa_suite_price_list';
 
   const DEFAULT_PRICE_LIST = {
-    instalacion: { label: 'Instalación', value: 350000 },
-    visitaTecnica: { label: 'Visita Técnica', value: 85000 },
-    mantenimiento: { label: 'Mantenimiento Preventivo', value: 120000 },
-    reparacion: { label: 'Reparación', value: 150000 },
-    manoObra: { label: 'Mano de Obra (hora)', value: 65000 }
+    instalacion: { labelKey: 'pricing.default.instalacion', value: 350000 },
+    visitaTecnica: { labelKey: 'pricing.default.visita_tecnica', value: 85000 },
+    mantenimiento: { labelKey: 'pricing.default.mantenimiento', value: 120000 },
+    reparacion: { labelKey: 'pricing.default.reparacion', value: 150000 },
+    manoObra: { labelKey: 'pricing.default.mano_obra', value: 65000 }
   };
+  function getDefaultLabel(key) {
+    const item = DEFAULT_PRICE_LIST[key];
+    return (window.ArpaI18n?.t?.(item.labelKey)) || item.labelKey;
+  }
 
   function getPriceList() {
     try {
@@ -18,7 +22,7 @@
       const merged = {};
       Object.keys(DEFAULT_PRICE_LIST).forEach((key) => {
         merged[key] = {
-          label: saved[key]?.label || DEFAULT_PRICE_LIST[key].label,
+          label: saved[key]?.label || getDefaultLabel(key),
           value: Number(saved[key]?.value ?? DEFAULT_PRICE_LIST[key].value) || 0
         };
       });
@@ -38,7 +42,7 @@
       const key = input.dataset.priceKey;
       const labelInput = document.querySelector(`[data-price-label="${key}"]`);
       list[key] = {
-        label: labelInput?.value.trim() || DEFAULT_PRICE_LIST[key]?.label || key,
+        label: labelInput?.value.trim() || getDefaultLabel(key) || key,
         value: Number(String(input.value).replace(/\D/g, '')) || 0
       };
     });
