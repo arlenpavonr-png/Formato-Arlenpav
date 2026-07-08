@@ -18,7 +18,10 @@
   const COT_NOTA_LEGAL_HTML = '<strong>Nota:</strong> Cotización válida por <strong>15 días calendario</strong>. Precios en pesos colombianos (COP).';
 
   function getCotNotaLegalHtml() {
-    return window.ArpaI18n?.t?.('cot.nota_legal') || COT_NOTA_LEGAL_HTML;
+    const code = window.ArpaPricing?.getDefaultCurrency?.() || 'COP';
+    const nameKey = 'currency.name.' + code.toLowerCase();
+    const monedaNombre = window.ArpaI18n?.t?.(nameKey) || code;
+    return window.ArpaI18n?.t?.('cot.nota_legal', { moneda_nombre: monedaNombre, moneda_codigo: code }) || COT_NOTA_LEGAL_HTML;
   }
 
   function isInternalAppUrl(url) {
