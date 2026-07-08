@@ -836,6 +836,7 @@
     updateLangButtons(lang);
     refreshDocTypeLabel();
     refreshBrandTexts();
+    window.ArpaBrand?.applyToUI?.();
   }
 
   function setLang(lang) {
