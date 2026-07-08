@@ -475,7 +475,7 @@
     document.documentElement.classList.toggle('brand-unconfigured', !configured);
 
     const company = (s.companyName || '').trim();
-    const companyUpper = configured ? company.toUpperCase() : 'NOMBRE DE TU EMPRESA';
+    const companyUpper = configured ? company.toUpperCase() : (window.ArpaI18n?.t?.('brand.company_name.placeholder') || 'NOMBRE DE TU EMPRESA');
     const companyLogo = getLogo(s);
     const appLogo = getAppLogo(s);
     const appBrandName = getAppBrandName(s);
@@ -495,7 +495,7 @@
     });
     set('brand-company-contact', (el) => {
       if (!configured) {
-        el.innerHTML = 'Configure su empresa en <strong>⚙️ Ajustes</strong> para personalizar este documento.';
+        el.innerHTML = window.ArpaI18n?.t?.('brand.company_contact.placeholder') || 'Configure su empresa en <strong>⚙️ Ajustes</strong> para personalizar este documento.';
         return;
       }
       let html = `NIT: ${val(s.nit, '—')} &nbsp;|&nbsp; Tel: ${val(s.phone, '—')}<br>${val(s.address, '—')}`;
@@ -506,7 +506,7 @@
     set('brand-screen-footer', (el) => {
       if (el.dataset.editable !== 'true') return;
       if (!configured) {
-        el.innerHTML = 'Configure los datos de su empresa en ⚙️ Ajustes';
+        el.innerHTML = window.ArpaI18n?.t?.('brand.screen_footer.placeholder') || 'Configure los datos de su empresa en ⚙️ Ajustes';
         return;
       }
       el.innerHTML = `${company} &nbsp;|&nbsp; NIT ${val(s.nit, '—')} &nbsp;|&nbsp; Tel ${val(s.phone, '—')}`;

@@ -552,7 +552,10 @@
     'pricing.default.mantenimiento': 'Preventive Maintenance',
     'pricing.default.reparacion': 'Repair',
     'pricing.default.mano_obra': 'Labor (hour)',
-    'brand.footer.global': 'Generated with ARPA Suite · Try it free at arpatechnologyglobal.com · © 2026'
+    'brand.footer.global': 'Generated with ARPA Suite · Try it free at arpatechnologyglobal.com · © 2026',
+    'brand.company_name.placeholder': 'YOUR COMPANY NAME',
+    'brand.company_contact.placeholder': 'Set up your company in <strong>⚙️ Settings</strong> to personalize this document.',
+    'brand.screen_footer.placeholder': 'Set up your company details in ⚙️ Settings'
   };
 
   var DOC_TYPE_KEYS = {
@@ -704,7 +707,10 @@
       'pricing.default.mantenimiento': 'Mantenimiento Preventivo',
       'pricing.default.reparacion': 'Reparación',
       'pricing.default.mano_obra': 'Mano de Obra (hora)',
-      'brand.footer.global': 'Generado con ARPA Suite · Pruébala gratis en arpatechnologyglobal.com · © 2026'
+      'brand.footer.global': 'Generado con ARPA Suite · Pruébala gratis en arpatechnologyglobal.com · © 2026',
+      'brand.company_name.placeholder': 'NOMBRE DE TU EMPRESA',
+      'brand.company_contact.placeholder': 'Configure su empresa en <strong>⚙️ Ajustes</strong> para personalizar este documento.',
+      'brand.screen_footer.placeholder': 'Configure los datos de su empresa en ⚙️ Ajustes'
     });
   }
 
