@@ -182,7 +182,7 @@
       return true;
     } catch (e) {
       console.warn('[arpa-brand] setDedicatedLogo', e);
-      showError('No se pudo guardar el logo. Intente con una imagen más pequeña o en otro formato.');
+      showError(global.ArpaI18n.t('alert.brand.logo_no_guardado_quota'));
       return false;
     }
   }
@@ -258,8 +258,8 @@
       const isQuota = e && (e.name === 'QuotaExceededError' || e.code === 22);
       showError(
         hasLogoPayload && isQuota
-          ? 'No se pudo guardar el logo. Intente con una imagen más pequeña o en otro formato.'
-          : 'No se pudo guardar la configuración. Si subió un logo, pruebe con una imagen más pequeña.'
+          ? global.ArpaI18n.t('alert.brand.logo_no_guardado_quota')
+          : global.ArpaI18n.t('alert.brand.config_no_guardada')
       );
       return false;
     }
@@ -653,12 +653,12 @@
     const file = input.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      showError('Seleccione una imagen válida (PNG, JPG o WebP).');
+      showError(global.ArpaI18n.t('alert.brand.imagen_invalida'));
       input.value = '';
       return;
     }
     if (file.size > 15000000) {
-      showError('La imagen es demasiado grande. Máximo ~15 MB.');
+      showError(global.ArpaI18n.t('alert.brand.imagen_muy_grande'));
       input.value = '';
       return;
     }
@@ -668,12 +668,12 @@
       compressLogoDataUrl(e.target.result)
         .then(onLoad)
         .catch(() => {
-          showError('No se pudo procesar la imagen. Pruebe con otra foto.');
+          showError(global.ArpaI18n.t('alert.brand.imagen_no_procesada'));
           input.value = '';
         });
     };
     reader.onerror = () => {
-      showError('No se pudo leer la imagen.');
+      showError(global.ArpaI18n.t('alert.brand.imagen_no_leida'));
       input.value = '';
     };
     reader.readAsDataURL(file);
@@ -804,18 +804,18 @@
     const current = getSettings();
 
     if (!companyName || !nit || !address || !phone || !bankName || !accountType || !accountNumber) {
-      showError('Complete todos los campos obligatorios marcados con *.');
+      showError(global.ArpaI18n.t('alert.brand.campos_obligatorios'));
       return;
     }
 
     const techCodeRaw = document.getElementById('settings-technician-code')?.value.trim() || '';
     const techCode = global.ArpaNumeracion?.normalizeTechnicianCode?.(techCodeRaw) || '';
     if (global.ArpaLicense?.requiresTechnicianCode?.() && !techCode) {
-      showError('En plan PYME debe indicar las iniciales o código del técnico (ej. PJ).');
+      showError(global.ArpaI18n.t('alert.brand.pyme_codigo_requerido'));
       return;
     }
     if (techCodeRaw && !techCode) {
-      showError('Use 2 a 4 letras o números para el código del técnico.');
+      showError(global.ArpaI18n.t('alert.brand.codigo_tecnico_formato'));
       return;
     }
 

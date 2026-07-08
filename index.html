@@ -3871,7 +3871,7 @@ function restoreVideoQrAfterPrint(block) {
 // ── GUARDAR PDF ─────────────────────────────────────────────────────────────
 function validarFirmaClienteFormato() {
   if (window.ArpaSignature?.hasSignature?.('canvas-firma-cliente')) return true;
-  alert('Falta la firma del cliente para generar el documento.');
+  alert(window.ArpaI18n.t('alert.firma.falta_firma_cliente'));
   return false;
 }
 

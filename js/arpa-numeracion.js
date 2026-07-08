@@ -98,7 +98,7 @@
     if (global.ArpaBrand?.openSettings) {
       global.ArpaBrand.openSettings();
       global.ArpaBrand.showError?.(
-        'En plan PYME indique las iniciales o código del técnico (ej. PJ) y guarde la configuración.'
+        global.ArpaI18n.t('alert.numeracion.pyme_codigo_y_guardar')
       );
     } else {
       alert(window.ArpaI18n.t('alert.numeracion.configure_iniciales_pyme'));

@@ -333,7 +333,7 @@
     editingProductId = product?.id || null;
     const overlay = document.getElementById('catalogo-form-modal');
     const title = document.getElementById('catalogo-form-title');
-    if (title) title.textContent = editingProductId ? 'Editar producto' : 'Nuevo producto';
+    if (title) title.textContent = editingProductId ? global.ArpaI18n.t('ui.catalogo.editar_producto') : global.ArpaI18n.t('ui.catalogo.nuevo_producto');
 
     const set = (id, val) => {
       const el = document.getElementById(id);
@@ -381,19 +381,19 @@
     const data = readProductFormData();
     const oid = editingOficioId;
     if (!data.nom) {
-      showProductFormError('El nombre es obligatorio.');
+      showProductFormError(global.ArpaI18n.t('alert.catalogo.nombre_obligatorio'));
       return;
     }
     if (!data.cod) {
-      showProductFormError('La referencia es obligatoria.');
+      showProductFormError(global.ArpaI18n.t('alert.catalogo.referencia_obligatoria'));
       return;
     }
     if (data.pvp <= 0) {
-      showProductFormError('Ingrese un precio unitario válido.');
+      showProductFormError(global.ArpaI18n.t('alert.catalogo.precio_invalido'));
       return;
     }
     if (!data.categoriaId || !getCategoryById(data.categoriaId, oid)) {
-      showProductFormError('Seleccione una categoría válida.');
+      showProductFormError(global.ArpaI18n.t('alert.catalogo.categoria_invalida'));
       return;
     }
 
@@ -403,7 +403,7 @@
       p.id !== editingProductId
     );
     if (duplicate) {
-      showProductFormError('Ya existe un producto con esa referencia.');
+      showProductFormError(global.ArpaI18n.t('alert.catalogo.referencia_duplicada'));
       return;
     }
 
@@ -459,7 +459,7 @@
     const overlay = document.getElementById('catalogo-cat-modal');
     const title = document.getElementById('catalogo-cat-title');
     const input = document.getElementById('cat-cat-nombre');
-    if (title) title.textContent = editingCategoryId ? 'Editar categoría' : 'Nueva categoría';
+    if (title) title.textContent = editingCategoryId ? global.ArpaI18n.t('ui.catalogo.editar_categoria') : global.ArpaI18n.t('ui.catalogo.nueva_categoria');
     if (input) input.value = category?.name || '';
     showCategoryFormError('');
     overlay?.classList.add('open');
@@ -483,7 +483,7 @@
     const name = document.getElementById('cat-cat-nombre')?.value.trim() || '';
     const oid = editingOficioId;
     if (!name) {
-      showCategoryFormError('El nombre de la categoría es obligatorio.');
+      showCategoryFormError(global.ArpaI18n.t('alert.catalogo.categoria_nombre_obligatorio'));
       return;
     }
 
@@ -494,7 +494,7 @@
         c.id !== editingCategoryId
     );
     if (duplicate) {
-      showCategoryFormError('Ya existe una categoría con ese nombre.');
+      showCategoryFormError(global.ArpaI18n.t('alert.catalogo.categoria_duplicada'));
       return;
     }
 
@@ -538,8 +538,8 @@
         <div class="catalogo-card-foot">
           <strong class="catalogo-pvp">${formatoPesos(p.pvp)}</strong>
           <div class="catalogo-card-actions">
-            <button type="button" class="btn-catalogo-edit" data-id="${escapeHtml(p.id)}" aria-label="Editar">✏️</button>
-            <button type="button" class="btn-catalogo-del" data-id="${escapeHtml(p.id)}" aria-label="Eliminar">🗑️</button>
+            <button type="button" class="btn-catalogo-edit" data-id="${escapeHtml(p.id)}" aria-label="${escapeHtml(global.ArpaI18n.t('aria.catalogo.editar'))}">✏️</button>
+            <button type="button" class="btn-catalogo-del" data-id="${escapeHtml(p.id)}" aria-label="${escapeHtml(global.ArpaI18n.t('aria.catalogo.eliminar'))}">🗑️</button>
           </div>
         </div>
       </article>`;
@@ -570,7 +570,7 @@
         <div class="catalogo-cat-empty" data-i18n="cat.cat_empty">
           Primero crea tus categorías. Ejemplo: Motores, Repuestos, Servicios, Materiales…
         </div>
-        <button type="button" class="btn-catalogo-add-cat" data-oficio="${escapeHtml(oid)}">+ Crear primera categoría</button>`;
+        <button type="button" class="btn-catalogo-add-cat" data-oficio="${escapeHtml(oid)}">${escapeHtml(global.ArpaI18n.t('ui.catalogo.crear_primera_categoria'))}</button>`;
       panel.querySelector('.btn-catalogo-add-cat')?.addEventListener('click', () => openCategoryForm(null, oid));
       global.ArpaI18n?.apply?.(global.ArpaI18n?.getLang?.() || 'es');
       return;
@@ -585,12 +585,12 @@
             <div class="catalogo-cat-chip" data-id="${escapeHtml(c.id)}">
               <span class="catalogo-cat-chip-name">${escapeHtml(c.name)}</span>
               <span class="catalogo-cat-chip-count">${n}</span>
-              <button type="button" class="btn-cat-edit" data-id="${escapeHtml(c.id)}" aria-label="Editar categoría">✏️</button>
-              ${canDelete ? `<button type="button" class="btn-cat-del" data-id="${escapeHtml(c.id)}" aria-label="Eliminar categoría">✕</button>` : ''}
+              <button type="button" class="btn-cat-edit" data-id="${escapeHtml(c.id)}" aria-label="${escapeHtml(global.ArpaI18n.t('aria.catalogo.editar_categoria'))}">✏️</button>
+              ${canDelete ? `<button type="button" class="btn-cat-del" data-id="${escapeHtml(c.id)}" aria-label="${escapeHtml(global.ArpaI18n.t('aria.catalogo.eliminar_categoria'))}">✕</button>` : ''}
             </div>`;
         }).join('')}
       </div>
-      <button type="button" class="btn-catalogo-add-cat" data-oficio="${escapeHtml(oid)}">+ Nueva categoría</button>`;
+      <button type="button" class="btn-catalogo-add-cat" data-oficio="${escapeHtml(oid)}">${escapeHtml(global.ArpaI18n.t('ui.catalogo.nueva_categoria_btn'))}</button>`;
 
     panel.querySelector('.btn-catalogo-add-cat')?.addEventListener('click', () => openCategoryForm(null, oid));
     panel.querySelectorAll('.btn-cat-edit').forEach((btn) => {
@@ -641,7 +641,7 @@
     if (empty) empty.hidden = true;
 
     if (!products.length) {
-      list.innerHTML = '<div class="catalogo-no-results">Sin resultados para la búsqueda.</div>';
+      list.innerHTML = '<div class="catalogo-no-results">' + escapeHtml(global.ArpaI18n.t('ui.catalogo.sin_resultados_busqueda')) + '</div>';
       return;
     }
 

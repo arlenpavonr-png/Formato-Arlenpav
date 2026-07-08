@@ -113,7 +113,7 @@
       return palabras.every((palabra) => texto.includes(palabra));
     }).slice(0, 10);
     if (!encontrados.length) {
-      res.innerHTML = '<div class="resultado-item"><span class="resultado-nom" style="color:var(--muted)">Sin resultados</span></div>';
+      res.innerHTML = '<div class="resultado-item"><span class="resultado-nom" style="color:var(--muted)">' + global.ArpaI18n.t('ui.cotizacion.sin_resultados') + '</span></div>';
       res.style.display = 'block';
       return;
     }
@@ -167,7 +167,7 @@
     const lineas = filas.length + cobros.length;
 
     if (!lineas) {
-      tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Agregue productos o ítems de cobro</td></tr>';
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="6">' + global.ArpaI18n.t('ui.cotizacion.tabla_vacia') + '</td></tr>';
       recalcularCotizacion();
       return;
     }

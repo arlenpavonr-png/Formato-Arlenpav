@@ -46,8 +46,8 @@
     const count = getAutomatismosSeedCount();
     const title = document.getElementById('onboarding-demo-title');
     const text = document.getElementById('onboarding-demo-text');
-    if (title) title.textContent = 'Catálogo BFT, Accessmatic, Elite y NAS';
-    if (text) text.textContent = `¿Deseas precargar ${count} productos?`;
+    if (title) title.textContent = global.ArpaI18n.t('onboarding.demo.titulo');
+    if (text) text.textContent = global.ArpaI18n.t('onboarding.demo.pregunta', { count });
     closeStepModals();
     document.getElementById('onboarding-demo-modal')?.classList.add('open');
   }
