@@ -605,6 +605,13 @@
     return interpolate(text, vars);
   }
 
+  function translateIn(key, lang) {
+    var dict = lang === 'en' ? I18N_EN : I18N_ES;
+    var text = dict[key];
+    if (text == null) text = key;
+    return text;
+  }
+
   function storeDefaultKey(key, value) {
     if (key && value != null && I18N_ES[key] == null) {
       I18N_ES[key] = value;
@@ -837,6 +844,7 @@
     refreshDocTypeLabel();
     refreshBrandTexts();
     window.ArpaBrand?.applyToUI?.();
+    window.ArpaCobros?.refreshDefaultLabels?.('cot');
   }
 
   function setLang(lang) {
@@ -1167,6 +1175,7 @@
     setLang: setLang,
     apply: apply,
     t: t,
+    translateIn: translateIn,
     init: init,
     refreshDocTypeLabel: refreshDocTypeLabel,
     refreshBrandTexts: refreshBrandTexts,

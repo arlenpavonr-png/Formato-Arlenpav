@@ -112,6 +112,25 @@
     renderEditor(storeId);
   }
 
+  function refreshDefaultLabels(storeId) {
+    const store = getStore(storeId);
+    if (!store.seeded || !store.lines.length) return;
+    const defaults = global.ArpaPricing?.DEFAULT_PRICE_LIST;
+    const i18n = global.ArpaI18n;
+    if (!defaults || !i18n?.translateIn || !i18n?.getLang) return;
+    const currentLang = i18n.getLang();
+    Object.values(defaults).forEach((item) => {
+      const esLabel = i18n.translateIn(item.labelKey, 'es');
+      const enLabel = i18n.translateIn(item.labelKey, 'en');
+      const newLabel = currentLang === 'en' ? enLabel : esLabel;
+      const oldLabel = currentLang === 'en' ? esLabel : enLabel;
+      store.lines.forEach((line) => {
+        if (line.desc === oldLabel) line.desc = newLabel;
+      });
+    });
+    renderEditor(storeId);
+  }
+
   function notifyChange(storeId) {
     if (storeId === 'cot') global.ArpaCotizacion?.renderTablaCot?.(false);
   }
@@ -129,6 +148,7 @@
     getLines,
     getSubtotal,
     seedFromPriceList,
+    refreshDefaultLabels,
     renderEditor,
     syncFromEditor
   };
