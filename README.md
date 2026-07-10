@@ -33,4 +33,4 @@ Despliegue desde la rama `main`, carpeta raíz (`/`).
 | Qué | Dónde |
 |-----|--------|
 | Sitio https://arpatechnologyglobal.com/ | Repo `arpatechnologyglobal.com`, archivo **`index.html`** |
-| Precios, perfiles, WhatsApp 573017419558 | Editar **`index.html`** en ese repo, no aquí |
+| Precios, perfiles, WhatsApp 573016092542 | Editar **`index.html`** en ese repo, no aquí |
