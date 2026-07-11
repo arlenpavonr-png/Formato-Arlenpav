@@ -68,39 +68,44 @@
     const element = document.querySelector('.page');
     if (!element) return null;
 
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: '#ffffff'
-    });
+    global.ArpaTrialCapture?.beginPdfExport?.();
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
 
-    const imgData = canvas.toDataURL('image/jpeg', 0.92);
-    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const imgWidth = pageWidth;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
+      const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-    let heightLeft = imgHeight;
-    let position = 0;
+      let heightLeft = imgHeight;
+      let position = 0;
 
-    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
-
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
       pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      const blob = pdf.output('blob');
+      const numero = readFormatoField(document.getElementById('numero-formato'));
+      const cliente = readFormatoField(document.getElementById('formato-cliente-nombre'));
+      const filename = `Formato_${sanitizeFilenamePart(numero)}_${sanitizeFilenamePart(cliente)}.pdf`;
+
+      return new File([blob], filename, { type: 'application/pdf' });
+    } finally {
+      global.ArpaTrialCapture?.endPdfExport?.();
     }
-
-    const blob = pdf.output('blob');
-    const numero = readFormatoField(document.getElementById('numero-formato'));
-    const cliente = readFormatoField(document.getElementById('formato-cliente-nombre'));
-    const filename = `Formato_${sanitizeFilenamePart(numero)}_${sanitizeFilenamePart(cliente)}.pdf`;
-
-    return new File([blob], filename, { type: 'application/pdf' });
   }
 
   async function compartirFormatoWhatsApp() {

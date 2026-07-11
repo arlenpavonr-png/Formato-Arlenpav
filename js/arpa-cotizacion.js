@@ -347,6 +347,7 @@
   }
 
   function beginCotPdfExport() {
+    global.ArpaTrialCapture?.beginPdfExport?.();
     const viewRoot = document.getElementById('view-cotizacion');
     const viewWasHidden = viewRoot?.hasAttribute('hidden') ?? false;
     if (viewRoot) viewRoot.removeAttribute('hidden');
@@ -442,6 +443,7 @@
     if (cobrosActions) cobrosActions.style.removeProperty('display');
     renderTablaCot();
     if (options?.trialCapture) global.ArpaTrialCapture?.onDocumentSaved?.('cotizacion');
+    global.ArpaTrialCapture?.endPdfExport?.();
   }
 
   function sanitizeCotFilenamePart(text) {
@@ -512,7 +514,18 @@
 
     window.print();
 
-    setTimeout(() => endCotPdfExport(ctx, { trialCapture: true }), 1000);
+    scheduleAfterPrint(() => endCotPdfExport(ctx, { trialCapture: true }));
+  }
+
+  function scheduleAfterPrint(fn) {
+    let done = false;
+    const run = () => {
+      if (done) return;
+      done = true;
+      fn();
+    };
+    window.addEventListener('afterprint', run, { once: true });
+    setTimeout(run, 5000);
   }
 
   async function guardarCotPDFYWhatsApp() {

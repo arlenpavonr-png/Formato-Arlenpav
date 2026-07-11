@@ -1975,6 +1975,9 @@
     .photo-box input[type=file] { display: none; }
     button { display: none !important; }
     .settings-overlay, .main-menu { display: none !important; }
+    #trial-capture-gate,
+    .trial-capture-gate,
+    .trial-capture-gate--modal { display: none !important; visibility: hidden !important; }
     .suite-footer {
       display: block !important;
       position: fixed;
@@ -2080,6 +2083,8 @@
   html.trial-capture-active .page,
   html.trial-capture-active .main-menu,
   html.trial-capture-active .settings-overlay { visibility: hidden; }
+  body.is-printing #trial-capture-gate,
+  body.is-printing-formato #trial-capture-gate { display: none !important; visibility: hidden !important; }
   .trial-capture-gate--modal {
     display: flex !important;
     z-index: 10002;
@@ -2339,6 +2344,9 @@
   }
   @media print {
     .license-gate { display: none !important; }
+    #trial-capture-gate,
+    .trial-capture-gate,
+    .trial-capture-gate--modal { display: none !important; visibility: hidden !important; }
   }
 
   /* ── ONBOARDING ── */
@@ -3889,6 +3897,7 @@ function validarFirmaClienteFormato() {
 function guardarPDF() {
   if (!validarFirmaClienteFormato()) return;
 
+  window.ArpaTrialCapture?.beginPdfExport?.();
   window.ArpaWhatsApp?.hideFormatoShareButton?.();
   window.ArpaHistorial?.captureFromFormato?.();
 
@@ -3973,7 +3982,19 @@ function guardarPDF() {
     scheduleFormatoDraftSave();
     window.ArpaWhatsApp?.showFormatoShareAfterPdf?.();
     window.ArpaTrialCapture?.onDocumentSaved?.('formato');
+    window.ArpaTrialCapture?.endPdfExport?.();
   };
+
+  function scheduleAfterPrintFormato(fn) {
+    let done = false;
+    const run = () => {
+      if (done) return;
+      done = true;
+      fn();
+    };
+    window.addEventListener('afterprint', run, { once: true });
+    setTimeout(run, 5000);
+  }
 
   const printReady = window.ArpaSignature?.prepareForPrint?.([
     'canvas-firma-cliente',
@@ -3983,7 +4004,7 @@ function guardarPDF() {
     requestAnimationFrame(() => {
       forzarSaltoSiSeCorta();
       window.print();
-      setTimeout(finishPrintRestore, 1000);
+      scheduleAfterPrintFormato(finishPrintRestore);
     });
   });
 }

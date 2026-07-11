@@ -296,6 +296,10 @@
     }
 
     applyCaptureCopy(options);
+    if (pdfExportDepth > 0) {
+      if (typeof onComplete === 'function') onComplete();
+      return;
+    }
     gate.removeAttribute('hidden');
     gate.classList.toggle('trial-capture-gate--modal', mode === 'modal');
     setCaptureActive(mode === 'fullscreen');
@@ -368,13 +372,24 @@
     nameInput?.focus();
   }
 
-  function onDocumentSaved(docType) {
-    try {
-      localStorage.setItem(TRIAL_DOC_SAVED_KEY, 'true');
-    } catch (e) { /* ignore */ }
+  let pdfExportDepth = 0;
+  let pendingCaptureDocType = null;
 
-    if (!shouldOfferTrialCapture()) return;
+  function beginPdfExport() {
+    pdfExportDepth += 1;
+    hideCapture();
+  }
 
+  function endPdfExport() {
+    pdfExportDepth = Math.max(0, pdfExportDepth - 1);
+    if (pdfExportDepth > 0) return;
+    if (!pendingCaptureDocType) return;
+    const docType = pendingCaptureDocType;
+    pendingCaptureDocType = null;
+    showCaptureAfterSave(docType);
+  }
+
+  function showCaptureAfterSave(docType) {
     const docLabel = docType === 'cotizacion'
       ? t('trial_capture.doc_cotizacion', 'Cotización')
       : t('trial_capture.doc_formato', 'Formato de Servicio');
@@ -392,6 +407,21 @@
       ),
       btnText: t('trial_capture.btn_submit_modal', 'Enviar datos')
     });
+  }
+
+  function onDocumentSaved(docType) {
+    try {
+      localStorage.setItem(TRIAL_DOC_SAVED_KEY, 'true');
+    } catch (e) { /* ignore */ }
+
+    if (!shouldOfferTrialCapture()) return;
+
+    if (pdfExportDepth > 0) {
+      pendingCaptureDocType = docType;
+      return;
+    }
+
+    showCaptureAfterSave(docType);
   }
 
   function maybeShowBackupCaptureOnLoad(onContinue) {
@@ -422,6 +452,8 @@
     TRIAL_CAPTURED_KEY,
     ensureTrialStartSilent,
     isCaptureCompleted,
+    beginPdfExport,
+    endPdfExport,
     onDocumentSaved,
     maybeShowBackupCaptureOnLoad,
     showCapture,
