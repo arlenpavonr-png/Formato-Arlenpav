@@ -92,6 +92,25 @@
     return { sequence: next, value: format(next) };
   }
 
+  async function nextNumberAsync(docType, fieldValue) {
+    const storageKey = KEYS[docType] || KEYS.formato;
+    const localBase = getMaxCounter(storageKey, fieldValue);
+    const format = FORMATTERS[docType] || formatFormNumber;
+    let numero = localBase + 1;
+    let sincronizado = false;
+    try {
+      const cloudNumero = await global.ArpaCloudSync?.obtenerSiguienteNumeroCloud?.(docType, localBase);
+      if (cloudNumero && cloudNumero > 0) {
+        numero = cloudNumero;
+        sincronizado = true;
+      }
+    } catch (e) {
+      // sin conexión u otro error — se usa el número local calculado arriba
+    }
+    setCounter(storageKey, numero);
+    return { sequence: numero, value: format(numero), sincronizado };
+  }
+
   function blockIfPymeMissingCode() {
     if (!global.ArpaLicense?.isPymePlan?.()) return true;
     if (getTechnicianCode()) return true;
@@ -119,6 +138,7 @@
     formatCotNumber,
     formatCcNumber,
     nextNumber,
+    nextNumberAsync,
     blockIfPymeMissingCode
   };
 })(typeof window !== 'undefined' ? window : globalThis);

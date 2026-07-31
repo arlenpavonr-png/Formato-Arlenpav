@@ -253,10 +253,11 @@
     return N.getMaxCounter(N.KEYS.cot, document.getElementById('numero-cot')?.value);
   }
 
-  function nuevoCotNumero() {
+  async function nuevoCotNumero() {
     if (!global.ArpaNumeracion?.blockIfPymeMissingCode?.()) return;
     const numField = document.getElementById('numero-cot');
-    const { value } = global.ArpaNumeracion.nextNumber('cot', numField?.value);
+    const { value, sincronizado } = await global.ArpaNumeracion.nextNumberAsync('cot', numField?.value);
+    if (!sincronizado) console.warn('[ARPA] Número de cotización generado offline, no sincronizado con la nube todavía.');
     if (numField) numField.value = value;
     const hoy = new Date();
     const fecha = document.getElementById('cot-fecha');
@@ -272,9 +273,9 @@
     document.title = `${value}${nc}-${hoy.toISOString().slice(0, 10)}`;
   }
 
-  function ensureCotNumero() {
+  async function ensureCotNumero() {
     const numField = document.getElementById('numero-cot');
-    if (numField && !numField.value.trim()) nuevoCotNumero();
+    if (numField && !numField.value.trim()) await nuevoCotNumero();
   }
 
   function lockCotRowsForPrint(viewRoot) {

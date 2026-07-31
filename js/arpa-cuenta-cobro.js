@@ -167,16 +167,17 @@
     return N.getMaxCounter(CC_NUM_KEY, document.getElementById('cc-numero')?.value);
   }
 
-  function nuevoCcNumero() {
+  async function nuevoCcNumero() {
     if (!global.ArpaNumeracion?.blockIfPymeMissingCode?.()) return;
-    const { value } = global.ArpaNumeracion.nextNumber('cc', document.getElementById('cc-numero')?.value);
+    const { value, sincronizado } = await global.ArpaNumeracion.nextNumberAsync('cc', document.getElementById('cc-numero')?.value);
+    if (!sincronizado) console.warn('[ARPA] Número de cuenta de cobro generado offline, no sincronizado con la nube todavía.');
     const el = document.getElementById('cc-numero');
     if (el) el.value = value;
   }
 
-  function ensureCcNumero() {
+  async function ensureCcNumero() {
     const el = document.getElementById('cc-numero');
-    if (el && !el.value.trim()) nuevoCcNumero();
+    if (el && !el.value.trim()) await nuevoCcNumero();
   }
 
   function renderCobrador() {

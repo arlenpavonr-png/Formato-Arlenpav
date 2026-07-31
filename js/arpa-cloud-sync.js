@@ -286,6 +286,17 @@
     return Promise.all(tasks).then(([catalog, historial]) => ({ catalog, historial }));
   }
 
+  function obtenerSiguienteNumeroCloud(tipo, clienteUltimo) {
+    const licencia = getLicenseCode();
+    if (!licencia) return Promise.resolve(null);
+    return postJson({ accion: 'siguientenumero', licencia, tipo, clienteUltimo })
+      .then((res) => (res && res.ok ? res.numero : null))
+      .catch((err) => {
+        console.warn('[arpa-cloud-sync] siguientenumero', err);
+        return null;
+      });
+  }
+
   global.ArpaCloudSync = {
     LICENSE_API,
     postJson,
@@ -295,6 +306,7 @@
     deleteHistorialEntry,
     restoreCloudDataIfNeeded,
     needsCatalogRestore,
-    needsHistorialRestore
+    needsHistorialRestore,
+    obtenerSiguienteNumeroCloud
   };
 })(window);

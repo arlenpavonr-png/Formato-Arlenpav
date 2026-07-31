@@ -51,6 +51,9 @@
  *   { accion: 'deletehistorialentry', licencia, entradaId }
  *   { accion: 'gethistorial', licencia }
  *   { accion: 'registerTrialUser', nombre, oficio, telefono, fechaInicio, trialId }
+ *   { accion: 'siguientenumero', licencia, tipo: 'formato'|'cot'|'cc', clienteUltimo }
+ *
+ * Pestaña Numeracion: Licencia | Tipo | UltimoNumero
  *
  */
 
@@ -1306,6 +1309,12 @@ function handleSyncPost_(e) {
 
   }
 
+  if (accion === 'siguientenumero') {
+
+    return respondJson_(siguienteNumero_(licencia, body.tipo, body.clienteUltimo));
+
+  }
+
 
 
   return null;
@@ -1369,6 +1378,130 @@ function getHistorialSheet_() {
   }
 
   return sheet;
+
+}
+
+
+
+const NUMERACION_SHEET_NAME_ = 'Numeracion';
+
+const NUMERACION_HEADERS_ = ['Licencia', 'Tipo', 'UltimoNumero'];
+
+
+
+function getNumeracionSheet_() {
+
+  const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
+
+  let sheet = ss.getSheetByName(NUMERACION_SHEET_NAME_);
+
+  if (!sheet) {
+
+    sheet = ss.insertSheet(NUMERACION_SHEET_NAME_);
+
+    sheet.getRange(1, 1, 1, NUMERACION_HEADERS_.length).setValues([NUMERACION_HEADERS_]);
+
+    return sheet;
+
+  }
+
+  const firstCell = String(sheet.getRange(1, 1).getValue() || '').trim();
+
+  if (!firstCell) {
+
+    sheet.getRange(1, 1, 1, NUMERACION_HEADERS_.length).setValues([NUMERACION_HEADERS_]);
+
+  }
+
+  return sheet;
+
+}
+
+
+
+/**
+
+ * Reserva y devuelve el siguiente número consecutivo para (licencia, tipo).
+
+ * clienteUltimo: el número más alto que el dispositivo cliente tiene guardado
+
+ * localmente — se usa para no retroceder por debajo de números ya emitidos
+
+ * antes de que ese dispositivo empezara a usar la numeración centralizada.
+
+ * Usa LockService para evitar que dos dispositivos reciban el mismo número
+
+ * si generan documentos al mismo tiempo.
+
+ */
+
+function siguienteNumero_(licencia, tipo, clienteUltimo) {
+
+  const lic = String(licencia || '').trim().toUpperCase();
+
+  const tp = String(tipo || '').trim().toLowerCase();
+
+  if (!lic) return { ok: false, mensaje: 'Licencia requerida.' };
+
+  if (['formato', 'cot', 'cc'].indexOf(tp) < 0) {
+
+    return { ok: false, mensaje: 'Tipo de documento inválido.' };
+
+  }
+
+  const clienteN = Math.max(0, parseInt(clienteUltimo, 10) || 0);
+
+  const lock = LockService.getScriptLock();
+
+  lock.waitLock(10000);
+
+  try {
+
+    const sheet = getNumeracionSheet_();
+
+    const values = sheet.getDataRange().getValues();
+
+    let targetRow = -1;
+
+    let actual = 0;
+
+    for (let i = 1; i < values.length; i++) {
+
+      if (String(values[i][0] || '').trim().toUpperCase() === lic &&
+
+          String(values[i][1] || '').trim().toLowerCase() === tp) {
+
+        targetRow = i + 1;
+
+        actual = parseInt(values[i][2], 10) || 0;
+
+        break;
+
+      }
+
+    }
+
+    const base = Math.max(actual, clienteN);
+
+    const siguiente = base + 1;
+
+    if (targetRow > 0) {
+
+      sheet.getRange(targetRow, 3).setValue(siguiente);
+
+    } else {
+
+      sheet.appendRow([lic, tp, siguiente]);
+
+    }
+
+    return { ok: true, numero: siguiente };
+
+  } finally {
+
+    lock.releaseLock();
+
+  }
 
 }
 

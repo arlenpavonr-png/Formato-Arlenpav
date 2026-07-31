@@ -4043,10 +4043,11 @@ function guardarNumero(n) {
 function formatearNumero(n) {
   return window.ArpaNumeracion?.formatFormNumber?.(n) ?? String(n).padStart(4, '0');
 }
-function nuevoNumero() {
+async function nuevoNumero() {
   if (!window.ArpaNumeracion?.blockIfPymeMissingCode?.()) return;
   const field = document.getElementById('numero-formato');
-  const { value } = window.ArpaNumeracion.nextNumber('formato', field?.value);
+  const { value, sincronizado } = await window.ArpaNumeracion.nextNumberAsync('formato', field?.value);
+  if (!sincronizado) console.warn('[ARPA] Número de formato generado offline, no sincronizado con la nube todavía.');
   if (field) field.value = value;
   clearFormatoDocumentFields({ preserveNumero: true });
   try { localStorage.removeItem(window.ArpaBrand.FORMATO_DRAFT_KEY); } catch (e) {}
