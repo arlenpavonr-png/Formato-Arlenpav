@@ -584,10 +584,18 @@
     doc.text(formatoPesos(d.total), pw - m, y, { align: 'right' });
     y += 10;
 
-    if (y > ph - 55) { doc.addPage(); y = m; }
+    const consigLines = [
+      d.pago.bankName && `Banco: ${d.pago.bankName}`,
+      d.pago.accountType && `Tipo: ${d.pago.accountType}`,
+      d.pago.accountNumber && `Cuenta N°: ${d.pago.accountNumber}`,
+      d.pago.accountHolder && `Titular: ${d.pago.accountHolder}`,
+      d.pago.accountHolderDocument && `NIT/C.C.: ${d.pago.accountHolderDocument}`
+    ].filter(Boolean);
+    const consigBoxH = 10 + consigLines.length * 4.5 + 4;
+    if (y > ph - (consigBoxH + 15)) { doc.addPage(); y = m; }
     doc.setFillColor(220, 252, 231);
     doc.setDrawColor(22, 163, 74);
-    doc.roundedRect(m, y, pw - m * 2, 28, 2, 2, 'FD');
+    doc.roundedRect(m, y, pw - m * 2, consigBoxH, 2, 2, 'FD');
     doc.setTextColor(21, 128, 61);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
@@ -595,20 +603,16 @@
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);
     let py = y + 12;
-    [
-      d.pago.bankName && `Banco: ${d.pago.bankName}`,
-      d.pago.accountType && `Tipo: ${d.pago.accountType}`,
-      d.pago.accountNumber && `Cuenta N°: ${d.pago.accountNumber}`,
-      d.pago.accountHolder && `Titular: ${d.pago.accountHolder}`,
-      d.pago.accountHolderDocument && `NIT/C.C.: ${d.pago.accountHolderDocument}`
-    ].filter(Boolean).forEach((line) => {
+    consigLines.forEach((line) => {
       doc.text(line, m + 4, py);
       py += 4.5;
     });
-    y += 32;
+    y += consigBoxH + 6;
 
     if (d.observaciones) {
-      if (y > ph - 40) { doc.addPage(); y = m; }
+      const obsLines = doc.splitTextToSize(d.observaciones, pw - m * 2);
+      const obsHeight = obsLines.length * 4 + 13;
+      if (y + obsHeight > ph - m) { doc.addPage(); y = m; }
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9);
       doc.setTextColor(...NAVY);
@@ -617,7 +621,6 @@
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8.5);
       doc.setTextColor(30, 41, 59);
-      const obsLines = doc.splitTextToSize(d.observaciones, pw - m * 2);
       doc.text(obsLines, m, y);
       y += obsLines.length * 4 + 8;
     }
