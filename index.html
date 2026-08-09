@@ -3861,20 +3861,15 @@ function prepareVideoQrForPrint() {
   }
 
   let qrReady = Promise.resolve();
-  if (typeof QRCode === 'undefined' || !QRCode.toCanvas) {
-    if (urlText) urlText.textContent = 'DIAG: libreria QRCode no cargo (typeof QRCode = ' + typeof QRCode + ')';
-  } else {
+  if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
     qrReady = QRCode.toCanvas(canvas, url, {
       width: 140,
       margin: 1,
       color: { dark: '#1a2a4a', light: '#ffffff' }
-    }).then(() => {
-      if (urlText) urlText.textContent = 'DIAG OK: ' + url;
-    }).catch((err) => {
-      if (urlText) urlText.textContent = 'DIAG ERROR: ' + (err && err.message ? err.message : String(err));
-    });
+    }).catch(() => {});
   }
 
+  if (urlText) urlText.textContent = url;
   block.hidden = false;
   block.setAttribute('aria-hidden', 'false');
   block.classList.add('formato-video-qr-visible');
@@ -4665,7 +4660,7 @@ if ('serviceWorker' in navigator) {
 })();
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" crossorigin="anonymous"></script>
+<script src="./js/qrcode.min.js"></script>
 <script src="./js/arpa-i18n.js"></script>
 <script src="./js/html2canvas.min.js"></script>
 <script src="./js/jspdf.umd.min.js"></script>

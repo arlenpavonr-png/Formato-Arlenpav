@@ -1,4 +1,4 @@
-const CACHE_NAME = 'arpa-suite-cache-v117';
+const CACHE_NAME = 'arpa-suite-cache-v118';
 const BASE = self.location.pathname.replace(/service-worker\.js$/, '');
 const ASSETS = [
   BASE,
@@ -33,8 +33,7 @@ const ASSETS = [
   BASE + 'icon-maskable-192.png',
   BASE + 'icon-maskable-512.png',
   BASE + 'apple-touch-icon.png',
-  'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap',
-  'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js'
+  'https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap'
 ];
 
 function isNetworkFirst(url) {
