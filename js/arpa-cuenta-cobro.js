@@ -171,6 +171,19 @@
     if (!global.ArpaNumeracion?.blockIfPymeMissingCode?.()) return;
     const { value, sincronizado } = await global.ArpaNumeracion.nextNumberAsync('cc', document.getElementById('cc-numero')?.value);
     if (!sincronizado) console.warn('[ARPA] Número de cuenta de cobro generado offline, no sincronizado con la nube todavía.');
+    const badge = document.getElementById('sync-status-cc');
+    if (badge) {
+      badge.style.display = 'inline-block';
+      if (sincronizado) {
+        badge.textContent = '☁️ Sincronizado';
+        badge.style.background = 'rgba(76,175,128,0.15)';
+        badge.style.color = '#2e7d4f';
+      } else {
+        badge.textContent = '⚠️ Local (sin conexión)';
+        badge.style.background = 'rgba(224,82,82,0.15)';
+        badge.style.color = '#c0392b';
+      }
+    }
     const el = document.getElementById('cc-numero');
     if (el) el.value = value;
   }

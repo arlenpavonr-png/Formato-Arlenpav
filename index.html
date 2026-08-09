@@ -2724,6 +2724,7 @@ document.documentElement.classList.add('license-checking');
         </div>
         <div style="margin-top:5px;">
           <button onclick="nuevoNumero()" style="background:var(--gold);color:white;border:none;border-radius:5px;padding:4px 9px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.5px;" data-i18n="header.btn_new_number">+ NUEVO N°</button>
+          <span id="sync-status-formato" style="display:none;font-size:9px;font-weight:700;margin-left:6px;padding:2px 6px;border-radius:4px;"></span>
         </div>
       </div>
       <div id="header-meta-cot" hidden>
@@ -2733,6 +2734,7 @@ document.documentElement.classList.add('license-checking');
         </div>
         <div style="margin-top:5px;">
           <button type="button" onclick="nuevoCotNumero()" style="background:var(--gold);color:white;border:none;border-radius:5px;padding:4px 9px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.5px;" data-i18n="header.btn_new_number">+ NUEVO N°</button>
+          <span id="sync-status-cot" style="display:none;font-size:9px;font-weight:700;margin-left:6px;padding:2px 6px;border-radius:4px;"></span>
         </div>
       </div>
       <div id="header-meta-cc" hidden>
@@ -2742,6 +2744,7 @@ document.documentElement.classList.add('license-checking');
         </div>
         <div style="margin-top:5px;">
           <button type="button" onclick="nuevoCcNumero()" style="background:var(--gold);color:white;border:none;border-radius:5px;padding:4px 9px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.5px;" data-i18n="header.btn_new_number">+ NUEVO N°</button>
+          <span id="sync-status-cc" style="display:none;font-size:9px;font-weight:700;margin-left:6px;padding:2px 6px;border-radius:4px;"></span>
         </div>
       </div>
     </div>
@@ -4049,6 +4052,19 @@ async function nuevoNumero() {
   const field = document.getElementById('numero-formato');
   const { value, sincronizado } = await window.ArpaNumeracion.nextNumberAsync('formato', field?.value);
   if (!sincronizado) console.warn('[ARPA] Número de formato generado offline, no sincronizado con la nube todavía.');
+  const badge = document.getElementById('sync-status-formato');
+  if (badge) {
+    badge.style.display = 'inline-block';
+    if (sincronizado) {
+      badge.textContent = '☁️ Sincronizado';
+      badge.style.background = 'rgba(76,175,128,0.15)';
+      badge.style.color = '#2e7d4f';
+    } else {
+      badge.textContent = '⚠️ Local (sin conexión)';
+      badge.style.background = 'rgba(224,82,82,0.15)';
+      badge.style.color = '#c0392b';
+    }
+  }
   if (field) field.value = value;
   clearFormatoDocumentFields({ preserveNumero: true });
   try { localStorage.removeItem(window.ArpaBrand.FORMATO_DRAFT_KEY); } catch (e) {}
