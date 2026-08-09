@@ -174,8 +174,10 @@
     const badge = document.getElementById('sync-status-cc');
     if (badge) {
       badge.style.display = 'inline-block';
+      const licActiva = (localStorage.getItem('arpa_suite_license_code') || '(vacio)').trim();
+      badge.title = 'Licencia activa: ' + licActiva;
       if (sincronizado) {
-        badge.textContent = '☁️ Sincronizado';
+        badge.textContent = '☁️ ' + licActiva.slice(-6);
         badge.style.background = 'rgba(76,175,128,0.15)';
         badge.style.color = '#2e7d4f';
       } else {
