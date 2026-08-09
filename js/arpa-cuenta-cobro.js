@@ -181,7 +181,7 @@
         badge.style.background = 'rgba(76,175,128,0.15)';
         badge.style.color = '#2e7d4f';
       } else {
-        badge.textContent = '⚠️ Local (sin conexión)';
+        badge.textContent = '⚠️ ' + licActiva.slice(-6) + ' (local)';
         badge.style.background = 'rgba(224,82,82,0.15)';
         badge.style.color = '#c0392b';
       }
