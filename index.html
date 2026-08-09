@@ -3913,6 +3913,9 @@ function guardarPDF() {
   window.ArpaFormatoTipo?.prepareFormatoTipoForPrint?.(formatoPrintSnapshot);
   window.ArpaFormatoTipo?.applyPrintSnapshot?.(formatoPrintSnapshot);
 
+  const qrBlock = prepareVideoQrForPrint();
+  if (qrBlock) document.body.classList.add('formato-has-video-qr');
+
   const viewRoot = document.getElementById('view-formato');
   const elementos = viewRoot.querySelectorAll('input:not([type=file]):not([type=radio]):not([type=checkbox]), select, textarea');
   const respaldos = [];
@@ -3954,9 +3957,6 @@ function guardarPDF() {
   if (btnPDF) btnPDF.parentElement.style.display = 'none';
   const settingsModal = document.getElementById('settings-modal');
   if (settingsModal) settingsModal.classList.remove('open');
-
-  const qrBlock = prepareVideoQrForPrint();
-  if (qrBlock) document.body.classList.add('formato-has-video-qr');
 
   const finishPrintRestore = () => {
     document.body.classList.remove('is-printing', 'is-printing-formato', 'formato-has-video-qr');
