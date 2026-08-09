@@ -3861,15 +3861,20 @@ function prepareVideoQrForPrint() {
   }
 
   let qrReady = Promise.resolve();
-  if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
+  if (typeof QRCode === 'undefined' || !QRCode.toCanvas) {
+    if (urlText) urlText.textContent = 'DIAG: libreria QRCode no cargo (typeof QRCode = ' + typeof QRCode + ')';
+  } else {
     qrReady = QRCode.toCanvas(canvas, url, {
       width: 140,
       margin: 1,
       color: { dark: '#1a2a4a', light: '#ffffff' }
-    }).catch(() => {});
+    }).then(() => {
+      if (urlText) urlText.textContent = 'DIAG OK: ' + url;
+    }).catch((err) => {
+      if (urlText) urlText.textContent = 'DIAG ERROR: ' + (err && err.message ? err.message : String(err));
+    });
   }
 
-  if (urlText) urlText.textContent = url;
   block.hidden = false;
   block.setAttribute('aria-hidden', 'false');
   block.classList.add('formato-video-qr-visible');
