@@ -3857,22 +3857,23 @@ function prepareVideoQrForPrint() {
   const urlText = document.getElementById('formato-video-qr-url-text');
 
   if (!isValidVideoEntregaUrl(url) || !block || !canvas) {
-    return null;
+    return { block: null, qrReady: Promise.resolve() };
   }
 
+  let qrReady = Promise.resolve();
   if (typeof QRCode !== 'undefined' && QRCode.toCanvas) {
-    QRCode.toCanvas(canvas, url, {
+    qrReady = QRCode.toCanvas(canvas, url, {
       width: 140,
       margin: 1,
       color: { dark: '#1a2a4a', light: '#ffffff' }
-    }, function () {});
+    }).catch(() => {});
   }
 
   if (urlText) urlText.textContent = url;
   block.hidden = false;
   block.setAttribute('aria-hidden', 'false');
   block.classList.add('formato-video-qr-visible');
-  return block;
+  return { block, qrReady };
 }
 
 function restoreVideoQrAfterPrint(block) {
@@ -3913,7 +3914,7 @@ function guardarPDF() {
   window.ArpaFormatoTipo?.prepareFormatoTipoForPrint?.(formatoPrintSnapshot);
   window.ArpaFormatoTipo?.applyPrintSnapshot?.(formatoPrintSnapshot);
 
-  const qrBlock = prepareVideoQrForPrint();
+  const { block: qrBlock, qrReady } = prepareVideoQrForPrint();
   if (qrBlock) document.body.classList.add('formato-has-video-qr');
 
   const viewRoot = document.getElementById('view-formato');
@@ -4000,7 +4001,7 @@ function guardarPDF() {
     'canvas-firma-cliente',
     'canvas-firma-tecnico'
   ]);
-  Promise.resolve(printReady).then(() => {
+  Promise.all([Promise.resolve(printReady), qrReady]).then(() => {
     requestAnimationFrame(() => {
       forzarSaltoSiSeCorta();
       window.print();
