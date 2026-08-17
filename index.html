@@ -2795,7 +2795,7 @@ document.documentElement.classList.add('license-checking');
     <div class="section">
       <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.datos_cliente">Datos del Cliente</span></div>
       <div class="grid g2">
-        <div class="field span2"><label data-i18n="formato.label.nombre_empresa">Nombre / Empresa</label><input type="text" id="formato-cliente-nombre" data-i18n-placeholder="formato.placeholder.nombre_empresa" placeholder="Nombre completo o razón social"></div>
+        <div class="field span2"><label data-i18n="formato.label.nombre_empresa">Nombre / Empresa</label><input type="text" id="formato-cliente-nombre" data-i18n-placeholder="formato.placeholder.nombre_empresa" placeholder="Nombre completo o razón social" autocomplete="off" list="arpa-clientes-datalist"></div>
         <div class="field"><label data-i18n="formato.label.nit_cedula">NIT / Cédula</label><input type="text" data-i18n-placeholder="formato.placeholder.nit_cedula" placeholder="000.000.000-0"></div>
         <div class="field"><label data-i18n="formato.label.telefono">Teléfono</label><input type="tel" id="formato-cliente-tel" data-i18n-placeholder="formato.placeholder.telefono" placeholder="+57 300 000 0000"></div>
         <div class="field span2"><label data-i18n="formato.label.direccion_instalacion">Dirección de instalación</label><input type="text" data-i18n-placeholder="formato.placeholder.direccion" placeholder="Calle, carrera, barrio..."></div>
@@ -3249,7 +3249,7 @@ document.documentElement.classList.add('license-checking');
     <div class="section">
       <div class="section-title"><span class="dot"></span><span data-i18n="cc.section.cliente">Cliente</span></div>
       <div class="grid g2">
-        <div class="field span2"><label data-i18n="formato.label.nombre_empresa">Nombre / Empresa</label><input type="text" id="cc-cliente-nombre" data-i18n-placeholder="cc.placeholder.cliente_nombre" placeholder="Nombre del cliente"></div>
+        <div class="field span2"><label data-i18n="formato.label.nombre_empresa">Nombre / Empresa</label><input type="text" id="cc-cliente-nombre" data-i18n-placeholder="cc.placeholder.cliente_nombre" placeholder="Nombre del cliente" autocomplete="off" list="arpa-clientes-datalist"></div>
         <div class="field"><label data-i18n="cc.label.nit_cc">NIT / C.C.</label><input type="text" id="cc-cliente-doc" data-i18n-placeholder="formato.placeholder.nit_cedula" placeholder="000.000.000-0"></div>
         <div class="field"><label data-i18n="formato.label.telefono">Teléfono</label><input type="tel" id="cc-cliente-tel" data-i18n-placeholder="formato.placeholder.telefono" placeholder="+57 300 000 0000"></div>
         <div class="field span2"><label data-i18n="cc.cobrador.direccion">Dirección</label><input type="text" id="cc-cliente-dir" data-i18n-placeholder="cc.placeholder.direccion_cliente" placeholder="Dirección del cliente"></div>
@@ -4187,6 +4187,73 @@ window.addEventListener('DOMContentLoaded', () => {
   const dot = document.getElementById('validation-dot');
   if (dot) dot.style.backgroundColor = '#16a34a';
 });
+
+// ── Base de datos de clientes (autocompletado) ──────────────────────────────
+(function () {
+  'use strict';
+
+  const HISTORIAL_KEY = 'arpa_suite_servicio_historial';
+
+  function getClientesFromHistorial() {
+    try {
+      const data = JSON.parse(localStorage.getItem(HISTORIAL_KEY) || '[]');
+      if (!Array.isArray(data)) return [];
+      const seen = new Set();
+      const clientes = [];
+      data.forEach((r) => {
+        const nombre = String(r.cliente || '').trim();
+        if (nombre && !seen.has(nombre.toLowerCase())) {
+          seen.add(nombre.toLowerCase());
+          clientes.push({
+            nombre,
+            ciudad: String(r.ciudad || '').trim()
+          });
+        }
+      });
+      return clientes;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function buildDatalist() {
+    let dl = document.getElementById('arpa-clientes-datalist');
+    if (!dl) {
+      dl = document.createElement('datalist');
+      dl.id = 'arpa-clientes-datalist';
+      document.body.appendChild(dl);
+    }
+    const clientes = getClientesFromHistorial();
+    dl.innerHTML = clientes
+      .map((c) => '<option value="' + c.nombre.replace(/"/g, '&quot;') + '">')
+      .join('');
+  }
+
+  function autoFillCiudad(inputId, ciudadId) {
+    const input = document.getElementById(inputId);
+    const ciudadField = document.getElementById(ciudadId);
+    if (!input || !ciudadField) return;
+    input.addEventListener('change', () => {
+      const val = input.value.trim().toLowerCase();
+      if (!val) return;
+      const clientes = getClientesFromHistorial();
+      const match = clientes.find((c) => c.nombre.toLowerCase() === val);
+      if (match && match.ciudad && !ciudadField.value) {
+        ciudadField.value = match.ciudad;
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    buildDatalist();
+    autoFillCiudad('formato-cliente-nombre', 'formato-cliente-ciudad');
+    autoFillCiudad('cc-cliente-nombre', 'cc-cliente-ciudad');
+    // Reconstruir la lista si el historial cambia
+    window.addEventListener('storage', (e) => {
+      if (e.key === HISTORIAL_KEY) buildDatalist();
+    });
+  });
+})();
 
 // Registrar el Service Worker
 if ('serviceWorker' in navigator) {
