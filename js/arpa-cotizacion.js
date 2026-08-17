@@ -768,10 +768,10 @@
       if (existing) {
         const d = JSON.parse(existing);
         const tieneCliente = d && d.clienteNombre && d.clienteNombre.trim();
-        const tieneServicios = d && Array.isArray(d.servicios) && d.servicios.some(function(s) { return s.desc && s.desc.trim(); });
-        if (tieneCliente || tieneServicios) {
-          const ok = confirm('Ya tienes una Cuenta de Cobro en progreso' + (tieneCliente ? ' para ' + d.clienteNombre : '') + '. ¿Sobreescribir con los datos de esta cotización?');
-          if (!ok) return;
+        const tieneItems = d && Array.isArray(d.servicios) && d.servicios.some(function(s) { return s.desc && s.desc.trim(); });
+        if (tieneCliente || tieneItems) {
+          const msg = 'Ya tienes una Cuenta de Cobro en progreso' + (tieneCliente ? ' para ' + d.clienteNombre : '') + '.\n¿Sobreescribir con los datos de esta cotización?';
+          if (!confirm(msg)) return;
         }
       }
       localStorage.setItem('arpa_cuenta_cobro_draft', JSON.stringify(draft));
