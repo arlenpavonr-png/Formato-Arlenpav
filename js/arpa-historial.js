@@ -418,12 +418,30 @@
     }
   }
 
+  let filtroActivo = 'todos';
+  let textoBusqueda = '';
+
   function render() {
     const list = document.getElementById('historial-list');
     const empty = document.getElementById('historial-empty');
     if (!list) return;
 
-    const records = getRecords();
+    let records = getRecords();
+
+    if (filtroActivo !== 'todos') {
+      records = records.filter(function(r) { return inferModulo(r) === filtroActivo; });
+    }
+
+    if (textoBusqueda.trim()) {
+      const q = textoBusqueda.trim().toLowerCase();
+      records = records.filter(function(r) {
+        return (r.cliente || '').toLowerCase().includes(q)
+          || (r.ciudad  || '').toLowerCase().includes(q)
+          || (r.numero  || '').toLowerCase().includes(q)
+          || (r.numeroServicio || '').toLowerCase().includes(q);
+      });
+    }
+
     if (!records.length) {
       list.innerHTML = '';
       if (empty) empty.hidden = false;
@@ -431,10 +449,10 @@
     }
 
     if (empty) empty.hidden = true;
-    list.innerHTML = records.map((r) => renderCard(r)).join('');
+    list.innerHTML = records.map(function(r) { return renderCard(r); }).join('');
 
-    list.querySelectorAll('.historial-delete').forEach((btn) => {
-      btn.addEventListener('click', () => {
+    list.querySelectorAll('.historial-delete').forEach(function(btn) {
+      btn.addEventListener('click', function() {
         if (confirm(window.ArpaI18n.t('confirm.historial.eliminar_registro'))) {
           removeRecord(btn.dataset.id);
         }
@@ -493,6 +511,33 @@
     global.closeSettingsModal.__historialPatch = true;
   }
 
+  function initFiltros() {
+    const buscar = document.getElementById('historial-buscar');
+    if (buscar) {
+      buscar.addEventListener('input', function() {
+        textoBusqueda = buscar.value;
+        render();
+      });
+    }
+    document.querySelectorAll('.historial-tab').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        filtroActivo = btn.dataset.filtro;
+        textoBusqueda = '';
+        const buscarEl = document.getElementById('historial-buscar');
+        if (buscarEl) buscarEl.value = '';
+        document.querySelectorAll('.historial-tab').forEach(function(b) {
+          b.style.background = '#fff';
+          b.style.color = 'var(--navy)';
+          b.classList.remove('active');
+        });
+        btn.style.background = 'var(--navy)';
+        btn.style.color = '#fff';
+        btn.classList.add('active');
+        render();
+      });
+    });
+  }
+
   global.ArpaHistorial = {
     STORAGE_KEY,
     getRecords,
@@ -509,7 +554,8 @@
     render,
     exportCSV,
     removeRecord,
-    verDocumento
+    verDocumento,
+    initFiltros
   };
 
   global.guardarPDFYHistorial = guardarPDFYHistorial;
@@ -518,6 +564,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     patchCloseSettingsForHistorial();
     dedupeRecords();
+    initFiltros();
     render();
     document.getElementById('btn-exportar-historial')?.addEventListener('click', exportCSV);
   });
