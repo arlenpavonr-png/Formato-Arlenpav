@@ -402,6 +402,18 @@
     return restoreCloudDataIfNeeded();
   }
 
+  // ── Catálogo Base Maestro ──────────────────────────────────────────────────
+
+  function getCatalogoBase() {
+    const licencia = getLicenseCode();
+    if (!licencia) return Promise.resolve({ ok: false, mensaje: 'Sin licencia.' });
+    return postJson({ accion: 'getcatalogobase', licencia })
+      .catch((err) => {
+        console.warn('[arpa-cloud-sync] getCatalogoBase', err);
+        return { ok: false, mensaje: 'Error de red.' };
+      });
+  }
+
   // ── Numeración ─────────────────────────────────────────────────────────────
 
   function obtenerSiguienteNumeroCloud(tipo, clienteUltimo) {
@@ -433,6 +445,8 @@
     needsHistorialRestore,
     shouldSyncNow,               // ← NUEVO (lo usa arpa-brand.js)
     getLastSyncTime,             // ← NUEVO
+    // Catálogo base maestro
+    getCatalogoBase,
     // Numeración
     obtenerSiguienteNumeroCloud
   };

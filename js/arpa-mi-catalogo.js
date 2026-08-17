@@ -762,6 +762,7 @@
               <div class="catalogo-toolbar-row">
                 <input type="search" id="catalogo-buscar-${escapeHtml(oficioId)}" data-i18n-placeholder="cat.placeholder.buscar" placeholder="🔍 Buscar por nombre o referencia…" autocomplete="off" inputmode="search">
                 <button type="button" class="btn-catalogo-import btn-catalogo-seed-oficio" data-oficio="${escapeHtml(oficioId)}" data-i18n="cat.btn.cargar_catalogo_base">📦 Cargar catálogo base (${seedCount})</button>
+                <button type="button" class="btn-catalogo-import btn-catalogo-maestro-oficio" data-oficio="${escapeHtml(oficioId)}">☁️ Catálogo maestro</button>
                 <button type="button" class="btn-catalogo-import btn-catalogo-add-oficio" data-oficio="${escapeHtml(oficioId)}" data-i18n="cat.btn.agregar_producto">+ Agregar producto</button>
               </div>
               <span id="catalogo-count-${escapeHtml(oficioId)}" class="catalogo-count"></span>
@@ -786,6 +787,10 @@
         currentOficioId = oficioId;
         global.ArpaOficios?.precargarCatalogoOficio?.(oficioId);
       });
+      container.querySelector(`.btn-catalogo-maestro-oficio[data-oficio="${oficioId}"]`)?.addEventListener('click', () => {
+        currentOficioId = oficioId;
+        importarCatalogoMaestro(oficioId);
+      });
       container.querySelector(`.btn-catalogo-add-oficio[data-oficio="${oficioId}"]`)?.addEventListener('click', () => {
         currentOficioId = oficioId;
         onFabClick();
@@ -794,6 +799,85 @@
         currentOficioId = oficioId;
       });
     });
+  }
+
+  function importarCatalogoMaestro(oficioId) {
+    if (!global.ArpaCloudSync?.getCatalogoBase) {
+      alert('Sincronización con la nube no disponible.');
+      return;
+    }
+    const btn = document.querySelector(`.btn-catalogo-maestro-oficio[data-oficio="${oficioId}"]`);
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Descargando…'; }
+
+    global.ArpaCloudSync.getCatalogoBase()
+      .then((data) => {
+        if (!data?.ok || !data.productos?.length) {
+          alert(data?.mensaje || 'El catálogo maestro está vacío o no está disponible.');
+          return;
+        }
+
+        // Productos existentes en el catálogo local (para evitar duplicados por código)
+        const localProducts = getProducts(oficioId);
+        const existingCodes = new Set(localProducts.map((p) => String(p.cod || '').trim().toLowerCase()));
+
+        // Solo importar los que no existen localmente
+        const toImport = data.productos.filter((p) => {
+          const cod = String(p.cod || '').trim().toLowerCase();
+          return cod && !existingCodes.has(cod);
+        });
+
+        if (!toImport.length) {
+          alert('✓ Ya tienes todos los productos del catálogo maestro.');
+          return;
+        }
+
+        // Agregar al catálogo local
+        const cats = getCategories(oficioId);
+        const catMap = new Map(cats.map((c) => [c.name.toLowerCase(), c.id]));
+        const newCats = [];
+
+        function ensureCat(nombre) {
+          const key = (nombre || 'General').toLowerCase();
+          if (catMap.has(key)) return catMap.get(key);
+          const cat = { id: newId(), name: nombre || 'General', oficioId: normalizeOficioId(oficioId) };
+          newCats.push(cat);
+          catMap.set(key, cat.id);
+          return cat.id;
+        }
+
+        const newProducts = toImport.map((p) => ({
+          id: newId(),
+          cod: String(p.cod || '').trim(),
+          nom: String(p.nom || '').trim(),
+          pvp: Number(p.pvp) || 0,
+          unidad: String(p.unidad || 'unidad').trim() || 'unidad',
+          marca: String(p.marca || '').trim(),
+          categoriaId: ensureCat(p.categoria || 'General'),
+          oficioId: normalizeOficioId(oficioId)
+        })).filter((p) => p.cod && p.nom);
+
+        if (newCats.length) {
+          const allCats = [...cats, ...newCats];
+          try { localStorage.setItem(catalogCategoriesKey(oficioId), JSON.stringify(allCats)); } catch(e) {}
+        }
+
+        const allProducts = [...localProducts, ...newProducts];
+        try { localStorage.setItem(catalogProductsKey(oficioId), JSON.stringify(allProducts)); } catch(e) {}
+
+        global.ArpaCatalogo?.invalidateListaCache?.();
+        renderCategoriesPanel(oficioId);
+        renderProductGroups(oficioId);
+        global.ArpaCloudSync?.scheduleCatalogCloudSync?.();
+
+        alert(`✓ Se importaron ${newProducts.length} producto(s) del catálogo maestro.`);
+      })
+      .catch((err) => {
+        console.warn('[arpa-mi-catalogo] importarCatalogoMaestro', err);
+        alert('Error al conectar con el catálogo maestro.');
+      })
+      .finally(() => {
+        if (btn) { btn.disabled = false; btn.textContent = '☁️ Catálogo maestro'; }
+      });
   }
 
   function render() {
