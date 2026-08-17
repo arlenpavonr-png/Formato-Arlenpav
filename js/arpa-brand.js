@@ -321,6 +321,10 @@
   function needsCompanyRestoreFromSheets() {
     const licencia = getLicenseCode();
     if (!licencia) return false;
+    // v2: también sincronizar si toca por intervalo (cada 30 min)
+    // ArpaCloudSync carga después de arpa-brand en el HTML, pero este
+    // código corre en DOMContentLoaded, cuando ya todos los scripts están listos.
+    if (global.ArpaCloudSync?.shouldSyncNow?.()) return true;
     const current = getSettings();
     if (String(current.companyName || '').trim()) return false;
     try {

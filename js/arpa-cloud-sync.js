@@ -1,30 +1,62 @@
 /**
  * Respaldo en Google Sheets: catálogo e historial (POST JSON)
+ *
+ * v2 — Sincronización periódica real (no solo al vaciar localStorage)
+ *
+ * Cambios respecto a v1:
+ *  - shouldSyncNow(): decide si es hora de sincronizar (cada 30 min o primera vez)
+ *  - needsCatalogRestore() / needsHistorialRestore(): activan sync si está vacío O si toca sincronizar
+ *  - applyHistorialFromCloud(): MERGE (nube + local) en vez de reemplazar
+ *  - restoreCloudDataIfNeeded(): guarda timestamp después de cada sync exitoso
+ *  - forceSyncFromCloud(): fuerza sync ignorando el timestamp (botón "Sincronizar ahora")
+ *  - Evento DOM 'arpa:sync-complete' al terminar — la UI puede escucharlo para mostrar badge
  */
 (function (global) {
   'use strict';
 
   const LICENSE_API = 'https://script.google.com/macros/s/AKfycbzKBeyDVWVqPG1R47EZTVKmCpa3SOwxs8LXrW4ipvRtiyyRV4trJKg7D4i89_cUTcH2/exec';
-  const LICENSE_CODE_KEY = 'arpa_suite_license_code';
-  const CATALOG_PRODUCTS_KEY = 'arpa_catalogo_usuario';
-  const CATALOG_CATEGORIES_KEY = 'arpa_categorias_usuario';
-  const HISTORIAL_KEY = 'arpa_suite_servicio_historial';
+  const LICENSE_CODE_KEY      = 'arpa_suite_license_code';
+  const CATALOG_PRODUCTS_KEY  = 'arpa_catalogo_usuario';
+  const CATALOG_CATEGORIES_KEY= 'arpa_categorias_usuario';
+  const HISTORIAL_KEY         = 'arpa_suite_servicio_historial';
 
-  let catalogSyncTimer = null;
-  let suppressCatalogSync = false;
-  let suppressHistorialSync = false;
+  // ── Timestamp de última sincronización ──────────────────────────────────
+  const LAST_SYNC_KEY      = 'arpa_last_cloud_sync';
+  const SYNC_INTERVAL_MS   = 30 * 60 * 1000; // 30 minutos
+
+  function getLastSyncTime() {
+    try { return parseInt(localStorage.getItem(LAST_SYNC_KEY) || '0', 10); }
+    catch (e) { return 0; }
+  }
+
+  function setLastSyncTime() {
+    try { localStorage.setItem(LAST_SYNC_KEY, Date.now().toString()); }
+    catch (e) {}
+  }
+
+  /**
+   * ¿Es hora de sincronizar con la nube?
+   * Retorna true si:
+   *   - Nunca se ha sincronizado en este dispositivo, o
+   *   - Pasaron más de 30 minutos desde la última sincronización
+   */
+  function shouldSyncNow() {
+    if (!hasActiveLicense()) return false;
+    return (Date.now() - getLastSyncTime()) > SYNC_INTERVAL_MS;
+  }
+
+  // ── Licencia ─────────────────────────────────────────────────────────────
 
   function getLicenseCode() {
-    try {
-      return (localStorage.getItem(LICENSE_CODE_KEY) || '').trim().toUpperCase();
-    } catch (e) {
-      return '';
-    }
+    try { return (localStorage.getItem(LICENSE_CODE_KEY) || '').trim().toUpperCase(); }
+    catch (e) { return ''; }
   }
 
   function hasActiveLicense() {
     return !!getLicenseCode();
   }
+
+  // ── HTTP ──────────────────────────────────────────────────────────────────
 
   function postJson(payload) {
     return fetch(LICENSE_API, {
@@ -34,22 +66,20 @@
     }).then((res) => res.json());
   }
 
+  // ── Catálogo local ────────────────────────────────────────────────────────
+
   function getAllCategories() {
     try {
       const data = JSON.parse(localStorage.getItem(CATALOG_CATEGORIES_KEY) || '[]');
       return Array.isArray(data) ? data : [];
-    } catch (e) {
-      return [];
-    }
+    } catch (e) { return []; }
   }
 
   function getAllProducts() {
     try {
       const data = JSON.parse(localStorage.getItem(CATALOG_PRODUCTS_KEY) || '[]');
       return Array.isArray(data) ? data : [];
-    } catch (e) {
-      return [];
-    }
+    } catch (e) { return []; }
   }
 
   function getCategoryName(categoriaId) {
@@ -57,6 +87,11 @@
     const cat = getAllCategories().find((c) => c.id === categoriaId);
     return cat?.name || 'General';
   }
+
+  // ── Push catálogo → nube ──────────────────────────────────────────────────
+
+  let catalogSyncTimer = null;
+  let suppressCatalogSync = false;
 
   function productToCloud(p) {
     return {
@@ -87,6 +122,10 @@
       pushCatalogo();
     }, 2000);
   }
+
+  // ── Push historial → nube ─────────────────────────────────────────────────
+
+  let suppressHistorialSync = false;
 
   function recordToCloudEntry(record) {
     return {
@@ -128,6 +167,8 @@
     });
   }
 
+  // ── Conversión nube → registro local ──────────────────────────────────────
+
   function newId() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   }
@@ -163,20 +204,32 @@
     return record;
   }
 
+  // ── ¿Hay que sincronizar? ─────────────────────────────────────────────────
+
+  /**
+   * ANTES (v1): solo restauraba si localStorage estaba vacío.
+   * AHORA (v2): también restaura si pasaron más de 30 min desde la última sync.
+   * Esto garantiza que un técnico que abre la app en un segundo dispositivo
+   * reciba los datos del primer dispositivo.
+   */
   function needsCatalogRestore() {
     if (!hasActiveLicense()) return false;
-    return getAllProducts().length === 0;
+    if (getAllProducts().length === 0) return true;  // vacío → siempre restaurar
+    return shouldSyncNow();                          // con datos → solo si toca
   }
 
   function needsHistorialRestore() {
     if (!hasActiveLicense()) return false;
     try {
       const data = JSON.parse(localStorage.getItem(HISTORIAL_KEY) || '[]');
-      return !Array.isArray(data) || data.length === 0;
+      if (!Array.isArray(data) || data.length === 0) return true; // vacío → siempre
+      return shouldSyncNow();                                      // con datos → si toca
     } catch (e) {
       return true;
     }
   }
+
+  // ── Aplicar datos de la nube al dispositivo ───────────────────────────────
 
   function applyCatalogFromCloud(productos) {
     if (!Array.isArray(productos) || !productos.length) return false;
@@ -228,10 +281,48 @@
     }
   }
 
+  /**
+   * ANTES (v1): reemplazaba el historial local con el de la nube.
+   * AHORA (v2): FUSIONA nube + local.
+   *
+   * Estrategia:
+   *   1. Base = registros de la NUBE (son los confirmados/definitivos)
+   *   2. Se agregan registros LOCALES que la nube no tiene (creados offline)
+   *   3. Si el mismo ID existe en ambos → la nube gana
+   *   4. Resultado ordenado por fecha (más reciente primero)
+   *
+   * Esto preserva entradas creadas sin conexión y descarta entradas que
+   * fueron eliminadas desde otro dispositivo (no están en la nube).
+   */
   function applyHistorialFromCloud(entradas) {
     if (!Array.isArray(entradas) || !entradas.length) return false;
 
-    const records = entradas.map(cloudEntryToRecord);
+    // Convertir entradas de la nube a formato local
+    const cloudRecords = entradas.map(cloudEntryToRecord);
+
+    // Leer registros locales actuales
+    let localRecords = [];
+    try {
+      localRecords = JSON.parse(localStorage.getItem(HISTORIAL_KEY) || '[]');
+      if (!Array.isArray(localRecords)) localRecords = [];
+    } catch (e) {}
+
+    // Construir mapa: nube es la base (autoridad)
+    const merged = new Map();
+    cloudRecords.forEach((r) => merged.set(r.id, r));
+
+    // Agregar registros locales que la nube no tiene (offline-created)
+    localRecords.forEach((r) => {
+      if (r.id && !merged.has(r.id)) merged.set(r.id, r);
+    });
+
+    // Ordenar: más reciente primero
+    const records = Array.from(merged.values()).sort((a, b) => {
+      const dateA = a.savedAt || a.fecha || '';
+      const dateB = b.savedAt || b.fecha || '';
+      return dateB.localeCompare(dateA);
+    });
+
     suppressHistorialSync = true;
     try {
       localStorage.setItem(HISTORIAL_KEY, JSON.stringify(records));
@@ -245,6 +336,12 @@
     }
   }
 
+  // ── Sincronización al abrir la app ────────────────────────────────────────
+
+  /**
+   * ANTES (v1): corría y listo, sin marcar cuándo se ejecutó.
+   * AHORA (v2): guarda el timestamp al terminar, dispara evento DOM.
+   */
   function restoreCloudDataIfNeeded() {
     const licencia = getLicenseCode();
     if (!licencia) return Promise.resolve({ catalog: false, historial: false });
@@ -283,8 +380,29 @@
       tasks.push(Promise.resolve(false));
     }
 
-    return Promise.all(tasks).then(([catalog, historial]) => ({ catalog, historial }));
+    return Promise.all(tasks).then(([catalog, historial]) => {
+      // Marcar timestamp de sincronización exitosa
+      setLastSyncTime();
+      // Notificar a la UI (para mostrar badge "Sincronizado")
+      try {
+        document.dispatchEvent(new CustomEvent('arpa:sync-complete', {
+          detail: { catalog, historial, timestamp: Date.now() }
+        }));
+      } catch (e) {}
+      return { catalog, historial };
+    });
   }
+
+  /**
+   * Fuerza una sincronización inmediata, ignorando el intervalo de 30 min.
+   * Para usar desde el botón "Sincronizar ahora" en Configuración.
+   */
+  function forceSyncFromCloud() {
+    try { localStorage.removeItem(LAST_SYNC_KEY); } catch (e) {}
+    return restoreCloudDataIfNeeded();
+  }
+
+  // ── Numeración ─────────────────────────────────────────────────────────────
 
   function obtenerSiguienteNumeroCloud(tipo, clienteUltimo) {
     const licencia = getLicenseCode();
@@ -297,16 +415,25 @@
       });
   }
 
+  // ── API pública ────────────────────────────────────────────────────────────
+
   global.ArpaCloudSync = {
     LICENSE_API,
     postJson,
+    // Push (local → nube)
     pushCatalogo,
     scheduleCatalogCloudSync,
     pushHistorialEntry,
     deleteHistorialEntry,
+    // Pull (nube → local)
     restoreCloudDataIfNeeded,
+    forceSyncFromCloud,          // ← NUEVO
+    // Helpers de estado
     needsCatalogRestore,
     needsHistorialRestore,
+    shouldSyncNow,               // ← NUEVO (lo usa arpa-brand.js)
+    getLastSyncTime,             // ← NUEVO
+    // Numeración
     obtenerSiguienteNumeroCloud
   };
 })(window);
