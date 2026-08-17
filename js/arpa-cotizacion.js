@@ -360,6 +360,7 @@
     global.ArpaCobros?.syncFromEditor?.('cot');
     renderTablaCot();
     global.ArpaHistorial?.captureFromCotizacion?.();
+    clearCotDraft();
   }
 
   function beginCotPdfExport() {
@@ -605,6 +606,92 @@
     renderTablaCot();
   }
 
+  const COT_DRAFT_KEY = 'arpa_cot_draft';
+  let draftSaveTimer = null;
+
+  function collectCotDraft() {
+    return {
+      numero:   document.getElementById('numero-cot')?.value || '',
+      nombre:   document.getElementById('cot-nombre')?.value || '',
+      nit:      document.getElementById('cot-nit')?.value || '',
+      tel:      document.getElementById('cot-tel')?.value || '',
+      email:    document.getElementById('cot-email')?.value || '',
+      ciudad:   document.getElementById('cot-ciudad')?.value || '',
+      fecha:    document.getElementById('cot-fecha')?.value || '',
+      validez:  document.getElementById('cot-validez')?.value || '',
+      obs:      document.getElementById('cot-obs')?.value || '',
+      conIva:   document.getElementById('iva-check-cot')?.checked || false,
+      filas:    filas.map(function(f) {
+        return { cod: f.cod, nom: f.nom, pvp: f.pvp, cant: f.cant };
+      })
+    };
+  }
+
+  function applyCotDraft() {
+    try {
+      var raw = localStorage.getItem(COT_DRAFT_KEY);
+      if (!raw) return false;
+      var d = JSON.parse(raw);
+      if (!d || typeof d !== 'object') return false;
+
+      var set = function(id, val) {
+        var el = document.getElementById(id);
+        if (el && val != null) el.value = val;
+      };
+
+      set('numero-cot', d.numero);
+      set('cot-nombre', d.nombre);
+      set('cot-nit', d.nit);
+      set('cot-tel', d.tel);
+      set('cot-email', d.email);
+      set('cot-ciudad', d.ciudad);
+      set('cot-fecha', d.fecha);
+      set('cot-validez', d.validez);
+      set('cot-obs', d.obs);
+
+      var ivaCheck = document.getElementById('iva-check-cot');
+      if (ivaCheck) ivaCheck.checked = !!d.conIva;
+
+      if (Array.isArray(d.filas) && d.filas.length) {
+        filas = d.filas.map(function(f) {
+          return {
+            cod:  String(f.cod  || ''),
+            nom:  String(f.nom  || ''),
+            pvp:  Number(f.pvp) || 0,
+            cant: parseInt(f.cant, 10) || 1
+          };
+        });
+        renderTablaCot();
+        recalcularCotizacion();
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function scheduleCotDraftSave() {
+    if (draftSaveTimer) clearTimeout(draftSaveTimer);
+    draftSaveTimer = setTimeout(function() {
+      draftSaveTimer = null;
+      try {
+        localStorage.setItem(COT_DRAFT_KEY, JSON.stringify(collectCotDraft()));
+      } catch (e) {}
+    }, 1500);
+  }
+
+  function clearCotDraft() {
+    localStorage.removeItem(COT_DRAFT_KEY);
+  }
+
+  function bindCotDraftListeners() {
+    var root = document.getElementById('view-cotizacion');
+    if (!root || root.__cotDraftBound) return;
+    root.__cotDraftBound = true;
+    root.addEventListener('input', scheduleCotDraftSave);
+    root.addEventListener('change', scheduleCotDraftSave);
+  }
+
   function initCotizacion() {
     global.ArpaCobros?.init('cot');
     global.ArpaCobros?.seedFromPriceList('cot');
@@ -634,6 +721,8 @@
     });
     renderTablaCot();
     updateCatalogHint();
+    applyCotDraft();
+    bindCotDraftListeners();
   }
 
   function exportarACuentaCobro() {
@@ -703,6 +792,8 @@
     getCatalogoActivo,
     updateCatalogHint,
     exportarACuentaCobro,
+    clearCotDraft,
+    scheduleCotDraftSave,
   };
 
   global.guardarCotPDF = guardarCotPDF;
