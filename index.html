@@ -1941,7 +1941,32 @@
     background: var(--light);
     color: var(--text);
   }
-
+  .sync-status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 20px;
+    font-size: 11px;
+    color: var(--muted, #888);
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+  }
+  .btn-sync-now {
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid #c9a84c;
+    color: #c9a84c;
+    background: transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .btn-sync-now:hover { background: rgba(201,168,76,0.1); }
+  .btn-sync-now.syncing { opacity: 0.55; pointer-events: none; }
   /* ── PRINT ── */
   @media print {
     html, body { background-color: #ffffff !important; background-image: none !important; }
@@ -3646,6 +3671,10 @@ document.documentElement.classList.add('license-checking');
       <p style="font-size:11px;color:var(--muted);line-height:1.4;margin-bottom:4px;" data-i18n="settings.price_list.hint">Valores base para servicios recurrentes. Se aplican en Cotización (editables antes del PDF).</p>
       <div id="settings-price-list" class="servicios-grid"></div>
     </div>
+    <div class="sync-status-row">
+      <span id="sync-status-text">Verificando última sincronización…</span>
+      <button type="button" class="btn-sync-now" id="btn-sync-now" onclick="arpaSyncNow()">↻ Sincronizar ahora</button>
+    </div>
     <div class="settings-modal-footer">
       <button type="button" class="btn-settings-cancel" onclick="closeSettingsModal()" data-i18n="settings.btn.cancel">Cancelar</button>
       <button type="button" class="btn-settings-save" onclick="saveSettingsFromModal()" data-i18n="settings.btn.save">Guardar</button>
@@ -4706,7 +4735,47 @@ document.addEventListener('DOMContentLoaded', () => {
   if (window.ArpaCotizacion) window.ArpaCotizacion.initCotizacion();
   if (window.ArpaMiCatalogo) window.ArpaMiCatalogo.initMiCatalogo();
   if (window.ArpaCuentaCobro) window.ArpaCuentaCobro.initCuentaCobro();
+  updateSyncStatusText();
 });
+
+// ── Sincronización manual ────────────────────────────────────────────────────
+function updateSyncStatusText() {
+  const el = document.getElementById('sync-status-text');
+  if (!el) return;
+  const lastSync = window.ArpaCloudSync?.getLastSyncTime?.() || 0;
+  if (!lastSync) {
+    el.textContent = 'Sin sincronizar aún en este dispositivo';
+    return;
+  }
+  const mins = Math.round((Date.now() - lastSync) / 60000);
+  if (mins < 1)       el.textContent = '✓ Sincronizado hace un momento';
+  else if (mins < 60) el.textContent = `✓ Sincronizado hace ${mins} min`;
+  else                el.textContent = `✓ Sincronizado hace ${Math.round(mins / 60)} h`;
+}
+
+function arpaSyncNow() {
+  const btn = document.getElementById('btn-sync-now');
+  const el  = document.getElementById('sync-status-text');
+  if (!window.ArpaCloudSync?.forceSyncFromCloud) {
+    if (el) el.textContent = 'Sincronización no disponible (sin licencia activa)';
+    return;
+  }
+  if (btn) { btn.classList.add('syncing'); btn.textContent = '↻ Sincronizando…'; }
+  if (el)  el.textContent = 'Sincronizando con la nube…';
+
+  ArpaCloudSync.forceSyncFromCloud()
+    .then(() => {
+      updateSyncStatusText();
+    })
+    .catch(() => {
+      if (el) el.textContent = '⚠ Error al sincronizar — verifique conexión';
+    })
+    .finally(() => {
+      if (btn) { btn.classList.remove('syncing'); btn.textContent = '↻ Sincronizar ahora'; }
+    });
+}
+
+document.addEventListener('arpa:sync-complete', updateSyncStatusText);
 </script>
 
 </body>
