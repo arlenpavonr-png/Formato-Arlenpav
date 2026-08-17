@@ -764,6 +764,16 @@
     };
 
     try {
+      const existing = localStorage.getItem('arpa_cuenta_cobro_draft');
+      if (existing) {
+        const d = JSON.parse(existing);
+        const tieneCliente = d && d.clienteNombre && d.clienteNombre.trim();
+        const tieneServicios = d && Array.isArray(d.servicios) && d.servicios.some(function(s) { return s.desc && s.desc.trim(); });
+        if (tieneCliente || tieneServicios) {
+          const ok = confirm('Ya tienes una Cuenta de Cobro en progreso' + (tieneCliente ? ' para ' + d.clienteNombre : '') + '. ¿Sobreescribir con los datos de esta cotización?');
+          if (!ok) return;
+        }
+      }
       localStorage.setItem('arpa_cuenta_cobro_draft', JSON.stringify(draft));
     } catch (e) {
       alert('No se pudo preparar la Cuenta de Cobro.');
