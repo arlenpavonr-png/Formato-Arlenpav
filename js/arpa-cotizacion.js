@@ -636,6 +636,60 @@
     updateCatalogHint();
   }
 
+  function exportarACuentaCobro() {
+    const nombre  = document.getElementById('cot-nombre')?.value.trim() || '';
+    const nit     = document.getElementById('cot-nit')?.value.trim() || '';
+    const tel     = document.getElementById('cot-tel')?.value.trim() || '';
+    const ciudad  = document.getElementById('cot-ciudad')?.value.trim() || '';
+    const fecha   = document.getElementById('cot-fecha')?.value || '';
+    const obs     = document.getElementById('cot-obs')?.value.trim() || '';
+
+    if (!nombre) {
+      alert('Agrega el nombre del cliente antes de generar la Cuenta de Cobro.');
+      return;
+    }
+
+    global.ArpaCobros?.syncFromEditor?.('cot');
+
+    const todasLineas = [
+      ...filas.map(function(f) {
+        return { desc: (f.nom || '').trim(), cant: f.cant || 1, unit: f.pvp || 0 };
+      }),
+      ...getCobrosLineas().map(function(l) {
+        return { desc: (l.nom || l.desc || '').trim(), cant: l.cant || 1, unit: l.pvp || 0 };
+      })
+    ].filter(function(s) { return s.desc; });
+
+    if (!todasLineas.length) {
+      todasLineas.push({ desc: 'Servicio técnico', cant: 1, unit: 0 });
+    }
+
+    const draft = {
+      ciudad:        ciudad,
+      fechaEmision:  fecha,
+      clienteNombre: nombre,
+      clienteDoc:    nit,
+      clienteTel:    tel,
+      obs:           obs,
+      servicios:     todasLineas
+    };
+
+    try {
+      localStorage.setItem('arpa_cuenta_cobro_draft', JSON.stringify(draft));
+    } catch (e) {
+      alert('No se pudo preparar la Cuenta de Cobro.');
+      return;
+    }
+
+    document.querySelector('.main-menu-btn[onclick*="openCuentaCobroView"]')?.click();
+
+    setTimeout(function() {
+      global.ArpaCuentaCobro?.applyCcDraft?.();
+      global.ArpaCuentaCobro?.refreshView?.();
+      window.scrollTo(0, 0);
+    }, 450);
+  }
+
   global.ArpaCotizacion = {
     initCotizacion,
     refreshCobros,
@@ -648,10 +702,12 @@
     getCotItemLabels,
     getCatalogoActivo,
     updateCatalogHint,
+    exportarACuentaCobro,
   };
 
   global.guardarCotPDF = guardarCotPDF;
   global.guardarCotPDFYWhatsApp = guardarCotPDFYWhatsApp;
   global.nuevoCotNumero = nuevoCotNumero;
   global.ensureCotNumero = ensureCotNumero;
+  global.exportarACuentaCobro = exportarACuentaCobro;
 })(window);
