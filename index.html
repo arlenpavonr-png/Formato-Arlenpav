@@ -3370,6 +3370,18 @@ document.documentElement.classList.add('license-checking');
       <p style="font-size:12px;color:var(--muted);margin:-4px 0 12px;line-height:1.5;" data-i18n="hist.intro">
         Registros guardados al exportar PDF desde Formato. Máximo 200 servicios.
       </p>
+      <div class="historial-filtros" id="historial-filtros">
+        <input type="search" id="historial-buscar"
+               placeholder="🔍 Buscar por cliente..."
+               autocomplete="off"
+               style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:10px;box-sizing:border-box;">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button type="button" class="historial-tab active" data-filtro="todos" style="flex:1;padding:7px 4px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:var(--navy);color:#fff;">Todos</button>
+          <button type="button" class="historial-tab" data-filtro="formato" style="flex:1;padding:7px 4px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:var(--navy);">Formato</button>
+          <button type="button" class="historial-tab" data-filtro="cotizacion" style="flex:1;padding:7px 4px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:var(--navy);">Cotización</button>
+          <button type="button" class="historial-tab" data-filtro="cuenta-cobro" style="flex:1;padding:7px 4px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:var(--navy);">CC</button>
+        </div>
+      </div>
       <div id="historial-empty" class="historial-empty" data-i18n-html="hist.empty">
         Aún no hay servicios en el historial.<br>Guarde un formato como PDF para registrar el primer servicio.
       </div>
