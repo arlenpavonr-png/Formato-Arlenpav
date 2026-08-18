@@ -610,6 +610,21 @@
     patchCloseSettingsForHistorial();
     dedupeRecords();
     initFiltros();
+    (function migrarModulos() {
+      try {
+        var raw = localStorage.getItem('arpa_suite_servicio_historial');
+        if (!raw) return;
+        var recs = JSON.parse(raw);
+        if (!Array.isArray(recs)) return;
+        var dirty = false;
+        recs.forEach(function(r) {
+          var m = inferModulo(r);
+          if (r.modulo !== m) { r.modulo = m; dirty = true; }
+        });
+        if (dirty) localStorage.setItem(
+          'arpa_suite_servicio_historial', JSON.stringify(recs));
+      } catch(e) {}
+    })();
     render();
     document.getElementById('btn-exportar-historial')?.addEventListener('click', exportCSV);
   });
