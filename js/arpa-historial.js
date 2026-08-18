@@ -71,6 +71,58 @@
       document.dispatchEvent(new CustomEvent('arpa:clientes-updated'));
     } catch(e) {}
   }
+  function getClientesSinServicio(meses) {
+    meses = meses || 6;
+    var records = getRecords();
+    var corte = new Date();
+    corte.setMonth(corte.getMonth() - meses);
+    // Paso 1: clientes que tuvieron una INSTALACIÓN en Formato
+    var instalaciones = {};
+    records.forEach(function(r) {
+      if (r.modulo !== 'formato') return;
+      if (r.subtipo !== 'Instalación' && r.tipo !== 'Instalación') return;
+      var nombre = (r.cliente || '').trim().toLowerCase();
+      if (!nombre) return;
+      var prev = instalaciones[nombre];
+      if (!prev || (r.savedAt || r.fecha || '') > (prev.ultimaInstalacion || '')) {
+        instalaciones[nombre] = { nombre: r.cliente, ciudad: r.ciudad || '', ultimaInstalacion: r.savedAt || r.fecha || '' };
+      }
+    });
+    // Paso 2: buscar teléfono en DB de clientes
+    var clientes = getClientes();
+    var clientesDB = {};
+    clientes.forEach(function(c) { if (c.nombre) clientesDB[c.nombre.toLowerCase()] = c; });
+    // Paso 3: filtrar los que llevan 6+ meses sin ningún servicio
+    return Object.values(instalaciones).filter(function(ci) {
+      var nombre = ci.nombre.toLowerCase();
+      var matching = records.filter(function(r) {
+        return r.cliente && r.cliente.toLowerCase() === nombre;
+      }).sort(function(a, b) {
+        return (b.savedAt || b.fecha || '') > (a.savedAt || a.fecha || '') ? 1 : -1;
+      });
+      if (!matching.length) return false;
+      var ultimo = new Date(matching[0].savedAt || matching[0].fecha || 0);
+      return ultimo < corte && !isNaN(ultimo.getTime());
+    }).map(function(ci) {
+      var nombre = ci.nombre.toLowerCase();
+      var matching = records.filter(function(r) {
+        return r.cliente && r.cliente.toLowerCase() === nombre;
+      }).sort(function(a, b) {
+        return (b.savedAt || b.fecha || '') > (a.savedAt || a.fecha || '') ? 1 : -1;
+      });
+      var ultimaFecha = matching[0] ? (matching[0].savedAt || matching[0].fecha || '') : '';
+      var mesesAtras = '';
+      if (ultimaFecha) {
+        var d = new Date(ultimaFecha);
+        if (!isNaN(d.getTime())) {
+          var diff = Math.floor((Date.now() - d.getTime()) / (1000*60*60*24*30));
+          mesesAtras = diff + ' mes' + (diff !== 1 ? 'es' : '');
+        }
+      }
+      var tel = (clientesDB[nombre] || {}).tel || '';
+      return { nombre: ci.nombre, ciudad: ci.ciudad, tel: tel, ultimaFecha: ultimaFecha.slice(0,10), mesesAtras: mesesAtras };
+    });
+  }
   function readInputLikePdf(el) {
     if (!el) return '';
     if (el.tagName === 'SELECT') {
@@ -637,6 +689,7 @@
     CLIENTES_KEY,
     getClientes,
     saveCliente,
+    getClientesSinServicio,
     getRecords,
     readInputLikePdf,
     readFormSnapshot,
