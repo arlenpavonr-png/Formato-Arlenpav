@@ -454,20 +454,50 @@
       document.querySelector('.main-menu-btn[onclick*="openCuentaCobroView"]')?.click();
       setTimeout(() => {
         var fs = r.fullSnapshot;
-        var clienteNombre = (fs && fs.cliente && fs.cliente.nombre) || r.cliente || '';
-        var clienteDoc    = (fs && fs.cliente && fs.cliente.doc)    || '';
-        var clienteDir    = (fs && fs.cliente && fs.cliente.dir)    || '';
-        var clienteTel    = (fs && fs.cliente && fs.cliente.tel)    || '';
-        var ciudad  = (fs && fs.ciudad)        || r.ciudad || '';
-        var fecha   = (fs && fs.fechaEmision)  || r.fecha  || '';
-        var numero  = (fs && fs.numero)        || r.numero || '';
-        if (numero)       { const el = document.getElementById('cc-numero');         if (el) el.value = numero; }
-        if (clienteNombre){ const el = document.getElementById('cc-cliente-nombre'); if (el) el.value = clienteNombre; }
-        if (clienteDoc)   { const el = document.getElementById('cc-cliente-doc');    if (el) el.value = clienteDoc; }
-        if (clienteDir)   { const el = document.getElementById('cc-cliente-dir');    if (el) el.value = clienteDir; }
-        if (clienteTel)   { const el = document.getElementById('cc-cliente-tel');    if (el) el.value = clienteTel; }
-        if (ciudad)       { const el = document.getElementById('cc-ciudad');         if (el) el.value = ciudad; }
-        if (fecha)        { const el = document.getElementById('cc-fecha-emision');  if (el) el.value = fecha; }
+        if (fs && global.ArpaCuentaCobro?.applyCcDraft) {
+          try {
+            var draft = {
+              numero:           fs.numero           || r.numero  || '',
+              ciudad:           fs.ciudad           || r.ciudad  || '',
+              fechaEmision:     fs.fechaEmision     || r.fecha   || '',
+              fechaVencimiento: fs.fechaVencimiento || '',
+              clienteNombre:    (fs.cliente && fs.cliente.nombre) || r.cliente || '',
+              clienteDoc:       (fs.cliente && fs.cliente.doc)    || '',
+              clienteDir:       (fs.cliente && fs.cliente.dir)    || '',
+              clienteTel:       (fs.cliente && fs.cliente.tel)    || '',
+              obs:              fs.obs    || '',
+              conIva:           !!fs.iva,
+              conRet:           !!fs.retencion,
+              retPct:           fs.retPct || '11',
+              pago:             fs.pago   || null,
+              servicios: (fs.servicios || []).map(function(s) {
+                return { desc: s.desc || '', cant: s.cant || 1, unit: s.unit || 0 };
+              }),
+              firmaCobrador: '',
+              firmaCliente:  ''
+            };
+            localStorage.setItem('arpa_cuenta_cobro_draft', JSON.stringify(draft));
+            global.ArpaCuentaCobro.applyCcDraft();
+          } catch(e) {
+            if (r.cliente) { const el = document.getElementById('cc-cliente-nombre'); if (el) el.value = r.cliente; }
+            if (r.ciudad)  { const el = document.getElementById('cc-ciudad');          if (el) el.value = r.ciudad; }
+          }
+        } else {
+          var clienteNombre = (fs && fs.cliente && fs.cliente.nombre) || r.cliente || '';
+          var clienteDoc    = (fs && fs.cliente && fs.cliente.doc)    || '';
+          var clienteDir    = (fs && fs.cliente && fs.cliente.dir)    || '';
+          var clienteTel    = (fs && fs.cliente && fs.cliente.tel)    || '';
+          var ciudad  = (fs && fs.ciudad)        || r.ciudad || '';
+          var fecha   = (fs && fs.fechaEmision)  || r.fecha  || '';
+          var numero  = (fs && fs.numero)        || r.numero || '';
+          if (numero)       { const el = document.getElementById('cc-numero');         if (el) el.value = numero; }
+          if (clienteNombre){ const el = document.getElementById('cc-cliente-nombre'); if (el) el.value = clienteNombre; }
+          if (clienteDoc)   { const el = document.getElementById('cc-cliente-doc');    if (el) el.value = clienteDoc; }
+          if (clienteDir)   { const el = document.getElementById('cc-cliente-dir');    if (el) el.value = clienteDir; }
+          if (clienteTel)   { const el = document.getElementById('cc-cliente-tel');    if (el) el.value = clienteTel; }
+          if (ciudad)       { const el = document.getElementById('cc-ciudad');         if (el) el.value = ciudad; }
+          if (fecha)        { const el = document.getElementById('cc-fecha-emision');  if (el) el.value = fecha; }
+        }
         window.scrollTo(0, 0);
         alert(window.ArpaI18n.t('alert.historial.documento_restaurado'));
       }, 400);
