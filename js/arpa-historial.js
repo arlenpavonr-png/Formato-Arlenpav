@@ -119,8 +119,14 @@
   function getConceptoDisplay(record, options) {
     const partes = [];
     const subtipo = getSubtipoLabel(record);
-    if (subtipo) partes.push(subtipo);
     const concepto = (record?.concepto || '').trim();
+    if (subtipo) {
+      const conceptoLower = concepto.toLowerCase();
+      const subtipoLower = subtipo.toLowerCase();
+      if (!conceptoLower.startsWith(subtipoLower)) {
+        partes.push(subtipo);
+      }
+    }
     if (concepto) partes.push(concepto);
     if (!partes.length) return getSinDescripcion();
     const texto = partes.join(' · ');
