@@ -734,9 +734,26 @@
       renderServicios();
       scheduleCcDraftSave();
     });
-    document.getElementById('btn-cc-limpiar')?.addEventListener('click', limpiarFormulario);
+    document.getElementById('btn-cc-limpiar')?.addEventListener('click', function() {
+      if (confirm('¿Seguro que quieres borrar toda la Cuenta de Cobro?')) {
+        limpiarFormulario();
+      }
+    });
     document.getElementById('btn-cc-whatsapp')?.addEventListener('click', enviarWhatsApp);
     document.getElementById('btn-cc-pdf')?.addEventListener('click', generarPDF);
+
+    // Auto-rellenar cobrador desde ajustes
+    (function() {
+      var settings = getRawSettings();
+      var nombreEl = document.getElementById('cc-firma-cobrador-nombre');
+      var telEl = document.getElementById('cc-cobrador-tel');
+      if (nombreEl && !nombreEl.textContent.trim()) {
+        nombreEl.textContent = settings.companyName || '';
+      }
+      if (telEl && !telEl.value.trim()) {
+        telEl.value = settings.phone || '';
+      }
+    })();
   }
 
   global.ArpaCuentaCobro = {

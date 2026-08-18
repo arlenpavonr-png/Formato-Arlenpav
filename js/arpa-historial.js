@@ -7,10 +7,13 @@
 
   function formatFechaLegible(fechaStr) {
     if (!fechaStr) return '—';
-    const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-    const d = new Date(fechaStr + 'T12:00:00');
-    if (isNaN(d)) return fechaStr;
-    return `${d.getDate()} ${meses[d.getMonth()]} ${d.getFullYear()}`;
+    var d = new Date(fechaStr);
+    if (!isNaN(d.getTime())) {
+      return String(d.getDate()).padStart(2,'0') + '/' +
+             String(d.getMonth()+1).padStart(2,'0') + '/' +
+             d.getFullYear();
+    }
+    return fechaStr;
   }
 
   const TIPO_LABEL = {
