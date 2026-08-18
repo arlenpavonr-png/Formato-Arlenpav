@@ -4222,9 +4222,14 @@ window.addEventListener('DOMContentLoaded', () => {
 // ── Base de datos de clientes (autocompletado) ──────────────────────────────
 (function () {
   'use strict';
-
+  const CLIENTES_KEY  = 'arpa_suite_clientes';
   const HISTORIAL_KEY = 'arpa_suite_servicio_historial';
-
+  function getClientesDB() {
+    try {
+      const data = JSON.parse(localStorage.getItem(CLIENTES_KEY) || '[]');
+      return Array.isArray(data) ? data : [];
+    } catch(e) { return []; }
+  }
   function getClientesFromHistorial() {
     try {
       const data = JSON.parse(localStorage.getItem(HISTORIAL_KEY) || '[]');
@@ -4235,18 +4240,12 @@ window.addEventListener('DOMContentLoaded', () => {
         const nombre = String(r.cliente || '').trim();
         if (nombre && !seen.has(nombre.toLowerCase())) {
           seen.add(nombre.toLowerCase());
-          clientes.push({
-            nombre,
-            ciudad: String(r.ciudad || '').trim()
-          });
+          clientes.push({ nombre, ciudad: String(r.ciudad || '').trim() });
         }
       });
       return clientes;
-    } catch (e) {
-      return [];
-    }
+    } catch(e) { return []; }
   }
-
   function buildDatalist() {
     let dl = document.getElementById('arpa-clientes-datalist');
     if (!dl) {
@@ -4254,35 +4253,48 @@ window.addEventListener('DOMContentLoaded', () => {
       dl.id = 'arpa-clientes-datalist';
       document.body.appendChild(dl);
     }
-    const clientes = getClientesFromHistorial();
-    dl.innerHTML = clientes
-      .map((c) => '<option value="' + c.nombre.replace(/"/g, '&quot;') + '">')
+    const db = getClientesDB();
+    const nombres = db.length
+      ? db.map(function(c) { return c.nombre; })
+      : getClientesFromHistorial().map(function(c) { return c.nombre; });
+    dl.innerHTML = nombres
+      .map(function(n) { return '<option value="' + n.replace(/"/g, '&quot;') + '">'; })
       .join('');
   }
-
-  function autoFillCiudad(inputId, ciudadId) {
+  function autoFillCliente(inputId, fieldMap) {
     const input = document.getElementById(inputId);
-    const ciudadField = document.getElementById(ciudadId);
-    if (!input || !ciudadField) return;
-    input.addEventListener('change', () => {
+    if (!input) return;
+    input.addEventListener('change', function() {
       const val = input.value.trim().toLowerCase();
       if (!val) return;
-      const clientes = getClientesFromHistorial();
-      const match = clientes.find((c) => c.nombre.toLowerCase() === val);
-      if (match && match.ciudad && !ciudadField.value) {
-        ciudadField.value = match.ciudad;
-      }
+      const db = getClientesDB();
+      const match = db.find(function(c) { return c.nombre.toLowerCase() === val; });
+      if (!match) return;
+      Object.keys(fieldMap).forEach(function(campo) {
+        const elId = fieldMap[campo];
+        const el = document.getElementById(elId);
+        if (el && match[campo] && !el.value) el.value = match[campo];
+      });
     });
   }
-
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', function() {
     buildDatalist();
-    autoFillCiudad('formato-cliente-nombre', 'formato-cliente-ciudad');
-    autoFillCiudad('cot-nombre', 'cot-ciudad');
-    autoFillCiudad('cc-cliente-nombre', 'cc-ciudad');
-    // Reconstruir la lista si el historial cambia
-    window.addEventListener('storage', (e) => {
-      if (e.key === HISTORIAL_KEY) buildDatalist();
+    autoFillCliente('formato-cliente-nombre', { ciudad: 'formato-cliente-ciudad' });
+    autoFillCliente('cot-nombre', {
+      ciudad: 'cot-ciudad',
+      nit:    'cot-nit',
+      tel:    'cot-tel',
+      email:  'cot-email'
+    });
+    autoFillCliente('cc-cliente-nombre', {
+      ciudad: 'cc-ciudad',
+      nit:    'cc-cliente-doc',
+      tel:    'cc-cliente-tel',
+      dir:    'cc-cliente-dir'
+    });
+    document.addEventListener('arpa:clientes-updated', buildDatalist);
+    window.addEventListener('storage', function(e) {
+      if (e.key === CLIENTES_KEY || e.key === HISTORIAL_KEY) buildDatalist();
     });
   });
 })();

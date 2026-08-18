@@ -3,6 +3,7 @@
  */
 (function (global) {
   const STORAGE_KEY = 'arpa_suite_servicio_historial';
+  const CLIENTES_KEY = 'arpa_suite_clientes';
   const MAX_RECORDS = 200;
   function formatFechaLegible(fechaStr) {
     if (!fechaStr) return '—';
@@ -37,6 +38,38 @@
   }
   function newRecordId() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+  // ── Base de datos de clientes ─────────────────────────────────────────────
+  function getClientes() {
+    try {
+      const data = JSON.parse(localStorage.getItem(CLIENTES_KEY) || '[]');
+      return Array.isArray(data) ? data : [];
+    } catch(e) { return []; }
+  }
+  function saveCliente(datos) {
+    const nombre = String(datos && datos.nombre || '').trim();
+    if (!nombre) return;
+    const clientes = getClientes();
+    const idx = clientes.findIndex(function(c) {
+      return c.nombre.toLowerCase() === nombre.toLowerCase();
+    });
+    var base = idx >= 0 ? clientes[idx] : {};
+    var entry = {
+      id:        base.id || newRecordId(),
+      nombre:    nombre,
+      ciudad:    (datos.ciudad  && String(datos.ciudad).trim())  || base.ciudad  || '',
+      nit:       (datos.nit     && String(datos.nit).trim())     || base.nit     || '',
+      tel:       (datos.tel     && String(datos.tel).trim())     || base.tel     || '',
+      dir:       (datos.dir     && String(datos.dir).trim())     || base.dir     || '',
+      email:     (datos.email   && String(datos.email).trim())   || base.email   || '',
+      updatedAt: new Date().toISOString()
+    };
+    if (idx >= 0) { clientes[idx] = entry; }
+    else { clientes.unshift(entry); }
+    try {
+      localStorage.setItem(CLIENTES_KEY, JSON.stringify(clientes.slice(0, 500)));
+      document.dispatchEvent(new CustomEvent('arpa:clientes-updated'));
+    } catch(e) {}
   }
   function readInputLikePdf(el) {
     if (!el) return '';
@@ -222,6 +255,7 @@
     const snap = readFormSnapshot();
     var fullSnapshot = null;
     try { fullSnapshot = global.collectFormatoDraft?.() || null; } catch(e) {}
+    saveCliente({ nombre: snap.cliente, ciudad: snap.ciudad });
     return addRecord({
       id: newRecordId(),
       modulo: 'formato',
@@ -242,6 +276,13 @@
   function captureFromCotizacion(snap) {
     const d = snap || global.ArpaCotizacion?.getCotSnapshot?.();
     if (!d) return null;
+    saveCliente({
+      nombre: d.cliente,
+      ciudad: d.ciudad,
+      nit:    document.getElementById('cot-nit')?.value   || '',
+      tel:    document.getElementById('cot-tel')?.value   || '',
+      email:  document.getElementById('cot-email')?.value || ''
+    });
     return addRecord({
       id: newRecordId(),
       modulo: 'cotizacion',
@@ -261,6 +302,13 @@
   function captureFromCuentaCobro(snap) {
     const d = snap || global.ArpaCuentaCobro?.getFormSnapshot?.();
     if (!d) return null;
+    saveCliente({
+      nombre: d.cliente?.nombre,
+      ciudad: d.ciudad,
+      nit:    d.cliente?.doc,
+      tel:    d.cliente?.tel,
+      dir:    d.cliente?.dir
+    });
     return addRecord({
       id: newRecordId(),
       modulo: 'cuenta-cobro',
@@ -537,6 +585,9 @@
   }
   global.ArpaHistorial = {
     STORAGE_KEY,
+    CLIENTES_KEY,
+    getClientes,
+    saveCliente,
     getRecords,
     readInputLikePdf,
     readFormSnapshot,
