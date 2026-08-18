@@ -422,34 +422,25 @@
   let textoBusqueda = '';
 
   function renderStats() {
-    function toYearMonth(str) {
+    function toYM(str) {
       if (!str) return '';
-      // Formato ISO: "2026-08-18" → "2026-08"
       if (/^\d{4}-\d{2}/.test(str)) return str.slice(0, 7);
-      // Formato Date.toString(): "Sun Jun 21 2026..." → parsear
       var d = new Date(str);
-      if (!isNaN(d.getTime())) {
-        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-      }
+      if (!isNaN(d.getTime())) return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
       return '';
     }
-
-    const records = getRecords();
-    const ahora = new Date();
-    const mesActual = ahora.getFullYear() + '-' + String(ahora.getMonth() + 1).padStart(2, '0');
-
-    const esteMes = records.filter(function(r) {
-      return toYearMonth(r.fecha) === mesActual || toYearMonth(r.savedAt) === mesActual;
+    var records = getRecords();
+    var ahora = new Date();
+    var mesActual = ahora.getFullYear() + '-' + String(ahora.getMonth() + 1).padStart(2, '0');
+    var esteMes = records.filter(function(r) {
+      return toYM(r.fecha) === mesActual || toYM(r.savedAt) === mesActual;
     });
-
-    const totalCotMes = esteMes
+    var totalCotMes = esteMes
       .filter(function(r) { return inferModulo(r) === 'cotizacion' && r.total; })
       .reduce(function(s, r) { return s + (Number(r.total) || 0); }, 0);
-
     var elTotal = document.getElementById('hist-stat-total-n');
     var elMes   = document.getElementById('hist-stat-mes-n');
     var elCot   = document.getElementById('hist-stat-cot-mes');
-
     if (elTotal) elTotal.textContent = records.length;
     if (elMes)   elMes.textContent   = esteMes.length;
     if (elCot)   elCot.textContent   = formatoPesos(totalCotMes);
