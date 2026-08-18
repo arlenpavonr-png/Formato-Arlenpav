@@ -55,9 +55,19 @@
   }
 
   function inferModulo(record) {
-    if (record?.modulo) return record.modulo;
-    if (record?.tipo === 'Cuenta de Cobro') return 'cuenta-cobro';
-    if (record?.documento === 'Cotización' || record?.tipo === 'Cotización') return 'cotizacion';
+    if (!record) return 'formato';
+    if (record.modulo === 'cuenta-cobro') return 'cuenta-cobro';
+    if (record.modulo === 'cotizacion')   return 'cotizacion';
+    var num = (record.numero || record.numeroServicio || '')
+                .toString().toUpperCase();
+    var doc = (record.documento || '').toLowerCase().trim();
+    var tipo = (record.tipo || '').toLowerCase().trim();
+    if (num.startsWith('CC-') || doc === 'cuenta de cobro'
+        || tipo === 'cuenta de cobro') return 'cuenta-cobro';
+    if (num.startsWith('AP-') || num.startsWith('COT-')
+        || doc === 'cotización' || doc === 'cotizacion'
+        || tipo === 'cotización' || tipo === 'cotizacion')
+      return 'cotizacion';
     return 'formato';
   }
 
