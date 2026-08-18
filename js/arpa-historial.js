@@ -276,13 +276,18 @@
   function captureFromCotizacion(snap) {
     const d = snap || global.ArpaCotizacion?.getCotSnapshot?.();
     if (!d) return null;
-    saveCliente({
-      nombre: d.cliente,
-      ciudad: d.ciudad,
-      nit:    document.getElementById('cot-nit')?.value   || '',
-      tel:    document.getElementById('cot-tel')?.value   || '',
-      email:  document.getElementById('cot-email')?.value || ''
-    });
+    var nit   = document.getElementById('cot-nit')?.value   || '';
+    var tel   = document.getElementById('cot-tel')?.value   || '';
+    var email = document.getElementById('cot-email')?.value || '';
+    saveCliente({ nombre: d.cliente, ciudad: d.ciudad, nit, tel, email });
+    var fullSnapshot = d ? {
+      ...d,
+      nit,
+      tel,
+      email,
+      filas:  global.ArpaCotizacion?.getFilas?.()  || [],
+      cobros: global.ArpaCobros?.getLines?.('cot') || []
+    } : null;
     return addRecord({
       id: newRecordId(),
       modulo: 'cotizacion',
@@ -295,7 +300,7 @@
       fecha: d.fecha || '',
       total: d.total,
       concepto: buildCotizacionConcepto(),
-      fullSnapshot: d || null,
+      fullSnapshot,
       savedAt: new Date().toISOString()
     });
   }
@@ -420,14 +425,28 @@
       document.querySelector('.main-menu-btn[onclick*="openCotizacionView"]')?.click();
       setTimeout(() => {
         var fs = r.fullSnapshot;
-        var cliente = (fs && fs.cliente) || r.cliente || '';
-        var ciudad  = (fs && fs.ciudad)  || r.ciudad  || '';
-        var fecha   = (fs && fs.fecha)   || r.fecha   || '';
-        var numero  = (fs && fs.numero)  || r.numero  || '';
-        if (numero)  { const el = document.getElementById('numero-cot');  if (el) el.value = numero; }
-        if (cliente) { const el = document.getElementById('cot-nombre');  if (el) el.value = cliente; }
-        if (ciudad)  { const el = document.getElementById('cot-ciudad');  if (el) el.value = ciudad; }
-        if (fecha)   { const el = document.getElementById('cot-fecha');   if (el) el.value = fecha; }
+        if (fs && global.ArpaCotizacion?.loadCotizacion) {
+          global.ArpaCotizacion.loadCotizacion({
+            numero:  fs.numero  || r.numero  || '',
+            cliente: fs.cliente || r.cliente || '',
+            ciudad:  fs.ciudad  || r.ciudad  || '',
+            fecha:   fs.fecha   || r.fecha   || '',
+            nit:     fs.nit   || '',
+            tel:     fs.tel   || '',
+            email:   fs.email || '',
+            filas:   fs.filas  || [],
+            cobros:  fs.cobros || []
+          });
+        } else {
+          var cliente = (fs && fs.cliente) || r.cliente || '';
+          var ciudad  = (fs && fs.ciudad)  || r.ciudad  || '';
+          var fecha   = (fs && fs.fecha)   || r.fecha   || '';
+          var numero  = (fs && fs.numero)  || r.numero  || '';
+          if (numero)  { const el = document.getElementById('numero-cot');  if (el) el.value = numero; }
+          if (cliente) { const el = document.getElementById('cot-nombre');  if (el) el.value = cliente; }
+          if (ciudad)  { const el = document.getElementById('cot-ciudad');  if (el) el.value = ciudad; }
+          if (fecha)   { const el = document.getElementById('cot-fecha');   if (el) el.value = fecha; }
+        }
         window.scrollTo(0, 0);
         alert(window.ArpaI18n.t('alert.historial.documento_restaurado'));
       }, 400);

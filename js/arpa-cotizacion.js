@@ -333,6 +333,36 @@
     };
   }
 
+  function getFilas() {
+    return filas.map(function(f) {
+      return { cod: f.cod, nom: f.nom, pvp: f.pvp, cant: f.cant, tipo: f.tipo };
+    });
+  }
+  function loadCotizacion(snap) {
+    if (!snap) return;
+    var numero = document.getElementById('numero-cot');
+    var nombre = document.getElementById('cot-nombre');
+    var ciudad = document.getElementById('cot-ciudad');
+    var fecha  = document.getElementById('cot-fecha');
+    var nit    = document.getElementById('cot-nit');
+    var tel    = document.getElementById('cot-tel');
+    var email  = document.getElementById('cot-email');
+    if (numero) numero.value = snap.numero  || '';
+    if (nombre) nombre.value = snap.cliente || '';
+    if (ciudad) ciudad.value = snap.ciudad  || '';
+    if (fecha)  fecha.value  = snap.fecha   || '';
+    if (nit)    nit.value    = snap.nit     || '';
+    if (tel)    tel.value    = snap.tel     || '';
+    if (email)  email.value  = snap.email   || '';
+    filas = (snap.filas || []).map(function(f) {
+      return { cod: f.cod || '', nom: f.nom || '', pvp: f.pvp || 0, cant: f.cant || 1, tipo: f.tipo || 'producto' };
+    });
+    renderTablaCot();
+    if (snap.cobros && global.ArpaCobros?.setLines) {
+      global.ArpaCobros.setLines('cot', snap.cobros);
+    }
+  }
+
   function getCotItemLabels() {
     global.ArpaCobros?.syncFromEditor?.('cot');
     const labels = [];
@@ -799,6 +829,8 @@
     guardarCotPDFYWhatsApp,
     getCotSnapshot,
     getCotItemLabels,
+    getFilas,
+    loadCotizacion,
     getCatalogoActivo,
     updateCatalogHint,
     exportarACuentaCobro,

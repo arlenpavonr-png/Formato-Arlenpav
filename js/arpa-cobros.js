@@ -131,6 +131,14 @@
     renderEditor(storeId);
   }
 
+  function setLines(storeId, rawLines) {
+    const store = getStore(storeId);
+    store.lines = (rawLines || []).map(function(l) {
+      return createLine(l.desc || l.nom || '', l.value != null ? l.value : (l.pvp || 0));
+    });
+    store.seeded = false;
+    renderEditor(storeId);
+  }
   function notifyChange(storeId) {
     if (storeId === 'cot') global.ArpaCotizacion?.renderTablaCot?.(false);
   }
@@ -146,6 +154,7 @@
     addLine,
     removeLine,
     getLines,
+    setLines,
     getSubtotal,
     seedFromPriceList,
     refreshDefaultLabels,
