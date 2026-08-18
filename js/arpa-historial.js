@@ -421,7 +421,30 @@
   let filtroActivo = 'todos';
   let textoBusqueda = '';
 
+  function renderStats() {
+    const records = getRecords();
+    const ahora = new Date();
+    const mesActual = ahora.getFullYear() + '-' + String(ahora.getMonth() + 1).padStart(2, '0');
+
+    const esteMes = records.filter(function(r) {
+      return (r.fecha || '').startsWith(mesActual) || (r.savedAt || '').startsWith(mesActual);
+    });
+
+    const totalCotMes = esteMes
+      .filter(function(r) { return inferModulo(r) === 'cotizacion' && r.total; })
+      .reduce(function(s, r) { return s + (Number(r.total) || 0); }, 0);
+
+    const elTotal = document.getElementById('hist-stat-total-n');
+    const elMes   = document.getElementById('hist-stat-mes-n');
+    const elCot   = document.getElementById('hist-stat-cot-mes');
+
+    if (elTotal) elTotal.textContent = records.length;
+    if (elMes)   elMes.textContent   = esteMes.length;
+    if (elCot)   elCot.textContent   = formatoPesos(totalCotMes);
+  }
+
   function render() {
+    renderStats();
     const list = document.getElementById('historial-list');
     const empty = document.getElementById('historial-empty');
     if (!list) return;
