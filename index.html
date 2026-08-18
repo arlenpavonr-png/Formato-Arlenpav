@@ -3054,7 +3054,7 @@ document.documentElement.classList.add('license-checking');
     <div class="section">
       <div class="section-title"><span class="dot"></span><span data-i18n="cot.section.datos_cliente">Datos del Cliente</span></div>
       <div class="grid g2">
-        <div class="field span2"><label data-i18n="formato.label.nombre_empresa">Nombre / Empresa</label><input id="cot-nombre" type="text" data-i18n-placeholder="formato.placeholder.nombre_empresa" placeholder="Nombre completo o razón social"></div>
+        <div class="field span2"><label data-i18n="formato.label.nombre_empresa">Nombre / Empresa</label><input id="cot-nombre" type="text" data-i18n-placeholder="formato.placeholder.nombre_empresa" placeholder="Nombre completo o razón social" autocomplete="off" list="arpa-clientes-datalist"></div>
         <div class="field"><label data-i18n="formato.label.nit_cedula">NIT / Cédula</label><input id="cot-nit" type="text" data-i18n-placeholder="formato.placeholder.nit_cedula" placeholder="000.000.000-0"></div>
         <div class="field"><label data-i18n="formato.label.telefono">Teléfono</label><input id="cot-tel" type="tel" data-i18n-placeholder="formato.placeholder.telefono" placeholder="+57 300 000 0000"></div>
         <div class="field"><label data-i18n="cot.label.correo">Correo electrónico</label><input id="cot-email" type="email" data-i18n-placeholder="cot.placeholder.correo" placeholder="correo@ejemplo.com"></div>
@@ -4278,7 +4278,8 @@ window.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('DOMContentLoaded', () => {
     buildDatalist();
     autoFillCiudad('formato-cliente-nombre', 'formato-cliente-ciudad');
-    autoFillCiudad('cc-cliente-nombre', 'cc-cliente-ciudad');
+    autoFillCiudad('cot-nombre', 'cot-ciudad');
+    autoFillCiudad('cc-cliente-nombre', 'cc-ciudad');
     // Reconstruir la lista si el historial cambia
     window.addEventListener('storage', (e) => {
       if (e.key === HISTORIAL_KEY) buildDatalist();
