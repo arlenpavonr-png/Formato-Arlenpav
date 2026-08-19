@@ -2492,6 +2492,21 @@
     margin: 0;
     text-align: center;
   }
+  .onboarding-explainer-list {
+    list-style: none;
+    padding: 0;
+    margin: 14px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .onboarding-explainer-list li {
+    font-size: 14px;
+    line-height: 1.4;
+    padding: 10px 12px;
+    background: rgba(201, 168, 76, 0.08);
+    border-radius: 8px;
+  }
   .onboarding-demo-actions {
     display: flex;
     flex-direction: column;
@@ -2633,7 +2648,7 @@ document.documentElement.classList.add('license-checking');
     </div>
     <div class="trial-capture-field">
       <label for="trial-capture-phone" data-i18n="trial_capture.label_phone">WhatsApp (con indicativo)</label>
-      <input type="tel" id="trial-capture-phone" autocomplete="tel" inputmode="tel" placeholder="+57 300 123 4567" value="+57 " data-i18n-placeholder="trial_capture.placeholder_phone">
+      <input type="tel" id="trial-capture-phone" autocomplete="tel" inputmode="tel" placeholder="Ej: +52 55 1234 5678" data-i18n-placeholder="trial_capture.placeholder_phone">
     </div>
     <p id="trial-capture-error" class="trial-capture-error" role="alert"></p>
     <button type="button" id="trial-capture-submit" class="trial-capture-btn" data-i18n="trial_capture.btn_submit">Guardar y continuar</button>
@@ -2707,13 +2722,18 @@ document.documentElement.classList.add('license-checking');
 <div class="settings-overlay onboarding-step-modal" id="onboarding-otro-modal" role="dialog" aria-modal="true" aria-labelledby="onboarding-otro-title">
   <div class="settings-modal">
     <div class="settings-modal-header">
-      <h2 id="onboarding-otro-title" data-i18n="onboarding.otro.title">Tu catálogo</h2>
+      <h2 id="onboarding-otro-title" data-i18n="onboarding.otro.title">Así funciona ARPA Suite</h2>
     </div>
     <div class="settings-modal-body">
-      <p class="onboarding-demo-text" data-i18n="onboarding.otro.text">Empezarás con catálogo vacío. Puedes agregar tus productos manualmente.</p>
+      <p class="onboarding-demo-text" data-i18n="onboarding.otro.text_intro">Vas a llenar este formato en el sitio del cliente, desde el celular.</p>
+      <ul class="onboarding-explainer-list">
+        <li data-i18n="onboarding.otro.item1">📋 Llena los datos del servicio — toma 2 minutos</li>
+        <li data-i18n="onboarding.otro.item2">📄 Genera el PDF profesional al instante</li>
+        <li data-i18n="onboarding.otro.item3">💬 Compártelo por WhatsApp o guárdalo — es gratis los primeros 7 días</li>
+      </ul>
     </div>
     <div class="settings-modal-footer onboarding-demo-actions">
-      <button type="button" id="btn-onboarding-otro-continue" class="btn-onboarding-otro-continue" data-i18n="onboarding.otro.btn_continue">Entender y continuar</button>
+      <button type="button" id="btn-onboarding-otro-continue" class="btn-onboarding-otro-continue" data-i18n="onboarding.otro.btn_continue">Entendido, comenzar →</button>
     </div>
   </div>
 </div>
@@ -2797,7 +2817,7 @@ document.documentElement.classList.add('license-checking');
       <div class="grid g2">
         <div class="field span2"><label data-i18n="formato.label.nombre_empresa">Nombre / Empresa</label><input type="text" id="formato-cliente-nombre" data-i18n-placeholder="formato.placeholder.nombre_empresa" placeholder="Nombre completo o razón social" autocomplete="off" list="arpa-clientes-datalist"></div>
         <div class="field"><label data-i18n="formato.label.nit_cedula">NIT / Cédula</label><input type="text" data-i18n-placeholder="formato.placeholder.nit_cedula" placeholder="000.000.000-0"></div>
-        <div class="field"><label data-i18n="formato.label.telefono">Teléfono</label><input type="tel" id="formato-cliente-tel" data-i18n-placeholder="formato.placeholder.telefono" placeholder="+57 300 000 0000"></div>
+        <div class="field"><label data-i18n="formato.label.telefono">Teléfono</label><input type="tel" id="formato-cliente-tel" data-i18n-placeholder="formato.placeholder.telefono" placeholder="Número de contacto"></div>
         <div class="field span2"><label data-i18n="formato.label.direccion_instalacion">Dirección de instalación</label><input type="text" data-i18n-placeholder="formato.placeholder.direccion" placeholder="Calle, carrera, barrio..."></div>
         <div class="field"><label data-i18n="formato.label.ciudad">Ciudad</label><input type="text" id="formato-cliente-ciudad" data-i18n-placeholder="formato.placeholder.ciudad" placeholder="Medellín"></div>
         <div class="field"><label data-i18n="formato.label.fecha">Fecha</label><input type="date" id="formato-fecha"></div>

@@ -1,10 +1,12 @@
 /**
- * Onboarding de primera apertura — oficio principal y catálogo demo (Automatismos)
+ * Onboarding de primera apertura — oficio principal, catálogo demo (Automatismos)
+ * y explicador de bienvenida antes de entrar a la app.
  */
 (function (global) {
   const ONBOARDING_KEY = 'arpa_onboarding';
   const RUBRO_KEY = 'arpa_rubro';
   const OFICIO_AUTOMATISMOS = 'automatismos';
+  let pendingFinish = null; // { oficioId, opts }
 
   function isOnboardingDone() {
     try {
@@ -30,6 +32,7 @@
 
   function closeStepModals() {
     document.getElementById('onboarding-demo-modal')?.classList.remove('open');
+    document.getElementById('onboarding-otro-modal')?.classList.remove('open');
   }
 
   function hideGate() {
@@ -52,6 +55,11 @@
     document.getElementById('onboarding-demo-modal')?.classList.add('open');
   }
 
+  function openExplainerModal() {
+    closeStepModals();
+    document.getElementById('onboarding-otro-modal')?.classList.add('open');
+  }
+
   function loadDemoCatalog() {
     global.ArpaOficios?.importSeedCatalog?.(OFICIO_AUTOMATISMOS, { force: true });
     global.ArpaCatalogo?.invalidateListaCache?.();
@@ -69,11 +77,9 @@
     localStorage.setItem(RUBRO_KEY, oficioId);
     activateOficio(oficioId);
     hideGate();
-
     if (opts?.loadDemo) {
       loadDemoCatalog();
     }
-
     if (opts?.goToCatalog) {
       const btn = document.querySelector('[data-onboarding-oficio="' + OFICIO_AUTOMATISMOS + '"]')
         || document.querySelector('.main-menu-btn[onclick*="openCatalogoView"]');
@@ -88,13 +94,13 @@
       openDemoModal();
       return;
     }
-    finishOnboarding(id);
+    pendingFinish = { oficioId: id, opts: null };
+    openExplainerModal();
   }
 
   function renderRubroButtons() {
     const container = document.getElementById('onboarding-rubros');
     if (!container) return;
-
     const oficios = global.ArpaOficios?.getOficiosList?.() || [];
     container.innerHTML = oficios.map((o) => {
       const label = global.ArpaOficios?.getOficioLabel?.(o.id) || o.id;
@@ -106,14 +112,12 @@
         '</button>'
       );
     }).join('');
-
     container.querySelectorAll('[data-onboarding-oficio]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
         onOficioSelected(btn.getAttribute('data-onboarding-oficio'));
       });
     });
-
     if (global.ArpaI18n && typeof global.ArpaI18n.apply === 'function') {
       global.ArpaI18n.apply(global.ArpaI18n.getLang?.() || 'es');
     }
@@ -121,13 +125,19 @@
 
   function initOnboarding() {
     renderRubroButtons();
-
     document.getElementById('btn-onboarding-demo-yes')?.addEventListener('click', () => {
-      finishOnboarding(OFICIO_AUTOMATISMOS, { loadDemo: true, goToCatalog: true });
+      pendingFinish = { oficioId: OFICIO_AUTOMATISMOS, opts: { loadDemo: true, goToCatalog: true } };
+      openExplainerModal();
     });
-
     document.getElementById('btn-onboarding-demo-skip')?.addEventListener('click', () => {
-      finishOnboarding(OFICIO_AUTOMATISMOS);
+      pendingFinish = { oficioId: OFICIO_AUTOMATISMOS, opts: null };
+      openExplainerModal();
+    });
+    document.getElementById('btn-onboarding-otro-continue')?.addEventListener('click', () => {
+      if (pendingFinish) {
+        finishOnboarding(pendingFinish.oficioId, pendingFinish.opts);
+        pendingFinish = null;
+      }
     });
   }
 
