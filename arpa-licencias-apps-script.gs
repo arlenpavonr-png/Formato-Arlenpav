@@ -416,7 +416,7 @@ function isPermanentLicense_(codigo) {
 
 
 
-/** Ejecutar una vez en Apps Script para registrar ARPA-FOUNDER-001 en el Sheet. */
+/** Ejecutar una vez en Apps Script para registrar el código founder en el Sheet. */
 function seedFounderLicense() {
 
   const codigo = CONFIG.FOUNDER_CODE;
