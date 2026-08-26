@@ -143,13 +143,15 @@ function doGet(e) {
 
   const codigo = String(params.codigo || '').trim().toUpperCase();
 
-  return respondJsonp_(validateLicense_(codigo), callback);
+  const deviceId = String(params.device_id || '').trim();
+
+  return respondJsonp_(validateLicense_(codigo, deviceId), callback);
 
 }
 
 
 
-function validateLicense_(codigo) {
+function validateLicense_(codigo, deviceId) {
 
   if (!codigo) {
 
@@ -182,6 +184,16 @@ function validateLicense_(codigo) {
     const rowCodigo = String(data[i][cols.codigo] || '').trim().toUpperCase();
 
     if (rowCodigo !== codigo) continue;
+
+    const planLabel = cols.plan >= 0 ? String(data[i][cols.plan] || '') : '';
+
+    const deviceCheck = checkAndRegisterDevice_(rowCodigo, planLabel, deviceId);
+
+    if (!deviceCheck.ok) {
+
+      return { valido: false, mensaje: deviceCheck.mensaje, codigo: rowCodigo };
+
+    }
 
     return buildValidationResult_(data[i], cols, rowCodigo);
 
@@ -2357,4 +2369,53 @@ function testRevisarTrialsDia6() {
   revisarTrialsDia6();
 
 }
+
+
+
+const DEVICE_LIMITS_ = { 'Pro': 1, 'PYME': 3, 'White Label': 5 };
+
+const DISPOSITIVOS_SHEET_NAME_ = 'Dispositivos';
+
+const DISPOSITIVOS_HEADERS_ = ['Codigo', 'DeviceId', 'FechaActivacion'];
+
+function checkAndRegisterDevice_(codigo, planLabel, deviceId) {
+  if (!deviceId) return { ok: true };
+  if (isPermanentLicense_(codigo)) return { ok: true };
+  if (String(codigo).indexOf('ARPA-FREE-') === 0) return { ok: true };
+  const limit = DEVICE_LIMITS_[planLabel];
+  if (!limit) {
+    debugLog_('device_check_plan_desconocido', { codigo: codigo, plan: planLabel });
+    return { ok: true };
+  }
+  const sheet = getDispositivosSheet_();
+  const data = sheet.getDataRange().getValues();
+  const devicesForCodigo = [];
+  let alreadyRegistered = false;
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0] || '').trim().toUpperCase() !== codigo) continue;
+    const rowDevice = String(data[i][1] || '').trim();
+    devicesForCodigo.push(rowDevice);
+    if (rowDevice === deviceId) alreadyRegistered = true;
+  }
+  if (alreadyRegistered) return { ok: true };
+  if (devicesForCodigo.length >= limit) {
+    return {
+      ok: false,
+      mensaje: 'Límite de dispositivos alcanzado para tu plan (' + limit + '). Contacta soporte para agregar otro: ' + CONFIG.SUPPORT_WHATSAPP_DISPLAY,
+    };
+  }
+  sheet.appendRow([codigo, deviceId, new Date()]);
+  return { ok: true };
+}
+
+function getDispositivosSheet_() {
+  const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
+  let sheet = ss.getSheetByName(DISPOSITIVOS_SHEET_NAME_);
+  if (!sheet) {
+    sheet = ss.insertSheet(DISPOSITIVOS_SHEET_NAME_);
+    sheet.getRange(1, 1, 1, DISPOSITIVOS_HEADERS_.length).setValues([DISPOSITIVOS_HEADERS_]);
+  }
+  return sheet;
+}
+
 
