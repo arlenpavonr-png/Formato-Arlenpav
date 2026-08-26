@@ -4,7 +4,7 @@
 (function (global) {
   const LICENSE_CODE_KEY = 'arpa_suite_license_code';
   const LICENSE_PLAN_KEY = 'arpa_suite_license_plan';
-  const FOUNDER_CODE = 'ARPA-FOUNDER-001';
+  const FOUNDER_CODE = 'ARPA-FOUNDER-7X9K2M4QZ1';
   const WL_PREFIX = 'ARPA-WL-';
   const PYME_PREFIX = 'ARPA-PYME-';
   const PRO_PREFIX = 'ARPA-PRO-';
