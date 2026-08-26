@@ -4536,7 +4536,7 @@ if ('serviceWorker' in navigator) {
   }
 
   function validarLicenciaJsonp(codigo) {
-    return licenseApiJsonp({ codigo: String(codigo).trim() });
+    return licenseApiJsonp({ codigo: String(codigo).trim(), device_id: getOrCreateDeviceId() });
   }
 
   function provisionTrialJsonp(deviceId) {
