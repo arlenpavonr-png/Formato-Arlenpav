@@ -30,7 +30,7 @@
 
  * COLUMNAS Sheet (fila 1): CODIGO | PLAN | CLIENTE | EMAIL | VENCIMIENTO | ACTIVO | DEVICE_ID
  *
- * Prefijos: ARPA-FREE- | ARPA-PRO- | ARPA-PYME- | ARPA-WL- | ARPA-FOUNDER-001 (fundador, permanente)
+ * Prefijos: ARPA-FREE- | ARPA-PRO- | ARPA-PYME- | ARPA-WL- | ARPA-FOUNDER-7X9K2M4QZ1 (fundador, permanente)
 
  *
 
@@ -86,7 +86,7 @@ const CONFIG = {
   },
 
   /** Licencia fundador — nunca expira, exenta de bloqueos. */
-  FOUNDER_CODE: 'ARPA-FOUNDER-001',
+  FOUNDER_CODE: 'ARPA-FOUNDER-7X9K2M4QZ1',
 
   EMPRESAS_SHEET_NAME: 'Empresas',
 
@@ -154,14 +154,6 @@ function validateLicense_(codigo) {
   if (!codigo) {
 
     return { valido: false, mensaje: 'Código requerido.' };
-
-  }
-
-
-
-  if (codigo === CONFIG.FOUNDER_CODE) {
-
-    return getFounderLicenseResult_();
 
   }
 
@@ -419,30 +411,6 @@ function isPermanentLicense_(codigo) {
   const c = String(codigo || '').trim().toUpperCase();
 
   return c === CONFIG.FOUNDER_CODE;
-
-}
-
-
-
-function getFounderLicenseResult_() {
-
-  return {
-
-    valido: true,
-
-    mensaje: 'Licencia válida.',
-
-    codigo: CONFIG.FOUNDER_CODE,
-
-    plan: 'Founder',
-
-    vencimiento: '',
-
-    founder: true,
-
-    exempt: true,
-
-  };
 
 }
 
