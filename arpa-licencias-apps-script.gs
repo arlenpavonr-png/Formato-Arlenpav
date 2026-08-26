@@ -39,22 +39,25 @@
  *   ?codigo=ARPA-FREE-0001&callback=fn          → validar licencia
 
  *   ?accion=provision_trial&device_id=UUID&callback=fn → trial auto 7 días
- *
- *   ?accion=saveCompanyData&licencia=...&nombreEmpresa=...&nit=...&direccion=...&ciudad=...&telefono=...&sitioWeb=...&logoBase64=...&banco=...&tipoCuenta=...&numeroCuenta=...&titularCuenta=...&documentoTitular=...&nombreTecnico=...&documentoTecnico=...&codigoTecnico=...&callback=fn
- *   ?accion=getCompanyData&licencia=...&callback=fn
+ *   ?accion=createsession&licencia=...&device_id=...&callback=fn → sesión HMAC (DEV/dual)
+ *   ?accion=saveCompanyData&licencia=...&session=...&nombreEmpresa=... (auth dual)
+ *   ?accion=getCompanyData&licencia=...&session=...&callback=fn
  *
  * POST endpoints (JSON body, Content-Type: text/plain;charset=utf-8):
- *   { accion: 'saveCompanyData', licencia, nombreEmpresa, nit, ... logoBase64 }
- *   { accion: 'savecatalogo', licencia, productos: [...] }
- *   { accion: 'getcatalogo', licencia }
- *   { accion: 'savehistorialentry', licencia, entrada: {...} }
- *   { accion: 'deletehistorialentry', licencia, entradaId }
- *   { accion: 'gethistorial', licencia }
+ *   { accion: 'createsession', licencia, device_id }
+ *   { accion: 'saveCompanyData', licencia|session, nombreEmpresa, nit, ... logoBase64 }
+ *   { accion: 'savecatalogo', licencia|session, productos: [...] }
+ *   { accion: 'getcatalogo', licencia|session }
+ *   { accion: 'savehistorialentry', licencia|session, entrada: {...} }
+ *   { accion: 'deletehistorialentry', licencia|session, entradaId }
+ *   { accion: 'gethistorial', licencia|session }
  *   { accion: 'registerTrialUser', nombre, oficio, telefono, fechaInicio, trialId }
- *   { accion: 'siguientenumero', licencia, tipo: 'formato'|'cot'|'cc', clienteUltimo }
+ *   { accion: 'siguientenumero', licencia|session, tipo: 'formato'|'cot'|'cc', clienteUltimo }
+ *
+ * Auth (Script Properties): AUTH_MODE=dual|session|legacy, SESSION_TTL_SECONDS, SESSION_HMAC_SECRET
+ * En dual: session válida manda; sin session → validateLicense_(licencia) obligatorio.
  *
  * Pestaña Numeracion: Licencia | Tipo | UltimoNumero
- *
  */
 
 const CONFIG = {
@@ -127,15 +130,39 @@ function doGet(e) {
 
   }
 
+  if (accion === 'createsession') {
+
+    return respondJsonp_(
+
+      issueSession_(params.licencia || params.codigo, params.device_id || params.deviceId),
+
+      callback
+
+    );
+
+  }
+
   if (accion === 'savecompanydata') {
 
-    return respondJsonp_(saveCompanyData_(params), callback);
+    const authSave = resolveAuthorizedLicense_(params);
+
+    if (!authSave.ok) return respondJsonp_(authSave, callback);
+
+    const saveParams = Object.assign({}, params, { licencia: authSave.licencia });
+
+    return respondJsonp_(saveCompanyData_(saveParams), callback);
 
   }
 
   if (accion === 'getcompanydata') {
 
-    return respondJsonp_(getCompanyData_(params), callback);
+    const authGet = resolveAuthorizedLicense_(params);
+
+    if (!authGet.ok) return respondJsonp_(authGet, callback);
+
+    const getParams = Object.assign({}, params, { licencia: authGet.licencia });
+
+    return respondJsonp_(getCompanyData_(getParams), callback);
 
   }
 
@@ -1213,6 +1240,259 @@ function respondJson_(obj) {
 
 
 
+// ─── Auth sesión HMAC (sin estado) ───────────────────────────────────────────
+// Script Properties (DEV): AUTH_MODE=dual | SESSION_TTL_SECONDS=86400 | SESSION_HMAC_SECRET=<generado>
+// El secreto NUNCA debe hardcodearse ni loguearse. Solo PropertiesService.
+
+const SESSION_TOKEN_VERSION_ = 1;
+
+/**
+ * Configura propiedades DEV si faltan. Genera SESSION_HMAC_SECRET aleatorio si no existe.
+ * Ejecutar una vez desde el editor de Apps Script. No imprime el secreto.
+ */
+function setupAuthSessionPropertiesDev() {
+  const props = PropertiesService.getScriptProperties();
+  if (!props.getProperty('AUTH_MODE')) {
+    props.setProperty('AUTH_MODE', 'dual');
+  }
+  if (!props.getProperty('SESSION_TTL_SECONDS')) {
+    props.setProperty('SESSION_TTL_SECONDS', '86400');
+  }
+  const hasSecret = !!props.getProperty('SESSION_HMAC_SECRET');
+  if (!hasSecret) {
+    const generated =
+      Utilities.getUuid().replace(/-/g, '') +
+      Utilities.getUuid().replace(/-/g, '');
+    props.setProperty('SESSION_HMAC_SECRET', generated);
+  }
+  Logger.log(
+    'Auth props OK. AUTH_MODE=' +
+      props.getProperty('AUTH_MODE') +
+      ' SESSION_TTL_SECONDS=' +
+      props.getProperty('SESSION_TTL_SECONDS') +
+      ' SESSION_HMAC_SECRET_SET=' +
+      (props.getProperty('SESSION_HMAC_SECRET') ? 'yes' : 'no')
+  );
+}
+
+function getAuthMode_() {
+  try {
+    return String(
+      PropertiesService.getScriptProperties().getProperty('AUTH_MODE') || 'dual'
+    )
+      .trim()
+      .toLowerCase();
+  } catch (e) {
+    return 'dual';
+  }
+}
+
+function getSessionTtlSeconds_() {
+  try {
+    const raw = PropertiesService.getScriptProperties().getProperty('SESSION_TTL_SECONDS');
+    const n = parseInt(raw || '86400', 10);
+    return !n || n < 60 ? 86400 : n;
+  } catch (e) {
+    return 86400;
+  }
+}
+
+function getSessionHmacSecret_() {
+  try {
+    return PropertiesService.getScriptProperties().getProperty('SESSION_HMAC_SECRET') || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+function authFail_(codigo, mensaje) {
+  return {
+    ok: false,
+    auth: false,
+    codigo: codigo,
+    mensaje: mensaje || codigo,
+  };
+}
+
+function base64urlEncodeString_(str) {
+  return Utilities.base64EncodeWebSafe(str).replace(/=+$/, '');
+}
+
+function base64urlEncodeBytes_(bytes) {
+  return Utilities.base64EncodeWebSafe(bytes).replace(/=+$/, '');
+}
+
+function base64urlDecodeToString_(b64) {
+  var s = String(b64 || '');
+  while (s.length % 4) s += '=';
+  return Utilities.newBlob(Utilities.base64DecodeWebSafe(s)).getDataAsString('UTF-8');
+}
+
+function timingSafeEqualString_(a, b) {
+  a = String(a || '');
+  b = String(b || '');
+  if (a.length !== b.length) return false;
+  var r = 0;
+  for (var i = 0; i < a.length; i++) {
+    r |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return r === 0;
+}
+
+/**
+ * Emite sesión firmada solo si validateLicense_ dice válida.
+ * @returns {{ok:boolean, session?:string, exp?:number, licencia?:string, codigo?:string, mensaje?:string}}
+ */
+function issueSession_(licencia, deviceId) {
+  const lic = String(licencia || '').trim().toUpperCase();
+  const validation = validateLicense_(lic);
+  if (!validation || validation.valido !== true) {
+    return authFail_(
+      'AUTH_LICENSE_INVALID',
+      (validation && validation.mensaje) || 'Licencia inválida.'
+    );
+  }
+  const secret = getSessionHmacSecret_();
+  if (!secret) {
+    return authFail_('AUTH_SESSION_INVALID', 'Sesión no configurada en el servidor.');
+  }
+  const now = Math.floor(Date.now() / 1000);
+  const ttl = getSessionTtlSeconds_();
+  const payload = {
+    licencia: lic,
+    device_id: String(deviceId || '').trim(),
+    iat: now,
+    exp: now + ttl,
+    v: SESSION_TOKEN_VERSION_,
+  };
+  const payloadB64 = base64urlEncodeString_(JSON.stringify(payload));
+  const sigBytes = Utilities.computeHmacSha256Signature(payloadB64, secret);
+  const token = payloadB64 + '.' + base64urlEncodeBytes_(sigBytes);
+  return {
+    ok: true,
+    session: token,
+    exp: payload.exp,
+    licencia: lic,
+    v: SESSION_TOKEN_VERSION_,
+  };
+}
+
+/**
+ * Verifica token HMAC. No confía en licencia externa.
+ * @returns {{ok:boolean, payload?:object, codigo?:string, mensaje?:string}}
+ */
+function verifySession_(session) {
+  const raw = String(session || '').trim();
+  if (!raw) {
+    return authFail_('AUTH_SESSION_REQUIRED', 'Sesión requerida.');
+  }
+  const parts = raw.split('.');
+  if (parts.length !== 2 || !parts[0] || !parts[1]) {
+    return authFail_('AUTH_SESSION_INVALID', 'Formato de sesión inválido.');
+  }
+  const secret = getSessionHmacSecret_();
+  if (!secret) {
+    return authFail_('AUTH_SESSION_INVALID', 'Sesión no configurada en el servidor.');
+  }
+  var expectedSig;
+  try {
+    expectedSig = base64urlEncodeBytes_(
+      Utilities.computeHmacSha256Signature(parts[0], secret)
+    );
+  } catch (e) {
+    return authFail_('AUTH_SESSION_INVALID', 'No se pudo verificar la sesión.');
+  }
+  if (!timingSafeEqualString_(parts[1], expectedSig)) {
+    return authFail_('AUTH_SESSION_INVALID', 'Firma de sesión inválida.');
+  }
+  var payload;
+  try {
+    payload = JSON.parse(base64urlDecodeToString_(parts[0]));
+  } catch (e2) {
+    return authFail_('AUTH_SESSION_INVALID', 'Payload de sesión inválido.');
+  }
+  if (!payload || typeof payload !== 'object') {
+    return authFail_('AUTH_SESSION_INVALID', 'Payload de sesión inválido.');
+  }
+  if (Number(payload.v) !== SESSION_TOKEN_VERSION_) {
+    return authFail_('AUTH_SESSION_INVALID', 'Versión de sesión no soportada.');
+  }
+  const now = Math.floor(Date.now() / 1000);
+  const exp = Number(payload.exp) || 0;
+  if (!exp || now >= exp) {
+    return authFail_('AUTH_SESSION_EXPIRED', 'Sesión expirada.');
+  }
+  const lic = String(payload.licencia || '').trim().toUpperCase();
+  if (!lic) {
+    return authFail_('AUTH_SESSION_INVALID', 'Sesión sin licencia.');
+  }
+  payload.licencia = lic;
+  payload.device_id = String(payload.device_id || '').trim();
+  return { ok: true, payload: payload };
+}
+
+/**
+ * Exige sesión válida y, si se pasa expectedLicense, que coincida con el token.
+ */
+function assertSessionAuthorized_(session, expectedLicense) {
+  const verified = verifySession_(session);
+  if (!verified.ok) return verified;
+  const tokenLic = verified.payload.licencia;
+  const expected = String(expectedLicense || '').trim().toUpperCase();
+  if (expected && expected !== tokenLic) {
+    return authFail_('AUTH_SESSION_INVALID', 'Licencia no coincide con la sesión.');
+  }
+  return { ok: true, payload: verified.payload, licencia: tokenLic };
+}
+
+/**
+ * Dual-mode:
+ * - session presente → solo verifySession_ (sin fallback legacy si falla)
+ * - session ausente + AUTH_MODE=session → AUTH_SESSION_REQUIRED
+ * - session ausente + dual/legacy → validateLicense_(licencia) obligatorio
+ * La licencia efectiva nunca se toma a ciegas del request.
+ */
+function resolveAuthorizedLicense_(input) {
+  input = input || {};
+  const mode = getAuthMode_();
+  const sessionRaw = String(input.session || input.sessionToken || '').trim();
+  const bodyLic = String(input.licencia || '').trim().toUpperCase();
+
+  if (sessionRaw) {
+    const verified = verifySession_(sessionRaw);
+    if (!verified.ok) {
+      return authFail_(verified.codigo || 'AUTH_SESSION_INVALID', verified.mensaje);
+    }
+    const tokenLic = verified.payload.licencia;
+    if (bodyLic && bodyLic !== tokenLic) {
+      return authFail_('AUTH_SESSION_INVALID', 'Licencia no coincide con la sesión.');
+    }
+    return {
+      ok: true,
+      licencia: tokenLic,
+      authSource: 'session',
+      device_id: verified.payload.device_id || '',
+    };
+  }
+
+  if (mode === 'session') {
+    return authFail_('AUTH_SESSION_REQUIRED', 'Sesión requerida.');
+  }
+
+  // dual | legacy: licencia del request SOLO tras validateLicense_
+  if (!bodyLic) {
+    return authFail_('AUTH_LICENSE_INVALID', 'Licencia requerida.');
+  }
+  const validation = validateLicense_(bodyLic);
+  if (!validation || validation.valido !== true) {
+    return authFail_(
+      'AUTH_LICENSE_INVALID',
+      (validation && validation.mensaje) || 'Licencia inválida.'
+    );
+  }
+  return { ok: true, licencia: bodyLic, authSource: 'legacy' };
+}
+
 function handleSyncPost_(e) {
 
   const body = parseSyncJsonBody_(e);
@@ -1223,63 +1503,99 @@ function handleSyncPost_(e) {
 
 
 
-  if (accion === 'savecompanydata') {
-
-    return respondJson_(saveCompanyData_(body));
-
-  }
-
   if (accion === 'registertrialuser') {
 
     return respondJson_(registerTrialUser_(body));
 
   }
 
+  if (accion === 'createsession') {
 
+    return respondJson_(issueSession_(body.licencia, body.device_id || body.deviceId));
 
-  const licencia = String(body.licencia || '').trim().toUpperCase();
+  }
 
-  if (!licencia) {
+  if (accion === 'savecompanydata') {
 
-    return respondJson_({ ok: false, mensaje: 'Licencia requerida.' });
+    const auth = resolveAuthorizedLicense_(body);
+
+    if (!auth.ok) return respondJson_(auth);
+
+    return respondJson_(saveCompanyData_(Object.assign({}, body, { licencia: auth.licencia })));
+
+  }
+
+  if (accion === 'getcompanydata') {
+
+    const auth = resolveAuthorizedLicense_(body);
+
+    if (!auth.ok) return respondJson_(auth);
+
+    return respondJson_(getCompanyData_(Object.assign({}, body, { licencia: auth.licencia })));
 
   }
 
 
 
-  if (accion === 'savecatalogo') {
+  if (
 
-    return respondJson_(saveCatalogo_(licencia, body.productos));
+    accion === 'savecatalogo' ||
 
-  }
+    accion === 'getcatalogo' ||
 
-  if (accion === 'getcatalogo') {
+    accion === 'savehistorialentry' ||
 
-    return respondJson_(getCatalogo_(licencia));
+    accion === 'deletehistorialentry' ||
 
-  }
+    accion === 'gethistorial' ||
 
-  if (accion === 'savehistorialentry') {
+    accion === 'siguientenumero'
 
-    return respondJson_(saveHistorialEntry_(licencia, body.entrada));
+  ) {
 
-  }
+    const auth = resolveAuthorizedLicense_(body);
 
-  if (accion === 'deletehistorialentry') {
+    if (!auth.ok) return respondJson_(auth);
 
-    return respondJson_(deleteHistorialEntry_(licencia, body.entradaId));
+    const licencia = auth.licencia;
 
-  }
 
-  if (accion === 'gethistorial') {
 
-    return respondJson_(getHistorial_(licencia));
+    if (accion === 'savecatalogo') {
 
-  }
+      return respondJson_(saveCatalogo_(licencia, body.productos));
 
-  if (accion === 'siguientenumero') {
+    }
 
-    return respondJson_(siguienteNumero_(licencia, body.tipo, body.clienteUltimo));
+    if (accion === 'getcatalogo') {
+
+      return respondJson_(getCatalogo_(licencia));
+
+    }
+
+    if (accion === 'savehistorialentry') {
+
+      return respondJson_(saveHistorialEntry_(licencia, body.entrada));
+
+    }
+
+    if (accion === 'deletehistorialentry') {
+
+      return respondJson_(deleteHistorialEntry_(licencia, body.entradaId));
+
+    }
+
+    if (accion === 'gethistorial') {
+
+      return respondJson_(getHistorial_(licencia));
+
+    }
+
+    if (accion === 'siguientenumero') {
+
+      return respondJson_(siguienteNumero_(licencia, body.tipo, body.clienteUltimo));
+
+    }
 
   }
 
