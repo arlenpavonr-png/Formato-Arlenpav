@@ -76,6 +76,15 @@
     PEN: { locale: 'es-PE', symbol: 'S/' },
     CLP: { locale: 'es-CL', symbol: '$' }
   };
+
+  const COUNTRY_PROFILES = {
+    CO: { currency: 'COP', taxLabelKey: 'tax.label.iva', taxRate: 0.19 },
+    MX: { currency: 'MXN', taxLabelKey: 'tax.label.iva', taxRate: 0.16 },
+    CL: { currency: 'CLP', taxLabelKey: 'tax.label.iva', taxRate: 0.19 },
+    PE: { currency: 'PEN', taxLabelKey: 'tax.label.igv', taxRate: 0.18 },
+    US: { currency: 'USD', taxLabelKey: 'tax.label.sales_tax', taxRate: 0 }
+  };
+
   function detectDefaultCurrencyFromLocale() {
     try {
       const lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
@@ -88,8 +97,44 @@
       return 'COP';
     }
   }
+
+  function detectDefaultCountryFromLocale() {
+    try {
+      const lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+      if (lang.includes('mx')) return 'MX';
+      if (lang.includes('pe')) return 'PE';
+      if (lang.includes('cl')) return 'CL';
+      if (lang.includes('us') || lang === 'en') return 'US';
+      return 'CO';
+    } catch (e) {
+      return 'CO';
+    }
+  }
+
+  function getCountryProfile() {
+    const saved = window.ArpaBrand?.getSettings?.()?.country;
+    const code = (saved && COUNTRY_PROFILES[saved]) ? saved : detectDefaultCountryFromLocale();
+    return { code, ...COUNTRY_PROFILES[code] };
+  }
+
+  function getTaxRate() {
+    return getCountryProfile().taxRate;
+  }
+
+  function getTaxLabelText() {
+    const profile = getCountryProfile();
+    const pct = Math.round(profile.taxRate * 100);
+    const labelWord = window.ArpaI18n?.t?.(profile.taxLabelKey) || 'IVA';
+    return { labelWord, pct, full: labelWord + ' (' + pct + '%)' };
+  }
+
   function getDefaultCurrency() {
-    const saved = window.ArpaBrand?.getSettings?.()?.currency;
+    const settings = window.ArpaBrand?.getSettings?.() || {};
+    // Si el técnico ya eligió país, el perfil fiscal manda sobre moneda suelta.
+    if (settings.country && COUNTRY_PROFILES[settings.country]) {
+      return COUNTRY_PROFILES[settings.country].currency;
+    }
+    const saved = settings.currency;
     if (saved && CURRENCIES[saved]) return saved;
     return detectDefaultCurrencyFromLocale();
   }
@@ -102,11 +147,16 @@
     PRICE_LIST_KEY,
     DEFAULT_PRICE_LIST,
     CURRENCIES,
+    COUNTRY_PROFILES,
     getPriceList,
     savePriceList,
     readPriceListFromSettingsForm,
     renderPriceListSettings,
     detectDefaultCurrencyFromLocale,
+    detectDefaultCountryFromLocale,
+    getCountryProfile,
+    getTaxRate,
+    getTaxLabelText,
     getDefaultCurrency,
     formatoPesos
   };

@@ -299,6 +299,9 @@
     'cot.table.empty': 'Add products, services, or additional items',
     'cot.section.resumen': 'Quote Summary',
     'cot.iva.toggle': 'Include VAT 19%',
+    'tax.label.iva': 'IVA',
+    'tax.label.igv': 'IGV',
+    'tax.label.sales_tax': 'Sales tax',
     'cot.total.subtotal': 'Subtotal',
     'cot.total.iva': 'VAT (19%)',
     'cot.total.grand': 'TOTAL',
@@ -744,7 +747,10 @@
       'currency.name.usd': 'dólares estadounidenses',
       'currency.name.mxn': 'pesos mexicanos',
       'currency.name.pen': 'soles peruanos',
-      'currency.name.clp': 'pesos chilenos'
+      'currency.name.clp': 'pesos chilenos',
+      'tax.label.iva': 'IVA',
+      'tax.label.igv': 'IGV',
+      'tax.label.sales_tax': 'Impuesto sobre ventas'
     });
   }
 
