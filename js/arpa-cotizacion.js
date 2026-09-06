@@ -238,9 +238,9 @@
       ? ('Include ' + tax.labelWord + ' ' + tax.pct + '%')
       : ('Incluir ' + tax.labelWord + ' ' + tax.pct + '%');
     const ivaCheck = document.getElementById('iva-check-cot');
-    const toggleSpan = ivaCheck?.parentElement?.querySelector('[data-i18n="cot.iva.toggle"]');
+    const toggleSpan = ivaCheck?.parentElement?.querySelector('span');
     if (toggleSpan) toggleSpan.textContent = toggleText;
-    const ivaLabel = document.querySelector('#iva-row-cot [data-i18n="cot.total.iva"], #iva-row-cot .total-label');
+    const ivaLabel = document.querySelector('#iva-row-cot .total-label');
     if (ivaLabel) ivaLabel.textContent = tax.full;
   }
 
