@@ -222,12 +222,35 @@
     recalcularCotizacion();
   }
 
+  function getTaxRate() {
+    const rate = Number(global.ArpaPricing?.getTaxRate?.());
+    return Number.isFinite(rate) ? rate : 0;
+  }
+
+  function getTaxLabelInfo() {
+    return global.ArpaPricing?.getTaxLabelText?.() || { labelWord: 'IVA', pct: 0, full: 'IVA (0%)' };
+  }
+
+  function applyTaxLabels() {
+    const tax = getTaxLabelInfo();
+    const lang = global.ArpaI18n?.getLang?.() || 'es';
+    const toggleText = lang === 'en'
+      ? ('Include ' + tax.labelWord + ' ' + tax.pct + '%')
+      : ('Incluir ' + tax.labelWord + ' ' + tax.pct + '%');
+    const ivaCheck = document.getElementById('iva-check-cot');
+    const toggleSpan = ivaCheck?.parentElement?.querySelector('[data-i18n="cot.iva.toggle"]');
+    if (toggleSpan) toggleSpan.textContent = toggleText;
+    const ivaLabel = document.querySelector('#iva-row-cot [data-i18n="cot.total.iva"], #iva-row-cot .total-label');
+    if (ivaLabel) ivaLabel.textContent = tax.full;
+  }
+
   function recalcularCotizacion() {
+    applyTaxLabels();
     const subtotalProductos = filas.reduce((s, f) => s + f.pvp * f.cant, 0);
     const subtotalCobros = getCobrosLineas().reduce((s, f) => s + f.pvp * f.cant, 0);
     const subtotal = subtotalProductos + subtotalCobros;
     const conIva = document.getElementById('iva-check-cot')?.checked;
-    const iva = conIva ? subtotal * 0.19 : 0;
+    const iva = conIva ? subtotal * getTaxRate() : 0;
     const total = subtotal + iva;
     const subEl = document.getElementById('subtotal-val-cot');
     const ivaEl = document.getElementById('iva-val-cot');
@@ -321,7 +344,7 @@
     const subtotalCobros = getCobrosLineas().reduce((s, f) => s + f.pvp * f.cant, 0);
     const subtotal = subtotalProductos + subtotalCobros;
     const conIva = document.getElementById('iva-check-cot')?.checked;
-    const iva = conIva ? subtotal * 0.19 : 0;
+    const iva = conIva ? subtotal * getTaxRate() : 0;
     const total = subtotal + iva;
 
     return {
@@ -823,6 +846,7 @@
     initCotizacion,
     refreshCobros,
     renderTablaCot,
+    recalcularCotizacion,
     nuevoCotNumero,
     ensureCotNumero,
     guardarCotPDF,

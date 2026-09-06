@@ -36,6 +36,7 @@
     city: '',
     phone: '',
     website: '',
+    country: '',
     bankName: '',
     accountType: 'Ahorros',
     accountNumber: '',
@@ -739,6 +740,18 @@
     if (appLogoBox) appLogoBox.classList.toggle('brand-customization-locked', !allowed);
   }
 
+  function bindCountryCurrencySync() {
+    const countrySelect = document.getElementById('settings-country');
+    const currencySelect = document.getElementById('settings-currency');
+    if (!countrySelect || countrySelect.dataset.arpaCountryBound === '1') return;
+    countrySelect.dataset.arpaCountryBound = '1';
+    countrySelect.addEventListener('change', function () {
+      const code = countrySelect.value;
+      const currency = global.ArpaPricing?.COUNTRY_PROFILES?.[code]?.currency;
+      if (currency && currencySelect) currencySelect.value = currency;
+    });
+  }
+
   function openSettings(menuBtn) {
     clearError();
     pendingLogoBase64 = null;
@@ -766,7 +779,19 @@
       if (el) el.value = v || '';
     });
     const currencySelect = document.getElementById('settings-currency');
-    if (currencySelect) currencySelect.value = s.currency || window.ArpaPricing?.getDefaultCurrency?.() || 'COP';
+    const countrySelect = document.getElementById('settings-country');
+    const countryCode = (s.country && global.ArpaPricing?.COUNTRY_PROFILES?.[s.country])
+      ? s.country
+      : (global.ArpaPricing?.detectDefaultCountryFromLocale?.() || 'CO');
+    if (countrySelect) countrySelect.value = countryCode;
+    if (currencySelect) {
+      const fromCountry = global.ArpaPricing?.COUNTRY_PROFILES?.[countryCode]?.currency;
+      currencySelect.value = fromCountry
+        || s.currency
+        || global.ArpaPricing?.getDefaultCurrency?.()
+        || 'COP';
+    }
+    bindCountryCurrencySync();
     const preview = document.getElementById('settings-logo-preview');
     if (preview) preview.src = getLogo(s);
     const appPreview = document.getElementById('settings-app-logo-preview');
@@ -813,6 +838,10 @@
     const city = document.getElementById('settings-city')?.value.trim();
     const phone = document.getElementById('settings-phone')?.value.trim();
     const currency = document.getElementById('settings-currency')?.value.trim() || 'COP';
+    const countryRaw = document.getElementById('settings-country')?.value.trim() || '';
+    const country = (countryRaw && global.ArpaPricing?.COUNTRY_PROFILES?.[countryRaw])
+      ? countryRaw
+      : (global.ArpaPricing?.detectDefaultCountryFromLocale?.() || 'CO');
     const bankName = document.getElementById('settings-bank')?.value.trim();
     const accountType = document.getElementById('settings-account-type')?.value.trim();
     const accountNumber = document.getElementById('settings-account-number')?.value.trim();
@@ -841,6 +870,7 @@
       address,
       city,
       phone,
+      country,
       currency,
       website: (() => {
         const w = document.getElementById('settings-website')?.value.trim() || '';
@@ -883,7 +913,9 @@
       global.ArpaPricing?.savePriceList?.(global.ArpaPricing.readPriceListFromSettingsForm());
       global.ArpaCobros?.seedFromPriceList?.('cot');
       global.ArpaCotizacion?.refreshCobros?.();
+      global.ArpaCotizacion?.recalcularCotizacion?.();
       global.ArpaCuentaCobro?.refreshView?.();
+      global.ArpaCuentaCobro?.recalcularTotales?.();
     } catch (e) {
       console.warn('[arpa-brand] post-save hooks', e);
     }

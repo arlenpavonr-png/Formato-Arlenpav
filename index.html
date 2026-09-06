@@ -3667,6 +3667,17 @@ document.documentElement.classList.add('license-checking');
       </div>
       <div class="settings-section-title" data-i18n="settings.section.currency">Moneda</div>
       <div class="field">
+        <label for="settings-country" data-i18n="settings.label.country">País</label>
+        <select id="settings-country">
+          <option value="CO">🇨🇴 Colombia</option>
+          <option value="MX">🇲🇽 México</option>
+          <option value="CL">🇨🇱 Chile</option>
+          <option value="PE">🇵🇪 Perú</option>
+          <option value="US">🇺🇸 Estados Unidos</option>
+        </select>
+        <small data-i18n="settings.label.country_hint">Define automáticamente moneda e impuesto de tus documentos</small>
+      </div>
+      <div class="field">
         <label for="settings-currency" data-i18n="settings.label.currency">Moneda de tus documentos</label>
         <select id="settings-currency">
           <option value="COP" data-i18n="currency.cop">🇨🇴 COP — Peso colombiano</option>

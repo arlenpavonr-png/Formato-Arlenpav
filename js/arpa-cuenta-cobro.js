@@ -250,12 +250,35 @@
     return servicios.reduce((s, r) => s + (parseInt(r.cant, 10) || 1) * parseNum(r.unit), 0);
   }
 
+  function getTaxRate() {
+    const rate = Number(global.ArpaPricing?.getTaxRate?.());
+    return Number.isFinite(rate) ? rate : 0;
+  }
+
+  function getTaxLabelInfo() {
+    return global.ArpaPricing?.getTaxLabelText?.() || { labelWord: 'IVA', pct: 0, full: 'IVA (0%)' };
+  }
+
+  function applyTaxLabels() {
+    const tax = getTaxLabelInfo();
+    const lang = global.ArpaI18n?.getLang?.() || 'es';
+    const toggleText = lang === 'en'
+      ? ('Include ' + tax.labelWord + ' ' + tax.pct + '%')
+      : ('Incluir ' + tax.labelWord + ' ' + tax.pct + '%');
+    const ivaCheck = document.getElementById('cc-iva-check');
+    const toggleSpan = ivaCheck?.parentElement?.querySelector('[data-i18n="cot.iva.toggle"]');
+    if (toggleSpan) toggleSpan.textContent = toggleText;
+    const ivaLabel = document.querySelector('#cc-iva-row [data-i18n="cot.total.iva"], #cc-iva-row .total-label');
+    if (ivaLabel) ivaLabel.textContent = tax.full;
+  }
+
   function recalcularTotales() {
+    applyTaxLabels();
     const subtotal = getSubtotal();
     const conIva = document.getElementById('cc-iva-check')?.checked;
     const conRet = document.getElementById('cc-ret-check')?.checked;
     const retPct = parseNum(document.getElementById('cc-ret-pct')?.value) || 0;
-    const iva = conIva ? subtotal * 0.19 : 0;
+    const iva = conIva ? subtotal * getTaxRate() : 0;
     const retencion = conRet ? subtotal * (retPct / 100) : 0;
     const total = subtotal + iva - retencion;
 
@@ -288,7 +311,7 @@
     const conIva = document.getElementById('cc-iva-check')?.checked;
     const conRet = document.getElementById('cc-ret-check')?.checked;
     const retPct = parseNum(document.getElementById('cc-ret-pct')?.value) || 0;
-    const iva = conIva ? subtotal * 0.19 : 0;
+    const iva = conIva ? subtotal * getTaxRate() : 0;
     const retencion = conRet ? subtotal * (retPct / 100) : 0;
     const total = subtotal + iva - retencion;
     const r = global.ArpaBrand?.getSettings?.() || getRawSettings();
@@ -577,7 +600,7 @@
     doc.setFontSize(9);
     const totales = [
       ['Subtotal', formatoPesos(d.subtotal)],
-      ...(d.conIva ? [['IVA (19%)', formatoPesos(d.iva)]] : []),
+      ...(d.conIva ? [[(global.ArpaPricing?.getTaxLabelText?.()?.full || 'IVA (0%)'), formatoPesos(d.iva)]] : []),
       ...(d.conRet ? [[`Retención (${d.retPct}%)`, '- ' + formatoPesos(d.retencion)]] : [])
     ];
     totales.forEach(([label, val]) => {
@@ -759,6 +782,7 @@
   global.ArpaCuentaCobro = {
     initCuentaCobro,
     refreshView,
+    recalcularTotales,
     nuevoCcNumero,
     ensureCcNumero,
     limpiarFormulario,
