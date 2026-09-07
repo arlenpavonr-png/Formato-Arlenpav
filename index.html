@@ -487,6 +487,8 @@
     display: flex;
     justify-content: center;
     margin: 0 auto 10px;
+    text-decoration: none;
+    color: inherit;
   }
   #formato-video-qr-canvas {
     display: block;
@@ -3049,9 +3051,9 @@ document.documentElement.classList.add('license-checking');
       </div>
       <div id="formato-video-qr-print" class="formato-video-qr-print" hidden aria-hidden="true">
         <p class="formato-video-qr-title" data-i18n="formato.video_qr.title">Video de entrega del equipo</p>
-        <div class="formato-video-qr-canvas-wrap">
+        <a id="formato-video-qr-canvas-link" class="formato-video-qr-canvas-wrap" href="#" target="_blank" rel="noopener noreferrer">
           <canvas id="formato-video-qr-canvas" width="140" height="140" data-i18n-aria-label="formato.video_qr.aria" aria-label="Código QR video de entrega"></canvas>
-        </div>
+        </a>
         <p class="formato-video-qr-hint" data-i18n="formato.video_qr.hint">Escanee el código para ver el video de entrega del equipo</p>
         <p class="formato-video-qr-url" id="formato-video-qr-url-text"></p>
       </div>
@@ -3964,7 +3966,19 @@ function prepareVideoQrForPrint() {
     }).catch(() => {});
   }
 
-  if (urlText) urlText.textContent = url;
+  if (urlText) {
+    urlText.innerHTML = '';
+    const linkEl = document.createElement('a');
+    linkEl.href = url;
+    linkEl.target = '_blank';
+    linkEl.rel = 'noopener noreferrer';
+    linkEl.textContent = url;
+    linkEl.style.color = 'inherit';
+    linkEl.style.textDecoration = 'underline';
+    urlText.appendChild(linkEl);
+  }
+  const canvasLink = document.getElementById('formato-video-qr-canvas-link');
+  if (canvasLink) canvasLink.href = url;
   block.hidden = false;
   block.setAttribute('aria-hidden', 'false');
   block.classList.add('formato-video-qr-visible');
@@ -3981,6 +3995,10 @@ function restoreVideoQrAfterPrint(block) {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
+  const canvasLink = document.getElementById('formato-video-qr-canvas-link');
+  if (canvasLink) canvasLink.href = '#';
+  const urlText = document.getElementById('formato-video-qr-url-text');
+  if (urlText) urlText.innerHTML = '';
 }
 
 // ── GUARDAR PDF ─────────────────────────────────────────────────────────────
