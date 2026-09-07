@@ -2819,9 +2819,9 @@ document.documentElement.classList.add('license-checking');
       <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.datos_cliente">Datos del Cliente</span></div>
       <div class="grid g2">
         <div class="field span2"><label data-i18n="formato.label.nombre_empresa">Nombre / Empresa</label><input type="text" id="formato-cliente-nombre" data-i18n-placeholder="formato.placeholder.nombre_empresa" placeholder="Nombre completo o razón social" autocomplete="off" list="arpa-clientes-datalist"></div>
-        <div class="field"><label data-i18n="formato.label.nit_cedula">NIT / Cédula</label><input type="text" data-i18n-placeholder="formato.placeholder.nit_cedula" placeholder="000.000.000-0"></div>
+        <div class="field"><label data-i18n="formato.label.nit_cedula">NIT / Cédula</label><input type="text" id="formato-cliente-nit" data-i18n-placeholder="formato.placeholder.nit_cedula" placeholder="000.000.000-0"></div>
         <div class="field"><label data-i18n="formato.label.telefono">Teléfono</label><input type="tel" id="formato-cliente-tel" data-i18n-placeholder="formato.placeholder.telefono" placeholder="Número de contacto"></div>
-        <div class="field span2"><label data-i18n="formato.label.direccion_instalacion">Dirección de instalación</label><input type="text" data-i18n-placeholder="formato.placeholder.direccion" placeholder="Calle, carrera, barrio..."></div>
+        <div class="field span2"><label data-i18n="formato.label.direccion_instalacion">Dirección de instalación</label><input type="text" id="formato-cliente-direccion" data-i18n-placeholder="formato.placeholder.direccion" placeholder="Calle, carrera, barrio..."></div>
         <div class="field"><label data-i18n="formato.label.ciudad">Ciudad</label><input type="text" id="formato-cliente-ciudad" data-i18n-placeholder="formato.placeholder.ciudad" placeholder="Medellín"></div>
         <div class="field"><label data-i18n="formato.label.fecha">Fecha</label><input type="date" id="formato-fecha"></div>
       </div>
@@ -4329,7 +4329,12 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   document.addEventListener('DOMContentLoaded', function() {
     buildDatalist();
-    autoFillCliente('formato-cliente-nombre', { ciudad: 'formato-cliente-ciudad' });
+    autoFillCliente('formato-cliente-nombre', {
+      ciudad: 'formato-cliente-ciudad',
+      nit:    'formato-cliente-nit',
+      tel:    'formato-cliente-tel',
+      dir:    'formato-cliente-direccion'
+    });
     autoFillCliente('cot-nombre', {
       ciudad: 'cot-ciudad',
       nit:    'cot-nit',

@@ -307,7 +307,10 @@
     const snap = readFormSnapshot();
     var fullSnapshot = null;
     try { fullSnapshot = global.collectFormatoDraft?.() || null; } catch(e) {}
-    saveCliente({ nombre: snap.cliente, ciudad: snap.ciudad });
+    var nit = document.getElementById('formato-cliente-nit')?.value || '';
+    var tel = document.getElementById('formato-cliente-tel')?.value || '';
+    var dir = document.getElementById('formato-cliente-direccion')?.value || '';
+    saveCliente({ nombre: snap.cliente, ciudad: snap.ciudad, nit: nit, tel: tel, dir: dir });
     return addRecord({
       id: newRecordId(),
       modulo: 'formato',
