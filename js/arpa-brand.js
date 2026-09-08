@@ -9,6 +9,18 @@
   const SALES_ENTRY_KEY = 'arpa_suite_sales_entry';
   const FORMATO_DRAFT_KEY = 'arpa_formato_borrador';
   const LOGO_STORAGE_KEY = 'arpa_logo';
+  const DEMO_MODE_KEY = 'arpa_demo_mode_active';
+  const DEMO_SETTINGS_KEY = 'arpa_suite_user_settings_demo';
+  const DEMO_LOGO_KEY = 'arpa_logo_demo';
+  const DEMO_CONFIGURED_KEY = 'arpa_suite_settings_configured_demo';
+  const DEMO_ACTIVATION_CODE = 'DEMO2026';
+  function isDemoModeActive() {
+    try { return localStorage.getItem(DEMO_MODE_KEY) === 'true'; }
+    catch (e) { return false; }
+  }
+  function activeSettingsKey() { return isDemoModeActive() ? DEMO_SETTINGS_KEY : SETTINGS_KEY; }
+  function activeLogoKey() { return isDemoModeActive() ? DEMO_LOGO_KEY : LOGO_STORAGE_KEY; }
+  function activeConfiguredKey() { return isDemoModeActive() ? DEMO_CONFIGURED_KEY : SETTINGS_CONFIGURED_KEY; }
   const GLOBAL_BRAND_URL = 'https://arpatechnologyglobal.com';
   const GLOBAL_FOOTER_TEXT = 'Generado con ARPA Suite · Pruébala gratis en arpatechnologyglobal.com · © 2026';
   function getGlobalFooterText() {
@@ -78,7 +90,7 @@
 
   function hasUserSettings() {
     try {
-      return localStorage.getItem(SETTINGS_CONFIGURED_KEY) === 'true';
+      return localStorage.getItem(activeConfiguredKey()) === 'true';
     } catch (e) {
       return false;
     }
@@ -155,9 +167,9 @@
   function migrateConfiguredFlag() {
     if (hasUserSettings()) return;
     try {
-      const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      const saved = JSON.parse(localStorage.getItem(activeSettingsKey()) || '{}');
       if (saved.companyName?.trim() && !isLegacyPreset(saved)) {
-        localStorage.setItem(SETTINGS_CONFIGURED_KEY, 'true');
+        localStorage.setItem(activeConfiguredKey(), 'true');
       }
     } catch (e) {}
   }
@@ -175,7 +187,7 @@
 
   function getDedicatedLogo() {
     try {
-      return localStorage.getItem(LOGO_STORAGE_KEY) || '';
+      return localStorage.getItem(activeLogoKey()) || '';
     } catch (e) {
       return '';
     }
@@ -184,8 +196,8 @@
   function setDedicatedLogo(logo) {
     try {
       const value = String(logo || '').trim();
-      if (value) localStorage.setItem(LOGO_STORAGE_KEY, value);
-      else localStorage.removeItem(LOGO_STORAGE_KEY);
+      if (value) localStorage.setItem(activeLogoKey(), value);
+      else localStorage.removeItem(activeLogoKey());
       return true;
     } catch (e) {
       console.warn('[arpa-brand] setDedicatedLogo', e);
@@ -197,7 +209,7 @@
   function migrateDedicatedLogoFromSettings() {
     try {
       if (getDedicatedLogo()) return;
-      const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      const saved = JSON.parse(localStorage.getItem(activeSettingsKey()) || '{}');
       const logo = String(saved.logoBase64 || '').trim();
       if (logo) setDedicatedLogo(logo);
     } catch (e) {}
@@ -212,14 +224,14 @@
   function purgeLegacyData() {
     try {
       const logoBackup = getDedicatedLogo();
-      const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      const saved = JSON.parse(localStorage.getItem(activeSettingsKey()) || '{}');
       if (!logoBackup) {
         const fromSettings = String(saved.logoBase64 || '').trim();
         if (fromSettings) setDedicatedLogo(fromSettings);
       }
       if (shouldPurgeSettings(saved)) {
-        localStorage.removeItem(SETTINGS_KEY);
-        localStorage.removeItem(SETTINGS_CONFIGURED_KEY);
+        localStorage.removeItem(activeSettingsKey());
+        localStorage.removeItem(activeConfiguredKey());
       }
       const draft = localStorage.getItem(FORMATO_DRAFT_KEY) || '';
       if (shouldPurgeDraft(draft)) {
@@ -231,7 +243,7 @@
 
   function getSettings() {
     try {
-      const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+      const saved = JSON.parse(localStorage.getItem(activeSettingsKey()) || '{}');
       const merged = { ...EMPTY_SETTINGS, ...saved };
       const logo = resolveLogoFromSettings(merged);
       if (logo) merged.logoBase64 = logo;
@@ -258,7 +270,7 @@
       if (hasLogoPayload) {
         if (!setDedicatedLogo(merged.logoBase64)) return false;
       }
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(merged));
+      localStorage.setItem(activeSettingsKey(), JSON.stringify(merged));
       return true;
     } catch (e) {
       console.warn('[arpa-brand]', e);
@@ -320,6 +332,7 @@
   }
 
   function needsCompanyRestoreFromSheets() {
+    if (isDemoModeActive()) return false;
     const licencia = getLicenseCode();
     if (!licencia) return false;
     // v2: también sincronizar si toca por intervalo (cada 30 min)
@@ -329,7 +342,7 @@
     const current = getSettings();
     if (String(current.companyName || '').trim()) return false;
     try {
-      const raw = localStorage.getItem(SETTINGS_KEY);
+      const raw = localStorage.getItem(activeSettingsKey());
       if (!raw || raw === '{}') return true;
     } catch (e) {
       return true;
@@ -338,6 +351,7 @@
   }
 
   function pushCompanyDataToSheets(settings) {
+    if (isDemoModeActive()) return;
     const licencia = getLicenseCode();
     if (!licencia) return;
     const payload = {
@@ -397,7 +411,7 @@
         };
         if (!saveSettings(patch)) return false;
         if (String(patch.logoBase64 || '').trim()) setDedicatedLogo(patch.logoBase64);
-        try { localStorage.setItem(SETTINGS_CONFIGURED_KEY, 'true'); } catch (e) {}
+        try { localStorage.setItem(activeConfiguredKey(), 'true'); } catch (e) {}
         return true;
       })
       .catch((err) => {
@@ -902,7 +916,7 @@
 
     global.ArpaOficios?.saveActiveOficios?.(settings.activeOficios);
 
-    try { localStorage.setItem(SETTINGS_CONFIGURED_KEY, 'true'); } catch (e) {}
+    try { localStorage.setItem(activeConfiguredKey(), 'true'); } catch (e) {}
     try { localStorage.setItem(SALES_ENTRY_KEY, 'true'); } catch (e) {}
 
     try {
@@ -980,6 +994,42 @@
     }).observe(seal, { childList: true, subtree: true, characterData: true });
   }
 
+  function updateDemoBanner() {
+    const banner = document.getElementById('arpa-demo-banner');
+    if (banner) banner.style.display = isDemoModeActive() ? 'flex' : 'none';
+  }
+  function enableDemoMode() {
+    try { localStorage.setItem(DEMO_MODE_KEY, 'true'); } catch (e) {}
+    pendingLogoBase64 = null;
+    pendingAppLogoBase64 = null;
+    applyToUI();
+    updateDemoBanner();
+    if (document.getElementById('settings-modal')?.classList.contains('open')) openSettings();
+  }
+  function disableDemoMode() {
+    try { localStorage.removeItem(DEMO_MODE_KEY); } catch (e) {}
+    pendingLogoBase64 = null;
+    pendingAppLogoBase64 = null;
+    applyToUI();
+    updateDemoBanner();
+    if (document.getElementById('settings-modal')?.classList.contains('open')) openSettings();
+  }
+  function toggleDemoMode() {
+    if (isDemoModeActive()) {
+      if (confirm('¿Salir de Modo Demo y volver a tus datos reales de Automatismos Arlenpav?')) {
+        disableDemoMode();
+      }
+      return;
+    }
+    const code = prompt('Escribe el código para activar el Modo Demo:');
+    if (code === null) return;
+    if (code.trim().toUpperCase() === DEMO_ACTIVATION_CODE) {
+      enableDemoMode();
+    } else {
+      alert('Código incorrecto.');
+    }
+  }
+
   global.ArpaBrand = {
     SETTINGS_KEY,
     SETTINGS_CONFIGURED_KEY,
@@ -993,6 +1043,8 @@
     DEFAULT_LOGO,
     hasUserSettings,
     purgeLegacyData,
+    isDemoModeActive,
+    toggleDemoMode,
     isLegacyPreset,
     isLegacyFieldValue,
     containsLegacyBrandText,
@@ -1024,6 +1076,7 @@
   global.saveSettingsFromModal = saveFromModal;
   global.previewLogoUpload = previewLogo;
   global.previewAppLogoUpload = previewAppLogo;
+  global.toggleArpaDemoMode = toggleDemoMode;
 
   document.addEventListener('DOMContentLoaded', () => {
     migrateDedicatedLogoFromSettings();
@@ -1033,6 +1086,7 @@
       .finally(() => {
         applyToUI();
         protectGlobalSeal();
+        updateDemoBanner();
       });
   });
   document.getElementById('settings-modal')?.addEventListener('click', (e) => {
