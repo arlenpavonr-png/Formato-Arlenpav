@@ -135,13 +135,14 @@
     if (!record) return 'formato';
     if (record.modulo === 'cuenta-cobro') return 'cuenta-cobro';
     if (record.modulo === 'cotizacion')   return 'cotizacion';
+    if (record.modulo === 'formato')      return 'formato';
     var num = (record.numero || record.numeroServicio || '')
                 .toString().toUpperCase();
     var doc = (record.documento || '').toLowerCase().trim();
     var tipo = (record.tipo || '').toLowerCase().trim();
     if (num.startsWith('CC-') || doc === 'cuenta de cobro'
         || tipo === 'cuenta de cobro') return 'cuenta-cobro';
-    if (num.startsWith('AP-') || num.startsWith('COT-')
+    if (num.startsWith('COT-')
         || doc === 'cotización' || doc === 'cotizacion'
         || tipo === 'cotización' || tipo === 'cotizacion')
       return 'cotizacion';
