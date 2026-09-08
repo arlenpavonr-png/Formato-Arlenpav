@@ -14,7 +14,7 @@
 (function (global) {
   'use strict';
 
-  const LICENSE_API = 'https://script.google.com/macros/s/AKfycbzKBeyDVWVqPG1R47EZTVKmCpa3SOwxs8LXrW4ipvRtiyyRV4trJKg7D4i89_cUTcH2/exec';
+  const LICENSE_API = 'https://script.google.com/macros/s/AKfycbwzSL7-wLi9VeyNUzkiGTGgdWEPXz5DpY2qjLOZjKXGRl8I6nleSFManrWwozNnbsUlQA/exec';
   const LICENSE_CODE_KEY      = 'arpa_suite_license_code';
   const CATALOG_PRODUCTS_KEY  = 'arpa_catalogo_usuario';
   const CATALOG_CATEGORIES_KEY= 'arpa_categorias_usuario';
