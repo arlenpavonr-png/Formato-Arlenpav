@@ -127,8 +127,24 @@
 
   let suppressHistorialSync = false;
 
+  function stripBase64(obj) {
+    if (!obj || typeof obj !== 'object') return obj;
+    if (Array.isArray(obj)) return obj.map(stripBase64);
+    const result = {};
+    for (const [k, v] of Object.entries(obj)) {
+      if (typeof v === 'string' && v.startsWith('data:')) {
+        result[k] = null;
+      } else if (v && typeof v === 'object') {
+        result[k] = stripBase64(v);
+      } else {
+        result[k] = v;
+      }
+    }
+    return result;
+  }
+
   function recordToCloudEntry(record) {
-    return {
+    const entry = {
       id: record.id,
       tipo: record.documento || record.tipo || '',
       subtipo: record.subtipo || '',
@@ -139,6 +155,12 @@
       monto: record.total != null ? record.total : '',
       concepto: record.concepto || ''
     };
+    if (record.fullSnapshot) {
+      try {
+        entry.fullSnapshot = JSON.stringify(stripBase64(record.fullSnapshot));
+      } catch (e) {}
+    }
+    return entry;
   }
 
   function pushHistorialEntry(record) {
@@ -200,6 +222,13 @@
     if (entry.concepto) record.concepto = String(entry.concepto);
     if (monto !== '' && monto != null && !Number.isNaN(Number(monto))) {
       record.total = Number(monto);
+    }
+    if (entry.fullSnapshot) {
+      try {
+        record.fullSnapshot = typeof entry.fullSnapshot === 'string'
+          ? JSON.parse(entry.fullSnapshot)
+          : entry.fullSnapshot;
+      } catch (e) {}
     }
     return record;
   }
