@@ -89,7 +89,6 @@
   }
 
   global.ArpaLicense = {
-    FOUNDER_CODE,
     WL_PREFIX,
     PYME_PREFIX,
     PRO_PREFIX,
