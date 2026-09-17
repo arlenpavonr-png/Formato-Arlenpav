@@ -2559,10 +2559,10 @@
 
   function purgeLegacyStorageEarly() {
     try {
+      if (hasCompanySettings()) return;
       function legacyText(t) {
         var b = String(t || '').toLowerCase();
         if (/automatismos\s*arlen\s*pav|automatismos\s*arlenpav|arlen\s*pavon|arlenpav/.test(b)) return true;
-        if (b.indexOf('automatismos') >= 0 && b.indexOf('arlen') >= 0) return true;
         if (/901\.?\s*473\.?\s*259/.test(b)) return true;
         return false;
       }
@@ -2577,8 +2577,6 @@
           try { localStorage.setItem('arpa_logo', logoBackup); } catch (e) {}
         }
       }
-      var draft = localStorage.getItem('arpa_formato_borrador') || '';
-      if (legacyText(draft)) localStorage.removeItem('arpa_formato_borrador');
     } catch (e) {}
   }
 
@@ -3867,10 +3865,7 @@ function shouldSkipFormatoDraft() {
   try {
     const raw = localStorage.getItem(window.ArpaBrand.FORMATO_DRAFT_KEY) || '';
     if (!raw || raw === '{}') return true;
-    if (window.ArpaBrand.containsLegacyBrandText?.(raw)) return true;
-    const data = JSON.parse(raw);
-    const values = Object.values(data);
-    if (values.some((v) => window.ArpaBrand.isLegacyFieldValue?.(String(v)))) return true;
+    JSON.parse(raw);
   } catch (e) {
     return true;
   }
@@ -3951,7 +3946,6 @@ function initFormatoDraftPersistence() {
     window.ArpaFormatoTipo?.initFromDraft?.(draft);
     applyFormatoDraft();
   }
-  window.ArpaBrand?.scrubLegacyInputValues?.(document.getElementById('view-formato'));
   window.ArpaBrand?.resetUnconfiguredFormFields?.();
   const formatoOficioId = window.ArpaFormatoTipo?.getDocumentFormatoOficio?.()
     || window.ArpaOficios?.getActiveFormatoOficioId?.()

@@ -103,7 +103,6 @@
   function containsLegacyBrandText(text) {
     const blob = String(text || '').toLowerCase();
     if (LEGACY_COMPANY_PATTERNS.some((re) => re.test(blob))) return true;
-    if (blob.includes('automatismos') && blob.includes('arlen')) return true;
     return false;
   }
 
@@ -129,9 +128,9 @@
   }
 
   function shouldPurgeSettings(saved) {
+    if (hasUserSettings()) return false;
     if (!saved || typeof saved !== 'object') return false;
     if (isLegacyPreset(saved)) return true;
-    if (containsLegacyBrandText(JSON.stringify(saved))) return true;
     if (!hasUserSettings() && isFakeDefaultSettings(saved)) return true;
     return false;
   }
@@ -163,14 +162,9 @@
   }
 
   function shouldPurgeDraft(draftRaw) {
+    if (hasUserSettings()) return false;
     if (!draftRaw || draftRaw === '{}') return false;
-    if (containsLegacyBrandText(draftRaw)) return true;
-    try {
-      const data = JSON.parse(draftRaw);
-      return Object.values(data).some((v) => isLegacyFieldValue(String(v)));
-    } catch (e) {
-      return false;
-    }
+    return false;
   }
 
   function getDedicatedLogo() {
