@@ -129,7 +129,11 @@
 
   function stripBase64(obj) {
     if (!obj || typeof obj !== 'object') return obj;
-    if (Array.isArray(obj)) return obj.map(stripBase64);
+    if (Array.isArray(obj)) {
+      return obj.map((item) =>
+        (typeof item === 'string' && item.startsWith('data:')) ? null : stripBase64(item)
+      );
+    }
     const result = {};
     for (const [k, v] of Object.entries(obj)) {
       if (typeof v === 'string' && v.startsWith('data:')) {
