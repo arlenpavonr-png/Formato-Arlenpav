@@ -3813,6 +3813,9 @@ function collectFormatoDraft() {
   if (numero) data['numero-formato'] = numero.value;
   if (fecha) data['formato-fecha'] = fecha.value;
   data._formatoOficio = window.ArpaFormatoTipo?.getDocumentFormatoOficio?.() || 'automatismos';
+  const fotos = window.__arpaFormatoFotos || { antes: [], despues: [] };
+  data.fotosAntes = Array.isArray(fotos.antes) ? fotos.antes.slice() : [];
+  data.fotosDespues = Array.isArray(fotos.despues) ? fotos.despues.slice() : [];
   return data;
 }
 
@@ -3835,13 +3838,21 @@ function clearFormatoDocumentFields(options) {
   }
   const fecha = document.getElementById('formato-fecha');
   if (fecha) fecha.value = new Date().toISOString().slice(0, 10);
-  ['foto-antes-preview', 'foto-despues-preview'].forEach((id) => {
+  window.__arpaFormatoFotos = { antes: [], despues: [] };
+  ['before-preview', 'after-preview'].forEach((id) => {
     const preview = document.getElementById(id);
-    if (preview) preview.innerHTML = '';
+    if (preview) {
+      preview.innerHTML = '';
+      preview.style.display = 'none';
+    }
   });
-  ['foto-antes-placeholder', 'foto-despues-placeholder'].forEach((id) => {
+  ['before-placeholder', 'after-placeholder'].forEach((id) => {
     const ph = document.getElementById(id);
     if (ph) ph.style.display = '';
+  });
+  ['file-before-gal', 'file-after-gal'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
   });
   window.ArpaSignature?.clear?.('canvas-firma-cliente');
   window.ArpaSignature?.clear?.('canvas-firma-tecnico');
@@ -3875,22 +3886,45 @@ function applyFormatoDraft() {
         if (radio) radio.checked = true;
         return;
       }
+      if (key === 'fotosAntes' || key === 'fotosDespues') return;
       const el = document.getElementById(key);
       if (!el || el.type === 'file') return;
       if (el.type === 'checkbox') el.checked = !!val;
       else el.value = val == null ? '' : val;
     });
+    applyFormatoFotosFromDraft(data);
   } catch (e) {}
 }
 
 let formatoDraftTimer;
 
+function isLocalStorageQuotaError(e) {
+  return !!(e && (e.name === 'QuotaExceededError' || e.code === 22 || e.code === 1014));
+}
+
+function persistFormatoDraftToStorage() {
+  const key = window.ArpaBrand.FORMATO_DRAFT_KEY;
+  const draft = collectFormatoDraft();
+  try {
+    localStorage.setItem(key, JSON.stringify(draft));
+    return true;
+  } catch (e) {
+    if (!isLocalStorageQuotaError(e)) return false;
+    try {
+      const fallback = Object.assign({}, draft);
+      delete fallback.fotosAntes;
+      delete fallback.fotosDespues;
+      localStorage.setItem(key, JSON.stringify(fallback));
+    } catch (e2) {}
+    alert('Las fotos no se pudieron guardar en el borrador por espacio limitado. Exporta el PDF ahora para no perderlas.');
+    return false;
+  }
+}
+
 function scheduleFormatoDraftSave() {
   clearTimeout(formatoDraftTimer);
   formatoDraftTimer = setTimeout(function () {
-    try {
-      localStorage.setItem(window.ArpaBrand.FORMATO_DRAFT_KEY, JSON.stringify(collectFormatoDraft()));
-    } catch (e) {}
+    persistFormatoDraftToStorage();
   }, 400);
 }
 
@@ -4017,9 +4051,7 @@ function guardarPDF() {
 
   applyUserSettingsToUI();
   window.ArpaBrand?.syncBankBlocksForPrint?.();
-  try {
-    localStorage.setItem(window.ArpaBrand.FORMATO_DRAFT_KEY, JSON.stringify(collectFormatoDraft()));
-  } catch (e) {}
+  persistFormatoDraftToStorage();
   const formatoPrintSnapshot = window.ArpaFormatoTipo?.capturePrintSnapshot?.();
   document.body.classList.add('is-printing', 'is-printing-formato');
   window.ArpaBrand?.prepareForPrint?.();
@@ -4238,26 +4270,112 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── FOTOS ───────────────────────────────────────────────────────────────────
-function loadPhotos(input, previewId) {
+window.__arpaFormatoFotos = window.__arpaFormatoFotos || { antes: [], despues: [] };
+
+function ensureFormatoFotosStore() {
+  if (!window.__arpaFormatoFotos || typeof window.__arpaFormatoFotos !== 'object') {
+    window.__arpaFormatoFotos = { antes: [], despues: [] };
+  }
+  if (!Array.isArray(window.__arpaFormatoFotos.antes)) window.__arpaFormatoFotos.antes = [];
+  if (!Array.isArray(window.__arpaFormatoFotos.despues)) window.__arpaFormatoFotos.despues = [];
+  return window.__arpaFormatoFotos;
+}
+
+function formatoFotoSlotFromPreviewId(previewId) {
+  if (previewId === 'after-preview' || previewId === 'foto-despues-preview') return 'despues';
+  return 'antes';
+}
+
+function compressPhotoToJpeg(dataUrl, maxSide, quality) {
+  maxSide = maxSide || 1200;
+  quality = quality == null ? 0.7 : quality;
+  return new Promise(function (resolve) {
+    const img = new Image();
+    img.onload = function () {
+      try {
+        let w = img.naturalWidth || img.width;
+        let h = img.naturalHeight || img.height;
+        if (!w || !h) { resolve(dataUrl); return; }
+        if (w > maxSide || h > maxSide) {
+          if (w >= h) {
+            h = Math.round(h * maxSide / w);
+            w = maxSide;
+          } else {
+            w = Math.round(w * maxSide / h);
+            h = maxSide;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality) || dataUrl);
+      } catch (err) {
+        resolve(dataUrl);
+      }
+    };
+    img.onerror = function () { resolve(dataUrl); };
+    img.src = dataUrl;
+  });
+}
+
+function renderFormatoFotos(slot) {
+  const previewId = slot === 'despues' ? 'after-preview' : 'before-preview';
+  const placeholderId = slot === 'despues' ? 'after-placeholder' : 'before-placeholder';
   const preview = document.getElementById(previewId);
-  const placeholderId = previewId.replace('-preview', '-placeholder');
   const placeholder = document.getElementById(placeholderId);
-
-  if (!input.files || input.files.length === 0) return;
-
+  const store = ensureFormatoFotosStore();
+  const list = store[slot] || [];
+  if (!preview) return;
   preview.innerHTML = '';
+  if (!list.length) {
+    preview.style.display = 'none';
+    if (placeholder) placeholder.style.display = '';
+    return;
+  }
   preview.style.display = 'flex';
   if (placeholder) placeholder.style.display = 'none';
+  list.forEach(function (src, index) {
+    const img = document.createElement('img');
+    img.src = src;
+    img.style.cssText = 'width:calc(50% - 2px);height:90px;object-fit:cover;border-radius:6px;cursor:pointer;';
+    img.title = 'Toca para quitar';
+    img.onclick = function () {
+      store[slot].splice(index, 1);
+      renderFormatoFotos(slot);
+      scheduleFormatoDraftSave();
+    };
+    preview.appendChild(img);
+  });
+}
 
-  Array.from(input.files).forEach(file => {
+function applyFormatoFotosFromDraft(data) {
+  const store = ensureFormatoFotosStore();
+  store.antes = Array.isArray(data && data.fotosAntes) ? data.fotosAntes.slice() : [];
+  store.despues = Array.isArray(data && data.fotosDespues) ? data.fotosDespues.slice() : [];
+  renderFormatoFotos('antes');
+  renderFormatoFotos('despues');
+}
+
+function loadPhotos(input, previewId) {
+  if (!input.files || input.files.length === 0) return;
+  const slot = formatoFotoSlotFromPreviewId(previewId);
+  const store = ensureFormatoFotosStore();
+  const files = Array.from(input.files);
+  let pending = files.length;
+  files.forEach(function (file) {
     const reader = new FileReader();
-    reader.onload = e => {
-      const img = document.createElement('img');
-      img.src = e.target.result;
-      img.style.cssText = 'width:calc(50% - 2px);height:90px;object-fit:cover;border-radius:6px;cursor:pointer;';
-      img.title = 'Toca para quitar';
-      img.onclick = () => { img.remove(); if (preview.children.length === 0) { preview.style.display = 'none'; if(placeholder) placeholder.style.display = ''; } };
-      preview.appendChild(img);
+    reader.onload = function (e) {
+      compressPhotoToJpeg(e.target.result, 1200, 0.7).then(function (compressed) {
+        store[slot].push(compressed);
+        pending -= 1;
+        renderFormatoFotos(slot);
+        if (pending <= 0) {
+          input.value = '';
+          scheduleFormatoDraftSave();
+        }
+      });
     };
     reader.readAsDataURL(file);
   });

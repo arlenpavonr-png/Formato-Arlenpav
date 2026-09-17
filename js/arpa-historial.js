@@ -33,8 +33,44 @@
       return [];
     }
   }
+  function isQuotaError(e) {
+    return !!(e && (e.name === 'QuotaExceededError' || e.code === 22 || e.code === 1014));
+  }
+  function stripFotosFromSnapshot(record) {
+    if (!record || !record.fullSnapshot || typeof record.fullSnapshot !== 'object') return record;
+    const next = Object.assign({}, record, {
+      fullSnapshot: Object.assign({}, record.fullSnapshot)
+    });
+    delete next.fullSnapshot.fotosAntes;
+    delete next.fullSnapshot.fotosDespues;
+    return next;
+  }
   function saveRecords(records) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(records.slice(0, MAX_RECORDS)));
+    var list = records.slice(0, MAX_RECORDS);
+    while (list.length) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+        return true;
+      } catch (e) {
+        if (!isQuotaError(e)) {
+          console.warn('[arpa-historial] saveRecords', e);
+          return false;
+        }
+        if (list.length > 1) {
+          list.pop();
+          continue;
+        }
+        list[0] = stripFotosFromSnapshot(list[0]);
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+          return true;
+        } catch (e2) {
+          console.warn('[arpa-historial] saveRecords quota', e2);
+          return false;
+        }
+      }
+    }
+    return false;
   }
   function newRecordId() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
