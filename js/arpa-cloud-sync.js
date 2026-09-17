@@ -483,4 +483,8 @@
     // Numeración
     obtenerSiguienteNumeroCloud
   };
-})(window);
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { stripBase64 };
+  }
+})(typeof window !== 'undefined' ? window : globalThis);

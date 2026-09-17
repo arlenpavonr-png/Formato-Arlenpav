@@ -1019,17 +1019,31 @@
   global.previewLogoUpload = previewLogo;
   global.previewAppLogoUpload = previewAppLogo;
 
-  document.addEventListener('DOMContentLoaded', () => {
-    migrateDedicatedLogoFromSettings();
-    purgeLegacyData();
-    restoreCompanyDataFromSheets()
-      .then(() => global.ArpaCloudSync?.restoreCloudDataIfNeeded?.())
-      .finally(() => {
-        applyToUI();
-        protectGlobalSeal();
-      });
-  });
-  document.getElementById('settings-modal')?.addEventListener('click', (e) => {
-    if (e.target.id === 'settings-modal') closeSettings();
-  });
-})(window);
+  if (typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', () => {
+      migrateDedicatedLogoFromSettings();
+      purgeLegacyData();
+      restoreCompanyDataFromSheets()
+        .then(() => global.ArpaCloudSync?.restoreCloudDataIfNeeded?.())
+        .finally(() => {
+          applyToUI();
+          protectGlobalSeal();
+        });
+    });
+    document.getElementById('settings-modal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'settings-modal') closeSettings();
+    });
+  }
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+      containsLegacyBrandText,
+      isLegacyFieldValue,
+      isLegacyPreset,
+      isFakeDefaultSettings,
+      shouldPurgeSettings,
+      shouldPurgeDraft,
+      hasUserSettings
+    };
+  }
+})(typeof window !== 'undefined' ? window : globalThis);
