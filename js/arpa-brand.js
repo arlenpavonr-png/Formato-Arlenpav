@@ -13,6 +13,9 @@
   const DEMO_BACKUP_SETTINGS_KEY = 'arpa_suite_demo_backup_settings';
   const DEMO_BACKUP_CONFIGURED_KEY = 'arpa_suite_demo_backup_configured';
   const DEMO_BACKUP_LOGO_KEY = 'arpa_suite_demo_backup_logo';
+  const HOME_SETTINGS_KEY = 'arpa_suite_home_settings';
+  const HOME_CONFIGURED_KEY = 'arpa_suite_home_configured';
+  const HOME_LOGO_KEY = 'arpa_suite_home_logo';
   const GLOBAL_BRAND_URL = 'https://arpatechnologyglobal.com';
   const GLOBAL_FOOTER_TEXT = 'Generado con ARPA Suite · Pruébala gratis en arpatechnologyglobal.com · © 2026';
   function getGlobalFooterText() {
@@ -318,7 +321,6 @@
   }
 
   function needsCompanyRestoreFromSheets() {
-    if (isDemoMode()) return false;
     const licencia = getLicenseCode();
     if (!licencia) return false;
     // v2: también sincronizar si toca por intervalo (cada 30 min)
@@ -372,11 +374,19 @@
   }
 
   function restoreCompanyDataFromSheets() {
-    if (!needsCompanyRestoreFromSheets()) return Promise.resolve(false);
     const licencia = getLicenseCode();
+    if (!licencia) return Promise.resolve(false);
+    if (!isDemoMode() && !needsCompanyRestoreFromSheets()) return Promise.resolve(false);
     return licenseJsonp({ accion: 'getCompanyData', licencia })
       .then((data) => {
         if (!data || !data.encontrado || !String(data.nombreEmpresa || '').trim()) return false;
+        persistHomeFromSheets(data);
+        if (isDemoMode()) {
+          if (repairInvertedDemoIfNeeded(data.nombreEmpresa) && typeof document !== 'undefined') {
+            applyToUI();
+          }
+          return false;
+        }
         const current = getSettings();
         const patch = {
           companyName: data.nombreEmpresa || '',
@@ -398,6 +408,7 @@
         if (!saveSettings(patch)) return false;
         if (String(patch.logoBase64 || '').trim()) setDedicatedLogo(patch.logoBase64);
         try { localStorage.setItem(SETTINGS_CONFIGURED_KEY, 'true'); } catch (e) {}
+        persistHomeFromCurrent();
         return true;
       })
       .catch((err) => {
@@ -899,6 +910,8 @@
 
     if (!saveSettings(settings)) return;
 
+    if (!isDemoMode()) persistHomeFromCurrent();
+
     pushCompanyDataToSheets(settings);
 
     global.ArpaOficios?.saveActiveOficios?.(settings.activeOficios);
@@ -991,22 +1004,163 @@
     catch (e) {}
   }
 
+  function namesEqual(a, b) {
+    return String(a || '').trim().toLowerCase().replace(/\s+/g, ' ')
+      === String(b || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  }
+
+  function readCompanyName(raw) {
+    try {
+      return String(JSON.parse(raw || '{}').companyName || '').trim();
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function persistHomeSnapshot(settingsRaw, configured, logo) {
+    try {
+      if (settingsRaw) localStorage.setItem(HOME_SETTINGS_KEY, settingsRaw);
+      else localStorage.removeItem(HOME_SETTINGS_KEY);
+      if (configured) localStorage.setItem(HOME_CONFIGURED_KEY, configured);
+      else localStorage.removeItem(HOME_CONFIGURED_KEY);
+      if (logo) localStorage.setItem(HOME_LOGO_KEY, logo);
+      else localStorage.removeItem(HOME_LOGO_KEY);
+    } catch (e) {
+      console.warn('[arpa-brand] persistHomeSnapshot', e);
+    }
+  }
+
+  function persistHomeFromCurrent() {
+    persistHomeSnapshot(
+      localStorage.getItem(SETTINGS_KEY),
+      localStorage.getItem(SETTINGS_CONFIGURED_KEY),
+      localStorage.getItem(LOGO_STORAGE_KEY)
+    );
+  }
+
+  function persistHomeFromSheets(data) {
+    let previous = {};
+    try { previous = JSON.parse(localStorage.getItem(HOME_SETTINGS_KEY) || '{}') || {}; }
+    catch (e) { previous = {}; }
+    const patch = {
+      ...previous,
+      companyName: data.nombreEmpresa || previous.companyName || '',
+      nit: data.nit || previous.nit || '',
+      address: data.direccion || previous.address || '',
+      city: data.ciudad || previous.city || '',
+      phone: data.telefono || previous.phone || '',
+      website: data.sitioWeb || previous.sitioWeb || previous.website || '',
+      logoBase64: data.logoBase64 || previous.logoBase64 || '',
+      bankName: data.banco || previous.bankName || '',
+      accountType: data.tipoCuenta || previous.accountType || '',
+      accountNumber: data.numeroCuenta || previous.accountNumber || '',
+      accountHolder: data.titularCuenta || previous.accountHolder || '',
+      accountHolderDocument: data.documentoTitular || previous.accountHolderDocument || '',
+      technicianName: data.nombreTecnico || previous.technicianName || '',
+      technicianDocument: data.documentoTecnico || previous.technicianDocument || '',
+      technicianCode: data.codigoTecnico || previous.technicianCode || ''
+    };
+    persistHomeSnapshot(
+      JSON.stringify(patch),
+      'true',
+      String(patch.logoBase64 || '').trim() || localStorage.getItem(HOME_LOGO_KEY)
+    );
+  }
+
+  function homeCompanyName() {
+    return readCompanyName(localStorage.getItem(HOME_SETTINGS_KEY));
+  }
+
+  function copyKey(fromKey, toKey) {
+    const value = localStorage.getItem(fromKey);
+    if (value) localStorage.setItem(toKey, value);
+    else localStorage.removeItem(toKey);
+  }
+
+  function repairInvertedDemoIfNeeded(homeNameHint) {
+    if (!isDemoMode()) return false;
+    const homeName = String(homeNameHint || homeCompanyName() || '').trim();
+    if (!homeName) return false;
+    const liveName = String(getSettings().companyName || '').trim();
+    const backupName = readCompanyName(localStorage.getItem(DEMO_BACKUP_SETTINGS_KEY));
+    if (!backupName || !liveName) return false;
+    if (!namesEqual(liveName, homeName) || namesEqual(backupName, homeName)) return false;
+    copyKey(SETTINGS_KEY, 'arpa_suite_demo_swap_settings');
+    copyKey(SETTINGS_CONFIGURED_KEY, 'arpa_suite_demo_swap_configured');
+    copyKey(LOGO_STORAGE_KEY, 'arpa_suite_demo_swap_logo');
+    copyKey(DEMO_BACKUP_SETTINGS_KEY, SETTINGS_KEY);
+    copyKey(DEMO_BACKUP_CONFIGURED_KEY, SETTINGS_CONFIGURED_KEY);
+    copyKey(DEMO_BACKUP_LOGO_KEY, LOGO_STORAGE_KEY);
+    copyKey('arpa_suite_demo_swap_settings', DEMO_BACKUP_SETTINGS_KEY);
+    copyKey('arpa_suite_demo_swap_configured', DEMO_BACKUP_CONFIGURED_KEY);
+    copyKey('arpa_suite_demo_swap_logo', DEMO_BACKUP_LOGO_KEY);
+    localStorage.removeItem('arpa_suite_demo_swap_settings');
+    localStorage.removeItem('arpa_suite_demo_swap_configured');
+    localStorage.removeItem('arpa_suite_demo_swap_logo');
+    persistHomeSnapshot(
+      localStorage.getItem(DEMO_BACKUP_SETTINGS_KEY),
+      localStorage.getItem(DEMO_BACKUP_CONFIGURED_KEY),
+      localStorage.getItem(DEMO_BACKUP_LOGO_KEY)
+    );
+    return true;
+  }
+
+  function applyFormAsDemoSettings() {
+    if (typeof document === 'undefined') return false;
+    const companyName = document.getElementById('settings-company')?.value.trim() || '';
+    if (!companyName) return false;
+    const current = getSettings();
+    const settings = {
+      ...current,
+      companyName,
+      nit: document.getElementById('settings-nit')?.value.trim() || '',
+      address: document.getElementById('settings-address')?.value.trim() || '',
+      city: document.getElementById('settings-city')?.value.trim() || '',
+      phone: document.getElementById('settings-phone')?.value.trim() || '',
+      website: document.getElementById('settings-website')?.value.trim() || '',
+      bankName: document.getElementById('settings-bank')?.value.trim() || '',
+      accountType: document.getElementById('settings-account-type')?.value.trim() || '',
+      accountNumber: document.getElementById('settings-account-number')?.value.trim() || '',
+      accountHolder: document.getElementById('settings-account-holder')?.value.trim() || '',
+      accountHolderDocument: document.getElementById('settings-account-holder-doc')?.value.trim() || '',
+      technicianName: document.getElementById('settings-technician')?.value.trim() || '',
+      technicianDocument: document.getElementById('settings-technician-doc')?.value.trim() || '',
+      technicianCode: document.getElementById('settings-technician-code')?.value.trim() || ''
+    };
+    if (!saveSettings(settings)) return false;
+    try { localStorage.setItem(SETTINGS_CONFIGURED_KEY, 'true'); } catch (e) {}
+    return true;
+  }
+
   function enterDemoMode() {
     if (isDemoMode()) return;
     try {
-      const settings = localStorage.getItem(SETTINGS_KEY);
-      const configured = localStorage.getItem(SETTINGS_CONFIGURED_KEY);
-      const logo = localStorage.getItem(LOGO_STORAGE_KEY);
-      if (settings) localStorage.setItem(DEMO_BACKUP_SETTINGS_KEY, settings);
-      else localStorage.removeItem(DEMO_BACKUP_SETTINGS_KEY);
-      if (configured) localStorage.setItem(DEMO_BACKUP_CONFIGURED_KEY, configured);
-      else localStorage.removeItem(DEMO_BACKUP_CONFIGURED_KEY);
-      if (logo) localStorage.setItem(DEMO_BACKUP_LOGO_KEY, logo);
-      else localStorage.removeItem(DEMO_BACKUP_LOGO_KEY);
-      localStorage.removeItem(SETTINGS_KEY);
-      localStorage.removeItem(SETTINGS_CONFIGURED_KEY);
-      localStorage.removeItem(LOGO_STORAGE_KEY);
+      if (!localStorage.getItem(HOME_SETTINGS_KEY)) persistHomeFromCurrent();
+      copyKey(HOME_SETTINGS_KEY, DEMO_BACKUP_SETTINGS_KEY);
+      copyKey(HOME_CONFIGURED_KEY, DEMO_BACKUP_CONFIGURED_KEY);
+      copyKey(HOME_LOGO_KEY, DEMO_BACKUP_LOGO_KEY);
+      if (!localStorage.getItem(DEMO_BACKUP_SETTINGS_KEY)) {
+        copyKey(SETTINGS_KEY, DEMO_BACKUP_SETTINGS_KEY);
+        copyKey(SETTINGS_CONFIGURED_KEY, DEMO_BACKUP_CONFIGURED_KEY);
+        copyKey(LOGO_STORAGE_KEY, DEMO_BACKUP_LOGO_KEY);
+      }
+      const homeName = readCompanyName(localStorage.getItem(DEMO_BACKUP_SETTINGS_KEY));
+      const liveName = String(getSettings().companyName || '').trim();
+      const formName = typeof document !== 'undefined'
+        ? (document.getElementById('settings-company')?.value.trim() || '')
+        : '';
       localStorage.setItem(DEMO_MODE_KEY, 'true');
+      const liveIsDemo = liveName && homeName && !namesEqual(liveName, homeName);
+      const formIsDemo = formName && homeName && !namesEqual(formName, homeName);
+      if (liveIsDemo) {
+        // Los datos actuales ya son del cliente; se deja el respaldo de la empresa real.
+      } else if (formIsDemo && applyFormAsDemoSettings()) {
+        // El formulario tiene los datos del cliente; no se suben a Sheets.
+      } else {
+        localStorage.removeItem(SETTINGS_KEY);
+        localStorage.removeItem(SETTINGS_CONFIGURED_KEY);
+        localStorage.removeItem(LOGO_STORAGE_KEY);
+      }
     } catch (e) {
       console.warn('[arpa-brand] enterDemoMode', e);
       return;
@@ -1091,7 +1245,8 @@
     syncBankBlocksForPrint,
     isDemoMode,
     enterDemoMode,
-    exitDemoMode
+    exitDemoMode,
+    repairInvertedDemoIfNeeded
   };
 
   global.applyUserSettingsToUI = applyToUI;
@@ -1105,6 +1260,9 @@
     document.addEventListener('DOMContentLoaded', () => {
       migrateDedicatedLogoFromSettings();
       purgeLegacyData();
+      if (repairInvertedDemoIfNeeded()) {
+        try { applyToUI(); } catch (e) {}
+      }
       restoreCompanyDataFromSheets()
         .then(() => global.ArpaCloudSync?.restoreCloudDataIfNeeded?.())
         .finally(() => {
