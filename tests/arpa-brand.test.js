@@ -94,3 +94,95 @@ describe('shouldPurgeSettings / shouldPurgeDraft / hasUserSettings', () => {
     assert.equal(brand.shouldPurgeDraft(''), false);
   });
 });
+
+describe('Modo Demo backup/restore', () => {
+  const SETTINGS_KEY = 'arpa_suite_user_settings';
+  const CONFIGURED_KEY = 'arpa_suite_settings_configured';
+  const LOGO_KEY = 'arpa_logo';
+  const DEMO_MODE_KEY = 'arpa_suite_demo_mode';
+  const DEMO_BACKUP_SETTINGS_KEY = 'arpa_suite_demo_backup_settings';
+  const DEMO_BACKUP_CONFIGURED_KEY = 'arpa_suite_demo_backup_configured';
+  const DEMO_BACKUP_LOGO_KEY = 'arpa_suite_demo_backup_logo';
+  const LICENSE_CODE_KEY = 'arpa_suite_license_code';
+  const LICENSE_VENC_KEY = 'arpa_suite_license_vencimiento';
+  const LICENSE_PLAN_KEY = 'arpa_suite_license_plan';
+  const DEVICE_ID_KEY = 'arpa_suite_device_id';
+  const HISTORIAL_KEY = 'arpa_suite_servicio_historial';
+
+  function api() {
+    return global.ArpaBrand;
+  }
+
+  beforeEach(() => {
+    mockLocalStorage({
+      [SETTINGS_KEY]: JSON.stringify({ companyName: 'Mi Empresa Real', nit: '900.111.222-3' }),
+      [CONFIGURED_KEY]: 'true',
+      [LOGO_KEY]: 'data:image/png;base64,REALLOGO',
+      [LICENSE_CODE_KEY]: 'FOUNDER1',
+      [LICENSE_VENC_KEY]: '2099-12-31',
+      [LICENSE_PLAN_KEY]: 'white-label',
+      [DEVICE_ID_KEY]: 'device-abc',
+      [HISTORIAL_KEY]: JSON.stringify([{ id: 'h1' }])
+    });
+  });
+
+  it('enterDemoMode respalda settings/logo y marca el flag', () => {
+    api().enterDemoMode();
+    assert.equal(api().isDemoMode(), true);
+    assert.equal(localStorage.getItem(DEMO_MODE_KEY), 'true');
+    assert.equal(localStorage.getItem(SETTINGS_KEY), null);
+    assert.equal(localStorage.getItem(CONFIGURED_KEY), null);
+    assert.equal(localStorage.getItem(LOGO_KEY), null);
+    assert.ok(localStorage.getItem(DEMO_BACKUP_SETTINGS_KEY).includes('Mi Empresa Real'));
+    assert.equal(localStorage.getItem(DEMO_BACKUP_CONFIGURED_KEY), 'true');
+    assert.equal(localStorage.getItem(DEMO_BACKUP_LOGO_KEY), 'data:image/png;base64,REALLOGO');
+  });
+
+  it('exitDemoMode restaura backups y borra el flag; backups vacíos no escriben string vacío', () => {
+    api().enterDemoMode();
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ companyName: 'Vector Proyectos y Servicios' }));
+    localStorage.setItem(CONFIGURED_KEY, 'true');
+    localStorage.setItem(LOGO_KEY, 'data:image/png;base64,DEMOLOGO');
+    api().exitDemoMode();
+    assert.equal(api().isDemoMode(), false);
+    assert.equal(localStorage.getItem(DEMO_MODE_KEY), null);
+    assert.equal(localStorage.getItem(DEMO_BACKUP_SETTINGS_KEY), null);
+    assert.equal(localStorage.getItem(DEMO_BACKUP_CONFIGURED_KEY), null);
+    assert.equal(localStorage.getItem(DEMO_BACKUP_LOGO_KEY), null);
+    assert.ok(localStorage.getItem(SETTINGS_KEY).includes('Mi Empresa Real'));
+    assert.equal(localStorage.getItem(CONFIGURED_KEY), 'true');
+    assert.equal(localStorage.getItem(LOGO_KEY), 'data:image/png;base64,REALLOGO');
+  });
+
+  it('exitDemoMode elimina arpa_logo si el backup de logo está vacío', () => {
+    mockLocalStorage({
+      [SETTINGS_KEY]: JSON.stringify({ companyName: 'Sin Logo SAS' }),
+      [CONFIGURED_KEY]: 'true'
+    });
+    api().enterDemoMode();
+    localStorage.setItem(LOGO_KEY, 'data:image/png;base64,DEMOLOGO');
+    api().exitDemoMode();
+    assert.equal(localStorage.getItem(LOGO_KEY), null);
+  });
+
+  it('no toca licencia, device_id ni historial', () => {
+    api().enterDemoMode();
+    assert.equal(localStorage.getItem(LICENSE_CODE_KEY), 'FOUNDER1');
+    assert.equal(localStorage.getItem(LICENSE_VENC_KEY), '2099-12-31');
+    assert.equal(localStorage.getItem(LICENSE_PLAN_KEY), 'white-label');
+    assert.equal(localStorage.getItem(DEVICE_ID_KEY), 'device-abc');
+    assert.equal(localStorage.getItem(HISTORIAL_KEY), JSON.stringify([{ id: 'h1' }]));
+    api().exitDemoMode();
+    assert.equal(localStorage.getItem(LICENSE_CODE_KEY), 'FOUNDER1');
+    assert.equal(localStorage.getItem(DEVICE_ID_KEY), 'device-abc');
+    assert.equal(localStorage.getItem(HISTORIAL_KEY), JSON.stringify([{ id: 'h1' }]));
+  });
+
+  it('enterDemoMode no hace nada si ya está activo', () => {
+    api().enterDemoMode();
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ companyName: 'Vector' }));
+    api().enterDemoMode();
+    assert.ok(localStorage.getItem(SETTINGS_KEY).includes('Vector'));
+    assert.ok(localStorage.getItem(DEMO_BACKUP_SETTINGS_KEY).includes('Mi Empresa Real'));
+  });
+});
