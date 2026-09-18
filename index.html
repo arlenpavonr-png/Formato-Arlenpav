@@ -2634,6 +2634,10 @@ document.documentElement.classList.add('license-checking');
 </script>
 </head>
 <body>
+<div id="arpa-demo-banner" style="display:none; position:sticky; top:0; z-index:9999; background:#c9a84c; color:#1a2a4a; padding:8px 16px; text-align:center; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; gap:12px; align-items:center; justify-content:center; flex-wrap:wrap;">
+  <span>🎭 MODO DEMO ACTIVO — Los documentos se generarán con los datos que ingreses ahora</span>
+  <button onclick="window.ArpaBrand.exitDemoMode()" style="background:#1a2a4a; color:#c9a84c; border:none; border-radius:4px; padding:4px 12px; font-size:12px; font-weight:700; cursor:pointer;">↩ Restaurar mi empresa</button>
+</div>
 
 <div id="trial-capture-gate" class="trial-capture-gate" role="dialog" aria-modal="true" aria-labelledby="trial-capture-title" hidden>
   <div class="trial-capture-card">
@@ -3608,6 +3612,13 @@ document.documentElement.classList.add('license-checking');
     </div>
     <div class="settings-modal-body">
       <p id="settings-error" class="settings-error" role="alert"></p>
+      <div class="settings-section" id="settings-demo-section">
+        <div class="settings-section-title">Modo Demo</div>
+        <p class="logo-upload-hint">Ingresa los datos de un cliente para generarle una cotización o formato de muestra. Tus datos reales quedan guardados y se restauran con un clic.</p>
+        <div id="settings-demo-btn-container">
+          <!-- El JS inyecta aquí el botón correcto según el estado -->
+        </div>
+      </div>
       <div class="field">
         <label for="settings-company"><span data-i18n="settings.label.company">Nombre Empresa</span> <span class="req">*</span></label>
         <input type="text" id="settings-company" required autocomplete="organization" data-i18n-placeholder="settings.placeholder.company" placeholder="Nombre de su empresa">
@@ -5054,6 +5065,37 @@ function arpaSyncNow() {
 }
 
 document.addEventListener('arpa:sync-complete', updateSyncStatusText);
+</script>
+<script>
+(function() {
+  function updateDemoBanner() {
+    var banner = document.getElementById('arpa-demo-banner');
+    if (!banner) return;
+    var active = window.ArpaBrand && window.ArpaBrand.isDemoMode && window.ArpaBrand.isDemoMode();
+    banner.style.display = active ? 'flex' : 'none';
+  }
+  function renderDemoButton() {
+    var container = document.getElementById('settings-demo-btn-container');
+    if (!container) return;
+    var active = window.ArpaBrand && window.ArpaBrand.isDemoMode && window.ArpaBrand.isDemoMode();
+    if (active) {
+      container.innerHTML = '<button class="settings-save-btn" style="background:#c0392b;" onclick="window.ArpaBrand.exitDemoMode()">↩ Restaurar mi empresa</button>';
+    } else {
+      container.innerHTML = '<button class="settings-save-btn" style="background:#1a2a4a;" onclick="window.ArpaBrand.enterDemoMode(); document.getElementById(\'settings-demo-btn-container\').innerHTML=\'<p style=\\\"color:#2e7d32;font-weight:600;\\\">✓ Modo demo activo. Ingresa los datos del cliente en los campos de abajo y genera los documentos.</p>\'">🎭 Activar Modo Demo</button>';
+    }
+  }
+  window.addEventListener('arpa-demo-mode-changed', updateDemoBanner);
+  window.addEventListener('arpa-demo-mode-changed', renderDemoButton);
+  function initDemoUi() {
+    updateDemoBanner();
+    renderDemoButton();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDemoUi);
+  } else {
+    initDemoUi();
+  }
+})();
 </script>
 
 </body>

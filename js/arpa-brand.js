@@ -9,6 +9,10 @@
   const SALES_ENTRY_KEY = 'arpa_suite_sales_entry';
   const FORMATO_DRAFT_KEY = 'arpa_formato_borrador';
   const LOGO_STORAGE_KEY = 'arpa_logo';
+  const DEMO_MODE_KEY = 'arpa_suite_demo_mode';
+  const DEMO_BACKUP_SETTINGS_KEY = 'arpa_suite_demo_backup_settings';
+  const DEMO_BACKUP_CONFIGURED_KEY = 'arpa_suite_demo_backup_configured';
+  const DEMO_BACKUP_LOGO_KEY = 'arpa_suite_demo_backup_logo';
   const GLOBAL_BRAND_URL = 'https://arpatechnologyglobal.com';
   const GLOBAL_FOOTER_TEXT = 'Generado con ARPA Suite · Pruébala gratis en arpatechnologyglobal.com · © 2026';
   function getGlobalFooterText() {
@@ -314,6 +318,7 @@
   }
 
   function needsCompanyRestoreFromSheets() {
+    if (isDemoMode()) return false;
     const licencia = getLicenseCode();
     if (!licencia) return false;
     // v2: también sincronizar si toca por intervalo (cada 30 min)
@@ -332,6 +337,7 @@
   }
 
   function pushCompanyDataToSheets(settings) {
+    if (isDemoMode()) return;
     const licencia = getLicenseCode();
     if (!licencia) return;
     const payload = {
@@ -974,6 +980,78 @@
     }).observe(seal, { childList: true, subtree: true, characterData: true });
   }
 
+  function isDemoMode() {
+    try { return localStorage.getItem(DEMO_MODE_KEY) === 'true'; }
+    catch (e) { return false; }
+  }
+
+  function dispatchDemoModeChanged() {
+    try { global.dispatchEvent(new CustomEvent('arpa-demo-mode-changed')); }
+    catch (e) {}
+  }
+
+  function enterDemoMode() {
+    if (isDemoMode()) return;
+    try {
+      const settings = localStorage.getItem(SETTINGS_KEY);
+      const configured = localStorage.getItem(SETTINGS_CONFIGURED_KEY);
+      const logo = localStorage.getItem(LOGO_STORAGE_KEY);
+      if (settings) localStorage.setItem(DEMO_BACKUP_SETTINGS_KEY, settings);
+      else localStorage.removeItem(DEMO_BACKUP_SETTINGS_KEY);
+      if (configured) localStorage.setItem(DEMO_BACKUP_CONFIGURED_KEY, configured);
+      else localStorage.removeItem(DEMO_BACKUP_CONFIGURED_KEY);
+      if (logo) localStorage.setItem(DEMO_BACKUP_LOGO_KEY, logo);
+      else localStorage.removeItem(DEMO_BACKUP_LOGO_KEY);
+      localStorage.removeItem(SETTINGS_KEY);
+      localStorage.removeItem(SETTINGS_CONFIGURED_KEY);
+      localStorage.removeItem(LOGO_STORAGE_KEY);
+      localStorage.setItem(DEMO_MODE_KEY, 'true');
+    } catch (e) {
+      console.warn('[arpa-brand] enterDemoMode', e);
+      return;
+    }
+    pendingLogoBase64 = null;
+    pendingAppLogoBase64 = null;
+    if (typeof document !== 'undefined') {
+      applyToUI();
+      if (document.getElementById('settings-modal')?.classList.contains('open')) {
+        openSettings();
+      }
+    }
+    dispatchDemoModeChanged();
+  }
+
+  function exitDemoMode() {
+    if (!isDemoMode()) return;
+    try {
+      const settings = localStorage.getItem(DEMO_BACKUP_SETTINGS_KEY);
+      const configured = localStorage.getItem(DEMO_BACKUP_CONFIGURED_KEY);
+      const logo = localStorage.getItem(DEMO_BACKUP_LOGO_KEY);
+      if (settings) localStorage.setItem(SETTINGS_KEY, settings);
+      else localStorage.removeItem(SETTINGS_KEY);
+      if (configured) localStorage.setItem(SETTINGS_CONFIGURED_KEY, configured);
+      else localStorage.removeItem(SETTINGS_CONFIGURED_KEY);
+      if (logo) localStorage.setItem(LOGO_STORAGE_KEY, logo);
+      else localStorage.removeItem(LOGO_STORAGE_KEY);
+      localStorage.removeItem(DEMO_BACKUP_SETTINGS_KEY);
+      localStorage.removeItem(DEMO_BACKUP_CONFIGURED_KEY);
+      localStorage.removeItem(DEMO_BACKUP_LOGO_KEY);
+      localStorage.removeItem(DEMO_MODE_KEY);
+    } catch (e) {
+      console.warn('[arpa-brand] exitDemoMode', e);
+      return;
+    }
+    pendingLogoBase64 = null;
+    pendingAppLogoBase64 = null;
+    if (typeof document !== 'undefined') {
+      applyToUI();
+      if (document.getElementById('settings-modal')?.classList.contains('open')) {
+        openSettings();
+      }
+    }
+    dispatchDemoModeChanged();
+  }
+
   global.ArpaBrand = {
     SETTINGS_KEY,
     SETTINGS_CONFIGURED_KEY,
@@ -1009,7 +1087,10 @@
     saveFromModal,
     showError,
     formatBankBlock,
-    syncBankBlocksForPrint
+    syncBankBlocksForPrint,
+    isDemoMode,
+    enterDemoMode,
+    exitDemoMode
   };
 
   global.applyUserSettingsToUI = applyToUI;
