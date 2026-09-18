@@ -805,6 +805,7 @@
     global.ArpaOficios?.renderSettingsCheckboxes?.(document.getElementById('settings-oficios-grid'));
     global.ArpaPricing?.renderPriceListSettings?.();
     document.getElementById('settings-modal')?.classList.add('open');
+    try { global.dispatchEvent(new CustomEvent('arpa-demo-mode-changed')); } catch (e) {}
     if (menuBtn) {
       document.querySelectorAll('.main-menu-btn').forEach((b) => b.classList.remove('active'));
       menuBtn.classList.add('active');
