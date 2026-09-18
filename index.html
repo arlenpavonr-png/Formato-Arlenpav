@@ -5079,9 +5079,16 @@ document.addEventListener('arpa:sync-complete', updateSyncStatusText);
     if (!container) return;
     var active = window.ArpaBrand && window.ArpaBrand.isDemoMode && window.ArpaBrand.isDemoMode();
     if (active) {
-      container.innerHTML = '<button class="settings-save-btn" style="background:#c0392b;" onclick="window.ArpaBrand.exitDemoMode()">↩ Restaurar mi empresa</button>';
+      container.innerHTML =
+        '<p class="logo-upload-hint" style="color:#2e7d32;font-weight:600;margin:0 0 8px;">✓ Modo demo activo. Ingresa los datos del cliente abajo y genera los documentos.</p>' +
+        '<button type="button" class="settings-save-btn" id="settings-demo-restore-btn" style="background:#c0392b;">↩ Restaurar mi empresa</button>';
+      var restoreBtn = document.getElementById('settings-demo-restore-btn');
+      if (restoreBtn) restoreBtn.onclick = function () { window.ArpaBrand.exitDemoMode(); };
     } else {
-      container.innerHTML = '<button class="settings-save-btn" style="background:#1a2a4a;" onclick="window.ArpaBrand.enterDemoMode(); document.getElementById(\'settings-demo-btn-container\').innerHTML=\'<p style=\\\"color:#2e7d32;font-weight:600;\\\">✓ Modo demo activo. Ingresa los datos del cliente en los campos de abajo y genera los documentos.</p>\'">🎭 Activar Modo Demo</button>';
+      container.innerHTML =
+        '<button type="button" class="settings-save-btn" id="settings-demo-enter-btn" style="background:#1a2a4a;">🎭 Activar Modo Demo</button>';
+      var enterBtn = document.getElementById('settings-demo-enter-btn');
+      if (enterBtn) enterBtn.onclick = function () { window.ArpaBrand.enterDemoMode(); };
     }
   }
   window.addEventListener('arpa-demo-mode-changed', updateDemoBanner);
