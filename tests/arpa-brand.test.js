@@ -185,4 +185,40 @@ describe('Modo Demo backup/restore', () => {
     assert.ok(localStorage.getItem(SETTINGS_KEY).includes('Vector'));
     assert.ok(localStorage.getItem(DEMO_BACKUP_SETTINGS_KEY).includes('Mi Empresa Real'));
   });
+
+  it('si ya se guardó el cliente, respalda la empresa real (home) y deja el cliente como demo', () => {
+    localStorage.setItem('arpa_suite_home_settings', JSON.stringify({ companyName: 'Automatismos Arlenpav S.A.S' }));
+    localStorage.setItem('arpa_suite_home_configured', 'true');
+    localStorage.setItem('arpa_suite_home_logo', 'data:image/png;base64,REALLOGO');
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ companyName: 'Vector Proyectos y Servicios' }));
+    api().enterDemoMode();
+    assert.equal(api().isDemoMode(), true);
+    assert.ok(localStorage.getItem(DEMO_BACKUP_SETTINGS_KEY).includes('Automatismos Arlenpav'));
+    assert.ok(localStorage.getItem(SETTINGS_KEY).includes('Vector Proyectos y Servicios'));
+  });
+
+  it('corrige inversión: empresa real en vivo y Vector en el backup', () => {
+    localStorage.setItem(DEMO_MODE_KEY, 'true');
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ companyName: 'AUTOMATISMOSARLENPAV S.A.S' }));
+    localStorage.setItem(CONFIGURED_KEY, 'true');
+    localStorage.setItem(LOGO_KEY, 'data:image/png;base64,REALLOGO');
+    localStorage.setItem(DEMO_BACKUP_SETTINGS_KEY, JSON.stringify({ companyName: 'Vector Proyectos y Servicios' }));
+    localStorage.setItem(DEMO_BACKUP_CONFIGURED_KEY, 'true');
+    localStorage.setItem(DEMO_BACKUP_LOGO_KEY, 'data:image/png;base64,DEMOLOGO');
+    assert.equal(api().repairInvertedDemoIfNeeded('AUTOMATISMOSARLENPAV S.A.S'), true);
+    assert.ok(localStorage.getItem(SETTINGS_KEY).includes('Vector Proyectos y Servicios'));
+    assert.ok(localStorage.getItem(DEMO_BACKUP_SETTINGS_KEY).includes('AUTOMATISMOSARLENPAV'));
+    api().exitDemoMode();
+    assert.ok(localStorage.getItem(SETTINGS_KEY).includes('AUTOMATISMOSARLENPAV'));
+    assert.equal(api().isDemoMode(), false);
+  });
+
+  it('no invierte un demo correcto (Vector en vivo, empresa real en backup)', () => {
+    localStorage.setItem(DEMO_MODE_KEY, 'true');
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ companyName: 'Vector Proyectos y Servicios' }));
+    localStorage.setItem(DEMO_BACKUP_SETTINGS_KEY, JSON.stringify({ companyName: 'AUTOMATISMOSARLENPAV S.A.S' }));
+    assert.equal(api().repairInvertedDemoIfNeeded('AUTOMATISMOSARLENPAV S.A.S'), false);
+    assert.ok(localStorage.getItem(SETTINGS_KEY).includes('Vector Proyectos y Servicios'));
+    assert.ok(localStorage.getItem(DEMO_BACKUP_SETTINGS_KEY).includes('AUTOMATISMOSARLENPAV'));
+  });
 });
