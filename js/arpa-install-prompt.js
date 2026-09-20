@@ -22,13 +22,27 @@
     });
   }
 
-  function isIosManual() {
+  function iosUserAgent() {
+    return ((global.navigator && global.navigator.userAgent) || '');
+  }
+
+  function isIosDevice() {
     return !!safe(function () {
-      var ua = (global.navigator && global.navigator.userAgent) || '';
+      return /iPhone|iPad|iPod/i.test(iosUserAgent());
+    });
+  }
+
+  function isIosSafari() {
+    return !!safe(function () {
+      var ua = iosUserAgent();
       if (!/iPhone|iPad|iPod/i.test(ua)) return false;
-      if (/CriOS/i.test(ua)) return false;
+      if (/CriOS|FxiOS|EdgiOS|OPiOS|OPT\//i.test(ua)) return false;
       return true;
     });
+  }
+
+  function isIosOther() {
+    return isIosDevice() && !isIosSafari();
   }
 
   function isBannerDismissed() {
@@ -84,9 +98,10 @@
         hideAll();
         return;
       }
+      var safariIos = isIosSafari();
+      var otherIos = isIosOther();
       var canChrome = !!deferredPrompt;
-      var ios = isIosManual();
-      if (!canChrome && !ios) return;
+      if (!safariIos && !otherIos && !canChrome) return;
 
       Array.prototype.forEach.call(roots(), function (root) {
         bindRoot(root);
@@ -98,12 +113,19 @@
         root.style.display = showAs;
         var btn = root.querySelector('[data-arpa-install-btn]');
         var iosEl = root.querySelector('[data-arpa-install-ios]');
-        if (ios) {
+        var iosOtherEl = root.querySelector('[data-arpa-install-ios-other]');
+        if (safariIos) {
           if (btn) btn.style.display = 'none';
           if (iosEl) iosEl.style.display = 'block';
+          if (iosOtherEl) iosOtherEl.style.display = 'none';
+        } else if (otherIos) {
+          if (btn) btn.style.display = 'none';
+          if (iosEl) iosEl.style.display = 'none';
+          if (iosOtherEl) iosOtherEl.style.display = 'block';
         } else {
           if (btn) btn.style.display = '';
           if (iosEl) iosEl.style.display = 'none';
+          if (iosOtherEl) iosOtherEl.style.display = 'none';
         }
       });
     });
@@ -152,7 +174,7 @@
   });
 
   function tryIosOnReady() {
-    if (isIosManual() && !isStandalone()) mostrarBoton();
+    if (isIosDevice() && !isStandalone()) mostrarBoton();
   }
 
   safe(function () {
