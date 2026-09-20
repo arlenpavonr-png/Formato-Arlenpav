@@ -2638,6 +2638,13 @@ document.documentElement.classList.add('license-checking');
   <span>🎭 MODO DEMO ACTIVO — Los documentos se generarán con los datos que ingreses ahora</span>
   <button onclick="window.ArpaBrand.exitDemoMode()" style="background:#1a2a4a; color:#c9a84c; border:none; border-radius:4px; padding:4px 12px; font-size:12px; font-weight:700; cursor:pointer;">↩ Restaurar mi empresa</button>
 </div>
+<div id="arpa-install-banner" data-arpa-install-root data-arpa-install-display="flex" data-arpa-install-dismissable="1" style="display:none; position:sticky; top:0; z-index:9998; background:#1a2a4a; color:#c9a84c; padding:8px 12px; text-align:center; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap;">
+  <span>Instálala en tu celular en 10 segundos</span>
+  <button type="button" data-arpa-install-btn style="background:#c9a84c; color:#1a2a4a; border:none; border-radius:4px; padding:6px 14px; font-size:12px; font-weight:700; cursor:pointer;">Instalar App</button>
+  <span data-arpa-install-ios style="display:none; font-weight:500; max-width:520px;">📤 En iPhone: toca Compartir (cuadrado con flecha hacia arriba) y luego "Agregar a pantalla de inicio"</span>
+  <span data-arpa-install-ios-other style="display:none; font-weight:500; max-width:520px;">🧭 Para instalar la app, abre este link en Safari</span>
+  <button type="button" data-arpa-install-dismiss aria-label="Cerrar" style="background:transparent; color:#c9a84c; border:none; font-size:20px; line-height:1; cursor:pointer; padding:0 4px;">×</button>
+</div>
 
 <div id="trial-capture-gate" class="trial-capture-gate" role="dialog" aria-modal="true" aria-labelledby="trial-capture-title" hidden>
   <div class="trial-capture-card">
@@ -5103,6 +5110,14 @@ document.addEventListener('arpa:sync-complete', updateSyncStatusText);
     initDemoUi();
   }
 })();
+</script>
+<script src="./js/arpa-install-prompt.js"></script>
+<script>
+window.addEventListener('beforeinstallprompt', function () {
+  if (window.ArpaInstall && typeof window.ArpaInstall.mostrarBoton === 'function') {
+    window.ArpaInstall.mostrarBoton();
+  }
+});
 </script>
 
 </body>
