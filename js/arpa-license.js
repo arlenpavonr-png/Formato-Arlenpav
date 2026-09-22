@@ -4,7 +4,9 @@
 (function (global) {
   const LICENSE_CODE_KEY = 'arpa_suite_license_code';
   const LICENSE_PLAN_KEY = 'arpa_suite_license_plan';
-  const FOUNDER_CODE = 'ARPA-FOUNDER-7X9K2M4QZ1';
+  // El código fundador YA NO vive en el cliente. El servidor responde founder:true
+  // al validar la licencia y ese resultado se guarda en LICENSE_FOUNDER_KEY.
+  const LICENSE_FOUNDER_KEY = 'arpa_suite_license_founder';
   const WL_PREFIX = 'ARPA-WL-';
   const PYME_PREFIX = 'ARPA-PYME-';
   const PRO_PREFIX = 'ARPA-PRO-';
@@ -24,7 +26,14 @@
 
   /** Licencia fundador: exenta de bloqueos presentes y futuros. */
   function isFounderLicense(code) {
-    return normalizeCode(code || getActiveLicenseCode()) === FOUNDER_CODE;
+    const active = getActiveLicenseCode();
+    if (!active) return false;
+    if (code && normalizeCode(code) !== active) return false;
+    try {
+      return localStorage.getItem(LICENSE_FOUNDER_KEY) === '1';
+    } catch (e) {
+      return false;
+    }
   }
 
   function isWhiteLabelLicense(code) {
@@ -94,6 +103,7 @@
     PRO_PREFIX,
     FREE_PREFIX,
     LICENSE_PLAN_KEY,
+    LICENSE_FOUNDER_KEY,
     getActiveLicenseCode,
     getActiveLicensePlan,
     isFounderLicense,

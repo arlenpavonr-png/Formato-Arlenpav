@@ -162,7 +162,6 @@
     }
     const code = getSavedLicenseCode().toUpperCase();
     if (!code) return false;
-    if (code === 'ARPA-FOUNDER-001') return false;
     if (code.indexOf('ARPA-WL-') === 0) return false;
     if (code.indexOf('ARPA-PYME-') === 0) return false;
     if (code.indexOf('ARPA-PRO-') === 0) return false;
