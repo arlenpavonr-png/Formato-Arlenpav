@@ -4735,7 +4735,6 @@ if ('serviceWorker' in navigator) {
   function isLocallyExpired() {
     try {
       var code = (localStorage.getItem(LICENSE_STORAGE_KEY) || '').trim().toUpperCase();
-      if (code === 'ARPA-FOUNDER-001') return false;
       if (window.ArpaLicense && window.ArpaLicense.isNeverExpiring(code)) return false;
       var venc = (localStorage.getItem(LICENSE_VENC_KEY) || '').trim();
       var d = parseDateOnly(venc);
@@ -4754,6 +4753,8 @@ if ('serviceWorker' in navigator) {
       if (data.codigo) localStorage.setItem(LICENSE_STORAGE_KEY, String(data.codigo).trim().toUpperCase());
       if (data.vencimiento) localStorage.setItem(LICENSE_VENC_KEY, data.vencimiento);
       if (data.plan) localStorage.setItem(LICENSE_PLAN_KEY, data.plan);
+      if (data.founder === true) localStorage.setItem('arpa_suite_license_founder', '1');
+      else localStorage.removeItem('arpa_suite_license_founder');
       localStorage.setItem(SALES_ENTRY_KEY, 'true');
     } catch (e) {}
   }
@@ -4763,6 +4764,7 @@ if ('serviceWorker' in navigator) {
       localStorage.removeItem(LICENSE_STORAGE_KEY);
       localStorage.removeItem(LICENSE_VENC_KEY);
       localStorage.removeItem(LICENSE_PLAN_KEY);
+      localStorage.removeItem('arpa_suite_license_founder');
     } catch (e) {}
   }
 
