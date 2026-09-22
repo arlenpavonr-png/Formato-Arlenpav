@@ -5,6 +5,7 @@
   const LEGACY_STORAGE_KEY = 'arpa_catalogo_usuario';
   const LEGACY_CATEGORIES_KEY = 'arpa_categorias_usuario';
   const MIGRATION_FLAG_KEY = 'arpa_catalog_per_oficio_migrated_v1';
+  const EVER_HAD_PRODUCTS_KEY = 'arpa_catalog_ever_had_products';
   /** @deprecated legacy key name — datos viven en arpa_catalog_{oficio} */
   const STORAGE_KEY = LEGACY_STORAGE_KEY;
   /** @deprecated legacy key name — datos viven en arpa_categorias_{oficio} */
@@ -112,6 +113,48 @@
     }
   }
 
+  function markEverHadProducts() {
+    try { localStorage.setItem(EVER_HAD_PRODUCTS_KEY, 'true'); }
+    catch (e) {}
+  }
+
+  function hasEverHadProducts() {
+    try { return localStorage.getItem(EVER_HAD_PRODUCTS_KEY) === 'true'; }
+    catch (e) { return false; }
+  }
+
+  function listCatalogOficioIds() {
+    const active = getActiveOficios();
+    if (Array.isArray(active) && active.length) {
+      return active.map((id) => normalizeOficioId(id));
+    }
+    return [getActiveOficioId()];
+  }
+
+  function collectProductsForCloud() {
+    const out = [];
+    listCatalogOficioIds().forEach((oid) => {
+      readProductsRaw(oid).forEach((p) => {
+        const catId = resolveProductCategoryId(p);
+        const categoria = getCategoryName(catId, oid) || 'General';
+        out.push({
+          id: p.id,
+          cod: p.cod,
+          nom: p.nom,
+          pvp: p.pvp,
+          unidad: p.unidad || '',
+          marca: p.marca || '',
+          categoria
+        });
+      });
+    });
+    return out;
+  }
+
+  function isLocalCatalogEmpty() {
+    return listCatalogOficioIds().every((oid) => readProductsRaw(oid).length === 0);
+  }
+
   function writeProductsRaw(oficioId, products) {
     migrateLegacyCatalogIfNeeded();
     const oid = normalizeOficioId(oficioId);
@@ -120,8 +163,10 @@
     } catch (e) {
       console.warn('[arpa-mi-catalogo] writeProductsRaw', e);
     }
+    if (Array.isArray(products) && products.length) markEverHadProducts();
     global.ArpaCatalogo?.invalidateListaCache?.();
     global.ArpaCotizacion?.updateCatalogHint?.();
+    global.ArpaCloudSync?.scheduleCatalogCloudSync?.();
   }
 
   function readCategoriesRaw(oficioId) {
@@ -143,6 +188,7 @@
     } catch (e) {
       console.warn('[arpa-mi-catalogo] writeCategoriesRaw', e);
     }
+    global.ArpaCloudSync?.scheduleCatalogCloudSync?.();
   }
 
   function getActiveOficioId() {
@@ -857,17 +903,13 @@
         })).filter((p) => p.cod && p.nom);
 
         if (newCats.length) {
-          const allCats = [...cats, ...newCats];
-          try { localStorage.setItem(catalogCategoriesKey(oficioId), JSON.stringify(allCats)); } catch(e) {}
+          writeCategoriesRaw(oficioId, [...cats, ...newCats]);
         }
 
-        const allProducts = [...localProducts, ...newProducts];
-        try { localStorage.setItem(catalogProductsKey(oficioId), JSON.stringify(allProducts)); } catch(e) {}
+        writeProductsRaw(oficioId, [...localProducts, ...newProducts]);
 
-        global.ArpaCatalogo?.invalidateListaCache?.();
         renderCategoriesPanel(oficioId);
         renderProductGroups(oficioId);
-        global.ArpaCloudSync?.scheduleCatalogCloudSync?.();
 
         alert(`✓ Se importaron ${newProducts.length} producto(s) del catálogo maestro.`);
       })
@@ -1222,8 +1264,16 @@
     catalogProductsKey,
     catalogCategoriesKey,
     getActiveOficioId,
+    getActiveOficios,
     getProducts,
     getCategories,
+    getCategoryName,
+    writeProductsRaw,
+    writeCategoriesRaw,
+    collectProductsForCloud,
+    isLocalCatalogEmpty,
+    hasEverHadProducts,
+    markEverHadProducts,
     saveProducts,
     saveCategories,
     hasProducts,
