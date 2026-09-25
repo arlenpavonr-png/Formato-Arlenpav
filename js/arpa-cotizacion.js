@@ -806,6 +806,8 @@
     renderMarcasCot();
     document.getElementById('iva-check-cot')?.addEventListener('change', recalcularCotizacion);
     document.addEventListener('click', (e) => {
+      // Si el elemento clicado ya se re-renderizó (ej. al agregar con filtro de marca), no cerrar la lista
+      if (!e.target.isConnected) return;
       if (e.target.closest('.cot-marca-chip') || e.target.closest('#cot-marcas')) return;
       if (!e.target.closest('.buscador-wrap-cot')) {
         const res = document.getElementById('resultados-cot');
