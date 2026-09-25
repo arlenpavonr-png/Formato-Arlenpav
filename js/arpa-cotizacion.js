@@ -6,10 +6,7 @@
     return global.ArpaPricing?.formatoPesos(n) || ('$ ' + (Number(n) || 0).toLocaleString('es-CO'));
   }
 
-  function getCatalogoActivo() {
-    const oid = global.ArpaMiCatalogo?.getActiveOficioId?.()
-      || global.ArpaOficios?.getActiveOficiosFromSettings?.()?.[0]
-      || 'automatismos';
+  function getCatalogoDeOficio(oid) {
     const normalized = global.ArpaOficios?.normalizeOficioId?.(oid) || oid;
     const fromMiCatalogo = global.ArpaMiCatalogo?.getProducts?.(normalized);
     if (Array.isArray(fromMiCatalogo) && fromMiCatalogo.length) {
@@ -18,6 +15,26 @@
         .map((p) => global.ArpaCatalogo?.productToFlatDisplay?.(p, normalized) || p);
     }
     return global.ArpaCatalogo?.getListaProductos?.(normalized) || [];
+  }
+
+  // Busca en TODOS los oficios activos (antes solo en el primero: con varios oficios,
+  // p. ej. Cámaras + Automatismos, los motores no aparecían en la cotización).
+  function getCatalogoActivo() {
+    let ids = global.ArpaOficios?.getActiveOficiosFromSettings?.() || [];
+    if (!Array.isArray(ids) || !ids.length) {
+      ids = [global.ArpaMiCatalogo?.getActiveOficioId?.() || 'automatismos'];
+    }
+    const vistos = new Set();
+    const out = [];
+    ids.forEach((oid) => {
+      getCatalogoDeOficio(oid).forEach((p) => {
+        const cod = String(p.cod || '').trim();
+        if (!cod || vistos.has(cod)) return;
+        vistos.add(cod);
+        out.push(p);
+      });
+    });
+    return out;
   }
 
   function findProductoCot(cod) {

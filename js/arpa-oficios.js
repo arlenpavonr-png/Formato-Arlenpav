@@ -766,7 +766,7 @@
     global.ArpaCotizacion?.updateCatalogHint?.();
   }
 
-  const AUTOMATISMOS_SEED_VERSION = '2026-09-listas-distribuidor';
+  const AUTOMATISMOS_SEED_VERSION = '2026-09-listas-distribuidor-2';
   const AUTOMATISMOS_SEED_VERSION_KEY = 'arpa_seed_version_automatismos';
 
   function seedOficioIfNeeded(oficioId) {
