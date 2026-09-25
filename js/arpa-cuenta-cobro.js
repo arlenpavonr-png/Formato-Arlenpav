@@ -152,6 +152,11 @@
     return global.ArpaPricing?.formatoPesos(n) || ('$ ' + (Number(n) || 0).toLocaleString('es-CO'));
   }
 
+  function roundMoney(n) {
+    if (typeof global.ArpaPricing?.roundMoney === 'function') return global.ArpaPricing.roundMoney(n);
+    return Number(n) || 0;
+  }
+
   function parseNum(v) {
     const n = Number(String(v).replace(/[^\d.-]/g, ''));
     return Number.isFinite(n) ? n : 0;
@@ -278,9 +283,9 @@
     const conIva = document.getElementById('cc-iva-check')?.checked;
     const conRet = document.getElementById('cc-ret-check')?.checked;
     const retPct = parseNum(document.getElementById('cc-ret-pct')?.value) || 0;
-    const iva = conIva ? subtotal * getTaxRate() : 0;
-    const retencion = conRet ? subtotal * (retPct / 100) : 0;
-    const total = subtotal + iva - retencion;
+    const iva = conIva ? roundMoney(subtotal * getTaxRate()) : 0;
+    const retencion = conRet ? roundMoney(subtotal * (retPct / 100)) : 0;
+    const total = roundMoney(subtotal + iva - retencion);
 
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     set('cc-subtotal-val', formatoPesos(subtotal));
@@ -311,9 +316,9 @@
     const conIva = document.getElementById('cc-iva-check')?.checked;
     const conRet = document.getElementById('cc-ret-check')?.checked;
     const retPct = parseNum(document.getElementById('cc-ret-pct')?.value) || 0;
-    const iva = conIva ? subtotal * getTaxRate() : 0;
-    const retencion = conRet ? subtotal * (retPct / 100) : 0;
-    const total = subtotal + iva - retencion;
+    const iva = conIva ? roundMoney(subtotal * getTaxRate()) : 0;
+    const retencion = conRet ? roundMoney(subtotal * (retPct / 100)) : 0;
+    const total = roundMoney(subtotal + iva - retencion);
     const r = global.ArpaBrand?.getSettings?.() || getRawSettings();
     const clienteNombre = document.getElementById('cc-cliente-nombre')?.value.trim() || '';
 
@@ -327,7 +332,7 @@
         doc: (r.technicianDocument || '').trim(),
         empresa: (r.companyName || '').trim(),
         nit: (r.nit || '').trim(),
-        tel: (r.phone || '').trim(),
+        tel: global.ArpaPricing?.formatCompanyPhone?.(r.phone) || (r.phone || '').trim(),
         dir: (r.address || '').trim(),
         web: (r.website || '').trim()
       },

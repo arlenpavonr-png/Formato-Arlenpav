@@ -376,6 +376,7 @@
     'cc.label.tipo_cuenta': 'Account type',
     'cc.cuenta.ahorros': 'Savings',
     'cc.cuenta.corriente': 'Checking',
+    'cc.cuenta.clabe': 'CLABE',
     'cc.label.numero_cuenta': 'Account number',
     'cc.label.titular': 'Account holder',
     'cc.placeholder.titular': 'Account holder name',
@@ -575,7 +576,8 @@
     'currency.name.usd': 'US dollars',
     'currency.name.mxn': 'Mexican pesos',
     'currency.name.pen': 'Peruvian soles',
-    'currency.name.clp': 'Chilean pesos'
+    'currency.name.clp': 'Chilean pesos',
+    'cat.aviso.precios_convertidos': 'Reference prices converted from Colombia. Review them before quoting.'
   };
 
   var DOC_TYPE_KEYS = {
@@ -606,16 +608,25 @@
   }
 
   function t(key, vars) {
-    var dict = currentLang === 'en' ? I18N_EN : I18N_ES;
-    var text = dict[key];
+    var overrides = getCountryOverrides(currentLang);
+    var text = overrides && overrides[key];
+    if (text == null) {
+      var dict = currentLang === 'en' ? I18N_EN : I18N_ES;
+      text = dict[key];
+    }
     if (text == null && currentLang === 'en') text = I18N_EN[key];
     if (text == null) text = key;
     return interpolate(text, vars);
   }
 
   function translateIn(key, lang) {
-    var dict = lang === 'en' ? I18N_EN : I18N_ES;
-    var text = dict[key];
+    var useLang = lang === 'en' ? 'en' : 'es';
+    var overrides = getCountryOverrides(useLang);
+    var text = overrides && overrides[key];
+    if (text == null) {
+      var dict = useLang === 'en' ? I18N_EN : I18N_ES;
+      text = dict[key];
+    }
     if (text == null) text = key;
     return text;
   }
@@ -628,6 +639,8 @@
 
   function supplementSpanishKeys() {
     Object.assign(I18N_ES, {
+      'cc.cuenta.clabe': 'CLABE',
+      'cat.aviso.precios_convertidos': 'Precios de referencia convertidos desde Colombia. Revísalos antes de cotizar.',
       'header.doc_type.cotizacion': '💰 Cotización',
       'header.doc_type.catalogo': '📦 Mi Catálogo',
       'header.doc_type.cuenta_cobro': '🧾 Cuenta de Cobro',
@@ -853,10 +866,12 @@
     applyAttributeSet('[data-i18n-title]', 'data-i18n-title', 'data-i18n-default-title', lang);
     applyAttributeSet('[data-i18n-aria-label]', 'data-i18n-aria-label', 'data-i18n-default-aria', lang);
     applyAttributeSet('[data-i18n-html]', 'data-i18n-html', 'data-i18n-default-html', lang);
+    applyCountryLabels();
     updateLangButtons(lang);
     refreshDocTypeLabel();
     refreshBrandTexts();
     window.ArpaBrand?.applyToUI?.();
+    refreshDocTypeLabel();
     window.ArpaCobros?.refreshDefaultLabels?.('cot');
   }
 
@@ -1018,11 +1033,14 @@
       applySpanishInRoot(root, pdfBackup.items);
     });
     applyPdfBrandSpanish(pdfBackup.items);
+    [viewRoot, header, qrPrint].forEach(function (root) {
+      applyCountryLabels(root);
+    });
     var viewKey = String(viewId || '').replace('view-', '');
     var docType = document.getElementById('doc-type-label');
     if (docType) {
       pushBackup(pdfBackup.items, docType, 'textContent', docType.textContent);
-      docType.textContent = resolveText(DOC_TYPE_KEYS[viewKey] || DOC_TYPE_KEYS.formato, 'es');
+      docType.textContent = chipDocTypeText(resolveText(DOC_TYPE_KEYS[viewKey] || DOC_TYPE_KEYS.formato, 'es'));
     }
   }
 
@@ -1108,15 +1126,120 @@
     applyCotNotaLegal();
   }
 
-  function refreshDocTypeLabel() {
+  function chipDocTypeText(text) {
+    var cleaned = String(text || '').replace(/^[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+/, '').trim();
+    return cleaned || String(text || '');
+  }
+
+  function resolveCurrentView(preferredView) {
+    if (preferredView && DOC_TYPE_KEYS[preferredView]) return preferredView;
+    var visible = document.querySelector('.suite-view:not([hidden])');
+    if (visible && visible.id && visible.id.indexOf('view-') === 0) {
+      var fromDom = visible.id.slice(5);
+      if (DOC_TYPE_KEYS[fromDom]) return fromDom;
+    }
+    if (global.ArpaViews && typeof global.ArpaViews.getCurrentView === 'function') {
+      var fromApi = global.ArpaViews.getCurrentView();
+      if (fromApi && DOC_TYPE_KEYS[fromApi]) return fromApi;
+    }
+    return 'formato';
+  }
+
+  function getCountryPlaceholders(country) {
+    var map = {
+      CO: { phone: '+57 300 000 0000', cityEs: 'Medellín', cityEn: 'Medellín' },
+      MX: { phone: '+52 55 0000 0000', cityEs: 'Ciudad de México', cityEn: 'Mexico City' },
+      CL: { phone: '+56 9 0000 0000', cityEs: 'Santiago', cityEn: 'Santiago' },
+      PE: { phone: '+51 1 000 0000', cityEs: 'Lima', cityEn: 'Lima' },
+      US: { phone: '+1 555 000 0000', cityEs: 'Miami', cityEn: 'Miami' }
+    };
+    return map[country] || map.CO;
+  }
+
+  function getCountryOverrides(lang) {
+    var country = (global.ArpaPricing && typeof global.ArpaPricing.getCountryCode === 'function')
+      ? global.ArpaPricing.getCountryCode()
+      : 'CO';
+    var ph = getCountryPlaceholders(country);
+    var es = {
+      'cot.table.pvp_unit': 'PRECIO UNIT.',
+      'formato.placeholder.telefono': ph.phone,
+      'formato.placeholder.ciudad': ph.cityEs
+    };
+    var en = {
+      'cot.table.pvp_unit': 'UNIT PRICE',
+      'formato.placeholder.telefono': ph.phone,
+      'formato.placeholder.ciudad': ph.cityEn
+    };
+    if (country === 'MX') {
+      Object.assign(es, {
+        'settings.label.nit': 'RFC',
+        'formato.label.nit_cedula': 'RFC',
+        'formato.placeholder.nit_cedula': 'RFC',
+        'formato.firma.placeholder.doc': 'RFC',
+        'settings.label.holder_doc_optional': 'RFC del titular (opcional)',
+        'settings.label.technician_doc_optional': 'RFC del técnico (opcional)',
+        'settings.label.account_number': 'CLABE / Número de cuenta',
+        'settings.placeholder.account_number': 'CLABE (18 dígitos)',
+        'cc.cobrador.cedula_nit': 'RFC personal',
+        'cc.cobrador.nit_empresa': 'RFC empresa',
+        'cc.label.nit_cc': 'RFC',
+        'cc.label.nit_titular': 'RFC titular',
+        'cc.placeholder.doc_titular': 'RFC del titular',
+        'cc.cuenta.clabe': 'CLABE',
+        'tax.label.iva': 'IVA',
+        'cot.nota_legal': '<strong>Nota:</strong> Cotización válida por <strong>15 días calendario</strong>. Precios en {moneda_nombre} ({moneda_codigo}).',
+        'brand.banco.linea': 'Datos para transferencia: {bank} · {tipo} · {numero}'
+      });
+      Object.assign(en, {
+        'settings.label.nit': 'RFC',
+        'formato.label.nit_cedula': 'RFC',
+        'formato.placeholder.nit_cedula': 'RFC',
+        'formato.firma.placeholder.doc': 'RFC',
+        'settings.label.holder_doc_optional': 'Holder RFC (optional)',
+        'settings.label.technician_doc_optional': 'Technician RFC (optional)',
+        'settings.label.account_number': 'CLABE / Account number',
+        'settings.placeholder.account_number': 'CLABE (18 digits)',
+        'cc.cobrador.cedula_nit': 'Personal RFC',
+        'cc.cobrador.nit_empresa': 'Company RFC',
+        'cc.label.nit_cc': 'RFC',
+        'cc.label.nit_titular': 'Holder RFC',
+        'cc.placeholder.doc_titular': 'Holder RFC',
+        'cc.cuenta.clabe': 'CLABE',
+        'tax.label.iva': 'VAT',
+        'cot.nota_legal': '<strong>Note:</strong> Quote valid for <strong>15 calendar days</strong>. Prices in {moneda_nombre} ({moneda_codigo}).',
+        'brand.banco.linea': 'Transfer details: {bank} · {tipo} · No. {numero}'
+      });
+    }
+    return lang === 'en' ? en : es;
+  }
+
+  function applyCountryLabels(root) {
+    var scope = root || document;
+    if (!scope.querySelectorAll) return;
+    var overrides = getCountryOverrides(currentLang);
+    scope.querySelectorAll('[data-i18n]').forEach(function (el) {
+      if (el.id === 'doc-type-label') return;
+      var key = el.getAttribute('data-i18n');
+      if (!key) return;
+      var text = overrides[key];
+      if (text == null) return;
+      el.textContent = interpolate(text);
+    });
+    scope.querySelectorAll('[data-i18n-placeholder]').forEach(function (el) {
+      var key = el.getAttribute('data-i18n-placeholder');
+      if (!key || overrides[key] == null) return;
+      el.setAttribute('placeholder', overrides[key]);
+    });
+  }
+
+  function refreshDocTypeLabel(preferredView) {
     var el = document.getElementById('doc-type-label');
     if (!el) return;
-    var view = 'formato';
-    if (global.ArpaViews && typeof global.ArpaViews.getCurrentView === 'function') {
-      view = global.ArpaViews.getCurrentView() || 'formato';
-    }
+    var view = resolveCurrentView(preferredView);
     var key = DOC_TYPE_KEYS[view] || DOC_TYPE_KEYS.formato;
-    el.textContent = t(key);
+    el.setAttribute('data-i18n', key);
+    el.textContent = chipDocTypeText(t(key));
   }
 
   function wrapFunction(name, afterFn) {
@@ -1194,6 +1317,7 @@
     refreshBrandTexts: refreshBrandTexts,
     preparePdfSpanish: preparePdfSpanish,
     restorePdfSpanish: restorePdfSpanish,
+    applyCountryLabels: applyCountryLabels,
     KEY_COUNT: Object.keys(I18N_EN).length
   };
 

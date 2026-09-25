@@ -59,11 +59,60 @@
     if (totalCell) totalCell.textContent = formatoPesos(f.pvp * f.cant);
   }
 
+  let marcaFiltroCot = '';
+  const MAX_RESULTADOS_COT = 300;
+
+  function normTxt(str) {
+    return String(str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  function isEnglishUi() {
+    const lang = global.ArpaI18n?.getLang?.() || global.ArpaI18n?.lang || document.documentElement.lang || 'es';
+    return String(lang).toLowerCase().startsWith('en');
+  }
+
+  function ensureMarcasWrap() {
+    let wrap = document.getElementById('cot-marcas');
+    if (wrap) return wrap;
+    const res = document.getElementById('resultados-cot');
+    if (!res || !res.parentNode) return null;
+    wrap = document.createElement('div');
+    wrap.id = 'cot-marcas';
+    wrap.className = 'cot-marcas';
+    res.parentNode.insertBefore(wrap, res);
+    return wrap;
+  }
+
+  function renderMarcasCot() {
+    const wrap = ensureMarcasWrap();
+    if (!wrap) return;
+    const marcas = [...new Set(getCatalogoActivo().map((p) => String(p.marca || '').trim()).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b));
+    if (marcas.length < 2) {
+      wrap.hidden = true;
+      return;
+    }
+    if (marcaFiltroCot && !marcas.includes(marcaFiltroCot)) marcaFiltroCot = '';
+    wrap.hidden = false;
+    const todas = isEnglishUi() ? 'All' : 'Todas';
+    wrap.innerHTML = ['', ...marcas].map((m) =>
+      `<button type="button" class="cot-marca-chip${m === marcaFiltroCot ? ' active' : ''}" data-marca="${escapeHtml(m)}">${escapeHtml(m || todas)}</button>`
+    ).join('');
+    wrap.querySelectorAll('.cot-marca-chip').forEach((b) => {
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        marcaFiltroCot = b.dataset.marca || '';
+        renderMarcasCot();
+        buscarProductoCot();
+      });
+    });
+  }
+
   function buscarProductoCot() {
-    const q = document.getElementById('buscador-cot')?.value.toLowerCase().trim();
+    const q = normTxt(document.getElementById('buscador-cot')?.value).trim();
     const res = document.getElementById('resultados-cot');
     if (!res) return;
-    if (!q || q.length < 2) {
+    if (!marcaFiltroCot && (!q || q.length < 2)) {
       res.style.display = 'none';
       updateCatalogHint();
       return;
@@ -75,22 +124,30 @@
       return;
     }
     const palabras = q.split(/\s+/).filter(Boolean);
-    const encontrados = catalogo.filter((p) => {
-      const texto = [p.nom, p.cod, p.marca].filter(Boolean).join(' ').toLowerCase();
+    let encontrados = catalogo.filter((p) => {
+      if (marcaFiltroCot && String(p.marca || '').trim() !== marcaFiltroCot) return false;
+      const texto = normTxt([p.nom, p.cod, p.marca].filter(Boolean).join(' '));
       return palabras.every((palabra) => texto.includes(palabra));
-    }).slice(0, 10);
+    });
+    if (!q) encontrados = encontrados.slice().sort((a, b) => String(a.nom || '').localeCompare(String(b.nom || '')));
     if (!encontrados.length) {
       res.innerHTML = '<div class="resultado-item"><span class="resultado-nom" style="color:var(--muted)">' + escapeHtml(window.ArpaI18n.t('ui.cotizacion.sin_resultados')) + '</span></div>';
       res.style.display = 'block';
       return;
     }
-    res.innerHTML = encontrados.map((p) =>
-      `<div class="resultado-item" data-cod="${p.cod}" data-pvp="${p.pvp || 0}">
-        <span class="resultado-cod">${p.cod}</span>
-        <span class="resultado-nom">${p.nom}</span>
-        <span class="resultado-pvp">${formatoPesos(p.pvp)}</span>
+    const total = encontrados.length;
+    const visibles = encontrados.slice(0, MAX_RESULTADOS_COT);
+    const en = isEnglishUi();
+    let conteo = en ? `${total} product${total === 1 ? '' : 's'}` : `${total} producto${total === 1 ? '' : 's'}`;
+    if (total > MAX_RESULTADOS_COT) conteo += en ? ` · showing ${MAX_RESULTADOS_COT}, type to narrow` : ` · mostrando ${MAX_RESULTADOS_COT}, escribe para afinar`;
+    res.innerHTML = `<div class="resultado-conteo">${escapeHtml(conteo)}</div>` + visibles.map((p) =>
+      `<div class="resultado-item" data-cod="${escapeHtml(p.cod)}" data-pvp="${p.pvp || 0}">
+        <span class="resultado-cod">${escapeHtml(p.cod)}</span>
+        <span class="resultado-nom">${escapeHtml(p.nom)}</span>
+        <span class="resultado-pvp">${formatoPesos(resolveProductPvp(p))}</span>
       </div>`
     ).join('');
+    res.scrollTop = 0;
     res.style.display = 'block';
     res.querySelectorAll('.resultado-item[data-cod]').forEach((el) => {
       el.addEventListener('click', () => seleccionarProductoCot(el.dataset.cod));
@@ -98,7 +155,12 @@
   }
 
   function resolveProductPvp(prod) {
-    if (prod && prod.pvp != null && prod.pvp !== '') return parsePvp(prod.pvp);
+    if (!prod) return 0;
+    const seed = global.ArpaCatalogo?.getSeedCop?.(prod.cod);
+    if (typeof global.ArpaPricing?.resolveDisplayPvp === 'function') {
+      return parsePvp(global.ArpaPricing.resolveDisplayPvp(prod, seed || undefined));
+    }
+    if (prod.pvp != null && prod.pvp !== '') return parsePvp(prod.pvp);
     return 0;
   }
 
@@ -124,11 +186,23 @@
     document.getElementById('resultados-cot').style.display = 'none';
     document.getElementById('cant-input-cot').value = '1';
     renderTablaCot();
+    if (marcaFiltroCot) buscarProductoCot();
+  }
+
+  function convertStaleCopFilas() {
+    const pricing = global.ArpaPricing;
+    if (!pricing || pricing.getCountryCode?.() === 'CO') return;
+    filas.forEach((f) => {
+      const seed = Number(global.ArpaCatalogo?.getSeedCop?.(f.cod)) || 0;
+      if (!seed) return;
+      if (Number(f.pvp) === seed) f.pvp = pricing.applyPrecargadoPvp(seed);
+    });
   }
 
   function renderTablaCot() {
     const tbody = document.getElementById('cot-tabla-body');
     if (!tbody) return;
+    convertStaleCopFilas();
 
     const cobros = getCobrosLineas();
     const lineas = filas.length + cobros.length;
@@ -196,6 +270,10 @@
 
   function getTaxLabelInfo() {
     return global.ArpaPricing?.getTaxLabelText?.() || { labelWord: 'IVA', pct: 0, full: 'IVA (0%)' };
+  }
+
+  function syncTaxLabels() {
+    applyTaxLabels();
   }
 
   function applyTaxLabels() {
@@ -615,6 +693,7 @@
 
   function refreshCobros() {
     global.ArpaCobros?.renderEditor('cot');
+    renderMarcasCot();
     renderTablaCot();
   }
 
@@ -724,8 +803,10 @@
 
     document.getElementById('buscador-cot')?.addEventListener('input', buscarProductoCot);
     document.getElementById('buscador-cot')?.addEventListener('focus', updateCatalogHint);
+    renderMarcasCot();
     document.getElementById('iva-check-cot')?.addEventListener('change', recalcularCotizacion);
     document.addEventListener('click', (e) => {
+      if (e.target.closest('.cot-marca-chip') || e.target.closest('#cot-marcas')) return;
       if (!e.target.closest('.buscador-wrap-cot')) {
         const res = document.getElementById('resultados-cot');
         if (res) res.style.display = 'none';
@@ -816,6 +897,7 @@
     loadCotizacion,
     getCatalogoActivo,
     updateCatalogHint,
+    syncTaxLabels,
     exportarACuentaCobro,
     clearCotDraft,
     scheduleCotDraftSave,

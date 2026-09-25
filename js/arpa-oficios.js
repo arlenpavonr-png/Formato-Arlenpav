@@ -697,7 +697,15 @@
       const seedPvp = id === OFICIO_AUTOMATISMOS
         ? 0
         : (Number(item.pvp != null ? item.pvp : item.precio) || 0);
-      products.push({
+      products.push(global.ArpaPricing?.markPrecargadoProduct?.({
+        id: newId(),
+        cod,
+        nom,
+        unidad: normalizeSeedUnidad(item.unidad),
+        marca: String(item.marca || '').trim(),
+        categoriaId,
+        oficioId: id
+      }, seedPvp) || {
         id: newId(),
         cod,
         nom,
@@ -758,8 +766,26 @@
     global.ArpaCotizacion?.updateCatalogHint?.();
   }
 
+  const AUTOMATISMOS_SEED_VERSION = '2026-09-listas-distribuidor';
+  const AUTOMATISMOS_SEED_VERSION_KEY = 'arpa_seed_version_automatismos';
+
   function seedOficioIfNeeded(oficioId) {
-    return importSeedCatalog(oficioId, { force: false });
+    const id = normalizeOficioId(oficioId);
+    if (id === OFICIO_AUTOMATISMOS && getSeededOficios().includes(id)) {
+      let current = '';
+      try { current = localStorage.getItem(AUTOMATISMOS_SEED_VERSION_KEY) || ''; } catch (e) { /* ignore */ }
+      if (current !== AUTOMATISMOS_SEED_VERSION) {
+        const result = importSeedCatalog(id, { force: true });
+        try { localStorage.setItem(AUTOMATISMOS_SEED_VERSION_KEY, AUTOMATISMOS_SEED_VERSION); } catch (e) { /* ignore */ }
+        if (result.added > 0) global.ArpaMiCatalogo?.resyncPrecargadoPrices?.();
+        return result;
+      }
+    }
+    const result = importSeedCatalog(id, { force: false });
+    if (id === OFICIO_AUTOMATISMOS && !result.skipped) {
+      try { localStorage.setItem(AUTOMATISMOS_SEED_VERSION_KEY, AUTOMATISMOS_SEED_VERSION); } catch (e) { /* ignore */ }
+    }
+    return result;
   }
 
   function getSeedProductCount(oficioId) {
