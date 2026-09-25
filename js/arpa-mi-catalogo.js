@@ -142,6 +142,8 @@
           cod: p.cod,
           nom: p.nom,
           pvp: p.pvp,
+          pvpCop: p.pvpCop,
+          precioPrecargado: p.precioPrecargado,
           unidad: p.unidad || '',
           marca: p.marca || '',
           categoria
@@ -935,6 +937,62 @@
     });
 
     applyCatalogoTabVisibility(active);
+    renderConvertedPriceNotice();
+  }
+
+  function collectSeedPvpByCode() {
+    const map = {};
+    (global.CATALOGO_BFT_NAS || []).forEach((item) => {
+      const cod = String(item.codigo || item.cod || '').trim().toLowerCase();
+      const pvp = Number(item.precio != null ? item.precio : item.pvp) || 0;
+      if (cod && pvp > 0) map[cod] = pvp;
+    });
+    (global.CATALOGO_PPA || []).forEach((item) => {
+      const cod = String(item.codigo || item.cod || '').trim().toLowerCase();
+      const pvp = Number(item.precio != null ? item.precio : item.pvp) || 0;
+      if (cod && pvp > 0) map[cod] = pvp;
+    });
+    if (global.ArpaCatalogo?.getListaProductosDefault) {
+      (global.ArpaCatalogo.getListaProductosDefault() || []).forEach((item) => {
+        const cod = String(item.cod || '').trim().toLowerCase();
+        const pvp = Number(item.pvpCop != null ? item.pvpCop : 0) || 0;
+        if (cod && pvp > 0 && map[cod] == null) map[cod] = pvp;
+      });
+    }
+    return map;
+  }
+
+  function resyncPrecargadoPrices() {
+    const seedMap = collectSeedPvpByCode();
+    const pricing = global.ArpaPricing;
+    if (!pricing?.looksLikePrecargado) return;
+    getActiveOficios().forEach((oid) => {
+      const products = getProducts(oid);
+      let changed = false;
+      products.forEach((p) => {
+        const seedCop = seedMap[String(p.cod || '').trim().toLowerCase()];
+        const cop = pricing.originalCopPrice
+          ? pricing.originalCopPrice(p, seedCop)
+          : (Number.isFinite(Number(seedCop)) ? Number(seedCop) : Number(p.pvpCop));
+        if (!pricing.looksLikePrecargado(p, cop)) return;
+        if (cop == null || !Number.isFinite(Number(cop))) return;
+        const next = pricing.applyPrecargadoPvp(cop);
+        if (Number(p.pvp) !== next || Number(p.pvpCop) !== Number(cop) || p.precioPrecargado !== true) {
+          p.pvpCop = Number(cop);
+          p.precioPrecargado = true;
+          p.pvp = next;
+          changed = true;
+        }
+      });
+      if (changed) saveProducts(products, oid);
+    });
+  }
+
+  function renderConvertedPriceNotice() {
+    const show = !!global.ArpaPricing?.showsConvertedPriceNotice?.();
+    document.querySelectorAll('.catalogo-fx-notice').forEach((el) => {
+      el.hidden = !show;
+    });
   }
 
   function refreshView() {
@@ -1283,6 +1341,8 @@
     render,
     refreshView,
     setFabVisible,
+    resyncPrecargadoPrices,
+    renderConvertedPriceNotice,
     initMiCatalogo
   };
 })(window);

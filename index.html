@@ -1744,6 +1744,27 @@
     padding: 12px;
   }
   .extra-items-empty { font-size: 12px; color: var(--muted); font-style: italic; padding: 8px 0; }
+  .cot-marcas { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cot-marca-chip {
+    border: 1.5px solid var(--border);
+    background: white;
+    color: var(--text);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    min-height: 32px;
+  }
+  .cot-marca-chip.active { background: var(--navy); border-color: var(--navy); color: white; }
+  .resultado-conteo {
+    position: sticky; top: 0; z-index: 1;
+    background: var(--light);
+    color: var(--muted);
+    font-size: 11px;
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--border);
+  }
   .btn-add-item {
     display: inline-flex;
     align-items: center;
@@ -1778,7 +1799,7 @@
   }
   @page {
     size: letter;
-    margin: 15mm;
+    margin: 12mm 12mm 14mm 12mm;
   }
   @media print {
     .tabla-productos {
@@ -1823,6 +1844,7 @@
     body.is-printing #view-cuenta-cobro .tabla-productos tbody td:last-child {
       display: none !important;
     }
+    .catalogo-fx-notice { display: none !important; }
     body.is-printing-formato .page {
       overflow: visible !important;
     }
@@ -2072,6 +2094,18 @@
     .header-meta { width: 100%; text-align: left; }
   }
 
+  .catalogo-fx-notice {
+    margin: 8px 0 0;
+    padding: 10px 12px;
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    color: #92400e;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+  .catalogo-fx-notice[hidden] { display: none !important; }
   .brand-placeholder {
     opacity: 0.72;
     letter-spacing: 0.06em;
@@ -3230,6 +3264,7 @@ document.documentElement.classList.add('license-checking');
       <p style="font-size:12px;color:var(--muted);margin:-4px 0 10px;line-height:1.5;" data-i18n="cat.intro">
         Sus productos se agrupan por categoría. Cotización usará este catálogo cuando tenga ítems cargados.
       </p>
+      <p class="catalogo-fx-notice" hidden data-i18n="cat.aviso.precios_convertidos">Precios de referencia convertidos desde Colombia. Revísalos antes de cotizar.</p>
       <div class="catalogo-toolbar">
         <div class="catalogo-toolbar-row">
           <input type="search" id="catalogo-buscar" data-i18n-placeholder="cat.placeholder.buscar" placeholder="🔍 Buscar por nombre o referencia…" autocomplete="off" inputmode="search">
@@ -3351,6 +3386,7 @@ document.documentElement.classList.add('license-checking');
           <select id="cc-pago-tipo">
             <option value="Ahorros" data-i18n="cc.cuenta.ahorros">Ahorros</option>
             <option value="Corriente" data-i18n="cc.cuenta.corriente">Corriente</option>
+            <option value="CLABE" data-i18n="cc.cuenta.clabe">CLABE</option>
           </select>
         </div>
         <div class="field span2"><label data-i18n="cc.label.numero_cuenta">Número de cuenta</label><input type="text" id="cc-pago-numero" inputmode="numeric" data-i18n-placeholder="settings.placeholder.account_number" placeholder="Número de cuenta"></div>
@@ -3715,6 +3751,7 @@ document.documentElement.classList.add('license-checking');
         <select id="settings-account-type" required>
           <option value="Ahorros" data-i18n="cc.cuenta.ahorros">Ahorros</option>
           <option value="Corriente" data-i18n="cc.cuenta.corriente">Corriente</option>
+          <option value="CLABE" data-i18n="cc.cuenta.clabe">CLABE</option>
         </select>
       </div>
       <div class="field">
