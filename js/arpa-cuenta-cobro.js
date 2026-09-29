@@ -173,8 +173,11 @@
   }
 
   async function nuevoCcNumero() {
+    if (!global.ArpaNumeracion?.blockIfNoLicense?.()) return;
     if (!global.ArpaNumeracion?.blockIfPymeMissingCode?.()) return;
-    const { value, sincronizado } = await global.ArpaNumeracion.nextNumberAsync('cc', document.getElementById('cc-numero')?.value);
+    const result = await global.ArpaNumeracion.nextNumberAsync('cc', document.getElementById('cc-numero')?.value);
+    if (!result || result.blocked) return;
+    const { value, sincronizado } = result;
     if (!sincronizado) console.warn('[ARPA] Número de cuenta de cobro generado offline, no sincronizado con la nube todavía.');
     const badge = document.getElementById('sync-status-cc');
     if (badge) {
@@ -196,6 +199,7 @@
   }
 
   async function ensureCcNumero() {
+    if (!global.ArpaNumeracion?.hasActiveLicenseCode?.()) return;
     const el = document.getElementById('cc-numero');
     if (el && !el.value.trim()) await nuevoCcNumero();
   }

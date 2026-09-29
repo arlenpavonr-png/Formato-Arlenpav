@@ -339,9 +339,12 @@
   }
 
   async function nuevoCotNumero() {
+    if (!global.ArpaNumeracion?.blockIfNoLicense?.()) return;
     if (!global.ArpaNumeracion?.blockIfPymeMissingCode?.()) return;
     const numField = document.getElementById('numero-cot');
-    const { value, sincronizado } = await global.ArpaNumeracion.nextNumberAsync('cot', numField?.value);
+    const result = await global.ArpaNumeracion.nextNumberAsync('cot', numField?.value);
+    if (!result || result.blocked) return;
+    const { value, sincronizado } = result;
     if (!sincronizado) console.warn('[ARPA] Número de cotización generado offline, no sincronizado con la nube todavía.');
     const badge = document.getElementById('sync-status-cot');
     if (badge) {
@@ -374,6 +377,7 @@
   }
 
   async function ensureCotNumero() {
+    if (!global.ArpaNumeracion?.hasActiveLicenseCode?.()) return;
     const numField = document.getElementById('numero-cot');
     if (numField && !numField.value.trim()) await nuevoCotNumero();
   }

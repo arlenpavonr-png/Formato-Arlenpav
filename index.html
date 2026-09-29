@@ -4282,9 +4282,12 @@ function formatearNumero(n) {
   return window.ArpaNumeracion?.formatFormNumber?.(n) ?? String(n).padStart(4, '0');
 }
 async function nuevoNumero() {
+  if (!window.ArpaNumeracion?.blockIfNoLicense?.()) return;
   if (!window.ArpaNumeracion?.blockIfPymeMissingCode?.()) return;
   const field = document.getElementById('numero-formato');
-  const { value, sincronizado } = await window.ArpaNumeracion.nextNumberAsync('formato', field?.value);
+  const result = await window.ArpaNumeracion.nextNumberAsync('formato', field?.value);
+  if (!result || result.blocked) return;
+  const { value, sincronizado } = result;
   if (!sincronizado) console.warn('[ARPA] Número de formato generado offline, no sincronizado con la nube todavía.');
   const badge = document.getElementById('sync-status-formato');
   if (badge) {
