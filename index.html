@@ -4546,6 +4546,7 @@ if ('serviceWorker' in navigator) {
   var LICENSE_STORAGE_KEY = 'arpa_suite_license_code';
   var LICENSE_VENC_KEY = 'arpa_suite_license_vencimiento';
   var LICENSE_PLAN_KEY = 'arpa_suite_license_plan';
+  var HAD_PAID_LICENSE_KEY = 'arpa_suite_had_paid_license';
   var SALES_ENTRY_KEY = 'arpa_suite_sales_entry';
   var DEVICE_STORAGE_KEY = 'arpa_suite_device_id';
   var JSONP_SCRIPT_ID = 'suite-license-jsonp';
@@ -4785,6 +4786,21 @@ if ('serviceWorker' in navigator) {
     }
   }
 
+  function hadPaidLicense() {
+    if (window.ArpaLicense && typeof window.ArpaLicense.hasHadPaidLicense === 'function') {
+      return window.ArpaLicense.hasHadPaidLicense();
+    }
+    try {
+      if (localStorage.getItem(HAD_PAID_LICENSE_KEY) === '1') return true;
+      if (localStorage.getItem('arpa_suite_license_founder') === '1') return true;
+      var plan = String(localStorage.getItem(LICENSE_PLAN_KEY) || '').trim();
+      if (plan && !/^free$/i.test(plan)) return true;
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
   function saveLicenseData(data) {
     try {
       if (data.codigo) localStorage.setItem(LICENSE_STORAGE_KEY, String(data.codigo).trim().toUpperCase());
@@ -4793,6 +4809,16 @@ if ('serviceWorker' in navigator) {
       if (data.founder === true) localStorage.setItem('arpa_suite_license_founder', '1');
       else localStorage.removeItem('arpa_suite_license_founder');
       localStorage.setItem(SALES_ENTRY_KEY, 'true');
+      if (window.ArpaLicense && typeof window.ArpaLicense.markHadPaidLicenseIfNeeded === 'function') {
+        window.ArpaLicense.markHadPaidLicenseIfNeeded(data.plan, data.founder === true, data.codigo);
+      } else {
+        var code = String(data.codigo || '').trim().toUpperCase();
+        var plan = String(data.plan || '').trim();
+        var planIsFree = !plan || /^free$/i.test(plan);
+        if (data.founder === true || (plan && !planIsFree) || (code && code.indexOf('ARPA-FREE-') !== 0)) {
+          localStorage.setItem(HAD_PAID_LICENSE_KEY, '1');
+        }
+      }
     } catch (e) {}
   }
 
@@ -4824,9 +4850,12 @@ if ('serviceWorker' in navigator) {
     showPanel('expired');
   }
 
-  function showActivatePanel() {
+  function showActivatePanel(message) {
     lockApp();
     showPanel('activate');
+    var sub = document.getElementById('license-gate-sub');
+    var text = message || t('license_gate.subtitle', 'Ingrese su código de licencia para activar la plataforma.');
+    if (sub) sub.textContent = text;
     var input = document.getElementById('license-code-input');
     if (input) input.focus();
   }
@@ -4914,6 +4943,11 @@ if ('serviceWorker' in navigator) {
   }
 
   function provisionAutoTrial() {
+    if (hadPaidLicense()) {
+      showActivatePanel(t('license_gate.subtitle_enter_code', 'Ingrese su código de licencia'));
+      hideLicenseError();
+      return;
+    }
     ignoreTrialProvisionResult = false;
     var token = ++trialProvisionToken;
     var deviceId = getOrCreateDeviceId();
@@ -5021,6 +5055,9 @@ if ('serviceWorker' in navigator) {
     var saved = getSavedCode();
     if (saved) {
       validateSavedCode(saved);
+    } else if (hadPaidLicense()) {
+      showActivatePanel(t('license_gate.subtitle_enter_code', 'Ingrese su código de licencia'));
+      hideLicenseError();
     } else {
       provisionAutoTrial();
     }
@@ -5033,6 +5070,12 @@ if ('serviceWorker' in navigator) {
     }
     initLicenseGate();
   }
+
+  window.ArpaLicenseGate = {
+    showActivatePanel: showActivatePanel,
+    clearLicenseData: clearLicenseData,
+    hadPaidLicense: hadPaidLicense
+  };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', bootLicenseGate);

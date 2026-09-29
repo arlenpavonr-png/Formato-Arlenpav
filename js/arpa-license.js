@@ -7,6 +7,7 @@
   // El código fundador YA NO vive en el cliente. El servidor responde founder:true
   // al validar la licencia y ese resultado se guarda en LICENSE_FOUNDER_KEY.
   const LICENSE_FOUNDER_KEY = 'arpa_suite_license_founder';
+  const HAD_PAID_LICENSE_KEY = 'arpa_suite_had_paid_license';
   const WL_PREFIX = 'ARPA-WL-';
   const PYME_PREFIX = 'ARPA-PYME-';
   const PRO_PREFIX = 'ARPA-PRO-';
@@ -70,6 +71,33 @@
     }
   }
 
+  function isFreePlanName(plan) {
+    const p = String(plan || '').trim();
+    return !p || /^free$/i.test(p);
+  }
+
+  /** Marca persistente: este equipo ya tuvo Pro/PYME/WL/Founder. No se borra al limpiar el código. */
+  function markHadPaidLicenseIfNeeded(plan, founder, codigo) {
+    const code = normalizeCode(codigo);
+    const paidByPlan = !isFreePlanName(plan);
+    const paidByCode = !!(code && code.indexOf(FREE_PREFIX) !== 0);
+    if (founder === true || paidByPlan || paidByCode) {
+      try { localStorage.setItem(HAD_PAID_LICENSE_KEY, '1'); } catch (e) { /* ignore */ }
+    }
+  }
+
+  function hasHadPaidLicense() {
+    try {
+      if (localStorage.getItem(HAD_PAID_LICENSE_KEY) === '1') return true;
+      if (localStorage.getItem(LICENSE_FOUNDER_KEY) === '1') return true;
+      const plan = String(localStorage.getItem(LICENSE_PLAN_KEY) || '').trim();
+      if (plan && !isFreePlanName(plan)) return true;
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
   function isPymePlan(code) {
     const c = normalizeCode(code || getActiveLicenseCode());
     if (c.indexOf(PYME_PREFIX) === 0) return true;
@@ -104,6 +132,9 @@
     FREE_PREFIX,
     LICENSE_PLAN_KEY,
     LICENSE_FOUNDER_KEY,
+    HAD_PAID_LICENSE_KEY,
+    markHadPaidLicenseIfNeeded,
+    hasHadPaidLicense,
     getActiveLicenseCode,
     getActiveLicensePlan,
     isFounderLicense,
