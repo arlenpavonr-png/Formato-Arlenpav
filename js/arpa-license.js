@@ -140,6 +140,43 @@
     }
   }
 
+  function getTrialDaysRemaining() {
+    if (!isFreeTrialLicense()) return null;
+    try {
+      const venc = String(localStorage.getItem('arpa_suite_license_vencimiento') || '').trim();
+      if (!venc) return null;
+      const parts = venc.split('-');
+      let d;
+      if (parts.length === 3) d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      else d = new Date(venc);
+      if (isNaN(d.getTime())) return null;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      d.setHours(0, 0, 0, 0);
+      return Math.max(0, Math.round((d.getTime() - today.getTime()) / 86400000));
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function refreshTrialBanner() {
+    const el = document.getElementById('trial-days-banner');
+    if (!el) return;
+    const code = getActiveLicenseCode();
+    if (!code || code.indexOf(FREE_PREFIX) !== 0) {
+      el.hidden = true;
+      el.textContent = '';
+      return;
+    }
+    const days = getTrialDaysRemaining();
+    const x = days == null ? '—' : String(days);
+    const text = (window.ArpaI18n && window.ArpaI18n.t)
+      ? window.ArpaI18n.t('trial.banner.days_left', { days: x })
+      : ('Prueba gratis: quedan ' + x + ' días');
+    el.textContent = text;
+    el.hidden = false;
+  }
+
   function fillSettingsLicensePanel() {
     const planEl = document.getElementById('settings-license-plan');
     const codeEl = document.getElementById('settings-license-code');
@@ -195,6 +232,8 @@
     requiresTechnicianCode,
     getLicenseExpiryLabel,
     fillSettingsLicensePanel,
-    requestLicenseChange
+    requestLicenseChange,
+    getTrialDaysRemaining,
+    refreshTrialBanner
   };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -60,6 +60,16 @@
   }
 
   /* ── HEADER ── */
+  .trial-days-banner {
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    padding: 8px 12px;
+    line-height: 1.4;
+  }
+  .trial-days-banner[hidden] { display: none !important; }
   .header {
     background: var(--navy);
     padding: 20px 24px 16px;
@@ -1825,6 +1835,7 @@
     margin: 12mm 12mm 14mm 12mm;
   }
   @media print {
+    .trial-days-banner { display: none !important; }
     .tabla-productos {
       min-width: 0;
       table-layout: fixed;
@@ -2808,6 +2819,8 @@ document.documentElement.classList.add('license-checking');
 </div>
 
 <div class="page">
+
+  <div id="trial-days-banner" class="trial-days-banner" hidden role="status"></div>
 
   <!-- HEADER -->
   <div class="header">
@@ -4903,6 +4916,9 @@ if ('serviceWorker' in navigator) {
   function finishAppUnlock() {
     unlockApp();
     tryOnboarding();
+    if (window.ArpaLicense && typeof window.ArpaLicense.refreshTrialBanner === 'function') {
+      window.ArpaLicense.refreshTrialBanner();
+    }
   }
 
   function applyValidLicense(data) {

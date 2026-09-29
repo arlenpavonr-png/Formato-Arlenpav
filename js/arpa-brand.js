@@ -594,6 +594,7 @@
     global.ArpaMiCatalogo?.renderConvertedPriceNotice?.();
     global.ArpaCobros?.refreshPrecargadoValues?.('cot');
     window.ArpaI18n?.refreshDocTypeLabel?.();
+    global.ArpaLicense?.refreshTrialBanner?.();
   }
 
   function applyCuentaCobroFromSettings(s, options) {
