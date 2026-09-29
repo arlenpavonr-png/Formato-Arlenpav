@@ -60,6 +60,16 @@
   }
 
   /* ── HEADER ── */
+  .trial-days-banner {
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    padding: 8px 12px;
+    line-height: 1.4;
+  }
+  .trial-days-banner[hidden] { display: none !important; }
   .header {
     background: var(--navy);
     padding: 20px 24px 16px;
@@ -1533,6 +1543,29 @@
     padding-top: 8px;
     border-top: 1px solid var(--border);
   }
+  .settings-license-box {
+    background: var(--light);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .settings-license-row {
+    font-size: 13px;
+    color: var(--text);
+    margin: 0 0 6px;
+  }
+  .btn-settings-license-change {
+    margin-top: 6px;
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 44px;
+  }
   .price-list-row {
     display: grid;
     grid-template-columns: 1fr 110px;
@@ -1802,6 +1835,7 @@
     margin: 12mm 12mm 14mm 12mm;
   }
   @media print {
+    .trial-days-banner { display: none !important; }
     .tabla-productos {
       min-width: 0;
       table-layout: fixed;
@@ -2786,6 +2820,8 @@ document.documentElement.classList.add('license-checking');
 
 <div class="page">
 
+  <div id="trial-days-banner" class="trial-days-banner" hidden role="status"></div>
+
   <!-- HEADER -->
   <div class="header">
     <div class="brand-logo-wrap">
@@ -3655,6 +3691,13 @@ document.documentElement.classList.add('license-checking');
     </div>
     <div class="settings-modal-body">
       <p id="settings-error" class="settings-error" role="alert"></p>
+      <div class="settings-section-title" data-i18n="settings.section.license">Licencia</div>
+      <div class="settings-license-box" id="settings-license-box">
+        <p class="settings-license-row"><span data-i18n="settings.license.plan">Plan</span>: <strong id="settings-license-plan">—</strong></p>
+        <p class="settings-license-row"><span data-i18n="settings.license.code">Código (últimos 6)</span>: <strong id="settings-license-code">—</strong></p>
+        <p class="settings-license-row"><span data-i18n="settings.license.expiry">Vencimiento</span>: <strong id="settings-license-venc">—</strong></p>
+        <button type="button" class="btn-settings-license-change" id="settings-license-change" data-i18n="settings.license.change">Cambiar licencia</button>
+      </div>
       <div class="settings-section" id="settings-demo-section">
         <div class="settings-section-title">Modo Demo</div>
         <p class="logo-upload-hint">Primero activa el Modo Demo. Después ingresa los datos del cliente y guarda. Tus datos reales se respaldan y se restauran con un clic. No guardes los datos del cliente antes de activar.</p>
@@ -4239,9 +4282,12 @@ function formatearNumero(n) {
   return window.ArpaNumeracion?.formatFormNumber?.(n) ?? String(n).padStart(4, '0');
 }
 async function nuevoNumero() {
+  if (!window.ArpaNumeracion?.blockIfNoLicense?.()) return;
   if (!window.ArpaNumeracion?.blockIfPymeMissingCode?.()) return;
   const field = document.getElementById('numero-formato');
-  const { value, sincronizado } = await window.ArpaNumeracion.nextNumberAsync('formato', field?.value);
+  const result = await window.ArpaNumeracion.nextNumberAsync('formato', field?.value);
+  if (!result || result.blocked) return;
+  const { value, sincronizado } = result;
   if (!sincronizado) console.warn('[ARPA] Número de formato generado offline, no sincronizado con la nube todavía.');
   const badge = document.getElementById('sync-status-formato');
   if (badge) {
@@ -4546,6 +4592,7 @@ if ('serviceWorker' in navigator) {
   var LICENSE_STORAGE_KEY = 'arpa_suite_license_code';
   var LICENSE_VENC_KEY = 'arpa_suite_license_vencimiento';
   var LICENSE_PLAN_KEY = 'arpa_suite_license_plan';
+  var HAD_PAID_LICENSE_KEY = 'arpa_suite_had_paid_license';
   var SALES_ENTRY_KEY = 'arpa_suite_sales_entry';
   var DEVICE_STORAGE_KEY = 'arpa_suite_device_id';
   var JSONP_SCRIPT_ID = 'suite-license-jsonp';
@@ -4785,6 +4832,21 @@ if ('serviceWorker' in navigator) {
     }
   }
 
+  function hadPaidLicense() {
+    if (window.ArpaLicense && typeof window.ArpaLicense.hasHadPaidLicense === 'function') {
+      return window.ArpaLicense.hasHadPaidLicense();
+    }
+    try {
+      if (localStorage.getItem(HAD_PAID_LICENSE_KEY) === '1') return true;
+      if (localStorage.getItem('arpa_suite_license_founder') === '1') return true;
+      var plan = String(localStorage.getItem(LICENSE_PLAN_KEY) || '').trim();
+      if (plan && !/^free$/i.test(plan)) return true;
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
   function saveLicenseData(data) {
     try {
       if (data.codigo) localStorage.setItem(LICENSE_STORAGE_KEY, String(data.codigo).trim().toUpperCase());
@@ -4793,6 +4855,16 @@ if ('serviceWorker' in navigator) {
       if (data.founder === true) localStorage.setItem('arpa_suite_license_founder', '1');
       else localStorage.removeItem('arpa_suite_license_founder');
       localStorage.setItem(SALES_ENTRY_KEY, 'true');
+      if (window.ArpaLicense && typeof window.ArpaLicense.markHadPaidLicenseIfNeeded === 'function') {
+        window.ArpaLicense.markHadPaidLicenseIfNeeded(data.plan, data.founder === true, data.codigo);
+      } else {
+        var code = String(data.codigo || '').trim().toUpperCase();
+        var plan = String(data.plan || '').trim();
+        var planIsFree = !plan || /^free$/i.test(plan);
+        if (data.founder === true || (plan && !planIsFree) || (code && code.indexOf('ARPA-FREE-') !== 0)) {
+          localStorage.setItem(HAD_PAID_LICENSE_KEY, '1');
+        }
+      }
     } catch (e) {}
   }
 
@@ -4824,9 +4896,12 @@ if ('serviceWorker' in navigator) {
     showPanel('expired');
   }
 
-  function showActivatePanel() {
+  function showActivatePanel(message) {
     lockApp();
     showPanel('activate');
+    var sub = document.getElementById('license-gate-sub');
+    var text = message || t('license_gate.subtitle', 'Ingrese su código de licencia para activar la plataforma.');
+    if (sub) sub.textContent = text;
     var input = document.getElementById('license-code-input');
     if (input) input.focus();
   }
@@ -4844,6 +4919,9 @@ if ('serviceWorker' in navigator) {
   function finishAppUnlock() {
     unlockApp();
     tryOnboarding();
+    if (window.ArpaLicense && typeof window.ArpaLicense.refreshTrialBanner === 'function') {
+      window.ArpaLicense.refreshTrialBanner();
+    }
   }
 
   function applyValidLicense(data) {
@@ -4914,6 +4992,11 @@ if ('serviceWorker' in navigator) {
   }
 
   function provisionAutoTrial() {
+    if (hadPaidLicense()) {
+      showActivatePanel(t('license_gate.subtitle_enter_code', 'Ingrese su código de licencia'));
+      hideLicenseError();
+      return;
+    }
     ignoreTrialProvisionResult = false;
     var token = ++trialProvisionToken;
     var deviceId = getOrCreateDeviceId();
@@ -5021,6 +5104,9 @@ if ('serviceWorker' in navigator) {
     var saved = getSavedCode();
     if (saved) {
       validateSavedCode(saved);
+    } else if (hadPaidLicense()) {
+      showActivatePanel(t('license_gate.subtitle_enter_code', 'Ingrese su código de licencia'));
+      hideLicenseError();
     } else {
       provisionAutoTrial();
     }
@@ -5033,6 +5119,12 @@ if ('serviceWorker' in navigator) {
     }
     initLicenseGate();
   }
+
+  window.ArpaLicenseGate = {
+    showActivatePanel: showActivatePanel,
+    clearLicenseData: clearLicenseData,
+    hadPaidLicense: hadPaidLicense
+  };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', bootLicenseGate);

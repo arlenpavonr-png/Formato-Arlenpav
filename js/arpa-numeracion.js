@@ -84,7 +84,27 @@
     cc: formatCcNumber
   };
 
+  function hasActiveLicenseCode() {
+    try {
+      return !!String(localStorage.getItem('arpa_suite_license_code') || '').trim();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function blockIfNoLicense() {
+    if (hasActiveLicenseCode()) return true;
+    const msg = (window.ArpaI18n && window.ArpaI18n.t)
+      ? window.ArpaI18n.t('alert.numeracion.sin_licencia')
+      : 'Sin licencia activa. Revise Configuración → Licencia.';
+    alert(msg);
+    return false;
+  }
+
   function nextNumber(docType, fieldValue) {
+    if (!hasActiveLicenseCode()) {
+      return { sequence: 0, value: '', blocked: true };
+    }
     const storageKey = KEYS[docType] || KEYS.formato;
     const next = getMaxCounter(storageKey, fieldValue) + 1;
     setCounter(storageKey, next);
@@ -93,6 +113,9 @@
   }
 
   async function nextNumberAsync(docType, fieldValue) {
+    if (!hasActiveLicenseCode()) {
+      return { sequence: 0, value: '', sincronizado: false, blocked: true };
+    }
     const storageKey = KEYS[docType] || KEYS.formato;
     const localBase = getMaxCounter(storageKey, fieldValue);
     const format = FORMATTERS[docType] || formatFormNumber;
@@ -139,6 +162,8 @@
     formatCcNumber,
     nextNumber,
     nextNumberAsync,
+    hasActiveLicenseCode,
+    blockIfNoLicense,
     blockIfPymeMissingCode
   };
 })(typeof window !== 'undefined' ? window : globalThis);
