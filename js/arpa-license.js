@@ -121,6 +121,10 @@
     return c.indexOf(FREE_PREFIX) === 0;
   }
 
+  function requiresTechnicianCode(code) {
+    return isPymePlan(code);
+  }
+
   function getLicenseExpiryLabel() {
     if (isNeverExpiring()) {
       return (window.ArpaI18n && window.ArpaI18n.t)
