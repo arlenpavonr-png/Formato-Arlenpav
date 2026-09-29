@@ -121,8 +121,55 @@
     return c.indexOf(FREE_PREFIX) === 0;
   }
 
-  function requiresTechnicianCode(code) {
-    return isPymePlan(code);
+  function getLicenseExpiryLabel() {
+    if (isNeverExpiring()) {
+      return (window.ArpaI18n && window.ArpaI18n.t)
+        ? window.ArpaI18n.t('settings.license.no_expiry')
+        : 'Sin vencimiento';
+    }
+    try {
+      const venc = String(localStorage.getItem('arpa_suite_license_vencimiento') || '').trim();
+      if (!venc) {
+        return (window.ArpaI18n && window.ArpaI18n.t)
+          ? window.ArpaI18n.t('settings.license.no_expiry')
+          : 'Sin vencimiento';
+      }
+      return venc;
+    } catch (e) {
+      return 'Sin vencimiento';
+    }
+  }
+
+  function fillSettingsLicensePanel() {
+    const planEl = document.getElementById('settings-license-plan');
+    const codeEl = document.getElementById('settings-license-code');
+    const vencEl = document.getElementById('settings-license-venc');
+    const plan = getActiveLicensePlan() || (isFounderLicense() ? 'FOUNDER' : '') || '—';
+    const code = getActiveLicenseCode();
+    const last6 = code ? code.slice(-6) : '—';
+    if (planEl) planEl.textContent = plan;
+    if (codeEl) codeEl.textContent = last6;
+    if (vencEl) vencEl.textContent = getLicenseExpiryLabel();
+  }
+
+  function requestLicenseChange() {
+    const msg = (window.ArpaI18n && window.ArpaI18n.t)
+      ? window.ArpaI18n.t('settings.license.confirm_change')
+      : '¿Cambiar el código de licencia? La empresa, el catálogo, el historial y la numeración se conservan.';
+    if (!window.confirm(msg)) return;
+    if (window.ArpaLicenseGate && typeof window.ArpaLicenseGate.clearLicenseData === 'function') {
+      window.ArpaLicenseGate.clearLicenseData();
+    }
+    if (window.ArpaBrand && typeof window.ArpaBrand.closeSettings === 'function') {
+      window.ArpaBrand.closeSettings();
+    }
+    if (window.ArpaLicenseGate && typeof window.ArpaLicenseGate.showActivatePanel === 'function') {
+      window.ArpaLicenseGate.showActivatePanel(
+        (window.ArpaI18n && window.ArpaI18n.t)
+          ? window.ArpaI18n.t('license_gate.subtitle_enter_code')
+          : 'Ingrese su código de licencia'
+      );
+    }
   }
 
   global.ArpaLicense = {
@@ -145,6 +192,9 @@
     isPymePlan,
     isProPlan,
     isFreeTrialLicense,
-    requiresTechnicianCode
+    requiresTechnicianCode,
+    getLicenseExpiryLabel,
+    fillSettingsLicensePanel,
+    requestLicenseChange
   };
 })(typeof window !== 'undefined' ? window : globalThis);

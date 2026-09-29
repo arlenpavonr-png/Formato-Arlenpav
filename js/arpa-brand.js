@@ -845,6 +845,7 @@
     applyTechnicianCodePolicy();
     global.ArpaOficios?.renderSettingsCheckboxes?.(document.getElementById('settings-oficios-grid'));
     global.ArpaPricing?.renderPriceListSettings?.();
+    global.ArpaLicense?.fillSettingsLicensePanel?.();
     document.getElementById('settings-modal')?.classList.add('open');
     try { global.dispatchEvent(new CustomEvent('arpa-demo-mode-changed')); } catch (e) {}
     if (menuBtn) {
@@ -1291,6 +1292,9 @@
 
   if (typeof document !== 'undefined') {
     document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('settings-license-change')?.addEventListener('click', () => {
+        global.ArpaLicense?.requestLicenseChange?.();
+      });
       migrateDedicatedLogoFromSettings();
       purgeLegacyData();
       if (repairInvertedDemoIfNeeded()) {

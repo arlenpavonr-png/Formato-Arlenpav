@@ -1533,6 +1533,29 @@
     padding-top: 8px;
     border-top: 1px solid var(--border);
   }
+  .settings-license-box {
+    background: var(--light);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .settings-license-row {
+    font-size: 13px;
+    color: var(--text);
+    margin: 0 0 6px;
+  }
+  .btn-settings-license-change {
+    margin-top: 6px;
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 44px;
+  }
   .price-list-row {
     display: grid;
     grid-template-columns: 1fr 110px;
@@ -3655,6 +3678,13 @@ document.documentElement.classList.add('license-checking');
     </div>
     <div class="settings-modal-body">
       <p id="settings-error" class="settings-error" role="alert"></p>
+      <div class="settings-section-title" data-i18n="settings.section.license">Licencia</div>
+      <div class="settings-license-box" id="settings-license-box">
+        <p class="settings-license-row"><span data-i18n="settings.license.plan">Plan</span>: <strong id="settings-license-plan">—</strong></p>
+        <p class="settings-license-row"><span data-i18n="settings.license.code">Código (últimos 6)</span>: <strong id="settings-license-code">—</strong></p>
+        <p class="settings-license-row"><span data-i18n="settings.license.expiry">Vencimiento</span>: <strong id="settings-license-venc">—</strong></p>
+        <button type="button" class="btn-settings-license-change" id="settings-license-change" data-i18n="settings.license.change">Cambiar licencia</button>
+      </div>
       <div class="settings-section" id="settings-demo-section">
         <div class="settings-section-title">Modo Demo</div>
         <p class="logo-upload-hint">Primero activa el Modo Demo. Después ingresa los datos del cliente y guarda. Tus datos reales se respaldan y se restauran con un clic. No guardes los datos del cliente antes de activar.</p>
