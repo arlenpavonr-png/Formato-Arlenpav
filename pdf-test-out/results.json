@@ -1,0 +1,86 @@
+{
+  "ok": true,
+  "failures": [],
+  "results": [
+    {
+      "doc": "cot-1",
+      "pages": 2,
+      "footerHits": 1,
+      "layoutOverlaps": 0,
+      "missing": [],
+      "ok": true
+    },
+    {
+      "doc": "cot-2",
+      "pages": 2,
+      "footerHits": 1,
+      "layoutOverlaps": 0,
+      "missing": [],
+      "ok": true
+    },
+    {
+      "doc": "cot-3",
+      "pages": 2,
+      "footerHits": 1,
+      "layoutOverlaps": 0,
+      "missing": [],
+      "ok": true
+    },
+    {
+      "doc": "cot-4",
+      "pages": 2,
+      "footerHits": 1,
+      "layoutOverlaps": 0,
+      "missing": [],
+      "ok": true
+    },
+    {
+      "doc": "cot-5",
+      "pages": 3,
+      "footerHits": 1,
+      "layoutOverlaps": 0,
+      "missing": [],
+      "ok": true
+    },
+    {
+      "doc": "cot-6",
+      "pages": 3,
+      "footerHits": 1,
+      "layoutOverlaps": 0,
+      "missing": [],
+      "ok": true
+    },
+    {
+      "doc": "cot-8",
+      "pages": 3,
+      "footerHits": 1,
+      "layoutOverlaps": 0,
+      "missing": [],
+      "ok": true
+    },
+    {
+      "doc": "cot-12",
+      "pages": 3,
+      "footerHits": 1,
+      "layoutOverlaps": 0,
+      "missing": [],
+      "ok": true
+    },
+    {
+      "doc": "cc-6",
+      "pages": 3,
+      "footerHits": 1,
+      "layoutOverlaps": 0,
+      "missing": [],
+      "ok": true
+    },
+    {
+      "doc": "formato-completo",
+      "pages": 3,
+      "footerHits": 1,
+      "layoutOverlaps": 0,
+      "missing": [],
+      "ok": true
+    }
+  ]
+}
