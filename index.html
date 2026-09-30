@@ -1972,6 +1972,14 @@
       page-break-inside: avoid;
       break-inside: avoid;
     }
+    body.is-printing #view-cotizacion .section:has(#cot-obs),
+    body.is-printing #view-cotizacion .nota-cot,
+    body.is-printing #view-cotizacion .firmas,
+    body.is-printing #view-cuenta-cobro .totales-box,
+    body.is-printing #view-cuenta-cobro .firmas {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
     .cot-catalog-hint { display: none !important; }
   }
   .settings-modal-footer {
@@ -2028,7 +2036,7 @@
   /* ── PRINT ── */
   @media print {
     html, body { background-color: #ffffff !important; background-image: none !important; }
-    body { padding: 0; padding-bottom: 0; margin-bottom: 28mm; }
+    body { padding: 0; padding-bottom: 0; margin-bottom: 0; }
     body.is-printing #view-historial { display: none !important; }
     body.is-printing #view-catalogo { display: none !important; }
     body.is-printing:not(.is-printing-formato) #view-formato { display: none !important; }
@@ -2043,17 +2051,6 @@
     }
     .suite-footer-global-link::after,
     a[href]::after { content: none !important; }
-    body.is-printing::before,
-    body.is-printing-formato::before {
-      content: '';
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 10mm;
-      background: #ffffff;
-      z-index: 9998;
-    }
     .page { box-shadow: none; border-radius: 0; }
     .photo-box input[type=file] { display: none; }
     button { display: none !important; }
@@ -2063,13 +2060,15 @@
     .trial-capture-gate--modal { display: none !important; visibility: hidden !important; }
     .suite-footer {
       display: block !important;
-      position: fixed;
-      bottom: 10mm;
-      left: 0;
-      right: 0;
-      z-index: 9999;
+      position: static !important;
+      bottom: auto;
+      left: auto;
+      right: auto;
+      z-index: auto;
       background: #fff;
       border-top: 1px solid #e2e8f0;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
     .suite-footer-local {
       color: #334155;
