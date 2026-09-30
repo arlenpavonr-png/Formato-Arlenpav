@@ -102,6 +102,21 @@ function analyzePdfText(allText, labels) {
   return { footerHits, missing };
 }
 
+function lastPageIsFooterOnly(texts) {
+  if (!texts || texts.length < 2) return false;
+  const last = texts[texts.length - 1] || '';
+  const hasFooter = hasCompact(last, 'Generado con ARPA Suite')
+    || hasCompact(last, 'ARPA Technology Global');
+  const hasBody = hasCompact(last, 'Aprobado')
+    || hasCompact(last, 'Elaborado')
+    || hasCompact(last, 'PROD-')
+    || hasCompact(last, 'Subtotal')
+    || hasCompact(last, 'Términos de Garantía')
+    || hasCompact(last, 'Observaciones')
+    || hasCompact(last, 'Instalación');
+  return hasFooter && !hasBody;
+}
+
 function analyzeForbidden(allText, needles) {
   return needles.filter((n) => hasCompact(allText, n));
 }
@@ -487,6 +502,15 @@ async function run() {
       fs.writeFileSync(path.join(OUT, `${stem}-text.txt`), allText);
       const checked = analyzePdfText(allText, ['Subtotal', 'TOTAL', 'Datos Bancarios', 'Observaciones', 'Nota', 'Instalación', ...names]);
       const missing = checked.missing;
+      if (hasCompact(allText, 'Garantía – su empresa') || hasCompact(allText, 'Garantia – su empresa')) {
+        missing.push('encabezado Garantía – su empresa');
+      }
+      if (n <= 2 && meta.pages > 2) {
+        missing.push(`páginas=${meta.pages} (se esperan 2)`);
+      }
+      if (lastPageIsFooterOnly(meta.texts)) {
+        missing.push('última página solo con el pie');
+      }
       const footerHits = checked.footerHits;
       const ok = missing.length === 0;
       results.push({
@@ -589,7 +613,8 @@ async function run() {
       const checked = analyzePdfText(allText, [
         'IVA', 'Términos de Garantía', 'polo a tierra', 'Observaciones', 'Aprobación', 'Instalación', ...names
       ]);
-      const forbidden = analyzeForbidden(allText, ['Incluir IVA', 'Buscar y agregar productos']);
+      const forbidden = analyzeForbidden(allText, ['Incluir IVA', 'Buscar y agregar productos', 'Garantía – su empresa']);
+      if (lastPageIsFooterOnly(meta.texts)) forbidden.push('última página solo con el pie');
       const ok = checked.missing.length === 0 && forbidden.length === 0 && layout.overlaps.length === 0;
       results.push({
         doc: stem,
@@ -623,9 +648,11 @@ async function run() {
         'Especificaciones adicionales',
         'Incluir IVA',
         'Buscar y agregar productos',
-        'Nombre completo'
+        'Nombre completo',
+        'Garantía – su empresa'
       ]);
       const checked = analyzePdfText(allText, ['Términos de Garantía', 'polo a tierra', ...names]);
+      if (lastPageIsFooterOnly(meta.texts)) forbidden.push('última página solo con el pie');
       const ok = forbidden.length === 0 && checked.missing.length === 0;
       results.push({
         doc: stem,

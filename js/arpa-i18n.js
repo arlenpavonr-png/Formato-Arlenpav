@@ -924,12 +924,13 @@
   }
 
   function getCompanyName() {
-    var el = document.getElementById('brand-verification-company');
-    if (el && el.textContent.trim()) return el.textContent.trim();
     if (global.ArpaBrand && typeof global.ArpaBrand.getSettings === 'function') {
       var s = global.ArpaBrand.getSettings();
-      if (s && s.companyName) return s.companyName.trim();
+      if (s && s.companyName && s.companyName.trim()) return s.companyName.trim();
     }
+    var el = document.getElementById('brand-verification-company');
+    var fromDom = el && el.textContent.trim();
+    if (fromDom && !/^su empresa$/i.test(fromDom)) return fromDom;
     return 'Su Empresa';
   }
 
@@ -1021,7 +1022,7 @@
     var cotWarrantyHeader = document.getElementById('cot-warranty-header');
     if (cotWarrantyHeader) {
       pushBackup(items, cotWarrantyHeader, 'innerHTML', cotWarrantyHeader.innerHTML);
-      cotWarrantyHeader.innerHTML = '<span class="shield">🛡️</span> ' + interpolate(resolveText('formato.garantia.header', 'es'), { company: company });
+      cotWarrantyHeader.innerHTML = '<span class="shield">🛡️</span> ' + resolveText('formato.garantia.header_static', 'es');
     }
     var warrantyExclusion = document.getElementById('brand-warranty-exclusion');
     if (warrantyExclusion) {
@@ -1145,7 +1146,7 @@
     }
     var cotWarrantyHeader = document.getElementById('cot-warranty-header');
     if (cotWarrantyHeader) {
-      cotWarrantyHeader.innerHTML = '<span class="shield">🛡️</span> ' + t('formato.garantia.header', { company: company });
+      cotWarrantyHeader.innerHTML = '<span class="shield">🛡️</span> ' + t('formato.garantia.header_static');
     }
     var warrantyExclusion = document.getElementById('brand-warranty-exclusion');
     if (warrantyExclusion) {

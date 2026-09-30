@@ -39,7 +39,7 @@ describe('CSS de impresión: pie no tapa contenido', () => {
 
   it('CACHE_VERSION pide recarga tras cotización perfecta', () => {
     const sw = fs.readFileSync(path.join(root, 'service-worker.js'), 'utf8');
-    assert.match(sw, /CACHE_VERSION = 'v20261001-cot-perfecta-1'/);
+    assert.match(sw, /CACHE_VERSION = 'v20261001-cot-perfecta-2'/);
   });
 
   it('impresión oculta buscador, casilla IVA, placeholders y observaciones vacías', () => {
@@ -48,6 +48,16 @@ describe('CSS de impresión: pie no tapa contenido', () => {
     assert.match(printCss, /::placeholder/);
     assert.match(printCss, /print-hide-empty/);
     assert.match(printCss, /cot-obs:placeholder-shown/);
+  });
+
+  it('el cierre de cotización no evita saltos de página en bloque', () => {
+    assert.doesNotMatch(printCss, /\.cot-cierre-block\s*\{[^}]*break-inside:\s*avoid/s);
+    assert.doesNotMatch(printCss, /\.cot-cierre-block\s*\{[^}]*page-break-inside:\s*avoid/s);
+    assert.match(printCss, /\.totales-box\s*\{[^}]*break-inside:\s*avoid/s);
+    assert.match(printCss, /\.cot-bank-section/);
+    assert.match(printCss, /\.garantia/);
+    assert.match(printCss, /\.nota-cot/);
+    assert.match(printCss, /\.firmas/);
   });
 });
 

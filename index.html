@@ -1842,7 +1842,7 @@
   }
   @page {
     size: letter;
-    margin: 12mm 12mm 14mm 12mm;
+    margin: 12mm 12mm 8mm 12mm;
   }
   @media print {
     .trial-days-banner { display: none !important; }
@@ -1971,27 +1971,38 @@
     }
     .btn-quitar, .btn-add-item, .extra-items-editor .field label { display: none !important; }
     .extra-item-row { display: none !important; }
-    .cot-cierre-block {
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    .cot-bank-section {
-      page-break-before: avoid;
-      break-before: avoid;
-    }
+    .cot-bank-section,
     .totales-box {
       page-break-inside: avoid;
       break-inside: avoid;
     }
     body.is-printing #view-cotizacion .section:has(#cot-obs),
+    body.is-printing #cot-obs-section,
     body.is-printing #view-cotizacion .nota-cot,
     body.is-printing #view-cotizacion .nota,
     body.is-printing #view-cotizacion .garantia,
+    body.is-printing #view-cotizacion .section:has(.firmas),
     body.is-printing #view-cotizacion .firmas,
     body.is-printing #view-cuenta-cobro .totales-box,
     body.is-printing #view-cuenta-cobro .firmas {
       page-break-inside: avoid;
       break-inside: avoid;
+    }
+    body.is-printing #view-cotizacion .firma-canvas,
+    body.is-printing #view-cotizacion .firma-print-img {
+      height: 72px !important;
+    }
+    body.is-printing #view-cotizacion .firma-box {
+      padding: 6px 8px;
+      gap: 4px;
+    }
+    body.is-printing #view-cotizacion .garantia-body {
+      padding: 8px 12px;
+      gap: 5px;
+    }
+    body.is-printing #view-cotizacion .nota,
+    body.is-printing #view-cotizacion .nota-cot {
+      padding: 8px 10px;
     }
     .cot-catalog-hint { display: none !important; }
     #cot-buscar-section,
@@ -2100,18 +2111,20 @@
       border-top: 1px solid #e2e8f0;
       page-break-inside: avoid;
       break-inside: avoid;
+      page-break-before: avoid;
+      break-before: avoid;
     }
     .suite-footer-local {
       color: #334155;
       font-size: 10px;
-      padding: 8px 24px 6px;
+      padding: 4px 24px 2px;
     }
     .suite-footer-divider {
       border-top-color: #e2e8f0;
       margin: 0 24px;
     }
     .suite-footer-global {
-      padding: 6px 24px 10px;
+      padding: 2px 24px 6px;
     }
     .suite-footer-global-text,
     .suite-footer-global-link {
@@ -3299,7 +3312,6 @@ document.documentElement.classList.add('license-checking');
     </div>
 
     <div class="section" id="cot-garantia-section">
-      <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.garantia">Términos de Garantía</span></div>
       <div class="garantia">
         <div class="garantia-header" id="cot-warranty-header">
           <span class="shield">🛡️</span> <span data-i18n="formato.garantia.header_static">Términos de Garantía</span>
