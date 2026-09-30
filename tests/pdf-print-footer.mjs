@@ -102,6 +102,83 @@ function analyzePdfText(allText, labels) {
   return { footerHits, missing };
 }
 
+function analyzeForbidden(allText, needles) {
+  return needles.filter((n) => hasCompact(allText, n));
+}
+
+async function resetPrint(page) {
+  await page.evaluate(() => {
+    document.body.classList.remove('is-printing', 'is-printing-formato');
+    window.ArpaBrand?.restoreAfterPrint?.();
+    window.ArpaSignature?.restoreAfterPrint?.();
+    window.ArpaI18n?.restorePdfSpanish?.();
+  });
+}
+
+async function assertBogotaDates(browser, clockIso, expected) {
+  const context = await browser.newContext({
+    timezoneId: 'America/Bogota',
+    viewport: { width: 1280, height: 900 }
+  });
+  await context.addInitScript((settings) => {
+    try {
+      localStorage.setItem('arpa_suite_license_code', 'ARPA-PRO-PDFTEST');
+      localStorage.setItem('arpa_suite_license_plan', 'PRO');
+      localStorage.setItem('arpa_suite_license_vencimiento', '2099-12-31');
+      localStorage.setItem('arpa_suite_had_paid_license', '1');
+      localStorage.setItem('arpa_suite_settings_configured', 'true');
+      localStorage.setItem('arpa_suite_user_settings', JSON.stringify(settings));
+      localStorage.setItem('arpa_onboarding', 'true');
+      localStorage.setItem('arpa_trial_captured', 'true');
+      localStorage.setItem('arpa_active_oficios', JSON.stringify(['automatismos']));
+    } catch (e) { /* ignore */ }
+    document.documentElement.classList.add('license-ok');
+    document.addEventListener('DOMContentLoaded', () => {
+      document.documentElement.classList.add('license-ok');
+      const style = document.createElement('style');
+      style.textContent = '#license-gate,#onboarding-gate,#trial-capture-gate{display:none!important}html .page,html .main-menu,html .settings-overlay{visibility:visible!important}';
+      document.head.appendChild(style);
+    });
+  }, SETTINGS);
+  await context.route('**/*script.google.com/**', (route) => route.abort());
+  await context.route('**/service-worker.js', (route) => route.abort());
+  const page = await context.newPage();
+  page.on('dialog', (d) => d.dismiss());
+  if (page.clock && typeof page.clock.install === 'function') {
+    await page.clock.install({ time: new Date(clockIso) });
+  }
+  await page.goto(`${BASE}/index.html`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await unlockApp(page);
+  const info = await page.evaluate(() => {
+    const hoy = new Date();
+    const cotFechaEl = document.getElementById('cot-fecha');
+    const cotValidezEl = document.getElementById('cot-validez');
+    if (cotFechaEl) cotFechaEl.value = '';
+    if (cotValidezEl) cotValidezEl.value = '';
+    if (cotFechaEl) cotFechaEl.value = window.fechaLocalISO(hoy);
+    if (cotValidezEl) {
+      const v = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 15);
+      cotValidezEl.value = window.fechaLocalISO(v);
+    }
+    window.ArpaCuentaCobro?.limpiarFormulario?.();
+    return {
+      local: window.fechaLocalISO(hoy),
+      utc: hoy.toISOString().slice(0, 10),
+      cot: document.getElementById('cot-fecha')?.value || '',
+      cc: document.getElementById('cc-fecha-emision')?.value || '',
+      hours: hoy.getHours(),
+      minutes: hoy.getMinutes()
+    };
+  });
+  await context.close();
+  if (info.cot !== expected || info.cc !== expected || info.local !== expected) {
+    throw new Error(
+      `fecha ${clockIso}: local=${info.local} cot=${info.cot} cc=${info.cc} utc=${info.utc} reloj=${info.hours}:${String(info.minutes).padStart(2, '0')} esperado=${expected}`
+    );
+  }
+  return info;
+}
+
 function productCatalog(count) {
   const filas = [];
   for (let i = 1; i <= count; i += 1) {
@@ -249,10 +326,11 @@ async function makePdf(page) {
   });
 }
 
-async function fillCotizacion(page, productCount) {
+async function fillCotizacion(page, productCount, extra) {
+  extra = extra || {};
   const filas = productCatalog(productCount);
   const names = filas.map((_, i) => `PROD-${String(i + 1).padStart(2, '0')}`);
-  await page.evaluate(({ filas, settings }) => {
+  await page.evaluate(({ filas, settings, extra }) => {
     window.openCotizacionView();
     window.ArpaCotizacion.loadCotizacion({
       numero: 'AP-TEST-' + filas.length,
@@ -261,21 +339,28 @@ async function fillCotizacion(page, productCount) {
       fecha: '2026-09-30',
       nit: '900.111.222-3',
       tel: '3001234567',
-      email: 'cliente@test.com',
+      email: extra.email === undefined ? 'cliente@test.com' : extra.email,
       filas,
       cobros: [{ desc: 'Instalación', nom: 'Instalación', value: 180000, pvp: 180000, userEdited: true }]
     });
     const obs = document.getElementById('cot-obs');
-    if (obs) obs.value = 'Observación de prueba: revisar riel y fin de carrera en sitio.';
+    if (obs) {
+      obs.value = extra.obs === undefined
+        ? 'Observación de prueba: revisar riel y fin de carrera en sitio.'
+        : extra.obs;
+    }
+    const iva = document.getElementById('iva-check-cot');
+    if (iva) iva.checked = !!extra.iva;
     const elab = document.getElementById('cot-elaborado-nombre');
     if (elab) elab.value = settings.technicianName;
     const tel = document.getElementById('cot-elaborado-tel');
     if (tel) tel.value = settings.phone;
     const firmaCliente = document.querySelector('#view-cotizacion .firma-name');
-    if (firmaCliente) firmaCliente.value = 'Cliente PDF Test';
+    if (firmaCliente) firmaCliente.value = extra.firmaCliente === undefined ? 'Cliente PDF Test' : extra.firmaCliente;
     window.applyUserSettingsToUI?.();
     window.ArpaCotizacion.renderTablaCot();
-  }, { filas, settings: SETTINGS });
+    window.ArpaCotizacion.recalcularCotizacion();
+  }, { filas, settings: SETTINGS, extra });
   await drawInk(page, 'canvas-cot-cliente');
   await drawInk(page, 'canvas-cot-elaborado');
   return names;
@@ -388,6 +473,8 @@ async function run() {
           '#view-cotizacion .cot-bank-section',
           '#view-cotizacion .section:has(#cot-obs)',
           '#view-cotizacion .nota-cot',
+          '#view-cotizacion .nota',
+          '#view-cotizacion .garantia',
           '#view-cotizacion .cot-cierre-block',
           '#view-cotizacion .firmas'
         ],
@@ -451,6 +538,166 @@ async function run() {
         ok
       });
       if (!ok) failures.push(`${stem}: ${missing.join(', ') || 'overlap'}`);
+    }
+
+    {
+      await loadApp();
+      const night = await assertBogotaDates(browser, '2026-09-30T20:30:00-05:00', '2026-09-30');
+      const morning = await assertBogotaDates(browser, '2026-09-30T08:00:00-05:00', '2026-09-30');
+      results.push({
+        doc: 'fecha-bogota-20:30',
+        pages: 0,
+        footerHits: 1,
+        layoutOverlaps: 0,
+        missing: [],
+        ok: true,
+        utcWouldHaveBeen: night.utc
+      });
+      results.push({
+        doc: 'fecha-bogota-08:00',
+        pages: 0,
+        footerHits: 1,
+        layoutOverlaps: 0,
+        missing: [],
+        ok: true,
+        utcWouldHaveBeen: morning.utc
+      });
+    }
+
+    {
+      await loadApp();
+      const stem = 'cot-4-iva-obs';
+      const names = await fillCotizacion(work, 4, { iva: true });
+      await printCotizacion(work);
+      const layout = await assertPrintLayout(work, {
+        view: stem,
+        rowSelector: '#view-cotizacion .tabla-productos tbody tr:not(.empty-row)',
+        extraSelectors: [
+          '#view-cotizacion .totales-box',
+          '#view-cotizacion .garantia',
+          '#cot-nota-requisitos',
+          '#view-cotizacion .section:has(#cot-obs)',
+          '#view-cotizacion .firmas'
+        ],
+        labels: ['IVA', 'Términos de Garantía', 'polo a tierra', 'Observaciones', 'Aprobación', ...names]
+      });
+      const pdf = await makePdf(work);
+      fs.writeFileSync(path.join(OUT, `${stem}.pdf`), pdf);
+      const meta = await extractPdfTextAndPngs(rasterPage, pdf, stem);
+      const allText = meta.texts.join('\n');
+      fs.writeFileSync(path.join(OUT, `${stem}-text.txt`), allText);
+      const checked = analyzePdfText(allText, [
+        'IVA', 'Términos de Garantía', 'polo a tierra', 'Observaciones', 'Aprobación', 'Instalación', ...names
+      ]);
+      const forbidden = analyzeForbidden(allText, ['Incluir IVA', 'Buscar y agregar productos']);
+      const ok = checked.missing.length === 0 && forbidden.length === 0 && layout.overlaps.length === 0;
+      results.push({
+        doc: stem,
+        pages: meta.pages,
+        footerHits: checked.footerHits,
+        layoutOverlaps: layout.overlaps.length,
+        missing: [...checked.missing, ...forbidden.map((f) => 'no debía: ' + f)],
+        ok
+      });
+      if (!ok) failures.push(`${stem}: ${(checked.missing.concat(forbidden)).join(', ') || 'overlap'}`);
+      await resetPrint(work);
+    }
+
+    {
+      await loadApp();
+      const stem = 'cot-4-vacio-sin-iva';
+      const names = await fillCotizacion(work, 4, {
+        iva: false,
+        obs: '',
+        email: '',
+        firmaCliente: ''
+      });
+      await printCotizacion(work);
+      const pdf = await makePdf(work);
+      fs.writeFileSync(path.join(OUT, `${stem}.pdf`), pdf);
+      const meta = await extractPdfTextAndPngs(rasterPage, pdf, stem);
+      const allText = meta.texts.join('\n');
+      fs.writeFileSync(path.join(OUT, `${stem}-text.txt`), allText);
+      const forbidden = analyzeForbidden(allText, [
+        'correo@ejemplo.com',
+        'Especificaciones adicionales',
+        'Incluir IVA',
+        'Buscar y agregar productos',
+        'Nombre completo'
+      ]);
+      const checked = analyzePdfText(allText, ['Términos de Garantía', 'polo a tierra', ...names]);
+      const ok = forbidden.length === 0 && checked.missing.length === 0;
+      results.push({
+        doc: stem,
+        pages: meta.pages,
+        footerHits: checked.footerHits,
+        layoutOverlaps: 0,
+        missing: [
+          ...checked.missing,
+          ...forbidden.map((f) => 'no debía: ' + f)
+        ],
+        ok
+      });
+      if (!ok) failures.push(`${stem}: ${forbidden.join(', ') || checked.missing.join(', ')}`);
+      await resetPrint(work);
+    }
+
+    {
+      await loadApp();
+      await work.evaluate(() => {
+        const s = window.ArpaBrand.getSettings();
+        window.ArpaBrand.saveSettings({ ...s, warrantyTerms: 'Garantía de prueba 6 meses' });
+        window.applyUserSettingsToUI();
+      });
+      const stem = 'cot-garantia-custom';
+      await fillCotizacion(work, 2, { iva: false });
+      await printCotizacion(work);
+      const pdf = await makePdf(work);
+      fs.writeFileSync(path.join(OUT, `${stem}.pdf`), pdf);
+      const meta = await extractPdfTextAndPngs(rasterPage, pdf, stem);
+      const allText = meta.texts.join('\n');
+      fs.writeFileSync(path.join(OUT, `${stem}-text.txt`), allText);
+      const checked = analyzePdfText(allText, ['Garantía de prueba 6 meses']);
+      const defaultStill = analyzeForbidden(allText, ['mano de obra es de 1 año', 'Labor warranty is 1 year']);
+      const ok = checked.missing.length === 0 && defaultStill.length === 0;
+      results.push({
+        doc: stem,
+        pages: meta.pages,
+        footerHits: checked.footerHits,
+        layoutOverlaps: 0,
+        missing: [...checked.missing, ...defaultStill.map((f) => 'no debía: ' + f)],
+        ok
+      });
+      if (!ok) failures.push(`${stem}: ${checked.missing.concat(defaultStill).join(', ')}`);
+      await resetPrint(work);
+    }
+
+    {
+      await loadApp();
+      await work.evaluate(() => {
+        const s = window.ArpaBrand.getSettings();
+        window.ArpaBrand.saveSettings({ ...s, warrantyTerms: 'Garantía de prueba 6 meses' });
+        window.applyUserSettingsToUI();
+      });
+      await fillFormato(work);
+      await printFormato(work);
+      const stemF = 'formato-garantia-custom';
+      const pdfF = await makePdf(work);
+      fs.writeFileSync(path.join(OUT, `${stemF}.pdf`), pdfF);
+      const metaF = await extractPdfTextAndPngs(rasterPage, pdfF, stemF);
+      const allF = metaF.texts.join('\n');
+      fs.writeFileSync(path.join(OUT, `${stemF}-text.txt`), allF);
+      const checkedF = analyzePdfText(allF, ['Garantía de prueba 6 meses']);
+      const okF = checkedF.missing.length === 0;
+      results.push({
+        doc: stemF,
+        pages: metaF.pages,
+        footerHits: checkedF.footerHits,
+        layoutOverlaps: 0,
+        missing: checkedF.missing,
+        ok: okF
+      });
+      if (!okF) failures.push(`${stemF}: ${checkedF.missing.join(', ')}`);
     }
   } finally {
     await browser.close();

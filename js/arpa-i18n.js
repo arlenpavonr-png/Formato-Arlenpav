@@ -475,6 +475,9 @@
     'settings.label.technician_code': 'Technician initials or code',
     'settings.placeholder.technician_code': 'PJ',
     'settings.technician_code.hint': 'PYME plan: required. Prefixes your documents (e.g. PJ-001). Other plans: optional.',
+    'settings.label.warranty_terms': 'Warranty terms',
+    'settings.label.client_requirements': 'Client requirements',
+    'settings.hint.legal_docs': 'If left empty, the standard text is used (it follows the app language). Your own text is used as-is on Quote and Service Form.',
     'settings.label.logo': 'Your company logo',
     'settings.logo.hint': 'Upload your logo (PNG, JPG or WebP). If none is uploaded, the official ARPA Suite logo will be used.',
     'settings.section.price_list': 'Price List',
@@ -659,6 +662,9 @@
       'settings.license.no_expiry': 'Sin vencimiento',
       'settings.license.change': 'Cambiar licencia',
       'settings.license.confirm_change': '¿Cambiar el código de licencia? La empresa, el catálogo, el historial y la numeración se conservan.',
+      'settings.label.warranty_terms': 'Términos de garantía',
+      'settings.label.client_requirements': 'Requisitos para el cliente',
+      'settings.hint.legal_docs': 'Si lo deja vacío, se usa el texto estándar (cambia con el idioma). Si escribe el suyo, se usa tal cual en Cotización y Formato.',
       'license_gate.subtitle_enter_code': 'Ingrese su código de licencia',
       'trial.banner.days_left': 'Prueba gratis: quedan {days} días',
       'alert.numeracion.sin_licencia': 'Sin licencia activa. Revise Configuración → Licencia.',
@@ -943,6 +949,8 @@
     if (brandDefaultsCaptured) return;
     var header = document.getElementById('brand-warranty-header');
     if (header) brandDefaults['brand-warranty-header'] = header.innerHTML;
+    var cotHeader = document.getElementById('cot-warranty-header');
+    if (cotHeader) brandDefaults['cot-warranty-header'] = cotHeader.innerHTML;
     var exclusion = document.getElementById('brand-warranty-exclusion');
     if (exclusion) brandDefaults['brand-warranty-exclusion'] = exclusion.innerHTML;
     var companyEl = document.getElementById('brand-verification-company');
@@ -1009,6 +1017,11 @@
     if (warrantyHeader) {
       pushBackup(items, warrantyHeader, 'innerHTML', warrantyHeader.innerHTML);
       warrantyHeader.innerHTML = '<span class="shield">🛡️</span> ' + interpolate(resolveText('formato.garantia.header', 'es'), { company: company });
+    }
+    var cotWarrantyHeader = document.getElementById('cot-warranty-header');
+    if (cotWarrantyHeader) {
+      pushBackup(items, cotWarrantyHeader, 'innerHTML', cotWarrantyHeader.innerHTML);
+      cotWarrantyHeader.innerHTML = '<span class="shield">🛡️</span> ' + interpolate(resolveText('formato.garantia.header', 'es'), { company: company });
     }
     var warrantyExclusion = document.getElementById('brand-warranty-exclusion');
     if (warrantyExclusion) {
@@ -1095,6 +1108,10 @@
       if (header && brandDefaults['brand-warranty-header'] != null) {
         header.innerHTML = brandDefaults['brand-warranty-header'];
       }
+      var cotHeader = document.getElementById('cot-warranty-header');
+      if (cotHeader && brandDefaults['cot-warranty-header'] != null) {
+        cotHeader.innerHTML = brandDefaults['cot-warranty-header'];
+      }
       var exclusion = document.getElementById('brand-warranty-exclusion');
       if (exclusion && brandDefaults['brand-warranty-exclusion'] != null) {
         exclusion.innerHTML = brandDefaults['brand-warranty-exclusion'];
@@ -1116,12 +1133,19 @@
         cotLabel.textContent = brandDefaults['cot-elaborado-label'];
       }
       applyCotNotaLegal();
+      if (global.ArpaBrand && typeof global.ArpaBrand.applyLegalCopyToDocuments === 'function') {
+        global.ArpaBrand.applyLegalCopyToDocuments();
+      }
       return;
     }
 
     var warrantyHeader = document.getElementById('brand-warranty-header');
     if (warrantyHeader) {
       warrantyHeader.innerHTML = '<span class="shield">🛡️</span> ' + t('formato.garantia.header', { company: company });
+    }
+    var cotWarrantyHeader = document.getElementById('cot-warranty-header');
+    if (cotWarrantyHeader) {
+      cotWarrantyHeader.innerHTML = '<span class="shield">🛡️</span> ' + t('formato.garantia.header', { company: company });
     }
     var warrantyExclusion = document.getElementById('brand-warranty-exclusion');
     if (warrantyExclusion) {
@@ -1144,6 +1168,9 @@
         : t('cot.firma.elaborado');
     }
     applyCotNotaLegal();
+    if (global.ArpaBrand && typeof global.ArpaBrand.applyLegalCopyToDocuments === 'function') {
+      global.ArpaBrand.applyLegalCopyToDocuments();
+    }
   }
 
   function chipDocTypeText(text) {
