@@ -289,69 +289,8 @@ async function printCotizacion(page) {
   await page.waitForFunction(() => document.body.classList.contains('is-printing'));
 }
 
-async function fillCuentaCobro(page) {
-  const items = [
-    { desc: 'CC-01 Mantenimiento preventivo', cant: 1, unit: 120000 },
-    { desc: 'CC-02 Revisión de motor y riel', cant: 1, unit: 90000 },
-    { desc: 'CC-03 Cambio de controles', cant: 2, unit: 45000 },
-    { desc: 'CC-04 Instalación de fotoceldas', cant: 1, unit: 160000 },
-    { desc: `CC-05 ${LONG_DESC}`, cant: 1, unit: 250000 },
-    { desc: 'CC-06 Ajuste de fin de carrera', cant: 1, unit: 70000 }
-  ];
-  await page.evaluate((items) => {
-    window.openCuentaCobroView();
-    const add = document.getElementById('btn-cc-add-servicio');
-    while (document.querySelectorAll('#cc-servicios-body tr').length < items.length) {
-      add.click();
-    }
-    const rows = document.querySelectorAll('#cc-servicios-body tr');
-    items.forEach((item, i) => {
-      const tr = rows[i];
-      const desc = tr.querySelector('.cc-svc-desc');
-      const cant = tr.querySelector('.cc-svc-cant');
-      const unit = tr.querySelector('.cc-svc-unit');
-      desc.value = item.desc;
-      cant.value = String(item.cant);
-      unit.value = String(item.unit);
-      desc.dispatchEvent(new Event('input', { bubbles: true }));
-      cant.dispatchEvent(new Event('input', { bubbles: true }));
-      unit.dispatchEvent(new Event('input', { bubbles: true }));
-    });
-    const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
-    set('cc-numero', 'CC-TEST-6');
-    set('cc-ciudad', 'Bogotá');
-    set('cc-cliente-nombre', 'Cliente Cuenta Cobro');
-    set('cc-cliente-doc', '900.111.222-3');
-    set('cc-obs', 'Observación CC: pago contra entrega.');
-    window.ArpaCuentaCobro?.recalcularTotales?.();
-  }, items);
-  await drawInk(page, 'canvas-cc-cobrador');
-  await drawInk(page, 'canvas-cc-cliente');
-  return items.map((x) => x.desc.slice(0, 8));
-}
-
-async function printCuentaCobro(page) {
-  await page.evaluate(() => {
-    const cc = document.getElementById('view-cuenta-cobro');
-    cc?.removeAttribute('hidden');
-    document.body.classList.add('is-printing', 'is-printing-cc');
-    window.ArpaBrand?.prepareForPrint?.();
-    window.ArpaI18n?.preparePdfSpanish?.('view-cuenta-cobro');
-    const root = document.getElementById('view-cuenta-cobro');
-    const elementos = root.querySelectorAll('input:not([type=file]):not([type=checkbox]), select, textarea');
-    elementos.forEach((el) => {
-      const valor = el.tagName === 'SELECT'
-        ? el.options[el.selectedIndex]?.text || ''
-        : el.value || '';
-      const span = document.createElement('span');
-      span.className = 'pdf-valor';
-      span.textContent = valor;
-      span.style.cssText = 'display:inline-block;width:100%;font-size:13px;padding:4px;';
-      el.parentNode.replaceChild(span, el);
-    });
-    window.ArpaSignature?.prepareForPrint?.(['canvas-cc-cobrador', 'canvas-cc-cliente']);
-  });
-}
+// Cuenta de Cobro no usa window.print: genera el PDF con jsPDF (renderCcToPdf).
+// Un caso page.pdf + is-printing no representa la app real; no se prueba aquí.
 
 async function fillFormato(page) {
   await page.evaluate(() => {
@@ -473,46 +412,7 @@ async function run() {
       });
       if (!ok) failures.push(`${stem}: ${missing.join(', ')}`);
       await work.evaluate(() => {
-        document.body.classList.remove('is-printing', 'is-printing-formato', 'is-printing-cc');
-        window.ArpaBrand?.restoreAfterPrint?.();
-        window.ArpaSignature?.restoreAfterPrint?.();
-      });
-    }
-
-    {
-      await loadApp();
-      const stem = 'cc-6';
-      const names = await fillCuentaCobro(work);
-      await printCuentaCobro(work);
-      const layout = await assertPrintLayout(work, {
-        view: stem,
-        rowSelector: '#view-cuenta-cobro .tabla-productos tbody tr',
-        extraSelectors: [
-          '#view-cuenta-cobro .totales-box',
-          '#view-cuenta-cobro .firmas'
-        ],
-        labels: ['CC-01', 'CC-06', 'TOTAL']
-      });
-      const pdf = await makePdf(work);
-      fs.writeFileSync(path.join(OUT, `${stem}.pdf`), pdf);
-      const meta = await extractPdfTextAndPngs(rasterPage, pdf, stem);
-      const allText = meta.texts.join('\n');
-      fs.writeFileSync(path.join(OUT, `${stem}-text.txt`), allText);
-      const checked = analyzePdfText(allText, names.concat(['TOTAL']));
-      const missing = checked.missing;
-      const footerHits = checked.footerHits;
-      const ok = missing.length === 0 && layout.overlaps.length === 0;
-      results.push({
-        doc: stem,
-        pages: meta.pages,
-        footerHits,
-        layoutOverlaps: layout.overlaps.length,
-        missing,
-        ok
-      });
-      if (!ok) failures.push(`${stem}: ${missing.join(', ') || 'overlap'}`);
-      await work.evaluate(() => {
-        document.body.classList.remove('is-printing', 'is-printing-formato', 'is-printing-cc');
+        document.body.classList.remove('is-printing', 'is-printing-formato');
         window.ArpaBrand?.restoreAfterPrint?.();
         window.ArpaSignature?.restoreAfterPrint?.();
       });

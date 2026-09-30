@@ -39,3 +39,4 @@ build/
 out/
 test-results/
 playwright-report/
+pdf-test-out/
