@@ -585,6 +585,119 @@
       .substring(0, 40) || 'Cotizacion';
   }
 
+  const COT_PDF_LETTER = { widthMm: 215.9, heightMm: 279.4, marginX: 12, marginTop: 12, marginBottom: 14 };
+  const COT_WHATSAPP_PRINT_CSS = [
+    'body.is-printing:not(.is-printing-formato) #cot-buscar-section,',
+    'body.is-printing:not(.is-printing-formato) #cot-cobros-section,',
+    'body.is-printing:not(.is-printing-formato) .buscador-wrap-cot,',
+    'body.is-printing:not(.is-printing-formato) .iva-toggle,',
+    'body.is-printing:not(.is-printing-formato) .cot-catalog-hint,',
+    'body.is-printing:not(.is-printing-formato) .print-hide-empty,',
+    'body.is-printing:not(.is-printing-formato) #pdf-actions-cot,',
+    'body.is-printing:not(.is-printing-formato) #pdf-actions-formato,',
+    'body.is-printing:not(.is-printing-formato) #view-cotizacion button,',
+    'body.is-printing:not(.is-printing-formato) #view-cotizacion .tabla-productos .td-action,',
+    'body.is-printing:not(.is-printing-formato) #view-cotizacion .tabla-productos thead th:last-child,',
+    'body.is-printing:not(.is-printing-formato) #view-cotizacion .tabla-productos tbody td:last-child { display:none !important; }',
+    'body.is-printing:not(.is-printing-formato) #cot-print-footer { display:block !important; background:#fff; border-top:1px solid #e2e8f0; margin-top:10px; }',
+    'body.is-printing:not(.is-printing-formato) .suite-footer { display:none !important; }',
+    'body.is-printing #view-cotizacion .firma-canvas, body.is-printing #view-cotizacion .firma-print-img { height:72px !important; }',
+    'body.is-printing #view-cotizacion .firma-box { padding:6px 8px; gap:4px; }',
+    'body.is-printing #view-cotizacion .garantia-body { padding:8px 12px; gap:5px; }',
+    'body.is-printing #view-cotizacion .nota, body.is-printing #view-cotizacion .nota-cot { padding:8px 10px; }'
+  ].join('\n');
+
+  function isVisibleBreakEl(el) {
+    if (!el) return false;
+    const cs = window.getComputedStyle(el);
+    if (cs.display === 'none' || cs.visibility === 'hidden') return false;
+    const r = el.getBoundingClientRect();
+    return r.height > 1 && r.width > 1;
+  }
+
+  function collectCotPdfBreakRanges(viewRoot) {
+    const root = viewRoot.getBoundingClientRect();
+    const scrollTop = viewRoot.scrollTop || 0;
+    const push = (el, name, list) => {
+      if (!isVisibleBreakEl(el)) return;
+      const r = el.getBoundingClientRect();
+      list.push({
+        name,
+        top: r.top - root.top + scrollTop,
+        bottom: r.bottom - root.top + scrollTop
+      });
+    };
+    const atomic = [];
+    viewRoot.querySelectorAll('.tabla-productos thead tr').forEach((el, i) => push(el, 'thead-' + i, atomic));
+    viewRoot.querySelectorAll('.tabla-productos tbody tr:not(.empty-row)').forEach((el, i) => push(el, 'row-' + i, atomic));
+    push(viewRoot.querySelector('.totales-box')?.closest('.section'), 'resumen', atomic);
+    push(viewRoot.querySelector('.cot-bank-section'), 'bancarios', atomic);
+    push(document.getElementById('cot-obs-section'), 'observaciones', atomic);
+    push(document.getElementById('cot-garantia-section'), 'garantia', atomic);
+    push(document.getElementById('cot-nota-requisitos'), 'requisitos', atomic);
+    push(document.getElementById('cot-nota-legal'), 'nota-legal', atomic);
+    push(document.getElementById('cot-aprobacion-section'), 'aprobacion', atomic);
+    const extras = [];
+    push(document.getElementById('cot-print-footer'), 'pie', extras);
+    push(viewRoot.querySelector('.firmas'), 'firmas', extras);
+    return { atomic, extras, rootHeight: Math.max(viewRoot.scrollHeight, root.height) };
+  }
+
+  function computeCanvasPageStarts(ranges, pageH, canvasH) {
+    const items = (ranges || [])
+      .filter((r) => r && r.bottom > r.top)
+      .slice()
+      .sort((a, b) => a.top - b.top || a.bottom - b.bottom);
+    const starts = [0];
+    let pageStart = 0;
+    const EPS = 1.5;
+    let guard = 0;
+    while (pageStart + pageH < canvasH - EPS && guard < 40) {
+      guard += 1;
+      const pageEnd = pageStart + pageH;
+      let cutAt = pageEnd;
+      for (let i = 0; i < items.length; i += 1) {
+        const el = items[i];
+        if (el.bottom <= pageStart + EPS) continue;
+        if (el.top >= pageEnd - EPS) break;
+        const height = el.bottom - el.top;
+        if (el.bottom <= pageEnd + EPS) continue;
+        if (height > pageH + EPS) {
+          cutAt = el.top > pageStart + EPS ? el.top : pageEnd;
+          break;
+        }
+        cutAt = el.top > pageStart + EPS ? el.top : pageEnd;
+        break;
+      }
+      if (cutAt <= pageStart + EPS) cutAt = pageEnd;
+      if (cutAt >= canvasH - EPS) break;
+      starts.push(cutAt);
+      pageStart = cutAt;
+    }
+    return starts;
+  }
+
+  function pageIntervalHits(range, start, end, eps) {
+    if (!range) return false;
+    return range.top < end - eps && range.bottom > start + eps;
+  }
+
+  function injectCotWhatsAppPrintCss() {
+    const existing = document.getElementById('arpa-cot-whatsapp-print-css');
+    if (existing) existing.remove();
+    const style = document.createElement('style');
+    style.id = 'arpa-cot-whatsapp-print-css';
+    style.textContent = COT_WHATSAPP_PRINT_CSS;
+    document.head.appendChild(style);
+    return style;
+  }
+
+  function waitForCotPdfLayout() {
+    return new Promise((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    });
+  }
+
   function buildCotShareMessage() {
     const nombre = (document.getElementById('cot-nombre')?.value.trim() || 'Cliente').split(' ')[0];
     const numero = document.getElementById('numero-cot')?.value.trim() || '—';
@@ -599,33 +712,87 @@
     if (!jsPDF || !html2canvas || !viewRoot) return null;
 
     const ctx = beginCotPdfExport();
+    const printStyle = injectCotWhatsAppPrintCss();
     try {
+      if (document.fonts?.ready) await document.fonts.ready;
+      viewRoot.scrollTop = 0;
+      window.scrollTo(0, 0);
+      await waitForCotPdfLayout();
+
+      const measured = collectCotPdfBreakRanges(viewRoot);
       const canvas = await html2canvas(viewRoot, {
         scale: 2,
         useCORS: true,
         logging: false,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        width: Math.ceil(viewRoot.scrollWidth),
+        height: Math.ceil(measured.rootHeight),
+        windowWidth: Math.ceil(viewRoot.scrollWidth),
+        windowHeight: Math.ceil(measured.rootHeight),
+        scrollX: 0,
+        scrollY: 0
       });
 
-      const imgData = canvas.toDataURL('image/jpeg', 0.92);
-      const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = pageWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const scaleY = canvas.height / measured.rootHeight;
+      const toCanvas = (r) => ({
+        name: r.name,
+        top: r.top * scaleY,
+        bottom: r.bottom * scaleY
+      });
+      const atomicPx = measured.atomic.map(toCanvas);
+      const extrasPx = measured.extras.map(toCanvas);
 
-      let heightLeft = imgHeight;
-      let position = 0;
+      const contentW = COT_PDF_LETTER.widthMm - COT_PDF_LETTER.marginX * 2;
+      const contentH = COT_PDF_LETTER.heightMm - COT_PDF_LETTER.marginTop - COT_PDF_LETTER.marginBottom;
+      const pageCanvasH = contentH * (canvas.width / contentW);
+      const starts = computeCanvasPageStarts(atomicPx, pageCanvasH, canvas.height);
 
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+      const pdf = new jsPDF({ unit: 'mm', format: 'letter', orientation: 'portrait' });
+      for (let i = 0; i < starts.length; i += 1) {
+        const srcY = Math.max(0, Math.floor(starts[i]));
+        const nextY = i + 1 < starts.length ? starts[i + 1] : canvas.height;
+        const srcH = Math.max(1, Math.min(Math.ceil(nextY - srcY), Math.ceil(canvas.height - srcY)));
+        const slice = document.createElement('canvas');
+        slice.width = canvas.width;
+        slice.height = srcH;
+        const sctx = slice.getContext('2d');
+        sctx.fillStyle = '#ffffff';
+        sctx.fillRect(0, 0, slice.width, slice.height);
+        sctx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+        const destH = srcH * contentW / canvas.width;
+        if (i > 0) pdf.addPage();
+        pdf.addImage(slice.toDataURL('image/jpeg', 0.92), 'JPEG', COT_PDF_LETTER.marginX, COT_PDF_LETTER.marginTop, contentW, destH);
       }
+
+      const footer = extrasPx.find((r) => r.name === 'pie');
+      const firmas = extrasPx.find((r) => r.name === 'firmas');
+      const footerOnlyPages = [];
+      for (let i = 0; i < starts.length; i += 1) {
+        const s = starts[i];
+        const e = i + 1 < starts.length ? starts[i + 1] : canvas.height;
+        const hitsFooter = pageIntervalHits(footer, s, e, 2);
+        const hitsFirmas = pageIntervalHits(firmas, s, e, 2);
+        const hitsOther = atomicPx.some((r) => r.name !== 'aprobacion' && pageIntervalHits(r, s, e, 2));
+        if (hitsFooter && !hitsFirmas && !hitsOther) footerOnlyPages.push(i + 1);
+      }
+
+      global.__arpaCotWhatsAppPdf = {
+        format: 'letter',
+        pageWidthMm: pdf.internal.pageSize.getWidth(),
+        pageHeightMm: pdf.internal.pageSize.getHeight(),
+        canvasH: canvas.height,
+        pageCanvasH,
+        starts,
+        ranges: atomicPx,
+        extras: extrasPx,
+        footerOnlyPages,
+        prep: {
+          buscarHidden: window.getComputedStyle(document.getElementById('cot-buscar-section') || document.body).display === 'none',
+          ivaHidden: window.getComputedStyle(document.querySelector('#view-cotizacion .iva-toggle') || document.body).display === 'none',
+          suiteFooterHidden: window.getComputedStyle(document.getElementById('suite-footer') || document.body).display === 'none',
+          cotFooterShown: window.getComputedStyle(document.getElementById('cot-print-footer') || document.body).display !== 'none'
+        }
+      };
 
       const blob = pdf.output('blob');
       const numero = document.getElementById('numero-cot')?.value.trim() || 'Cotizacion';
@@ -633,6 +800,7 @@
       const filename = `Cotizacion_${sanitizeCotFilenamePart(numero)}_${sanitizeCotFilenamePart(cliente)}.pdf`;
       return new File([blob], filename, { type: 'application/pdf' });
     } finally {
+      printStyle?.remove();
       endCotPdfExport(ctx);
     }
   }
@@ -918,6 +1086,9 @@
     ensureCotNumero,
     guardarCotPDF,
     guardarCotPDFYWhatsApp,
+    generarCotPdfFile,
+    computeCanvasPageStarts,
+    collectCotPdfBreakRanges,
     getCotSnapshot,
     getCotItemLabels,
     getFilas,
