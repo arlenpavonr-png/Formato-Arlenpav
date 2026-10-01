@@ -567,6 +567,22 @@
     color: #64748b;
     text-decoration: none;
   }
+  #cot-print-footer {
+    display: none;
+  }
+  body.is-printing:not(.is-printing-formato) .suite-footer {
+    display: none !important;
+  }
+  body.is-printing:not(.is-printing-formato) #cot-print-footer {
+    display: block !important;
+    background: #fff;
+    border-top: 1px solid #e2e8f0;
+    margin-top: 10px;
+  }
+  body.is-printing:not(.is-printing-formato) .cot-firmas-print-block {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
   .suite-footer-global-link:hover {
     color: #475569;
     text-decoration: underline;
@@ -1842,7 +1858,7 @@
   }
   @page {
     size: letter;
-    margin: 12mm 12mm 8mm 12mm;
+    margin: 12mm 12mm 14mm 12mm;
   }
   @media print {
     .trial-days-banner { display: none !important; }
@@ -1976,13 +1992,15 @@
       page-break-inside: avoid;
       break-inside: avoid;
     }
+    body.is-printing #view-cotizacion .cot-firmas-print-block {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
     body.is-printing #view-cotizacion .section:has(#cot-obs),
     body.is-printing #cot-obs-section,
     body.is-printing #view-cotizacion .nota-cot,
     body.is-printing #view-cotizacion .nota,
     body.is-printing #view-cotizacion .garantia,
-    body.is-printing #view-cotizacion .section:has(.firmas),
-    body.is-printing #view-cotizacion .firmas,
     body.is-printing #view-cuenta-cobro .totales-box,
     body.is-printing #view-cuenta-cobro .firmas {
       page-break-inside: avoid;
@@ -2111,20 +2129,31 @@
       border-top: 1px solid #e2e8f0;
       page-break-inside: avoid;
       break-inside: avoid;
-      page-break-before: avoid;
-      break-before: avoid;
+    }
+    body.is-printing:not(.is-printing-formato) .suite-footer {
+      display: none !important;
+    }
+    body.is-printing:not(.is-printing-formato) #cot-print-footer {
+      display: block !important;
+      background: #fff;
+      border-top: 1px solid #e2e8f0;
+      margin-top: 10px;
+    }
+    .cot-firmas-print-block {
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
     .suite-footer-local {
       color: #334155;
       font-size: 10px;
-      padding: 4px 24px 2px;
+      padding: 8px 24px 6px;
     }
     .suite-footer-divider {
       border-top-color: #e2e8f0;
       margin: 0 24px;
     }
     .suite-footer-global {
-      padding: 2px 24px 6px;
+      padding: 6px 24px 10px;
     }
     .suite-footer-global-text,
     .suite-footer-global-link {
@@ -3341,7 +3370,7 @@ document.documentElement.classList.add('license-checking');
 
     <div class="nota-cot" id="cot-nota-legal">&nbsp;</div>
 
-    <div class="section">
+    <div class="section cot-firmas-print-block" id="cot-aprobacion-section">
       <div class="section-title"><span class="dot"></span><span data-i18n="cot.section.aprobacion">Aprobación</span></div>
       <div class="firmas">
         <div class="firma-box">
@@ -3360,6 +3389,13 @@ document.documentElement.classList.add('license-checking');
           </div>
           <input class="firma-name" id="cot-elaborado-nombre" type="text" data-i18n-placeholder="formato.firma.placeholder.tecnico" placeholder="Nombre del técnico">
           <input class="firma-name" id="cot-elaborado-tel" type="text" data-i18n-placeholder="formato.label.telefono" placeholder="Teléfono">
+        </div>
+      </div>
+      <div id="cot-print-footer" class="cot-print-footer">
+        <div class="suite-footer-local" id="cot-print-footer-local">Configure los datos de su empresa en ⚙️ Ajustes</div>
+        <hr class="suite-footer-divider" aria-hidden="true">
+        <div class="suite-footer-global">
+          <p class="suite-footer-global-text" id="cot-print-footer-global">Generado con ARPA Suite · Pruébala gratis en arpatechnologyglobal.com · © 2026</p>
         </div>
       </div>
     </div>

@@ -580,15 +580,21 @@
       if (website && !isInternalAppUrl(website)) html += `<br>${website}`;
       el.innerHTML = html;
     });
+    const footerLocalHtml = !configured
+      ? (window.ArpaI18n?.t?.('brand.screen_footer.placeholder') || 'Configure los datos de su empresa en ⚙️ Ajustes')
+      : (() => {
+        const taxId = global.ArpaPricing?.getTaxIdLabel?.() || 'NIT';
+        const phone = global.ArpaPricing?.formatCompanyPhone?.(s.phone) || val(s.phone, '—');
+        return `${company} &nbsp;|&nbsp; ${taxId} ${val(s.nit, '—')} &nbsp;|&nbsp; Tel ${phone}`;
+      })();
     set('brand-screen-footer', (el) => {
       if (el.dataset.editable !== 'true') return;
-      if (!configured) {
-        el.innerHTML = window.ArpaI18n?.t?.('brand.screen_footer.placeholder') || 'Configure los datos de su empresa en ⚙️ Ajustes';
-        return;
-      }
-      const taxId = global.ArpaPricing?.getTaxIdLabel?.() || 'NIT';
-      const phone = global.ArpaPricing?.formatCompanyPhone?.(s.phone) || val(s.phone, '—');
-      el.innerHTML = `${company} &nbsp;|&nbsp; ${taxId} ${val(s.nit, '—')} &nbsp;|&nbsp; Tel ${phone}`;
+      el.innerHTML = footerLocalHtml;
+    });
+    set('cot-print-footer-local', (el) => { el.innerHTML = footerLocalHtml; });
+    set('cot-print-footer-global', (el) => {
+      const isWL = global.ArpaLicense?.isWhiteLabelLicense?.() ?? false;
+      el.textContent = isWL ? '' : getGlobalFooterText();
     });
     set('brand-bank-block', (el) => { el.innerHTML = formatBankBlock(s); });
     set('brand-bank-block-formato', (el) => { el.innerHTML = formatBankBlock(s); });
@@ -1021,7 +1027,7 @@
   let printUiBackup = null;
 
   function prepareForPrint() {
-    printUiBackup = { contactHtml: null, sealHtml: null };
+    printUiBackup = { contactHtml: null, sealHtml: null, cotSealHtml: null };
     const contact = document.getElementById('brand-company-contact');
     if (contact) {
       printUiBackup.contactHtml = contact.innerHTML;
@@ -1032,13 +1038,18 @@
       });
       contact.innerHTML = contact.innerHTML.replace(/https?:\/\/[^\s<]*github\.io[^\s<]*/gi, '');
     }
+    const isWL = global.ArpaLicense?.isWhiteLabelLicense?.() ?? false;
     const seal = document.getElementById('arpa-global-seal');
     if (seal) {
       printUiBackup.sealHtml = seal.innerHTML;
-      const isWL = global.ArpaLicense?.isWhiteLabelLicense?.() ?? false;
       seal.innerHTML = isWL ? '' : `<p class="suite-footer-global-text">${getGlobalFooterText()}</p>`;
     }
-    document.querySelectorAll('#suite-footer a[href]').forEach((a) => {
+    const cotSeal = document.getElementById('cot-print-footer-global');
+    if (cotSeal) {
+      printUiBackup.cotSealHtml = cotSeal.innerHTML;
+      cotSeal.textContent = isWL ? '' : getGlobalFooterText();
+    }
+    document.querySelectorAll('#suite-footer a[href], #cot-print-footer a[href]').forEach((a) => {
       const span = document.createElement('span');
       span.className = 'suite-footer-global-link';
       span.textContent = a.textContent;
@@ -1052,6 +1063,8 @@
     if (contact && printUiBackup.contactHtml != null) contact.innerHTML = printUiBackup.contactHtml;
     const seal = document.getElementById('arpa-global-seal');
     if (seal && printUiBackup.sealHtml != null) seal.innerHTML = printUiBackup.sealHtml;
+    const cotSeal = document.getElementById('cot-print-footer-global');
+    if (cotSeal && printUiBackup.cotSealHtml != null) cotSeal.innerHTML = printUiBackup.cotSealHtml;
     printUiBackup = null;
   }
 

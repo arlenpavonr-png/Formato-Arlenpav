@@ -39,7 +39,7 @@ describe('CSS de impresión: pie no tapa contenido', () => {
 
   it('CACHE_VERSION pide recarga tras cotización perfecta', () => {
     const sw = fs.readFileSync(path.join(root, 'service-worker.js'), 'utf8');
-    assert.match(sw, /CACHE_VERSION = 'v20261001-cot-perfecta-2'/);
+    assert.match(sw, /CACHE_VERSION = 'v20261001-cot-perfecta-3'/);
   });
 
   it('impresión oculta buscador, casilla IVA, placeholders y observaciones vacías', () => {
@@ -58,6 +58,14 @@ describe('CSS de impresión: pie no tapa contenido', () => {
     assert.match(printCss, /\.garantia/);
     assert.match(printCss, /\.nota-cot/);
     assert.match(printCss, /\.firmas/);
+  });
+
+  it('en Cotización el pie de impresión va con las firmas y el pie global se oculta', () => {
+    assert.match(html, /id="cot-print-footer"/);
+    assert.match(html, /cot-firmas-print-block/);
+    assert.match(printCss, /body\.is-printing:not\(\.is-printing-formato\) \.suite-footer/);
+    assert.match(printCss, /body\.is-printing:not\(\.is-printing-formato\) #cot-print-footer/);
+    assert.match(printCss, /\.cot-firmas-print-block\s*\{[^}]*break-inside:\s*avoid/s);
   });
 });
 

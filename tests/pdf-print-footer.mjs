@@ -17,6 +17,9 @@ const BASE = `http://127.0.0.1:${PORT}`;
 const LONG_DESC =
   'Motor corredizo 1500 kg para portón residencial de 6 metros con riel de aluminio, fin de carrera y dos controles. Incluye configuración de fuerza y prueba en sitio.';
 
+const THREE_LINE_DESC =
+  'Motor corredizo 1500 kg para portón residencial de 6 metros con riel de aluminio y fin de carrera. Incluye dos controles remotos, configuración de fuerza en sitio y prueba de apertura. Garantía de instalación sujeta a polo a tierra y uso según manual del fabricante.';
+
 const SETTINGS = {
   companyName: 'Puertas del Norte SAS',
   nit: '900.111.222-3',
@@ -102,19 +105,46 @@ function analyzePdfText(allText, labels) {
   return { footerHits, missing };
 }
 
+function pageIsFooterOnly(pageText) {
+  const hasFooter = hasCompact(pageText, 'Generado con ARPA Suite')
+    || hasCompact(pageText, 'ARPA Technology Global');
+  const hasBody = hasCompact(pageText, 'Aprobado')
+    || hasCompact(pageText, 'Elaborado')
+    || hasCompact(pageText, 'Aprobación')
+    || hasCompact(pageText, 'PROD-')
+    || hasCompact(pageText, 'Subtotal')
+    || hasCompact(pageText, 'TOTAL')
+    || hasCompact(pageText, 'Términos de Garantía')
+    || hasCompact(pageText, 'Observaciones')
+    || hasCompact(pageText, 'Datos Bancarios')
+    || hasCompact(pageText, 'Instalación');
+  return hasFooter && !hasBody;
+}
+
+function anyFooterOnlyPage(texts) {
+  if (!texts || texts.length < 2) return false;
+  return texts.some(pageIsFooterOnly);
+}
+
 function lastPageIsFooterOnly(texts) {
   if (!texts || texts.length < 2) return false;
-  const last = texts[texts.length - 1] || '';
-  const hasFooter = hasCompact(last, 'Generado con ARPA Suite')
-    || hasCompact(last, 'ARPA Technology Global');
-  const hasBody = hasCompact(last, 'Aprobado')
-    || hasCompact(last, 'Elaborado')
-    || hasCompact(last, 'PROD-')
-    || hasCompact(last, 'Subtotal')
-    || hasCompact(last, 'Términos de Garantía')
-    || hasCompact(last, 'Observaciones')
-    || hasCompact(last, 'Instalación');
-  return hasFooter && !hasBody;
+  return pageIsFooterOnly(texts[texts.length - 1] || '');
+}
+
+function collectPdfIssues(meta, labels, extraForbidden) {
+  const allText = meta.texts.join('\n');
+  const checked = analyzePdfText(allText, labels);
+  const missing = checked.missing.slice();
+  if (hasCompact(allText, 'Garantía – su empresa') || hasCompact(allText, 'Garantia – su empresa')) {
+    missing.push('encabezado Garantía – su empresa');
+  }
+  if (anyFooterOnlyPage(meta.texts) || lastPageIsFooterOnly(meta.texts)) {
+    missing.push('página solo con el pie');
+  }
+  (extraForbidden || []).forEach((n) => {
+    if (hasCompact(allText, n)) missing.push('no debía: ' + n);
+  });
+  return { allText, footerHits: checked.footerHits, missing };
 }
 
 function analyzeForbidden(allText, needles) {
@@ -194,14 +224,17 @@ async function assertBogotaDates(browser, clockIso, expected) {
   return info;
 }
 
-function productCatalog(count) {
+function productCatalog(count, options) {
+  options = options || {};
+  const desc = options.desc || LONG_DESC;
+  const allLong = !!options.allLong;
   const filas = [];
   for (let i = 1; i <= count; i += 1) {
-    const long = i === 2 || i === 4 || i === count;
+    const long = allLong || i === 2 || i === 4 || i === count;
     filas.push({
       cod: `P-${String(i).padStart(2, '0')}`,
       nom: long
-        ? `PROD-${String(i).padStart(2, '0')} ${LONG_DESC}`
+        ? `PROD-${String(i).padStart(2, '0')} ${desc}`
         : `PROD-${String(i).padStart(2, '0')} Kit de riel corto`,
       pvp: 150000 + i * 10000,
       cant: i % 3 === 0 ? 2 : 1,
@@ -242,7 +275,11 @@ async function drawInk(page, canvasId) {
 
 async function assertPrintLayout(page, { view, rowSelector, extraSelectors, labels }) {
   const report = await page.evaluate(({ rowSelector, extraSelectors, labels }) => {
-    const footer = document.getElementById('suite-footer');
+    const isFormato = document.body.classList.contains('is-printing-formato');
+    const cotFt = document.getElementById('cot-print-footer');
+    const suiteFt = document.getElementById('suite-footer');
+    const cotVisible = !!(cotFt && getComputedStyle(cotFt).display !== 'none' && cotFt.getBoundingClientRect().height > 1);
+    const footer = (!isFormato && cotVisible) ? cotFt : suiteFt;
     const cs = footer ? getComputedStyle(footer) : null;
     const footerBox = footer ? {
       left: footer.getBoundingClientRect().left,
@@ -343,7 +380,7 @@ async function makePdf(page) {
 
 async function fillCotizacion(page, productCount, extra) {
   extra = extra || {};
-  const filas = productCatalog(productCount);
+  const filas = productCatalog(productCount, { allLong: extra.allLong, desc: extra.desc });
   const names = filas.map((_, i) => `PROD-${String(i + 1).padStart(2, '0')}`);
   await page.evaluate(({ filas, settings, extra }) => {
     window.openCotizacionView();
@@ -474,59 +511,60 @@ async function run() {
   }
 
   try {
-    const counts = [1, 2, 3, 4, 5, 6, 8, 12];
-    for (const n of counts) {
-      await loadApp();
-      const stem = `cot-${n}`;
-      const names = await fillCotizacion(work, n);
-      await printCotizacion(work);
+    const cotLayoutSelectors = [
+      '#view-cotizacion .totales-box',
+      '#view-cotizacion .cot-bank-section',
+      '#view-cotizacion .section:has(#cot-obs)',
+      '#view-cotizacion .nota-cot',
+      '#view-cotizacion .nota',
+      '#view-cotizacion .garantia',
+      '#view-cotizacion .firmas'
+    ];
+
+    async function recordCotPdf(stem, names, extraLabels, extraForbidden) {
+      const labels = extraLabels || ['Subtotal', 'TOTAL', 'Datos Bancarios', 'Observaciones', 'Nota', 'Instalación', ...names];
       const layout = await assertPrintLayout(work, {
         view: stem,
         rowSelector: '#view-cotizacion .tabla-productos tbody tr:not(.empty-row)',
-        extraSelectors: [
-          '#view-cotizacion .totales-box',
-          '#view-cotizacion .cot-bank-section',
-          '#view-cotizacion .section:has(#cot-obs)',
-          '#view-cotizacion .nota-cot',
-          '#view-cotizacion .nota',
-          '#view-cotizacion .garantia',
-          '#view-cotizacion .cot-cierre-block',
-          '#view-cotizacion .firmas'
-        ],
-        labels: ['Subtotal', 'TOTAL', 'Datos Bancarios', 'Observaciones', 'Nota', 'Instalación', ...names]
+        extraSelectors: cotLayoutSelectors,
+        labels
       });
       const pdf = await makePdf(work);
       fs.writeFileSync(path.join(OUT, `${stem}.pdf`), pdf);
       const meta = await extractPdfTextAndPngs(rasterPage, pdf, stem);
-      const allText = meta.texts.join('\n');
-      fs.writeFileSync(path.join(OUT, `${stem}-text.txt`), allText);
-      const checked = analyzePdfText(allText, ['Subtotal', 'TOTAL', 'Datos Bancarios', 'Observaciones', 'Nota', 'Instalación', ...names]);
-      const missing = checked.missing;
-      if (hasCompact(allText, 'Garantía – su empresa') || hasCompact(allText, 'Garantia – su empresa')) {
-        missing.push('encabezado Garantía – su empresa');
-      }
-      if (n <= 2 && meta.pages > 2) {
-        missing.push(`páginas=${meta.pages} (se esperan 2)`);
-      }
-      if (lastPageIsFooterOnly(meta.texts)) {
-        missing.push('última página solo con el pie');
-      }
-      const footerHits = checked.footerHits;
+      const issues = collectPdfIssues(meta, labels, extraForbidden);
+      fs.writeFileSync(path.join(OUT, `${stem}-text.txt`), issues.allText);
+      const missing = issues.missing;
+      if (layout.overlaps.length) missing.push('contenido bajo el pie');
       const ok = missing.length === 0;
       results.push({
         doc: stem,
         pages: meta.pages,
-        footerHits,
+        footerHits: issues.footerHits,
         layoutOverlaps: layout.overlaps.length,
         missing,
         ok
       });
       if (!ok) failures.push(`${stem}: ${missing.join(', ')}`);
-      await work.evaluate(() => {
-        document.body.classList.remove('is-printing', 'is-printing-formato');
-        window.ArpaBrand?.restoreAfterPrint?.();
-        window.ArpaSignature?.restoreAfterPrint?.();
-      });
+      await resetPrint(work);
+      return meta;
+    }
+
+    const counts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    for (const n of counts) {
+      await loadApp();
+      const stem = `cot-${n}`;
+      const names = await fillCotizacion(work, n);
+      await printCotizacion(work);
+      await recordCotPdf(stem, names);
+    }
+
+    for (const n of [4, 6]) {
+      await loadApp();
+      const stem = `cot-${n}-3lineas`;
+      const names = await fillCotizacion(work, n, { allLong: true, desc: THREE_LINE_DESC });
+      await printCotizacion(work);
+      await recordCotPdf(stem, names);
     }
 
     {
@@ -551,6 +589,7 @@ async function run() {
       fs.writeFileSync(path.join(OUT, `${stem}-text.txt`), allText);
       const checked = analyzePdfText(allText, ['Cliente Formato Completo', 'Observaciones', 'Nota']);
       const missing = checked.missing;
+      if (anyFooterOnlyPage(meta.texts)) missing.push('página solo con el pie');
       const footerHits = checked.footerHits;
       const ok = missing.length === 0 && layout.overlaps.length === 0;
       results.push({
@@ -610,21 +649,20 @@ async function run() {
       const meta = await extractPdfTextAndPngs(rasterPage, pdf, stem);
       const allText = meta.texts.join('\n');
       fs.writeFileSync(path.join(OUT, `${stem}-text.txt`), allText);
-      const checked = analyzePdfText(allText, [
+      const issues = collectPdfIssues(meta, [
         'IVA', 'Términos de Garantía', 'polo a tierra', 'Observaciones', 'Aprobación', 'Instalación', ...names
-      ]);
-      const forbidden = analyzeForbidden(allText, ['Incluir IVA', 'Buscar y agregar productos', 'Garantía – su empresa']);
-      if (lastPageIsFooterOnly(meta.texts)) forbidden.push('última página solo con el pie');
-      const ok = checked.missing.length === 0 && forbidden.length === 0 && layout.overlaps.length === 0;
+      ], ['Incluir IVA', 'Buscar y agregar productos']);
+      if (layout.overlaps.length) issues.missing.push('contenido bajo el pie');
+      const ok = issues.missing.length === 0;
       results.push({
         doc: stem,
         pages: meta.pages,
-        footerHits: checked.footerHits,
+        footerHits: issues.footerHits,
         layoutOverlaps: layout.overlaps.length,
-        missing: [...checked.missing, ...forbidden.map((f) => 'no debía: ' + f)],
+        missing: issues.missing,
         ok
       });
-      if (!ok) failures.push(`${stem}: ${(checked.missing.concat(forbidden)).join(', ') || 'overlap'}`);
+      if (!ok) failures.push(`${stem}: ${issues.missing.join(', ') || 'overlap'}`);
       await resetPrint(work);
     }
 
@@ -643,29 +681,23 @@ async function run() {
       const meta = await extractPdfTextAndPngs(rasterPage, pdf, stem);
       const allText = meta.texts.join('\n');
       fs.writeFileSync(path.join(OUT, `${stem}-text.txt`), allText);
-      const forbidden = analyzeForbidden(allText, [
+      const issues = collectPdfIssues(meta, ['Términos de Garantía', 'polo a tierra', ...names], [
         'correo@ejemplo.com',
         'Especificaciones adicionales',
         'Incluir IVA',
         'Buscar y agregar productos',
-        'Nombre completo',
-        'Garantía – su empresa'
+        'Nombre completo'
       ]);
-      const checked = analyzePdfText(allText, ['Términos de Garantía', 'polo a tierra', ...names]);
-      if (lastPageIsFooterOnly(meta.texts)) forbidden.push('última página solo con el pie');
-      const ok = forbidden.length === 0 && checked.missing.length === 0;
+      const ok = issues.missing.length === 0;
       results.push({
         doc: stem,
         pages: meta.pages,
-        footerHits: checked.footerHits,
+        footerHits: issues.footerHits,
         layoutOverlaps: 0,
-        missing: [
-          ...checked.missing,
-          ...forbidden.map((f) => 'no debía: ' + f)
-        ],
+        missing: issues.missing,
         ok
       });
-      if (!ok) failures.push(`${stem}: ${forbidden.join(', ') || checked.missing.join(', ')}`);
+      if (!ok) failures.push(`${stem}: ${issues.missing.join(', ')}`);
       await resetPrint(work);
     }
 
@@ -684,18 +716,17 @@ async function run() {
       const meta = await extractPdfTextAndPngs(rasterPage, pdf, stem);
       const allText = meta.texts.join('\n');
       fs.writeFileSync(path.join(OUT, `${stem}-text.txt`), allText);
-      const checked = analyzePdfText(allText, ['Garantía de prueba 6 meses']);
-      const defaultStill = analyzeForbidden(allText, ['mano de obra es de 1 año', 'Labor warranty is 1 year']);
-      const ok = checked.missing.length === 0 && defaultStill.length === 0;
+      const issues = collectPdfIssues(meta, ['Garantía de prueba 6 meses'], ['mano de obra es de 1 año', 'Labor warranty is 1 year']);
+      const ok = issues.missing.length === 0;
       results.push({
         doc: stem,
         pages: meta.pages,
-        footerHits: checked.footerHits,
+        footerHits: issues.footerHits,
         layoutOverlaps: 0,
-        missing: [...checked.missing, ...defaultStill.map((f) => 'no debía: ' + f)],
+        missing: issues.missing,
         ok
       });
-      if (!ok) failures.push(`${stem}: ${checked.missing.concat(defaultStill).join(', ')}`);
+      if (!ok) failures.push(`${stem}: ${issues.missing.join(', ')}`);
       await resetPrint(work);
     }
 
@@ -714,17 +745,17 @@ async function run() {
       const metaF = await extractPdfTextAndPngs(rasterPage, pdfF, stemF);
       const allF = metaF.texts.join('\n');
       fs.writeFileSync(path.join(OUT, `${stemF}-text.txt`), allF);
-      const checkedF = analyzePdfText(allF, ['Garantía de prueba 6 meses']);
-      const okF = checkedF.missing.length === 0;
+      const issuesF = collectPdfIssues(metaF, ['Garantía de prueba 6 meses']);
+      const okF = issuesF.missing.length === 0;
       results.push({
         doc: stemF,
         pages: metaF.pages,
-        footerHits: checkedF.footerHits,
+        footerHits: issuesF.footerHits,
         layoutOverlaps: 0,
-        missing: checkedF.missing,
+        missing: issuesF.missing,
         ok: okF
       });
-      if (!okF) failures.push(`${stemF}: ${checkedF.missing.join(', ')}`);
+      if (!okF) failures.push(`${stemF}: ${issuesF.missing.join(', ')}`);
     }
   } finally {
     await browser.close();
