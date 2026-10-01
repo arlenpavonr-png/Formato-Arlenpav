@@ -39,7 +39,7 @@ describe('CSS de impresión: pie no tapa contenido', () => {
 
   it('CACHE_VERSION pide recarga tras PDF WhatsApp sin cortes', () => {
     const sw = fs.readFileSync(path.join(root, 'service-worker.js'), 'utf8');
-    assert.match(sw, /CACHE_VERSION = 'v20261002-pdf-whatsapp-1'/);
+    assert.match(sw, /CACHE_VERSION = 'v20261002-pdf-whatsapp-2'/);
   });
 
   it('el PDF de WhatsApp de la cotización usa Carta y cortes por bloques', () => {
@@ -52,6 +52,9 @@ describe('CSS de impresión: pie no tapa contenido', () => {
     assert.match(cot, /beginCotPdfExport/);
     assert.match(cot, /endCotPdfExport/);
     assert.match(cot, /marginBottom:\s*14/);
+    assert.match(fn, /\.header/);
+    assert.match(cot, /#cot-print-footer-local/);
+    assert.match(cot, /#334155/);
   });
 
   it('impresión oculta buscador, casilla IVA, placeholders y observaciones vacías', () => {

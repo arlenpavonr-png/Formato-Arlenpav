@@ -600,7 +600,26 @@
     'body.is-printing:not(.is-printing-formato) #view-cotizacion .tabla-productos thead th:last-child,',
     'body.is-printing:not(.is-printing-formato) #view-cotizacion .tabla-productos tbody td:last-child { display:none !important; }',
     'body.is-printing:not(.is-printing-formato) #cot-print-footer { display:block !important; background:#fff; border-top:1px solid #e2e8f0; margin-top:10px; }',
+    'body.is-printing:not(.is-printing-formato) #cot-print-footer-local,',
+    'body.is-printing:not(.is-printing-formato) #cot-print-footer .suite-footer-local { color:#334155 !important; font-size:10px !important; }',
+    'body.is-printing:not(.is-printing-formato) #cot-print-footer-global,',
+    'body.is-printing:not(.is-printing-formato) #cot-print-footer .suite-footer-global-text { color:#475569 !important; font-size:8pt !important; }',
     'body.is-printing:not(.is-printing-formato) .suite-footer { display:none !important; }',
+    'body.is-printing .header { flex-direction:column; align-items:center; text-align:center; gap:10px; padding:16px 24px 12px; }',
+    'body.is-printing .brand-logo-wrap { margin:0 auto; order:-1; max-width:180px; min-height:64px; padding:8px; }',
+    'body.is-printing .header #brand-logo { max-height:56px; }',
+    'body.is-printing .header-info, body.is-printing .header-meta { flex:none; width:100%; text-align:center; }',
+    'body.is-printing .header-meta .no-field { justify-content:center; }',
+    'body.is-printing #validation-badge,',
+    'body.is-printing .lang-switch,',
+    'body.is-printing .settings-btn,',
+    'body.is-printing #header-meta-formato,',
+    'body.is-printing #header-meta-cc,',
+    'body.is-printing .header button,',
+    'body.is-printing #sync-status-cot,',
+    'body.is-printing #sync-status-formato,',
+    'body.is-printing #sync-status-cc { display:none !important; }',
+    'body.is-printing #header-meta-cot { display:block !important; }',
     'body.is-printing #view-cotizacion .firma-canvas, body.is-printing #view-cotizacion .firma-print-img { height:72px !important; }',
     'body.is-printing #view-cotizacion .firma-box { padding:6px 8px; gap:4px; }',
     'body.is-printing #view-cotizacion .garantia-body { padding:8px 12px; gap:5px; }',
@@ -698,6 +717,71 @@
     });
   }
 
+  function replaceHeaderCotNumber() {
+    const input = document.getElementById('numero-cot');
+    if (!input || input.tagName !== 'INPUT' || !input.parentNode) return null;
+    const span = document.createElement('span');
+    span.className = 'pdf-valor pdf-valor-numero-cot';
+    span.textContent = input.value || '';
+    span.style.cssText = 'display:inline-block;min-width:80px;padding:4px 6px;color:#fff;font-size:12px;font-weight:600;text-align:center;font-family:\'DM Sans\',sans-serif;';
+    const parent = input.parentNode;
+    parent.replaceChild(span, input);
+    return { el: input, parent, span };
+  }
+
+  async function captureElementCanvas(html2canvas, el, opts) {
+    opts = opts || {};
+    const w = Math.max(1, Math.ceil(opts.width || el.scrollWidth || el.getBoundingClientRect().width));
+    const h = Math.max(1, Math.ceil(opts.height || el.scrollHeight || el.getBoundingClientRect().height));
+    return html2canvas(el, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: opts.backgroundColor == null ? '#ffffff' : opts.backgroundColor,
+      width: w,
+      height: h,
+      windowWidth: w,
+      windowHeight: h,
+      scrollX: 0,
+      scrollY: 0
+    });
+  }
+
+  function stackCanvases(parts, targetW) {
+    const scaled = parts.map((c) => {
+      const h = c.height * (targetW / c.width);
+      return { canvas: c, height: h };
+    });
+    const totalH = Math.max(1, Math.ceil(scaled.reduce((s, p) => s + p.height, 0)));
+    const out = document.createElement('canvas');
+    out.width = targetW;
+    out.height = totalH;
+    const ctx = out.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, targetW, totalH);
+    let y = 0;
+    const tops = [];
+    scaled.forEach((p) => {
+      tops.push(y);
+      ctx.drawImage(p.canvas, 0, y, targetW, p.height);
+      y += p.height;
+    });
+    return { canvas: out, tops, heights: scaled.map((p) => p.height) };
+  }
+
+  function stampSearchableHeaderText(pdf, lines) {
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(8);
+    pdf.setTextColor(255, 255, 255);
+    let y = 5;
+    (lines || []).forEach((line) => {
+      const text = String(line || '').replace(/\s+/g, ' ').trim();
+      if (!text) return;
+      pdf.text(text, COT_PDF_LETTER.marginX, y);
+      y += 3.2;
+    });
+  }
+
   function buildCotShareMessage() {
     const nombre = (document.getElementById('cot-nombre')?.value.trim() || 'Cliente').split(' ')[0];
     const numero = document.getElementById('numero-cot')?.value.trim() || '—';
@@ -713,39 +797,73 @@
 
     const ctx = beginCotPdfExport();
     const printStyle = injectCotWhatsAppPrintCss();
+    let numeroSwap = null;
     try {
       if (document.fonts?.ready) await document.fonts.ready;
       viewRoot.scrollTop = 0;
       window.scrollTo(0, 0);
+      numeroSwap = replaceHeaderCotNumber();
       await waitForCotPdfLayout();
 
-      const measured = collectCotPdfBreakRanges(viewRoot);
-      const canvas = await html2canvas(viewRoot, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        width: Math.ceil(viewRoot.scrollWidth),
-        height: Math.ceil(measured.rootHeight),
-        windowWidth: Math.ceil(viewRoot.scrollWidth),
-        windowHeight: Math.ceil(measured.rootHeight),
-        scrollX: 0,
-        scrollY: 0
-      });
+      const headerEl = document.querySelector('.page > .header') || document.querySelector('.header');
+      const goldEl = document.querySelector('.page > .gold-bar');
+      const pageEl = document.querySelector('.page');
+      const captureW = Math.max(
+        320,
+        Math.ceil((pageEl && pageEl.clientWidth) || viewRoot.scrollWidth || viewRoot.getBoundingClientRect().width)
+      );
 
-      const scaleY = canvas.height / measured.rootHeight;
+      const measured = collectCotPdfBreakRanges(viewRoot);
+      const viewCanvas = await captureElementCanvas(html2canvas, viewRoot, {
+        width: captureW,
+        height: measured.rootHeight,
+        backgroundColor: '#ffffff'
+      });
+      const headerCanvas = headerEl
+        ? await captureElementCanvas(html2canvas, headerEl, {
+          width: captureW,
+          height: Math.ceil(headerEl.scrollHeight || headerEl.getBoundingClientRect().height),
+          backgroundColor: '#0f2044'
+        })
+        : null;
+      const goldCanvas = goldEl
+        ? await captureElementCanvas(html2canvas, goldEl, {
+          width: captureW,
+          height: Math.max(4, Math.ceil(goldEl.getBoundingClientRect().height)),
+          backgroundColor: '#d97706'
+        })
+        : null;
+
+      const parts = [];
+      if (headerCanvas) parts.push(headerCanvas);
+      if (goldCanvas) parts.push(goldCanvas);
+      parts.push(viewCanvas);
+      const stacked = stackCanvases(parts, viewCanvas.width);
+      const canvas = stacked.canvas;
+      const headerBlockH = (headerCanvas ? stacked.heights[0] : 0)
+        + (goldCanvas ? stacked.heights[headerCanvas ? 1 : 0] : 0);
+
+      const scaleY = viewCanvas.height / measured.rootHeight;
+      const viewOffset = headerBlockH;
       const toCanvas = (r) => ({
         name: r.name,
-        top: r.top * scaleY,
-        bottom: r.bottom * scaleY
+        top: r.top * scaleY + viewOffset,
+        bottom: r.bottom * scaleY + viewOffset
       });
       const atomicPx = measured.atomic.map(toCanvas);
+      if (headerBlockH > 1) {
+        atomicPx.unshift({ name: 'encabezado', top: 0, bottom: headerBlockH });
+      }
       const extrasPx = measured.extras.map(toCanvas);
 
       const contentW = COT_PDF_LETTER.widthMm - COT_PDF_LETTER.marginX * 2;
       const contentH = COT_PDF_LETTER.heightMm - COT_PDF_LETTER.marginTop - COT_PDF_LETTER.marginBottom;
       const pageCanvasH = contentH * (canvas.width / contentW);
       const starts = computeCanvasPageStarts(atomicPx, pageCanvasH, canvas.height);
+
+      const company = (document.getElementById('brand-company-name')?.textContent || '').trim();
+      const contact = (document.getElementById('brand-company-contact')?.innerText || '').replace(/\s+/g, ' ').trim();
+      const numero = (numeroSwap?.el?.value || document.querySelector('.pdf-valor-numero-cot')?.textContent || document.getElementById('numero-cot')?.value || '').trim();
 
       const pdf = new jsPDF({ unit: 'mm', format: 'letter', orientation: 'portrait' });
       for (let i = 0; i < starts.length; i += 1) {
@@ -762,6 +880,7 @@
         const destH = srcH * contentW / canvas.width;
         if (i > 0) pdf.addPage();
         pdf.addImage(slice.toDataURL('image/jpeg', 0.92), 'JPEG', COT_PDF_LETTER.marginX, COT_PDF_LETTER.marginTop, contentW, destH);
+        if (i === 0) stampSearchableHeaderText(pdf, [company, contact, numero]);
       }
 
       const footer = extrasPx.find((r) => r.name === 'pie');
@@ -786,20 +905,25 @@
         ranges: atomicPx,
         extras: extrasPx,
         footerOnlyPages,
+        headerPx: headerBlockH,
         prep: {
           buscarHidden: window.getComputedStyle(document.getElementById('cot-buscar-section') || document.body).display === 'none',
           ivaHidden: window.getComputedStyle(document.querySelector('#view-cotizacion .iva-toggle') || document.body).display === 'none',
           suiteFooterHidden: window.getComputedStyle(document.getElementById('suite-footer') || document.body).display === 'none',
-          cotFooterShown: window.getComputedStyle(document.getElementById('cot-print-footer') || document.body).display !== 'none'
+          cotFooterShown: window.getComputedStyle(document.getElementById('cot-print-footer') || document.body).display !== 'none',
+          headerCaptured: headerBlockH > 40
         }
       };
 
       const blob = pdf.output('blob');
-      const numero = document.getElementById('numero-cot')?.value.trim() || 'Cotizacion';
+      const numeroArchivo = numero || document.getElementById('numero-cot')?.value.trim() || 'Cotizacion';
       const cliente = document.getElementById('cot-nombre')?.value.trim() || 'Cliente';
-      const filename = `Cotizacion_${sanitizeCotFilenamePart(numero)}_${sanitizeCotFilenamePart(cliente)}.pdf`;
+      const filename = `Cotizacion_${sanitizeCotFilenamePart(numeroArchivo)}_${sanitizeCotFilenamePart(cliente)}.pdf`;
       return new File([blob], filename, { type: 'application/pdf' });
     } finally {
+      if (numeroSwap?.parent && numeroSwap.span?.parentNode === numeroSwap.parent) {
+        numeroSwap.parent.replaceChild(numeroSwap.el, numeroSwap.span);
+      }
       printStyle?.remove();
       endCotPdfExport(ctx);
     }

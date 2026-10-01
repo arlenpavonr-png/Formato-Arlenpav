@@ -146,7 +146,8 @@ function collectPdfIssues(meta, labels, extraForbidden) {
   return { allText, footerHits: checked.footerHits, missing };
 }
 
-function whatsappPdfIssues(debug, pageSize) {
+function whatsappPdfIssues(debug, pageSize, extra) {
+  extra = extra || {};
   const missing = [];
   if (!debug) missing.push('sin meta de cortes');
   const wMm = debug?.pageWidthMm;
@@ -172,6 +173,11 @@ function whatsappPdfIssues(debug, pageSize) {
   if (debug?.prep && !debug.prep.ivaHidden) missing.push('casilla IVA visible');
   if (debug?.prep && !debug.prep.suiteFooterHidden) missing.push('pie global visible');
   if (debug?.prep && !debug.prep.cotFooterShown) missing.push('pie de cotización oculto');
+  if (debug && debug.headerPx != null && debug.headerPx < 40) missing.push('encabezado no capturado');
+  if (debug?.prep && debug.prep.headerCaptured === false) missing.push('encabezado no capturado');
+  (extra.labels || []).forEach((t) => {
+    if (!hasCompact(extra.allText || '', t)) missing.push('falta ' + t);
+  });
   return missing;
 }
 
@@ -836,7 +842,12 @@ async function run() {
       const pdf = Buffer.from(payload.b64, 'base64');
       fs.writeFileSync(path.join(OUT, `${stem}.pdf`), pdf);
       const meta = await extractPdfTextAndPngs(rasterPage, pdf, stem);
-      const missing = whatsappPdfIssues(payload.debug, { width: meta.width, height: meta.height });
+      const allText = (meta.texts || []).join('\n');
+      fs.writeFileSync(path.join(OUT, `${stem}-text.txt`), allText);
+      const missing = whatsappPdfIssues(payload.debug, { width: meta.width, height: meta.height }, {
+        allText,
+        labels: [SETTINGS.companyName, SETTINGS.nit, 'AP-TEST-' + extraFill.count]
+      });
       if (!names.length) missing.push('sin productos');
       const ok = missing.length === 0;
       results.push({
