@@ -37,9 +37,24 @@ describe('CSS de impresión: pie no tapa contenido', () => {
     assert.doesNotMatch(printCss, /body\.is-printing-formato::before/);
   });
 
-  it('CACHE_VERSION pide recarga tras cotización perfecta', () => {
+  it('CACHE_VERSION pide recarga tras PDF WhatsApp sin cortes', () => {
     const sw = fs.readFileSync(path.join(root, 'service-worker.js'), 'utf8');
-    assert.match(sw, /CACHE_VERSION = 'v20261001-cot-perfecta-3'/);
+    assert.match(sw, /CACHE_VERSION = 'v20261002-pdf-whatsapp-2'/);
+  });
+
+  it('el PDF de WhatsApp de la cotización usa Carta y cortes por bloques', () => {
+    const cot = fs.readFileSync(path.join(root, 'js/arpa-cotizacion.js'), 'utf8');
+    const fn = cot.slice(cot.indexOf('async function generarCotPdfFile'), cot.indexOf('function guardarCotPDF'));
+    assert.match(fn, /format:\s*['"]letter['"]/);
+    assert.doesNotMatch(fn, /format:\s*['"]a4['"]/);
+    assert.match(cot, /function computeCanvasPageStarts/);
+    assert.match(cot, /collectCotPdfBreakRanges/);
+    assert.match(cot, /beginCotPdfExport/);
+    assert.match(cot, /endCotPdfExport/);
+    assert.match(cot, /marginBottom:\s*14/);
+    assert.match(fn, /\.header/);
+    assert.match(cot, /#cot-print-footer-local/);
+    assert.match(cot, /#334155/);
   });
 
   it('impresión oculta buscador, casilla IVA, placeholders y observaciones vacías', () => {

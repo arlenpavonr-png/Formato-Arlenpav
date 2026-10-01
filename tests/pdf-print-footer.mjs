@@ -1,6 +1,5 @@
 /**
- * Genera PDFs Letter con Chromium (media print + is-printing) y rasteriza cada página.
- * Prioridad: pie en flujo normal. La ruta WhatsApp/html2canvas queda para otro PR.
+ * Genera PDFs Letter (impresión Chromium y ruta WhatsApp/html2canvas) y rasteriza cada página.
  */
 import http from 'node:http';
 import fs from 'node:fs';
@@ -147,8 +146,39 @@ function collectPdfIssues(meta, labels, extraForbidden) {
   return { allText, footerHits: checked.footerHits, missing };
 }
 
-function analyzeForbidden(allText, needles) {
-  return needles.filter((n) => hasCompact(allText, n));
+function whatsappPdfIssues(debug, pageSize, extra) {
+  extra = extra || {};
+  const missing = [];
+  if (!debug) missing.push('sin meta de cortes');
+  const wMm = debug?.pageWidthMm;
+  const hMm = debug?.pageHeightMm;
+  if (wMm != null && (Math.abs(wMm - 215.9) > 0.8 || Math.abs(hMm - 279.4) > 0.8)) {
+    missing.push(`jsPDF=${wMm}x${hMm}mm (se espera Carta)`);
+  }
+  if (pageSize && (Math.abs(pageSize.width - 612) > 4 || Math.abs(pageSize.height - 792) > 4)) {
+    missing.push(`página=${Math.round(pageSize.width)}x${Math.round(pageSize.height)}pt (se espera Carta 612x792)`);
+  }
+  const eps = 2.5;
+  const pageH = debug?.pageCanvasH || 0;
+  (debug?.starts || []).slice(1).forEach((cut) => {
+    (debug?.ranges || []).forEach((r) => {
+      const h = r.bottom - r.top;
+      if (cut > r.top + eps && cut < r.bottom - eps && h <= pageH + eps) {
+        missing.push(`corte parte ${r.name}`);
+      }
+    });
+  });
+  if (debug?.footerOnlyPages?.length) missing.push('página solo con el pie');
+  if (debug?.prep && !debug.prep.buscarHidden) missing.push('buscador visible');
+  if (debug?.prep && !debug.prep.ivaHidden) missing.push('casilla IVA visible');
+  if (debug?.prep && !debug.prep.suiteFooterHidden) missing.push('pie global visible');
+  if (debug?.prep && !debug.prep.cotFooterShown) missing.push('pie de cotización oculto');
+  if (debug && debug.headerPx != null && debug.headerPx < 40) missing.push('encabezado no capturado');
+  if (debug?.prep && debug.prep.headerCaptured === false) missing.push('encabezado no capturado');
+  (extra.labels || []).forEach((t) => {
+    if (!hasCompact(extra.allText || '', t)) missing.push('falta ' + t);
+  });
+  return missing;
 }
 
 async function resetPrint(page) {
@@ -338,12 +368,19 @@ async function extractPdfTextAndPngs(page, pdfBuffer, stem) {
     window.__pdfDoc = doc;
     window.__pdfjs = pdfjs;
     const texts = [];
+    let width = 0;
+    let height = 0;
     for (let i = 1; i <= doc.numPages; i += 1) {
       const p = await doc.getPage(i);
       const content = await p.getTextContent();
       texts.push(content.items.map((it) => it.str).join(' '));
+      if (i === 1) {
+        const vp = p.getViewport({ scale: 1 });
+        width = vp.width;
+        height = vp.height;
+      }
     }
-    return { pages: doc.numPages, texts };
+    return { pages: doc.numPages, texts, width, height };
   }, { b64, pdfjsPath, workerPath });
 
   for (let i = 1; i <= meta.pages; i += 1) {
@@ -506,6 +543,7 @@ async function run() {
   work.on('dialog', (d) => d.dismiss());
 
   async function loadApp() {
+    await work.emulateMedia({ media: 'screen' });
     await work.goto(`${BASE}/index.html`, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await unlockApp(work);
   }
@@ -757,6 +795,85 @@ async function run() {
       });
       if (!okF) failures.push(`${stemF}: ${issuesF.missing.join(', ')}`);
     }
+
+    async function recordWhatsAppPdf(stem, extraFill) {
+      extraFill = extraFill || {};
+      await loadApp();
+      const names = await fillCotizacion(work, extraFill.count, {
+        iva: extraFill.iva !== false,
+        allLong: extraFill.allLong,
+        desc: extraFill.desc
+      });
+      await work.waitForFunction(() => typeof window.html2canvas === 'function' && typeof window.ArpaCotizacion?.generarCotPdfFile === 'function', null, { timeout: 20000 });
+      work.setDefaultTimeout(180000);
+      const payload = await work.evaluate(async () => {
+        try {
+          const file = await window.ArpaCotizacion.generarCotPdfFile();
+          if (!file) return { error: 'generarCotPdfFile devolvió null' };
+          const buf = await file.arrayBuffer();
+          const bytes = new Uint8Array(buf);
+          let bin = '';
+          const chunk = 0x8000;
+          for (let i = 0; i < bytes.length; i += chunk) {
+            bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+          }
+          return {
+            b64: btoa(bin),
+            name: file.name,
+            debug: window.__arpaCotWhatsAppPdf || null
+          };
+        } catch (err) {
+          return { error: String(err && err.stack || err && err.message || err) };
+        }
+      });
+      if (!payload || payload.error || !payload.b64) {
+        const why = payload?.error || 'no se generó el File';
+        results.push({
+          doc: stem,
+          pages: 0,
+          footerHits: 0,
+          layoutOverlaps: 0,
+          missing: [why],
+          ok: false
+        });
+        failures.push(`${stem}: ${why}`);
+        return;
+      }
+      const pdf = Buffer.from(payload.b64, 'base64');
+      fs.writeFileSync(path.join(OUT, `${stem}.pdf`), pdf);
+      const meta = await extractPdfTextAndPngs(rasterPage, pdf, stem);
+      const allText = (meta.texts || []).join('\n');
+      fs.writeFileSync(path.join(OUT, `${stem}-text.txt`), allText);
+      const missing = whatsappPdfIssues(payload.debug, { width: meta.width, height: meta.height }, {
+        allText,
+        labels: [SETTINGS.companyName, SETTINGS.nit, 'AP-TEST-' + extraFill.count]
+      });
+      if (!names.length) missing.push('sin productos');
+      const ok = missing.length === 0;
+      results.push({
+        doc: stem,
+        pages: meta.pages,
+        footerHits: payload.debug?.prep?.cotFooterShown ? 1 : 0,
+        layoutOverlaps: (payload.debug?.footerOnlyPages || []).length,
+        missing,
+        ok,
+        pagePt: `${Math.round(meta.width || 0)}x${Math.round(meta.height || 0)}`
+      });
+      if (!ok) failures.push(`${stem}: ${missing.join(', ')}`);
+    }
+
+    const waCounts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    for (const n of waCounts) {
+      await recordWhatsAppPdf(`whatsapp-cot-${n}`, { count: n, iva: true });
+    }
+    for (const n of [4, 6]) {
+      await recordWhatsAppPdf(`whatsapp-cot-${n}-3lineas`, {
+        count: n,
+        iva: true,
+        allLong: true,
+        desc: THREE_LINE_DESC
+      });
+    }
   } finally {
     await browser.close();
     await new Promise((r) => server.close(r));
@@ -765,9 +882,9 @@ async function run() {
   const summary = { ok: failures.length === 0, failures, results };
   fs.writeFileSync(path.join(OUT, 'results.json'), JSON.stringify(summary, null, 2));
   const lines = [
-    'Resultado pruebas PDF (Letter + media print + is-printing)',
+    'Resultado pruebas PDF (Letter: Guardar PDF + WhatsApp html2canvas)',
     summary.ok ? 'OK: ningún contenido quedó bajo el pie; el texto del pie aparece una vez.' : 'FALLÓ: ' + failures.join(' | '),
-    ...results.map((r) => `${r.doc}: páginas=${r.pages} pie=${r.footerHits} overlaps=${r.layoutOverlaps} ${r.ok ? 'OK' : 'FAIL ' + r.missing.join(',')}`)
+    ...results.map((r) => `${r.doc}: páginas=${r.pages} pie=${r.footerHits} overlaps=${r.layoutOverlaps}${r.pagePt ? ' size=' + r.pagePt : ''} ${r.ok ? 'OK' : 'FAIL ' + r.missing.join(',')}`)
   ];
   fs.writeFileSync(path.join(OUT, 'RESULTADO.txt'), lines.join('\n') + '\n');
   console.log(lines.join('\n'));
