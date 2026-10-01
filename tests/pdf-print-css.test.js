@@ -37,8 +37,46 @@ describe('CSS de impresión: pie no tapa contenido', () => {
     assert.doesNotMatch(printCss, /body\.is-printing-formato::before/);
   });
 
-  it('CACHE_VERSION pide recarga tras el arreglo del pie', () => {
+  it('CACHE_VERSION pide recarga tras cotización perfecta', () => {
     const sw = fs.readFileSync(path.join(root, 'service-worker.js'), 'utf8');
-    assert.match(sw, /CACHE_VERSION = 'v20261001-pdf-pie-1'/);
+    assert.match(sw, /CACHE_VERSION = 'v20261001-cot-perfecta-3'/);
+  });
+
+  it('impresión oculta buscador, casilla IVA, placeholders y observaciones vacías', () => {
+    assert.match(printCss, /#cot-buscar-section/);
+    assert.match(printCss, /\.iva-toggle/);
+    assert.match(printCss, /::placeholder/);
+    assert.match(printCss, /print-hide-empty/);
+    assert.match(printCss, /cot-obs:placeholder-shown/);
+  });
+
+  it('el cierre de cotización no evita saltos de página en bloque', () => {
+    assert.doesNotMatch(printCss, /\.cot-cierre-block\s*\{[^}]*break-inside:\s*avoid/s);
+    assert.doesNotMatch(printCss, /\.cot-cierre-block\s*\{[^}]*page-break-inside:\s*avoid/s);
+    assert.match(printCss, /\.totales-box\s*\{[^}]*break-inside:\s*avoid/s);
+    assert.match(printCss, /\.cot-bank-section/);
+    assert.match(printCss, /\.garantia/);
+    assert.match(printCss, /\.nota-cot/);
+    assert.match(printCss, /\.firmas/);
+  });
+
+  it('en Cotización el pie de impresión va con las firmas y el pie global se oculta', () => {
+    assert.match(html, /id="cot-print-footer"/);
+    assert.match(html, /cot-firmas-print-block/);
+    assert.match(printCss, /body\.is-printing:not\(\.is-printing-formato\) \.suite-footer/);
+    assert.match(printCss, /body\.is-printing:not\(\.is-printing-formato\) #cot-print-footer/);
+    assert.match(printCss, /\.cot-firmas-print-block\s*\{[^}]*break-inside:\s*avoid/s);
+  });
+});
+
+describe('Fechas de documentos en hora local', () => {
+  it('cotización y cuenta de cobro no usan toISOString para la fecha visible', () => {
+    const cot = fs.readFileSync(path.join(root, 'js/arpa-cotizacion.js'), 'utf8');
+    const cc = fs.readFileSync(path.join(root, 'js/arpa-cuenta-cobro.js'), 'utf8');
+    const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+    assert.doesNotMatch(cot, /toISOString/);
+    assert.doesNotMatch(cc, /toISOString/);
+    assert.doesNotMatch(html, /toISOString\(\)\.slice\(0,\s*10\)/);
+    assert.doesNotMatch(html, /toISOString\(\)\.split\('T'\)/);
   });
 });

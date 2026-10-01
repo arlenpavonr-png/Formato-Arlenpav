@@ -389,11 +389,11 @@
     const hoy = new Date();
     const em = document.getElementById('cc-fecha-emision');
     const ven = document.getElementById('cc-fecha-vencimiento');
-    if (em) em.value = hoy.toISOString().split('T')[0];
+    const toLocal = global.fechaLocalISO;
+    if (em) em.value = toLocal(hoy);
     if (ven) {
-      const v = new Date(hoy);
-      v.setDate(v.getDate() + 15);
-      ven.value = v.toISOString().split('T')[0];
+      const v = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 15);
+      ven.value = toLocal(v);
     }
   }
 

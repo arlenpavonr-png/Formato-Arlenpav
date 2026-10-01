@@ -222,3 +222,16 @@ describe('Modo Demo backup/restore', () => {
     assert.ok(localStorage.getItem(DEMO_BACKUP_SETTINGS_KEY).includes('AUTOMATISMOSARLENPAV'));
   });
 });
+
+describe('fechaLocalISO', () => {
+  it('devuelve AAAA-MM-DD con año/mes/día locales, no UTC', () => {
+    const d = new Date(2026, 8, 30, 20, 30, 0);
+    assert.equal(brand.fechaLocalISO(d), '2026-09-30');
+  });
+
+  it('suma días de validez en calendario local', () => {
+    const hoy = new Date(2026, 8, 30, 20, 30, 0);
+    const hasta = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 15);
+    assert.equal(brand.fechaLocalISO(hasta), '2026-10-15');
+  });
+});

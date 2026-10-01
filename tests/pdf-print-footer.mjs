@@ -17,6 +17,9 @@ const BASE = `http://127.0.0.1:${PORT}`;
 const LONG_DESC =
   'Motor corredizo 1500 kg para portón residencial de 6 metros con riel de aluminio, fin de carrera y dos controles. Incluye configuración de fuerza y prueba en sitio.';
 
+const THREE_LINE_DESC =
+  'Motor corredizo 1500 kg para portón residencial de 6 metros con riel de aluminio y fin de carrera. Incluye dos controles remotos, configuración de fuerza en sitio y prueba de apertura. Garantía de instalación sujeta a polo a tierra y uso según manual del fabricante.';
+
 const SETTINGS = {
   companyName: 'Puertas del Norte SAS',
   nit: '900.111.222-3',
@@ -102,14 +105,136 @@ function analyzePdfText(allText, labels) {
   return { footerHits, missing };
 }
 
-function productCatalog(count) {
+function pageIsFooterOnly(pageText) {
+  const hasFooter = hasCompact(pageText, 'Generado con ARPA Suite')
+    || hasCompact(pageText, 'ARPA Technology Global');
+  const hasBody = hasCompact(pageText, 'Aprobado')
+    || hasCompact(pageText, 'Elaborado')
+    || hasCompact(pageText, 'Aprobación')
+    || hasCompact(pageText, 'PROD-')
+    || hasCompact(pageText, 'Subtotal')
+    || hasCompact(pageText, 'TOTAL')
+    || hasCompact(pageText, 'Términos de Garantía')
+    || hasCompact(pageText, 'Observaciones')
+    || hasCompact(pageText, 'Datos Bancarios')
+    || hasCompact(pageText, 'Instalación');
+  return hasFooter && !hasBody;
+}
+
+function anyFooterOnlyPage(texts) {
+  if (!texts || texts.length < 2) return false;
+  return texts.some(pageIsFooterOnly);
+}
+
+function lastPageIsFooterOnly(texts) {
+  if (!texts || texts.length < 2) return false;
+  return pageIsFooterOnly(texts[texts.length - 1] || '');
+}
+
+function collectPdfIssues(meta, labels, extraForbidden) {
+  const allText = meta.texts.join('\n');
+  const checked = analyzePdfText(allText, labels);
+  const missing = checked.missing.slice();
+  if (hasCompact(allText, 'Garantía – su empresa') || hasCompact(allText, 'Garantia – su empresa')) {
+    missing.push('encabezado Garantía – su empresa');
+  }
+  if (anyFooterOnlyPage(meta.texts) || lastPageIsFooterOnly(meta.texts)) {
+    missing.push('página solo con el pie');
+  }
+  (extraForbidden || []).forEach((n) => {
+    if (hasCompact(allText, n)) missing.push('no debía: ' + n);
+  });
+  return { allText, footerHits: checked.footerHits, missing };
+}
+
+function analyzeForbidden(allText, needles) {
+  return needles.filter((n) => hasCompact(allText, n));
+}
+
+async function resetPrint(page) {
+  await page.evaluate(() => {
+    document.body.classList.remove('is-printing', 'is-printing-formato');
+    window.ArpaBrand?.restoreAfterPrint?.();
+    window.ArpaSignature?.restoreAfterPrint?.();
+    window.ArpaI18n?.restorePdfSpanish?.();
+  });
+}
+
+async function assertBogotaDates(browser, clockIso, expected) {
+  const context = await browser.newContext({
+    timezoneId: 'America/Bogota',
+    viewport: { width: 1280, height: 900 }
+  });
+  await context.addInitScript((settings) => {
+    try {
+      localStorage.setItem('arpa_suite_license_code', 'ARPA-PRO-PDFTEST');
+      localStorage.setItem('arpa_suite_license_plan', 'PRO');
+      localStorage.setItem('arpa_suite_license_vencimiento', '2099-12-31');
+      localStorage.setItem('arpa_suite_had_paid_license', '1');
+      localStorage.setItem('arpa_suite_settings_configured', 'true');
+      localStorage.setItem('arpa_suite_user_settings', JSON.stringify(settings));
+      localStorage.setItem('arpa_onboarding', 'true');
+      localStorage.setItem('arpa_trial_captured', 'true');
+      localStorage.setItem('arpa_active_oficios', JSON.stringify(['automatismos']));
+    } catch (e) { /* ignore */ }
+    document.documentElement.classList.add('license-ok');
+    document.addEventListener('DOMContentLoaded', () => {
+      document.documentElement.classList.add('license-ok');
+      const style = document.createElement('style');
+      style.textContent = '#license-gate,#onboarding-gate,#trial-capture-gate{display:none!important}html .page,html .main-menu,html .settings-overlay{visibility:visible!important}';
+      document.head.appendChild(style);
+    });
+  }, SETTINGS);
+  await context.route('**/*script.google.com/**', (route) => route.abort());
+  await context.route('**/service-worker.js', (route) => route.abort());
+  const page = await context.newPage();
+  page.on('dialog', (d) => d.dismiss());
+  if (page.clock && typeof page.clock.install === 'function') {
+    await page.clock.install({ time: new Date(clockIso) });
+  }
+  await page.goto(`${BASE}/index.html`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await unlockApp(page);
+  const info = await page.evaluate(() => {
+    const hoy = new Date();
+    const cotFechaEl = document.getElementById('cot-fecha');
+    const cotValidezEl = document.getElementById('cot-validez');
+    if (cotFechaEl) cotFechaEl.value = '';
+    if (cotValidezEl) cotValidezEl.value = '';
+    if (cotFechaEl) cotFechaEl.value = window.fechaLocalISO(hoy);
+    if (cotValidezEl) {
+      const v = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 15);
+      cotValidezEl.value = window.fechaLocalISO(v);
+    }
+    window.ArpaCuentaCobro?.limpiarFormulario?.();
+    return {
+      local: window.fechaLocalISO(hoy),
+      utc: hoy.toISOString().slice(0, 10),
+      cot: document.getElementById('cot-fecha')?.value || '',
+      cc: document.getElementById('cc-fecha-emision')?.value || '',
+      hours: hoy.getHours(),
+      minutes: hoy.getMinutes()
+    };
+  });
+  await context.close();
+  if (info.cot !== expected || info.cc !== expected || info.local !== expected) {
+    throw new Error(
+      `fecha ${clockIso}: local=${info.local} cot=${info.cot} cc=${info.cc} utc=${info.utc} reloj=${info.hours}:${String(info.minutes).padStart(2, '0')} esperado=${expected}`
+    );
+  }
+  return info;
+}
+
+function productCatalog(count, options) {
+  options = options || {};
+  const desc = options.desc || LONG_DESC;
+  const allLong = !!options.allLong;
   const filas = [];
   for (let i = 1; i <= count; i += 1) {
-    const long = i === 2 || i === 4 || i === count;
+    const long = allLong || i === 2 || i === 4 || i === count;
     filas.push({
       cod: `P-${String(i).padStart(2, '0')}`,
       nom: long
-        ? `PROD-${String(i).padStart(2, '0')} ${LONG_DESC}`
+        ? `PROD-${String(i).padStart(2, '0')} ${desc}`
         : `PROD-${String(i).padStart(2, '0')} Kit de riel corto`,
       pvp: 150000 + i * 10000,
       cant: i % 3 === 0 ? 2 : 1,
@@ -150,7 +275,11 @@ async function drawInk(page, canvasId) {
 
 async function assertPrintLayout(page, { view, rowSelector, extraSelectors, labels }) {
   const report = await page.evaluate(({ rowSelector, extraSelectors, labels }) => {
-    const footer = document.getElementById('suite-footer');
+    const isFormato = document.body.classList.contains('is-printing-formato');
+    const cotFt = document.getElementById('cot-print-footer');
+    const suiteFt = document.getElementById('suite-footer');
+    const cotVisible = !!(cotFt && getComputedStyle(cotFt).display !== 'none' && cotFt.getBoundingClientRect().height > 1);
+    const footer = (!isFormato && cotVisible) ? cotFt : suiteFt;
     const cs = footer ? getComputedStyle(footer) : null;
     const footerBox = footer ? {
       left: footer.getBoundingClientRect().left,
@@ -249,10 +378,11 @@ async function makePdf(page) {
   });
 }
 
-async function fillCotizacion(page, productCount) {
-  const filas = productCatalog(productCount);
+async function fillCotizacion(page, productCount, extra) {
+  extra = extra || {};
+  const filas = productCatalog(productCount, { allLong: extra.allLong, desc: extra.desc });
   const names = filas.map((_, i) => `PROD-${String(i + 1).padStart(2, '0')}`);
-  await page.evaluate(({ filas, settings }) => {
+  await page.evaluate(({ filas, settings, extra }) => {
     window.openCotizacionView();
     window.ArpaCotizacion.loadCotizacion({
       numero: 'AP-TEST-' + filas.length,
@@ -261,21 +391,28 @@ async function fillCotizacion(page, productCount) {
       fecha: '2026-09-30',
       nit: '900.111.222-3',
       tel: '3001234567',
-      email: 'cliente@test.com',
+      email: extra.email === undefined ? 'cliente@test.com' : extra.email,
       filas,
       cobros: [{ desc: 'Instalación', nom: 'Instalación', value: 180000, pvp: 180000, userEdited: true }]
     });
     const obs = document.getElementById('cot-obs');
-    if (obs) obs.value = 'Observación de prueba: revisar riel y fin de carrera en sitio.';
+    if (obs) {
+      obs.value = extra.obs === undefined
+        ? 'Observación de prueba: revisar riel y fin de carrera en sitio.'
+        : extra.obs;
+    }
+    const iva = document.getElementById('iva-check-cot');
+    if (iva) iva.checked = !!extra.iva;
     const elab = document.getElementById('cot-elaborado-nombre');
     if (elab) elab.value = settings.technicianName;
     const tel = document.getElementById('cot-elaborado-tel');
     if (tel) tel.value = settings.phone;
     const firmaCliente = document.querySelector('#view-cotizacion .firma-name');
-    if (firmaCliente) firmaCliente.value = 'Cliente PDF Test';
+    if (firmaCliente) firmaCliente.value = extra.firmaCliente === undefined ? 'Cliente PDF Test' : extra.firmaCliente;
     window.applyUserSettingsToUI?.();
     window.ArpaCotizacion.renderTablaCot();
-  }, { filas, settings: SETTINGS });
+    window.ArpaCotizacion.recalcularCotizacion();
+  }, { filas, settings: SETTINGS, extra });
   await drawInk(page, 'canvas-cot-cliente');
   await drawInk(page, 'canvas-cot-elaborado');
   return names;
@@ -374,48 +511,60 @@ async function run() {
   }
 
   try {
-    const counts = [1, 2, 3, 4, 5, 6, 8, 12];
-    for (const n of counts) {
-      await loadApp();
-      const stem = `cot-${n}`;
-      const names = await fillCotizacion(work, n);
-      await printCotizacion(work);
+    const cotLayoutSelectors = [
+      '#view-cotizacion .totales-box',
+      '#view-cotizacion .cot-bank-section',
+      '#view-cotizacion .section:has(#cot-obs)',
+      '#view-cotizacion .nota-cot',
+      '#view-cotizacion .nota',
+      '#view-cotizacion .garantia',
+      '#view-cotizacion .firmas'
+    ];
+
+    async function recordCotPdf(stem, names, extraLabels, extraForbidden) {
+      const labels = extraLabels || ['Subtotal', 'TOTAL', 'Datos Bancarios', 'Observaciones', 'Nota', 'Instalación', ...names];
       const layout = await assertPrintLayout(work, {
         view: stem,
         rowSelector: '#view-cotizacion .tabla-productos tbody tr:not(.empty-row)',
-        extraSelectors: [
-          '#view-cotizacion .totales-box',
-          '#view-cotizacion .cot-bank-section',
-          '#view-cotizacion .section:has(#cot-obs)',
-          '#view-cotizacion .nota-cot',
-          '#view-cotizacion .cot-cierre-block',
-          '#view-cotizacion .firmas'
-        ],
-        labels: ['Subtotal', 'TOTAL', 'Datos Bancarios', 'Observaciones', 'Nota', 'Instalación', ...names]
+        extraSelectors: cotLayoutSelectors,
+        labels
       });
       const pdf = await makePdf(work);
       fs.writeFileSync(path.join(OUT, `${stem}.pdf`), pdf);
       const meta = await extractPdfTextAndPngs(rasterPage, pdf, stem);
-      const allText = meta.texts.join('\n');
-      fs.writeFileSync(path.join(OUT, `${stem}-text.txt`), allText);
-      const checked = analyzePdfText(allText, ['Subtotal', 'TOTAL', 'Datos Bancarios', 'Observaciones', 'Nota', 'Instalación', ...names]);
-      const missing = checked.missing;
-      const footerHits = checked.footerHits;
+      const issues = collectPdfIssues(meta, labels, extraForbidden);
+      fs.writeFileSync(path.join(OUT, `${stem}-text.txt`), issues.allText);
+      const missing = issues.missing;
+      if (layout.overlaps.length) missing.push('contenido bajo el pie');
       const ok = missing.length === 0;
       results.push({
         doc: stem,
         pages: meta.pages,
-        footerHits,
+        footerHits: issues.footerHits,
         layoutOverlaps: layout.overlaps.length,
         missing,
         ok
       });
       if (!ok) failures.push(`${stem}: ${missing.join(', ')}`);
-      await work.evaluate(() => {
-        document.body.classList.remove('is-printing', 'is-printing-formato');
-        window.ArpaBrand?.restoreAfterPrint?.();
-        window.ArpaSignature?.restoreAfterPrint?.();
-      });
+      await resetPrint(work);
+      return meta;
+    }
+
+    const counts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    for (const n of counts) {
+      await loadApp();
+      const stem = `cot-${n}`;
+      const names = await fillCotizacion(work, n);
+      await printCotizacion(work);
+      await recordCotPdf(stem, names);
+    }
+
+    for (const n of [4, 6]) {
+      await loadApp();
+      const stem = `cot-${n}-3lineas`;
+      const names = await fillCotizacion(work, n, { allLong: true, desc: THREE_LINE_DESC });
+      await printCotizacion(work);
+      await recordCotPdf(stem, names);
     }
 
     {
@@ -440,6 +589,7 @@ async function run() {
       fs.writeFileSync(path.join(OUT, `${stem}-text.txt`), allText);
       const checked = analyzePdfText(allText, ['Cliente Formato Completo', 'Observaciones', 'Nota']);
       const missing = checked.missing;
+      if (anyFooterOnlyPage(meta.texts)) missing.push('página solo con el pie');
       const footerHits = checked.footerHits;
       const ok = missing.length === 0 && layout.overlaps.length === 0;
       results.push({
@@ -451,6 +601,161 @@ async function run() {
         ok
       });
       if (!ok) failures.push(`${stem}: ${missing.join(', ') || 'overlap'}`);
+    }
+
+    {
+      await loadApp();
+      const night = await assertBogotaDates(browser, '2026-09-30T20:30:00-05:00', '2026-09-30');
+      const morning = await assertBogotaDates(browser, '2026-09-30T08:00:00-05:00', '2026-09-30');
+      results.push({
+        doc: 'fecha-bogota-20:30',
+        pages: 0,
+        footerHits: 1,
+        layoutOverlaps: 0,
+        missing: [],
+        ok: true,
+        utcWouldHaveBeen: night.utc
+      });
+      results.push({
+        doc: 'fecha-bogota-08:00',
+        pages: 0,
+        footerHits: 1,
+        layoutOverlaps: 0,
+        missing: [],
+        ok: true,
+        utcWouldHaveBeen: morning.utc
+      });
+    }
+
+    {
+      await loadApp();
+      const stem = 'cot-4-iva-obs';
+      const names = await fillCotizacion(work, 4, { iva: true });
+      await printCotizacion(work);
+      const layout = await assertPrintLayout(work, {
+        view: stem,
+        rowSelector: '#view-cotizacion .tabla-productos tbody tr:not(.empty-row)',
+        extraSelectors: [
+          '#view-cotizacion .totales-box',
+          '#view-cotizacion .garantia',
+          '#cot-nota-requisitos',
+          '#view-cotizacion .section:has(#cot-obs)',
+          '#view-cotizacion .firmas'
+        ],
+        labels: ['IVA', 'Términos de Garantía', 'polo a tierra', 'Observaciones', 'Aprobación', ...names]
+      });
+      const pdf = await makePdf(work);
+      fs.writeFileSync(path.join(OUT, `${stem}.pdf`), pdf);
+      const meta = await extractPdfTextAndPngs(rasterPage, pdf, stem);
+      const allText = meta.texts.join('\n');
+      fs.writeFileSync(path.join(OUT, `${stem}-text.txt`), allText);
+      const issues = collectPdfIssues(meta, [
+        'IVA', 'Términos de Garantía', 'polo a tierra', 'Observaciones', 'Aprobación', 'Instalación', ...names
+      ], ['Incluir IVA', 'Buscar y agregar productos']);
+      if (layout.overlaps.length) issues.missing.push('contenido bajo el pie');
+      const ok = issues.missing.length === 0;
+      results.push({
+        doc: stem,
+        pages: meta.pages,
+        footerHits: issues.footerHits,
+        layoutOverlaps: layout.overlaps.length,
+        missing: issues.missing,
+        ok
+      });
+      if (!ok) failures.push(`${stem}: ${issues.missing.join(', ') || 'overlap'}`);
+      await resetPrint(work);
+    }
+
+    {
+      await loadApp();
+      const stem = 'cot-4-vacio-sin-iva';
+      const names = await fillCotizacion(work, 4, {
+        iva: false,
+        obs: '',
+        email: '',
+        firmaCliente: ''
+      });
+      await printCotizacion(work);
+      const pdf = await makePdf(work);
+      fs.writeFileSync(path.join(OUT, `${stem}.pdf`), pdf);
+      const meta = await extractPdfTextAndPngs(rasterPage, pdf, stem);
+      const allText = meta.texts.join('\n');
+      fs.writeFileSync(path.join(OUT, `${stem}-text.txt`), allText);
+      const issues = collectPdfIssues(meta, ['Términos de Garantía', 'polo a tierra', ...names], [
+        'correo@ejemplo.com',
+        'Especificaciones adicionales',
+        'Incluir IVA',
+        'Buscar y agregar productos',
+        'Nombre completo'
+      ]);
+      const ok = issues.missing.length === 0;
+      results.push({
+        doc: stem,
+        pages: meta.pages,
+        footerHits: issues.footerHits,
+        layoutOverlaps: 0,
+        missing: issues.missing,
+        ok
+      });
+      if (!ok) failures.push(`${stem}: ${issues.missing.join(', ')}`);
+      await resetPrint(work);
+    }
+
+    {
+      await loadApp();
+      await work.evaluate(() => {
+        const s = window.ArpaBrand.getSettings();
+        window.ArpaBrand.saveSettings({ ...s, warrantyTerms: 'Garantía de prueba 6 meses' });
+        window.applyUserSettingsToUI();
+      });
+      const stem = 'cot-garantia-custom';
+      await fillCotizacion(work, 2, { iva: false });
+      await printCotizacion(work);
+      const pdf = await makePdf(work);
+      fs.writeFileSync(path.join(OUT, `${stem}.pdf`), pdf);
+      const meta = await extractPdfTextAndPngs(rasterPage, pdf, stem);
+      const allText = meta.texts.join('\n');
+      fs.writeFileSync(path.join(OUT, `${stem}-text.txt`), allText);
+      const issues = collectPdfIssues(meta, ['Garantía de prueba 6 meses'], ['mano de obra es de 1 año', 'Labor warranty is 1 year']);
+      const ok = issues.missing.length === 0;
+      results.push({
+        doc: stem,
+        pages: meta.pages,
+        footerHits: issues.footerHits,
+        layoutOverlaps: 0,
+        missing: issues.missing,
+        ok
+      });
+      if (!ok) failures.push(`${stem}: ${issues.missing.join(', ')}`);
+      await resetPrint(work);
+    }
+
+    {
+      await loadApp();
+      await work.evaluate(() => {
+        const s = window.ArpaBrand.getSettings();
+        window.ArpaBrand.saveSettings({ ...s, warrantyTerms: 'Garantía de prueba 6 meses' });
+        window.applyUserSettingsToUI();
+      });
+      await fillFormato(work);
+      await printFormato(work);
+      const stemF = 'formato-garantia-custom';
+      const pdfF = await makePdf(work);
+      fs.writeFileSync(path.join(OUT, `${stemF}.pdf`), pdfF);
+      const metaF = await extractPdfTextAndPngs(rasterPage, pdfF, stemF);
+      const allF = metaF.texts.join('\n');
+      fs.writeFileSync(path.join(OUT, `${stemF}-text.txt`), allF);
+      const issuesF = collectPdfIssues(metaF, ['Garantía de prueba 6 meses']);
+      const okF = issuesF.missing.length === 0;
+      results.push({
+        doc: stemF,
+        pages: metaF.pages,
+        footerHits: issuesF.footerHits,
+        layoutOverlaps: 0,
+        missing: issuesF.missing,
+        ok: okF
+      });
+      if (!okF) failures.push(`${stemF}: ${issuesF.missing.join(', ')}`);
     }
   } finally {
     await browser.close();

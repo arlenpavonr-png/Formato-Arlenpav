@@ -427,6 +427,16 @@
   .gi-warn { background: #fee2e2; }
   .gi-cal  { background: #e0e7ff; }
   .garantia-item strong { font-weight: 700; color: var(--navy); }
+  .garantia-custom {
+    background: #eff6ff;
+    padding: 12px 14px;
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: #1e3a5f;
+    white-space: pre-wrap;
+  }
+  .garantia-body[hidden],
+  .garantia-custom[hidden] { display: none !important; }
 
   /* ── FIRMAS ── */
   .firmas { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -556,6 +566,22 @@
   .suite-footer-global-link {
     color: #64748b;
     text-decoration: none;
+  }
+  #cot-print-footer {
+    display: none;
+  }
+  body.is-printing:not(.is-printing-formato) .suite-footer {
+    display: none !important;
+  }
+  body.is-printing:not(.is-printing-formato) #cot-print-footer {
+    display: block !important;
+    background: #fff;
+    border-top: 1px solid #e2e8f0;
+    margin-top: 10px;
+  }
+  body.is-printing:not(.is-printing-formato) .cot-firmas-print-block {
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
   .suite-footer-global-link:hover {
     color: #475569;
@@ -1864,6 +1890,7 @@
       display: block !important;
     }
     body.is-printing #cot-cobros-section,
+    body.is-printing #cot-buscar-section,
     body.is-printing #view-cotizacion .buscador-wrap-cot {
       display: none !important;
     }
@@ -1960,27 +1987,60 @@
     }
     .btn-quitar, .btn-add-item, .extra-items-editor .field label { display: none !important; }
     .extra-item-row { display: none !important; }
-    .cot-cierre-block {
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    .cot-bank-section {
-      page-break-before: avoid;
-      break-before: avoid;
-    }
+    .cot-bank-section,
     .totales-box {
       page-break-inside: avoid;
       break-inside: avoid;
     }
+    body.is-printing #view-cotizacion .cot-firmas-print-block {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
     body.is-printing #view-cotizacion .section:has(#cot-obs),
+    body.is-printing #cot-obs-section,
     body.is-printing #view-cotizacion .nota-cot,
-    body.is-printing #view-cotizacion .firmas,
+    body.is-printing #view-cotizacion .nota,
+    body.is-printing #view-cotizacion .garantia,
     body.is-printing #view-cuenta-cobro .totales-box,
     body.is-printing #view-cuenta-cobro .firmas {
       page-break-inside: avoid;
       break-inside: avoid;
     }
+    body.is-printing #view-cotizacion .firma-canvas,
+    body.is-printing #view-cotizacion .firma-print-img {
+      height: 72px !important;
+    }
+    body.is-printing #view-cotizacion .firma-box {
+      padding: 6px 8px;
+      gap: 4px;
+    }
+    body.is-printing #view-cotizacion .garantia-body {
+      padding: 8px 12px;
+      gap: 5px;
+    }
+    body.is-printing #view-cotizacion .nota,
+    body.is-printing #view-cotizacion .nota-cot {
+      padding: 8px 10px;
+    }
     .cot-catalog-hint { display: none !important; }
+    #cot-buscar-section,
+    body.is-printing #cot-buscar-section,
+    body.is-printing .iva-toggle,
+    .iva-toggle {
+      display: none !important;
+    }
+    body.is-printing .print-hide-empty,
+    .print-hide-empty,
+    #view-cotizacion .section:has(#cot-obs:placeholder-shown) {
+      display: none !important;
+    }
+    body.is-printing input::placeholder,
+    body.is-printing textarea::placeholder,
+    input::placeholder,
+    textarea::placeholder {
+      color: transparent !important;
+      opacity: 0 !important;
+    }
   }
   .settings-modal-footer {
     padding: 14px 20px;
@@ -2067,6 +2127,19 @@
       z-index: auto;
       background: #fff;
       border-top: 1px solid #e2e8f0;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    body.is-printing:not(.is-printing-formato) .suite-footer {
+      display: none !important;
+    }
+    body.is-printing:not(.is-printing-formato) #cot-print-footer {
+      display: block !important;
+      background: #fff;
+      border-top: 1px solid #e2e8f0;
+      margin-top: 10px;
+    }
+    .cot-firmas-print-block {
       page-break-inside: avoid;
       break-inside: avoid;
     }
@@ -2179,6 +2252,16 @@
   html.trial-capture-active .settings-overlay { visibility: hidden; }
   body.is-printing #trial-capture-gate,
   body.is-printing-formato #trial-capture-gate { display: none !important; visibility: hidden !important; }
+  body.is-printing #cot-buscar-section,
+  body.is-printing .iva-toggle,
+  body.is-printing .print-hide-empty {
+    display: none !important;
+  }
+  body.is-printing input::placeholder,
+  body.is-printing textarea::placeholder {
+    color: transparent !important;
+    opacity: 0 !important;
+  }
   .trial-capture-gate--modal {
     display: flex !important;
     z-index: 10002;
@@ -3067,7 +3150,7 @@ document.documentElement.classList.add('license-checking');
 
     <!-- NOTA -->
     <div class="nota">
-      <strong data-i18n="formato.nota.label">Nota:</strong> <span data-i18n-html="formato.nota.body">El cliente debe suministrar punto eléctrico (110V–220V) con polo a tierra para la instalación,
+      <strong data-i18n="formato.nota.label">Nota:</strong> <span data-arpa-requirements-body data-i18n-html="formato.nota.body">El cliente debe suministrar punto eléctrico (110V–220V) con polo a tierra para la instalación,
       incluyendo cableado y tubería para sensores si se requieren.</span>
     </div>
 
@@ -3078,7 +3161,7 @@ document.documentElement.classList.add('license-checking');
         <div class="garantia-header" id="brand-warranty-header">
           <span class="shield">🛡️</span> <span data-i18n="formato.garantia.header_static">Términos de Garantía</span>
         </div>
-        <div class="garantia-body">
+        <div class="garantia-body" data-arpa-warranty-items>
           <div class="garantia-item">
             <div class="gi-icon gi-ok">✅</div>
             <div><strong data-i18n="formato.garantia.tiempo.label">Tiempo de garantía:</strong> <span data-i18n-html="formato.garantia.tiempo.body">La garantía de mano de obra es de 1 año a partir de la fecha del servicio. Los equipos tienen garantía de 2 años contra defectos de fabricación.</span></div>
@@ -3092,6 +3175,7 @@ document.documentElement.classList.add('license-checking');
             <div id="brand-warranty-exclusion"><strong data-i18n="formato.garantia.exclusiones.label">Exclusiones de garantía:</strong> <span data-i18n-html="formato.garantia.exclusiones.body_static">La garantía no aplica sobre daños por causas externas, descargas eléctricas o intervención de personal no autorizado.</span></div>
           </div>
         </div>
+        <div class="garantia-custom" data-arpa-warranty-custom hidden></div>
       </div>
     </div>
 
@@ -3173,7 +3257,7 @@ document.documentElement.classList.add('license-checking');
       </div>
     </div>
 
-    <div class="section">
+    <div class="section" id="cot-buscar-section">
       <div class="section-title"><span class="dot"></span><span data-i18n="cot.section.buscar">Buscar y Agregar Productos</span></div>
       <div class="buscador-wrap-cot">
         <div class="buscador-row-cot">
@@ -3249,16 +3333,44 @@ document.documentElement.classList.add('license-checking');
       </div>
     </div>
 
-    <div class="section">
+    <div class="section" id="cot-obs-section">
       <div class="section-title"><span class="dot"></span><span data-i18n="cot.section.observaciones">Observaciones</span></div>
       <div class="field">
         <textarea id="cot-obs" data-i18n-placeholder="cot.placeholder.obs" placeholder="Especificaciones adicionales, notas para el cliente..."></textarea>
       </div>
     </div>
 
+    <div class="section" id="cot-garantia-section">
+      <div class="garantia">
+        <div class="garantia-header" id="cot-warranty-header">
+          <span class="shield">🛡️</span> <span data-i18n="formato.garantia.header_static">Términos de Garantía</span>
+        </div>
+        <div class="garantia-body" data-arpa-warranty-items>
+          <div class="garantia-item">
+            <div class="gi-icon gi-ok">✅</div>
+            <div><strong data-i18n="formato.garantia.tiempo.label">Tiempo de garantía:</strong> <span data-i18n-html="formato.garantia.tiempo.body">La garantía de mano de obra es de 1 año a partir de la fecha del servicio. Los equipos tienen garantía de 2 años contra defectos de fabricación.</span></div>
+          </div>
+          <div class="garantia-item">
+            <div class="gi-icon gi-cal">📅</div>
+            <div><strong data-i18n="formato.garantia.mantenimiento.label">Mantenimiento preventivo:</strong> <span data-i18n-html="formato.garantia.mantenimiento.body">Recomendamos realizar mantenimiento cada 6 meses con nuestro equipo técnico. Esto permite prolongar la vida útil del equipo, prevenir fallas y conservar las condiciones óptimas de funcionamiento.</span></div>
+          </div>
+          <div class="garantia-item">
+            <div class="gi-icon gi-warn">⚠️</div>
+            <div><strong data-i18n="formato.garantia.exclusiones.label">Exclusiones de garantía:</strong> <span data-i18n-html="formato.garantia.exclusiones.body_static">La garantía no aplica sobre daños por causas externas, descargas eléctricas o intervención de personal no autorizado.</span></div>
+          </div>
+        </div>
+        <div class="garantia-custom" data-arpa-warranty-custom hidden></div>
+      </div>
+    </div>
+
+    <div class="nota" id="cot-nota-requisitos">
+      <strong data-i18n="formato.nota.label">Nota:</strong> <span data-arpa-requirements-body data-i18n-html="formato.nota.body">El cliente debe suministrar punto eléctrico (110V–220V) con polo a tierra para la instalación,
+      incluyendo cableado y tubería para sensores si se requieren.</span>
+    </div>
+
     <div class="nota-cot" id="cot-nota-legal">&nbsp;</div>
 
-    <div class="section">
+    <div class="section cot-firmas-print-block" id="cot-aprobacion-section">
       <div class="section-title"><span class="dot"></span><span data-i18n="cot.section.aprobacion">Aprobación</span></div>
       <div class="firmas">
         <div class="firma-box">
@@ -3277,6 +3389,13 @@ document.documentElement.classList.add('license-checking');
           </div>
           <input class="firma-name" id="cot-elaborado-nombre" type="text" data-i18n-placeholder="formato.firma.placeholder.tecnico" placeholder="Nombre del técnico">
           <input class="firma-name" id="cot-elaborado-tel" type="text" data-i18n-placeholder="formato.label.telefono" placeholder="Teléfono">
+        </div>
+      </div>
+      <div id="cot-print-footer" class="cot-print-footer">
+        <div class="suite-footer-local" id="cot-print-footer-local">Configure los datos de su empresa en ⚙️ Ajustes</div>
+        <hr class="suite-footer-divider" aria-hidden="true">
+        <div class="suite-footer-global">
+          <p class="suite-footer-global-text" id="cot-print-footer-global">Generado con ARPA Suite · Pruébala gratis en arpatechnologyglobal.com · © 2026</p>
         </div>
       </div>
     </div>
@@ -3824,6 +3943,16 @@ document.documentElement.classList.add('license-checking');
         <input type="text" id="settings-technician-code" maxlength="4" autocomplete="off" style="text-transform:uppercase;max-width:120px;" data-i18n-placeholder="settings.placeholder.technician_code" placeholder="PJ">
         <p class="logo-upload-hint" data-i18n="settings.technician_code.hint">Plan PYME: obligatorio. Prefija sus documentos (ej. PJ-001). Otros planes: opcional.</p>
       </div>
+      <div class="settings-section-title" data-i18n="formato.section.garantia">Términos de Garantía</div>
+      <div class="field">
+        <label for="settings-warranty-terms" data-i18n="settings.label.warranty_terms">Términos de garantía</label>
+        <textarea id="settings-warranty-terms" rows="6"></textarea>
+      </div>
+      <div class="field">
+        <label for="settings-client-requirements" data-i18n="settings.label.client_requirements">Requisitos para el cliente</label>
+        <textarea id="settings-client-requirements" rows="4"></textarea>
+      </div>
+      <p class="logo-upload-hint" data-i18n="settings.hint.legal_docs">Si lo deja vacío, se usa el texto estándar (cambia con el idioma). Si escribe el suyo, se usa tal cual en Cotización y Formato.</p>
       <div class="settings-section-title" data-i18n="settings.section.oficios">Tu oficio principal</div>
       <p class="logo-upload-hint" data-i18n="settings.oficios.hint">Elija el oficio de su negocio. Solo puede tener uno activo (excepto licencia Founder). Cada oficio trae un catálogo base editable en Mi Catálogo.</p>
       <div id="settings-oficios-grid" class="settings-oficios-grid"></div>
@@ -3932,7 +4061,7 @@ function clearFormatoDocumentFields(options) {
     if (numero) numero.value = '';
   }
   const fecha = document.getElementById('formato-fecha');
-  if (fecha) fecha.value = new Date().toISOString().slice(0, 10);
+  if (fecha) fecha.value = window.fechaLocalISO(new Date());
   window.__arpaFormatoFotos = { antes: [], despues: [] };
   ['before-preview', 'after-preview'].forEach((id) => {
     const preview = document.getElementById(id);
@@ -4149,6 +4278,7 @@ function guardarPDF() {
   window.ArpaI18n?.preparePdfSpanish?.('view-formato');
   window.ArpaFormatoTipo?.prepareFormatoTipoForPrint?.(formatoPrintSnapshot);
   window.ArpaFormatoTipo?.applyPrintSnapshot?.(formatoPrintSnapshot);
+  window.ArpaBrand?.applyLegalCopyToDocuments?.({ onlyCustom: true });
 
   const { block: qrBlock, qrReady } = prepareVideoQrForPrint();
   if (qrBlock) document.body.classList.add('formato-has-video-qr');
@@ -4168,7 +4298,7 @@ function guardarPDF() {
     const inDimsExtra = !!el.closest('.dims-extra');
     const span = document.createElement('span');
     span.className = inDimsTable ? 'pdf-valor pdf-valor-dim' : 'pdf-valor';
-    span.textContent = valor || (inObs ? '' : (el.placeholder || ''));
+    span.textContent = valor;
     span.style.cssText = inDimsTable
       ? `display:block; width:100%; box-sizing:border-box; font-size:13px; color:${valor ? '#1e293b' : '#9ca3af'}; padding:6px 4px; font-family:'DM Mono',monospace; font-weight:600; text-align:center; border-bottom:1px solid #d1d5db; min-height:32px;`
       : inDimsExtra
@@ -4312,7 +4442,7 @@ async function nuevoNumero() {
   const cliente = document.getElementById('formato-cliente-nombre')?.value || '';
   const tipo = document.querySelector('input[name="tipo"]:checked')?.value || 'instalacion';
   const prefijo = tipo === 'mantenimiento' ? 'Mant' : tipo === 'reparacion' ? 'Rep' : 'FI';
-  const fecha = new Date().toISOString().slice(0, 10);
+  const fecha = window.fechaLocalISO(new Date());
   const nombre = cliente ? '-' + cliente.replace(/\s+/g, '-').substring(0, 20) : '';
   document.title = `${prefijo}-${value}${nombre}-${fecha}`;
 }
@@ -4328,7 +4458,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const campo = document.getElementById('numero-formato');
   const fechaFormato = document.getElementById('formato-fecha');
   if (fechaFormato && !fechaFormato.value) {
-    fechaFormato.value = new Date().toISOString().slice(0, 10);
+    fechaFormato.value = window.fechaLocalISO(new Date());
   }
   if (ultimo === 0) {
     campo.placeholder = '← Toca NUEVO N°';
@@ -4349,7 +4479,7 @@ function actualizarTitulo() {
   const cliente = document.querySelector('input[placeholder="Nombre completo o razón social"]').value;
   const tipo = document.querySelector('input[name="tipo"]:checked').value;
   const prefijo = tipo === 'mantenimiento' ? 'Mant' : tipo === 'reparacion' ? 'Rep' : 'FI';
-  const fecha = new Date().toISOString().slice(0,10);
+  const fecha = window.fechaLocalISO(new Date());
   const nombre = cliente ? '-' + cliente.replace(/\s+/g,'-').substring(0,20) : '';
   document.title = `${prefijo}-${noVal}${nombre}-${fecha}`;
 }

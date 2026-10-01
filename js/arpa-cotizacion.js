@@ -365,15 +365,15 @@
     const hoy = new Date();
     const fecha = document.getElementById('cot-fecha');
     const validez = document.getElementById('cot-validez');
-    if (fecha) fecha.value = hoy.toISOString().split('T')[0];
+    const fechaISO = global.fechaLocalISO(hoy);
+    if (fecha) fecha.value = fechaISO;
     if (validez) {
-      const v = new Date(hoy);
-      v.setDate(v.getDate() + 15);
-      validez.value = v.toISOString().split('T')[0];
+      const v = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 15);
+      validez.value = global.fechaLocalISO(v);
     }
     const cliente = document.getElementById('cot-nombre')?.value || '';
     const nc = cliente ? '-' + cliente.replace(/\s+/g, '-').substring(0, 20) : '';
-    document.title = `${value}${nc}-${hoy.toISOString().slice(0, 10)}`;
+    document.title = `${value}${nc}-${fechaISO}`;
   }
 
   async function ensureCotNumero() {
@@ -483,6 +483,7 @@
     document.body.classList.add('is-printing');
     global.ArpaBrand?.prepareForPrint?.();
     global.ArpaI18n?.preparePdfSpanish?.('view-cotizacion');
+    global.ArpaBrand?.applyLegalCopyToDocuments?.({ onlyCustom: true });
     global.ArpaCobros?.syncFromEditor?.('cot');
     renderTablaCot();
     const rowPrintBackups = lockCotRowsForPrint(viewRoot);
@@ -490,13 +491,16 @@
       'input:not([type=file]):not([type=checkbox]):not(.cot-cant-input):not(.cot-pvp-input):not(.cobro-desc):not(.cobro-valor), select, textarea'
     );
     const respaldos = [];
+    const obs = document.getElementById('cot-obs');
+    const obsSection = document.getElementById('cot-obs-section') || obs?.closest('.section');
+    if (obsSection) obsSection.classList.toggle('print-hide-empty', !String(obs.value || '').trim());
     elementos.forEach((el) => {
       const valor = el.tagName === 'SELECT'
         ? el.options[el.selectedIndex]?.text || ''
         : el.value || '';
       const span = document.createElement('span');
       span.className = 'pdf-valor';
-      span.textContent = valor || el.placeholder || '';
+      span.textContent = valor;
       span.style.cssText = `display:inline-block;width:100%;font-size:13px;color:${valor ? '#1e293b' : '#9ca3af'};padding:8px 10px;font-family:'DM Sans',sans-serif;border-bottom:1px solid #d1d5db;min-height:36px;`;
       respaldos.push({ el, parent: el.parentNode });
       el.parentNode.replaceChild(span, el);
@@ -811,11 +815,11 @@
     const hoy = new Date();
     const fecha = document.getElementById('cot-fecha');
     const validez = document.getElementById('cot-validez');
-    if (fecha && !fecha.value) fecha.value = hoy.toISOString().split('T')[0];
+    const fechaISO = global.fechaLocalISO(hoy);
+    if (fecha && !fecha.value) fecha.value = fechaISO;
     if (validez && !validez.value) {
-      const v = new Date(hoy);
-      v.setDate(v.getDate() + 15);
-      validez.value = v.toISOString().split('T')[0];
+      const v = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 15);
+      validez.value = global.fechaLocalISO(v);
     }
     const numField = document.getElementById('numero-cot');
     if (numField && !numField.value.trim()) {
