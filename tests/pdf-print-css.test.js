@@ -37,9 +37,12 @@ describe('CSS de impresión: pie no tapa contenido', () => {
     assert.doesNotMatch(printCss, /body\.is-printing-formato::before/);
   });
 
-  it('CACHE_VERSION pide recarga tras PDF WhatsApp sin cortes', () => {
+  it('CACHE_VERSION es igual o posterior a la del PDF WhatsApp sin cortes', () => {
+    // No se fija la versión exacta: cada deploy la sube y la prueba no debe romperse por eso.
     const sw = fs.readFileSync(path.join(root, 'service-worker.js'), 'utf8');
-    assert.match(sw, /CACHE_VERSION = 'v20261002-pdf-whatsapp-2'/);
+    const m = sw.match(/CACHE_VERSION = 'v(\d{8})-[^']+'/);
+    assert.ok(m, 'CACHE_VERSION con formato vAAAAMMDD-nombre');
+    assert.ok(Number(m[1]) >= 20261002, 'CACHE_VERSION anterior al 2-oct-2026: ' + m[0]);
   });
 
   it('el PDF de WhatsApp de la cotización usa Carta y cortes por bloques', () => {

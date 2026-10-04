@@ -1,6 +1,6 @@
 // ARPA Suite — Service Worker
 // Cambia CACHE_VERSION con cada deploy para que los usuarios reciban la versión nueva.
-const CACHE_VERSION = 'v20261002-pdf-whatsapp-2';
+const CACHE_VERSION = 'v20261004-numeracion-sin-saltos';
 const CACHE_NAME = 'arpa-suite-' + CACHE_VERSION;
 
 const LOCAL_ASSETS = [
