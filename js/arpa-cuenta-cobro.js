@@ -196,12 +196,19 @@
     }
     const el = document.getElementById('cc-numero');
     if (el) el.value = value;
+    global.ArpaNumeracion?.setReserved?.('cc', value);
   }
 
   async function ensureCcNumero() {
     if (!global.ArpaNumeracion?.hasActiveLicenseCode?.()) return;
     const el = document.getElementById('cc-numero');
-    if (el && !el.value.trim()) await nuevoCcNumero();
+    if (!el || el.value.trim()) return;
+    const reservado = global.ArpaNumeracion?.getReserved?.('cc');
+    if (reservado) {
+      el.value = reservado;
+      return;
+    }
+    await nuevoCcNumero();
   }
 
   function renderCobrador() {
@@ -434,6 +441,7 @@
           text: msg
         });
         global.ArpaHistorial?.captureFromCuentaCobro?.(d);
+        global.ArpaNumeracion?.clearReserved?.('cc', d && d.numero);
         clearCcDraft();
         return;
       }
@@ -448,6 +456,7 @@
       msg + ' (Adjunte el PDF desde su dispositivo.)'
     );
     global.ArpaHistorial?.captureFromCuentaCobro?.(d);
+    global.ArpaNumeracion?.clearReserved?.('cc', d && d.numero);
   }
 
   function loadImageDataUrl(src) {
@@ -722,6 +731,7 @@
       const { doc, filename } = await renderCcToPdf(d, jsPDF);
       doc.save(filename);
       global.ArpaHistorial?.captureFromCuentaCobro?.(d);
+        global.ArpaNumeracion?.clearReserved?.('cc', d && d.numero);
       clearCcDraft();
     } catch (e) {
       scheduleCcDraftSave(true);

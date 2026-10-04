@@ -92,3 +92,40 @@ describe('nextNumberAsync — sin saltos de numeración', () => {
     assert.equal(r.blocked, true);
   });
 });
+
+describe('número reservado sin usar', () => {
+  it('se guarda, se lee y se libera', () => {
+    N.setReserved('cot', 'AP-171');
+    assert.equal(N.getReserved('cot'), 'AP-171');
+    N.clearReserved('cot', 'AP-171');
+    assert.equal(N.getReserved('cot'), '');
+  });
+
+  it('no se libera si se guardó un documento viejo con otro número', () => {
+    N.setReserved('cot', 'AP-172');
+    N.clearReserved('cot', 'AP-170');
+    assert.equal(N.getReserved('cot'), 'AP-172');
+  });
+
+  it('cotización y cuenta de cobro tienen reservas separadas', () => {
+    N.setReserved('cot', 'COT-005');
+    N.setReserved('cc', 'CC-009');
+    N.clearReserved('cot', 'COT-005');
+    assert.equal(N.getReserved('cot'), '');
+    assert.equal(N.getReserved('cc'), 'CC-009');
+  });
+});
+
+describe('service worker', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const root = path.join(__dirname, '..');
+  it('precachea todos los scripts que carga index.html y los baja frescos', () => {
+    const sw = fs.readFileSync(path.join(root, 'service-worker.js'), 'utf8');
+    const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+    const scripts = [...new Set([...html.matchAll(/src="(\.\/js\/[^"]+)"/g)].map((m) => m[1]))];
+    assert.ok(scripts.length > 10);
+    scripts.forEach((s) => assert.ok(sw.includes(`'${s}'`), 'falta en LOCAL_ASSETS: ' + s));
+    assert.match(sw, /cache: 'reload'/);
+  });
+});

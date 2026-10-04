@@ -153,6 +153,37 @@
     return { sequence: numero, value: format(numero), sincronizado };
   }
 
+  /**
+   * Número reservado que todavía no se ha usado en un documento guardado.
+   * Antes, abrir la app con el formulario vacío pedía un número nuevo cada vez
+   * (abrir y cerrar 3 veces gastaba 171, 172 y 173). Ahora se reutiliza el
+   * reservado hasta que el documento se guarde en el Historial.
+   */
+  const RESERVED_PREFIX = 'arpa_numero_reservado_';
+
+  function getReserved(docType) {
+    try {
+      return String(localStorage.getItem(RESERVED_PREFIX + docType) || '').trim();
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function setReserved(docType, value) {
+    try {
+      if (value) localStorage.setItem(RESERVED_PREFIX + docType, String(value));
+    } catch (e) { /* ignore */ }
+  }
+
+  /** Libera el reservado solo si es el número que se acaba de usar (si se reabrió un documento viejo, se conserva). */
+  function clearReserved(docType, usedValue) {
+    try {
+      const used = String(usedValue || '').trim();
+      if (used && getReserved(docType) !== used) return;
+      localStorage.removeItem(RESERVED_PREFIX + docType);
+    } catch (e) { /* ignore */ }
+  }
+
   function blockIfPymeMissingCode() {
     if (!global.ArpaLicense?.isPymePlan?.()) return true;
     if (getTechnicianCode()) return true;
@@ -183,6 +214,9 @@
     nextNumberAsync,
     hasActiveLicenseCode,
     blockIfNoLicense,
-    blockIfPymeMissingCode
+    blockIfPymeMissingCode,
+    getReserved,
+    setReserved,
+    clearReserved
   };
 })(typeof window !== 'undefined' ? window : globalThis);
