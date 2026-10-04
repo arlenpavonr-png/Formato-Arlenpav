@@ -362,6 +362,7 @@
       }
     }
     if (numField) numField.value = value;
+    global.ArpaNumeracion?.setReserved?.('cot', value);
     const hoy = new Date();
     const fecha = document.getElementById('cot-fecha');
     const validez = document.getElementById('cot-validez');
@@ -379,7 +380,13 @@
   async function ensureCotNumero() {
     if (!global.ArpaNumeracion?.hasActiveLicenseCode?.()) return;
     const numField = document.getElementById('numero-cot');
-    if (numField && !numField.value.trim()) await nuevoCotNumero();
+    if (!numField || numField.value.trim()) return;
+    const reservado = global.ArpaNumeracion?.getReserved?.('cot');
+    if (reservado) {
+      numField.value = reservado;
+      return;
+    }
+    await nuevoCotNumero();
   }
 
   function lockCotRowsForPrint(viewRoot) {
@@ -471,6 +478,7 @@
     global.ArpaCobros?.syncFromEditor?.('cot');
     renderTablaCot();
     global.ArpaHistorial?.captureFromCotizacion?.();
+    global.ArpaNumeracion?.clearReserved?.('cot', document.getElementById('numero-cot')?.value);
     clearCotDraft();
   }
 
