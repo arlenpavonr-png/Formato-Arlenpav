@@ -9,7 +9,9 @@ import { chromium } from 'playwright';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const OUT = path.join(ROOT, 'pdf-test-out');
+// PDF_MOBILE=1 → simula un celular (412 px). Así se detectó el PDF de WhatsApp cortado (4-oct-2026).
+const MOBILE = process.env.PDF_MOBILE === '1';
+const OUT = path.join(ROOT, MOBILE ? 'pdf-test-out-mobile' : 'pdf-test-out');
 const PORT = 8768;
 const BASE = `http://127.0.0.1:${PORT}`;
 
@@ -505,13 +507,15 @@ async function run() {
   fs.rmSync(OUT, { recursive: true, force: true });
   fs.mkdirSync(OUT, { recursive: true });
   const server = await startServer();
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch(
+    process.env.PW_CHROMIUM ? { headless: true, executablePath: process.env.PW_CHROMIUM } : { headless: true }
+  );
   const results = [];
   const failures = [];
 
-  const context = await browser.newContext({
-    viewport: { width: 1280, height: 1600 }
-  });
+  const context = await browser.newContext(MOBILE
+    ? { viewport: { width: 412, height: 915 }, deviceScaleFactor: 2.625, isMobile: true, hasTouch: true }
+    : { viewport: { width: 1280, height: 1600 } });
   await context.addInitScript((settings) => {
     try {
       localStorage.setItem('arpa_suite_license_code', 'ARPA-PRO-PDFTEST');

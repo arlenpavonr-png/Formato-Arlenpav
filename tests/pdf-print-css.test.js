@@ -45,6 +45,14 @@ describe('CSS de impresión: pie no tapa contenido', () => {
     assert.ok(Number(m[1]) >= 20261002, 'CACHE_VERSION anterior al 2-oct-2026: ' + m[0]);
   });
 
+  it('el PDF de WhatsApp fija ancho de escritorio también en el celular', () => {
+    const cot = fs.readFileSync(path.join(root, 'js/arpa-cotizacion.js'), 'utf8');
+    assert.match(cot, /cot-pdf-fixed-width \.page \{ width:760px/);
+    assert.match(cot, /cot-pdf-fixed-width \.tabla-cot-wrap \{ overflow:visible/);
+    assert.match(cot, /classList\.add\('cot-pdf-fixed-width'\)/);
+    assert.match(cot, /classList\.remove\('cot-pdf-fixed-width'\)/);
+  });
+
   it('el PDF de WhatsApp de la cotización usa Carta y cortes por bloques', () => {
     const cot = fs.readFileSync(path.join(root, 'js/arpa-cotizacion.js'), 'utf8');
     const fn = cot.slice(cot.indexOf('async function generarCotPdfFile'), cot.indexOf('function guardarCotPDF'));
