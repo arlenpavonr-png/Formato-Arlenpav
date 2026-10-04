@@ -623,7 +623,15 @@
     'body.is-printing #view-cotizacion .firma-canvas, body.is-printing #view-cotizacion .firma-print-img { height:72px !important; }',
     'body.is-printing #view-cotizacion .firma-box { padding:6px 8px; gap:4px; }',
     'body.is-printing #view-cotizacion .garantia-body { padding:8px 12px; gap:5px; }',
-    'body.is-printing #view-cotizacion .nota, body.is-printing #view-cotizacion .nota-cot { padding:8px 10px; }'
+    'body.is-printing #view-cotizacion .nota, body.is-printing #view-cotizacion .nota-cot { padding:8px 10px; }',
+    // En el celular la página mide ~400 px: la tabla se cortaba (sin Precio/Total) y el PDF salía de 6-7 hojas.
+    // Durante la exportación se fija el ancho de escritorio (760 px) y se anulan las reglas de pantalla angosta,
+    // para que lo medido en pantalla y lo capturado por html2canvas sean el mismo diseño.
+    'body.is-printing.cot-pdf-fixed-width .page { width:760px !important; min-width:760px !important; max-width:760px !important; margin:0 !important; }',
+    'body.is-printing.cot-pdf-fixed-width .tabla-cot-wrap { overflow:visible !important; }',
+    'body.is-printing.cot-pdf-fixed-width .g3 { grid-template-columns:1fr 1fr 1fr !important; }',
+    'body.is-printing.cot-pdf-fixed-width .g4 { grid-template-columns:1fr 1fr 1fr 1fr !important; }',
+    'body.is-printing.cot-pdf-fixed-width .firmas { grid-template-columns:1fr 1fr !important; }'
   ].join('\n');
 
   function isVisibleBreakEl(el) {
@@ -647,6 +655,7 @@
       });
     };
     const atomic = [];
+    viewRoot.querySelectorAll('.grid > .field').forEach((el, i) => push(el, 'campo-' + i, atomic));
     viewRoot.querySelectorAll('.tabla-productos thead tr').forEach((el, i) => push(el, 'thead-' + i, atomic));
     viewRoot.querySelectorAll('.tabla-productos tbody tr:not(.empty-row)').forEach((el, i) => push(el, 'row-' + i, atomic));
     push(viewRoot.querySelector('.totales-box')?.closest('.section'), 'resumen', atomic);
@@ -797,6 +806,7 @@
 
     const ctx = beginCotPdfExport();
     const printStyle = injectCotWhatsAppPrintCss();
+    document.body.classList.add('cot-pdf-fixed-width');
     let numeroSwap = null;
     try {
       if (document.fonts?.ready) await document.fonts.ready;
@@ -925,6 +935,7 @@
         numeroSwap.parent.replaceChild(numeroSwap.el, numeroSwap.span);
       }
       printStyle?.remove();
+      document.body.classList.remove('cot-pdf-fixed-width');
       endCotPdfExport(ctx);
     }
   }
