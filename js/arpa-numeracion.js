@@ -112,7 +112,26 @@
     return { sequence: next, value: format(next) };
   }
 
-  async function nextNumberAsync(docType, fieldValue) {
+  /**
+   * Pedidos de número en curso, uno por tipo de documento.
+   * Si llega un segundo pedido mientras la nube aún no responde el primero
+   * (abrir la app + tocar el módulo, o doble toque en "+ NUEVO N°"),
+   * se devuelve el MISMO pedido en vez de reservar otro número.
+   * Antes eso consumía dos números y se saltaba uno (COT-004 → COT-005).
+   */
+  const pendingRequests = {};
+
+  function nextNumberAsync(docType, fieldValue) {
+    const key = KEYS[docType] ? docType : 'formato';
+    if (pendingRequests[key]) return pendingRequests[key];
+    const request = requestNextNumber(key, fieldValue);
+    pendingRequests[key] = request;
+    const clear = () => { if (pendingRequests[key] === request) delete pendingRequests[key]; };
+    request.then(clear, clear);
+    return request;
+  }
+
+  async function requestNextNumber(docType, fieldValue) {
     if (!hasActiveLicenseCode()) {
       return { sequence: 0, value: '', sincronizado: false, blocked: true };
     }
