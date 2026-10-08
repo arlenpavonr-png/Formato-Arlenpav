@@ -3964,6 +3964,10 @@ document.documentElement.classList.add('license-checking');
       <span id="sync-status-text">Verificando última sincronización…</span>
       <button type="button" class="btn-sync-now" id="btn-sync-now" onclick="arpaSyncNow()">↻ Sincronizar ahora</button>
     </div>
+    <div class="sync-status-row">
+      <span>Respaldo completo automático en la nube (licencias pagas).</span>
+      <a class="btn-sync-now" href="./respaldo.html">Recuperar respaldo</a>
+    </div>
     <div class="settings-modal-footer">
       <button type="button" class="btn-settings-cancel" onclick="closeSettingsModal()" data-i18n="settings.btn.cancel">Cancelar</button>
       <button type="button" class="btn-settings-save" onclick="saveSettingsFromModal()" data-i18n="settings.btn.save">Guardar</button>
@@ -5274,6 +5278,7 @@ if ('serviceWorker' in navigator) {
 <script src="./js/arpa-numeracion.js"></script>
 <script src="./js/arpa-brand.js"></script>
 <script src="./js/arpa-cloud-sync.js"></script>
+<script src="./js/arpa-respaldo-nube.js"></script>
 <script src="./js/arpa-pricing.js"></script>
 <script src="./js/arpa-cobros.js"></script>
 <script src="./js/arpa-signature.js"></script>
@@ -5317,6 +5322,7 @@ function arpaSyncNow() {
     return;
   }
   if (btn) { btn.classList.add('syncing'); btn.textContent = '↻ Sincronizando…'; }
+  if (window.ArpaRespaldoNube?.backupSuite) window.ArpaRespaldoNube.backupSuite({ force: true }).catch(() => {});
   if (el)  el.textContent = 'Sincronizando con la nube…';
 
   ArpaCloudSync.forceSyncFromCloud()

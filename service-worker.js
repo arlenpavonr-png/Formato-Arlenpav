@@ -1,6 +1,6 @@
 // ARPA Suite — Service Worker
 // Cambia CACHE_VERSION con cada deploy para que los usuarios reciban la versión nueva.
-const CACHE_VERSION = 'v20261008-atajo-next';
+const CACHE_VERSION = 'v20261009-respaldo-cerrajeria';
 const CACHE_NAME = 'arpa-suite-' + CACHE_VERSION;
 
 // Todos los archivos que carga index.html (antes faltaban varios, p. ej. arpa-numeracion.js,
@@ -12,6 +12,8 @@ const LOCAL_ASSETS = [
   './js/arpa-brand.js',
   './js/arpa-catalogo.js',
   './js/arpa-cloud-sync.js',
+  './js/arpa-respaldo-nube.js',
+  './respaldo.html',
   './js/arpa-cobros.js',
   './js/arpa-cotizacion.js',
   './js/arpa-cuenta-cobro.js',
@@ -44,6 +46,7 @@ const LOCAL_ASSETS = [
   './next/js/ai/recommend.js',
   './next/js/app.js',
   './next/js/backup.js',
+  './next/js/cloud.js',
   './next/js/flow.js',
   './next/js/followup.js',
   './next/js/legacy.js',
