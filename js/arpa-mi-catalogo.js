@@ -10,7 +10,7 @@
   const STORAGE_KEY = LEGACY_STORAGE_KEY;
   /** @deprecated legacy key name — datos viven en arpa_categorias_{oficio} */
   const CATEGORIES_KEY = LEGACY_CATEGORIES_KEY;
-  const UNIDADES = ['unidad', 'metro', 'hora', 'servicio'];
+  const UNIDADES = ['unidad', 'metro', 'm2', 'kg', 'galón', 'libra', 'hora', 'servicio'];
   const SIN_CATEGORIA_ID = '__sin_categoria__';
 
   let editingProductId = null;
@@ -1041,6 +1041,18 @@
       mts: 'metro',
       metros: 'metro',
       m: 'metro',
+      'm²': 'm2',
+      mt2: 'm2',
+      kilo: 'kg',
+      kilos: 'kg',
+      kgs: 'kg',
+      galon: 'galón',
+      galones: 'galón',
+      lb: 'libra',
+      libras: 'libra',
+      mts2: 'm2',
+      'metro cuadrado': 'm2',
+      'metros cuadrados': 'm2',
       horas: 'hora',
       hr: 'hora',
       servicios: 'servicio'
@@ -1276,7 +1288,34 @@
     input.click();
   }
 
+  /** Unidades que index.html no trae en el selector del formulario: se agregan aquí. */
+  const UNIDADES_EXTRA = [
+    { value: 'm2', key: 'prod_modal.unidad.m2', es: 'Metro cuadrado (m²)', en: 'Square meter' },
+    { value: 'kg', key: 'prod_modal.unidad.kg', es: 'Kilogramo (kg)', en: 'Kilogram' },
+    { value: 'galón', key: 'prod_modal.unidad.galon', es: 'Galón', en: 'Gallon' },
+    { value: 'libra', key: 'prod_modal.unidad.libra', es: 'Libra', en: 'Pound' }
+  ];
+
+  function ensureUnidadOptions() {
+    const sel = document.getElementById('cat-form-unidad');
+    if (!sel) return;
+    const en = global.ArpaI18n?.getLang?.() === 'en';
+    let after = sel.querySelector('option[value="metro"]');
+    UNIDADES_EXTRA.forEach((u) => {
+      let opt = sel.querySelector('option[value="' + u.value + '"]');
+      if (!opt) {
+        opt = document.createElement('option');
+        opt.value = u.value;
+        opt.setAttribute('data-i18n', u.key);
+        opt.textContent = en ? u.en : u.es;
+        sel.insertBefore(opt, after ? after.nextSibling : null);
+      }
+      after = opt;
+    });
+  }
+
   function initMiCatalogo() {
+    ensureUnidadOptions();
     document.getElementById('catalogo-buscar')?.addEventListener('input', (e) => {
       searchByOficio.automatismos = e.target.value;
       currentOficioId = 'automatismos';
