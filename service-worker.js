@@ -1,6 +1,6 @@
 // ARPA Suite — Service Worker
 // Cambia CACHE_VERSION con cada deploy para que los usuarios reciban la versión nueva.
-const CACHE_VERSION = 'v20261008-next-campo';
+const CACHE_VERSION = 'v20261008-next-copia';
 const CACHE_NAME = 'arpa-suite-' + CACHE_VERSION;
 
 // Todos los archivos que carga index.html (antes faltaban varios, p. ej. arpa-numeracion.js,
@@ -43,6 +43,7 @@ const LOCAL_ASSETS = [
   './next/js/ai/parser.js',
   './next/js/ai/recommend.js',
   './next/js/app.js',
+  './next/js/backup.js',
   './next/js/flow.js',
   './next/js/followup.js',
   './next/js/legacy.js',
