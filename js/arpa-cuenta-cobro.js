@@ -33,7 +33,7 @@
       pago: getPaymentData(),
       servicios: servicios.map((s) => ({
         desc: s.desc || '',
-        cant: parseInt(s.cant, 10) || 1,
+        cant: parseCant(s.cant),
         unit: parseNum(s.unit)
       })),
       firmaCobrador: global.ArpaSignature?.getDataUrl?.('canvas-cc-cobrador') || '',
@@ -76,7 +76,7 @@
       if (Array.isArray(d.servicios) && d.servicios.length) {
         servicios = d.servicios.map((s) => ({
           desc: s.desc || '',
-          cant: parseInt(s.cant, 10) || 1,
+          cant: parseCant(s.cant),
           unit: parseNum(s.unit)
         }));
       }
@@ -157,6 +157,14 @@
     return Number(n) || 0;
   }
 
+
+  // Cantidades con decimales (7,5 m²); antes parseInt truncaba a 7.
+  function parseCant(value) {
+    if (global.ArpaPricing?.parseCantidad) return global.ArpaPricing.parseCantidad(value);
+    const n = Number(String(value == null ? '' : value).trim().replace(',', '.'));
+    return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : 1;
+  }
+
   function parseNum(v) {
     const n = Number(String(v).replace(/[^\d.-]/g, ''));
     return Number.isFinite(n) ? n : 0;
@@ -222,7 +230,7 @@
     tbody.innerHTML = servicios.map((row, idx) => `
       <tr class="cc-row" data-idx="${idx}">
         <td class="td-desc"><input type="text" class="cc-svc-desc" value="${escAttr(row.desc)}" placeholder="Descripción del servicio"></td>
-        <td class="td-cant"><input type="number" class="cc-svc-cant" min="1" value="${row.cant}" inputmode="numeric"></td>
+        <td class="td-cant"><input type="number" class="cc-svc-cant" min="0.01" step="0.01" value="${row.cant}" inputmode="decimal"></td>
         <td class="td-precio"><input type="number" class="cc-svc-unit" min="0" step="1000" value="${row.unit || ''}" inputmode="numeric" placeholder="0"></td>
         <td class="td-total cc-svc-total">${formatoPesos(row.cant * row.unit)}</td>
         <td class="td-action">${servicios.length > 1 ? `<button type="button" class="btn-quitar cc-svc-remove" data-idx="${idx}">✕</button>` : ''}</td>
@@ -254,7 +262,7 @@
     const row = servicios[idx];
     if (!row) return;
     row.desc = tr.querySelector('.cc-svc-desc')?.value || '';
-    row.cant = parseInt(tr.querySelector('.cc-svc-cant')?.value, 10) || 1;
+    row.cant = parseCant(tr.querySelector('.cc-svc-cant')?.value);
     row.unit = parseNum(tr.querySelector('.cc-svc-unit')?.value);
     const totalCell = tr.querySelector('.cc-svc-total');
     if (totalCell) totalCell.textContent = formatoPesos(row.cant * row.unit);
@@ -263,7 +271,7 @@
   }
 
   function getSubtotal() {
-    return servicios.reduce((s, r) => s + (parseInt(r.cant, 10) || 1) * parseNum(r.unit), 0);
+    return servicios.reduce((s, r) => s + parseCant(r.cant) * parseNum(r.unit), 0);
   }
 
   function getTaxRate() {
@@ -355,9 +363,9 @@
       },
       servicios: servicios.map((s) => ({
         desc: s.desc,
-        cant: parseInt(s.cant, 10) || 1,
+        cant: parseCant(s.cant),
         unit: parseNum(s.unit),
-        total: (parseInt(s.cant, 10) || 1) * parseNum(s.unit)
+        total: (parseCant(s.cant)) * parseNum(s.unit)
       })),
       subtotal,
       iva,
@@ -607,7 +615,7 @@
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
       doc.text(descLines, cols[0] + 2, y + 4.5);
-      doc.text(String(row.cant), cols[1] + 2, y + 4.5);
+      doc.text(global.ArpaPricing?.formatoCantidad ? global.ArpaPricing.formatoCantidad(row.cant) : String(row.cant), cols[1] + 2, y + 4.5);
       doc.text(formatoPesos(row.unit), cols[2] + 2, y + 4.5);
       doc.text(formatoPesos(row.total), cols[3] + 2, y + 4.5);
       y += rowHeight;

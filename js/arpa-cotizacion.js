@@ -63,6 +63,21 @@
       .replace(/"/g, '&quot;');
   }
 
+
+  // Cantidades con decimales (7,5 m²); antes parseInt truncaba a 7.
+  function parseCant(value) {
+    if (global.ArpaPricing?.parseCantidad) return global.ArpaPricing.parseCantidad(value);
+    const n = Number(String(value == null ? '' : value).trim().replace(',', '.'));
+    return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : 1;
+  }
+
+  function prepararInputCantidad(el) {
+    if (!el) return;
+    el.min = '0.01';
+    el.step = '0.01';
+    el.inputMode = 'decimal';
+  }
+
   function parsePvp(value) {
     const n = Number(value);
     return Number.isFinite(n) && n >= 0 ? n : 0;
@@ -184,11 +199,11 @@
   function seleccionarProductoCot(cod) {
     const prod = findProductoCot(cod);
     if (!prod) return;
-    const cant = parseInt(document.getElementById('cant-input-cot')?.value, 10) || 1;
+    const cant = parseCant(document.getElementById('cant-input-cot')?.value);
     const pvpCatalogo = resolveProductPvp(prod);
     const existente = filas.find((f) => f.cod === prod.cod);
     if (existente) {
-      existente.cant += cant;
+      existente.cant = parseCant(existente.cant + cant);
       if (!existente.pvp && pvpCatalogo) existente.pvp = pvpCatalogo;
     } else {
       filas.push({
@@ -235,7 +250,7 @@
       html += `<tr class="cot-row" data-fila="${idx}">
         <td class="td-cod">${escapeHtml(f.cod)}</td>
         <td class="td-desc"><span class="cot-desc-text">${escapeHtml(f.nom)}</span></td>
-        <td class="td-cant"><input type="number" class="cot-cant-input" min="1" value="${f.cant}" data-fila="${idx}"></td>
+        <td class="td-cant"><input type="number" class="cot-cant-input" min="0.01" step="0.01" inputmode="decimal" value="${f.cant}" data-fila="${idx}"></td>
         <td class="td-precio"><input type="number" class="cot-pvp-input" min="0" step="1000" value="${f.pvp}" data-fila="${idx}" inputmode="numeric"></td>
         <td class="td-total">${formatoPesos(f.pvp * f.cant)}</td>
         <td class="td-action"><button type="button" class="btn-quitar no-print" data-quitar="${idx}">✕</button></td>
@@ -256,7 +271,7 @@
     tbody.querySelectorAll('.cot-cant-input').forEach((input) => {
       input.addEventListener('change', () => {
         const idx = Number(input.dataset.fila);
-        filas[idx].cant = parseInt(input.value, 10) || 1;
+        filas[idx].cant = parseCant(input.value);
         actualizarTotalFila(idx);
         recalcularCotizacion();
       });
@@ -517,7 +532,9 @@
     viewRoot.querySelectorAll('.cot-cant-input').forEach((input) => {
       const span = document.createElement('span');
       span.className = 'pdf-valor';
-      span.textContent = input.value;
+      span.textContent = global.ArpaPricing?.formatoCantidad
+        ? global.ArpaPricing.formatoCantidad(input.value)
+        : String(parseCant(input.value));
       span.style.cssText = 'display:inline-block;width:100%;text-align:center;font-size:13px;padding:4px;';
       respaldos.push({ el: input, parent: input.parentNode });
       input.parentNode.replaceChild(span, input);
@@ -1085,7 +1102,7 @@
             cod:  String(f.cod  || ''),
             nom:  String(f.nom  || ''),
             pvp:  Number(f.pvp) || 0,
-            cant: parseInt(f.cant, 10) || 1
+            cant: parseCant(f.cant)
           };
         });
         renderTablaCot();
@@ -1120,6 +1137,7 @@
   }
 
   function initCotizacion() {
+    prepararInputCantidad(document.getElementById('cant-input-cot'));
     global.ArpaCobros?.init('cot');
     global.ArpaCobros?.seedFromPriceList('cot');
 

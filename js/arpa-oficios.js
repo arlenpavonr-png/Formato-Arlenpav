@@ -203,12 +203,21 @@
       mts: 'metro',
       metros: 'metro',
       m: 'metro',
+      'm²': 'm2',
+      mt2: 'm2',
+      kilo: 'kg',
+      kilos: 'kg',
+      kgs: 'kg',
+      galon: 'galón',
+      galones: 'galón',
+      lb: 'libra',
+      libras: 'libra',
       hr: 'hora',
       horas: 'hora',
       servicios: 'servicio'
     };
     if (aliases[v]) return aliases[v];
-    if (['unidad', 'metro', 'hora', 'servicio'].includes(v)) return v;
+    if (['unidad', 'metro', 'm2', 'kg', 'galón', 'libra', 'hora', 'servicio'].includes(v)) return v;
     return v || 'unidad';
   }
 
@@ -335,9 +344,9 @@
       { cod: 'MET-014', nom: 'Bisagra reforzada 4" (par)', categoria: 'Accesorios', pvp: 18000, unidad: 'un' },
       { cod: 'MET-015', nom: 'Riel puerta corrediza (metro)', categoria: 'Accesorios', pvp: 35000, unidad: 'metro' },
       { cod: 'MET-016', nom: 'Rueda puerta corrediza (unidad)', categoria: 'Accesorios', pvp: 25000, unidad: 'un' },
-      { cod: 'MET-017', nom: 'Fabricación puerta metálica (m²)', categoria: 'Servicios', pvp: 180000, unidad: 'servicio' },
-      { cod: 'MET-018', nom: 'Fabricación reja ventana (m²)', categoria: 'Servicios', pvp: 120000, unidad: 'servicio' },
-      { cod: 'MET-019', nom: 'Fabricación techo corredizo (m²)', categoria: 'Servicios', pvp: 250000, unidad: 'servicio' },
+      { cod: 'MET-017', nom: 'Fabricación puerta metálica (m²)', categoria: 'Servicios', pvp: 180000, unidad: 'm2' },
+      { cod: 'MET-018', nom: 'Fabricación reja ventana (m²)', categoria: 'Servicios', pvp: 120000, unidad: 'm2' },
+      { cod: 'MET-019', nom: 'Fabricación techo corredizo (m²)', categoria: 'Servicios', pvp: 250000, unidad: 'm2' },
       { cod: 'MET-020', nom: 'Instalación estructura metálica', categoria: 'Servicios', pvp: 200000, unidad: 'servicio' }
     ];
   }
