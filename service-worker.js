@@ -1,6 +1,6 @@
 // ARPA Suite — Service Worker
 // Cambia CACHE_VERSION con cada deploy para que los usuarios reciban la versión nueva.
-const CACHE_VERSION = 'v20261009-suite-cabezal';
+const CACHE_VERSION = 'v20261009-mantenimientos';
 const CACHE_NAME = 'arpa-suite-' + CACHE_VERSION;
 
 // Todos los archivos que carga index.html (antes faltaban varios, p. ej. arpa-numeracion.js,
@@ -22,6 +22,7 @@ const LOCAL_ASSETS = [
   './js/arpa-i18n.js',
   './js/arpa-install-prompt.js',
   './js/arpa-license.js',
+  './js/arpa-mantenimientos.js',
   './js/arpa-mi-catalogo.js',
   './js/arpa-numeracion.js',
   './js/arpa-oficios.js',
