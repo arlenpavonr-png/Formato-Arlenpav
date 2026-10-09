@@ -102,18 +102,19 @@ test('si falla la subida lo vuelve a intentar después', async () => {
   assert.strictEqual(saves().length, 3);
 });
 
-test('con el servidor viejo (sin respaldos) no manda copias grandes y prueba de nuevo a las 6 horas', async () => {
+test('si el servidor no responde, no manda copias grandes y prueba de nuevo a los 20 minutos', async () => {
   const local = memStorage({ ...LIC, arpa_suite_servicio_historial: '[1]' });
   let nuevo = false;
   const { api, calls, saves } = load(local, {
     reply: (b) => (nuevo ? (b.accion === 'respaldolistar' ? { ok: true, archivos: [] } : { ok: true }) : { ok: false, mensaje: 'Acción desconocida.' }),
   });
   await api.backupSuite({ now: new Date(2026, 9, 8, 10, 0) });
-  await api.backupSuite({ now: new Date(2026, 9, 8, 12, 0) });
+  await api.backupSuite({ now: new Date(2026, 9, 8, 10, 10) });
   assert.strictEqual(saves().length, 0, 'nunca manda la copia al servidor viejo');
-  assert.strictEqual(calls.length, 1, 'no insiste antes de 6 horas');
+  assert.strictEqual(calls.length, 1, 'no insiste antes de 20 minutos');
+  assert.match(api.status().serverError, /desconocida/, 'guarda el motivo real');
   nuevo = true;
-  await api.backupSuite({ now: new Date(2026, 9, 8, 16, 30) });
+  await api.backupSuite({ now: new Date(2026, 9, 8, 10, 25) });
   assert.strictEqual(saves().length, 2, 'cuando el servidor se actualiza, sube sola');
 });
 
@@ -144,4 +145,16 @@ test('restaurar escribe los datos y nunca toca la licencia ni el celular', () =>
   assert.strictEqual(nuevo.getItem('arpa_suite_license_code'), 'ARPA-PRO-AAA111');
   assert.strictEqual(nuevo.getItem('arpa_suite_device_id'), 'nuevo999');
   assert.throws(() => api.restoreSuite('{"x":1}', nuevo), /no es un respaldo/);
+});
+
+test('"Guardar copia ahora" prueba el servidor ya mismo aunque haya fallado hace poco', async () => {
+  const local = memStorage({ ...LIC, arpa_suite_servicio_historial: '[1]' });
+  let nuevo = false;
+  const { api, saves } = load(local, {
+    reply: (b) => (nuevo ? (b.accion === 'respaldolistar' ? { ok: true, archivos: [] } : { ok: true }) : { ok: false, mensaje: 'caído' }),
+  });
+  await api.backupSuite({ now: new Date(2026, 9, 8, 10, 0) });
+  nuevo = true;
+  await api.backupSuite({ now: new Date(2026, 9, 8, 10, 2), force: true });
+  assert.strictEqual(saves().length, 2, 'con force sube enseguida');
 });

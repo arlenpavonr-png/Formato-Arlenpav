@@ -92,8 +92,9 @@ export async function syncNextToCloud(store, options = {}) {
     if (!options.force && now.getTime() - (state.at || 0) < MIN_INTERVAL_MS && state.lastOk) {
       return { ok: true, skipped: 'reciente' };
     }
-    if (nube.serverReady && !(await nube.serverReady(now))) {
-      writeState({ error: 'la nube aún no está lista', errorAt: now.toISOString() });
+    if (nube.serverReady && !(await nube.serverReady(now, !!options.force))) {
+      const motivo = nube.status?.().serverError || 'sin respuesta del servidor';
+      writeState({ error: 'la nube no respondió: ' + motivo, errorAt: now.toISOString() });
       return { ok: false, skipped: 'servidor' };
     }
     const tag = nube.deviceTag();

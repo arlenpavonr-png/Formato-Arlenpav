@@ -544,6 +544,8 @@ async function render() {
 
 async function saveBackup() {
   toast('Preparando copia…');
+  // También intenta subir a la nube ya mismo (sin esperar el reintento automático).
+  syncNextToCloud(store, { force: true }).then((r) => { if (r.ok && !r.skipped) markBackupDone(); if (ui.screen === 'home') render(); }).catch(() => {});
   let file;
   try {
     file = backupToFile(await buildBackup(store));

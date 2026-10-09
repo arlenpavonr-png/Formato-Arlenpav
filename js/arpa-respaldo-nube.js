@@ -118,20 +118,21 @@
     return { keys: n, exportedAt: obj.exportedAt || '' };
   }
 
-  const SERVER_RETRY_MS = 6 * 60 * 60 * 1000;
+  const SERVER_RETRY_MS = 20 * 60 * 1000;
 
   /**
    * ¿El servidor ya sabe guardar respaldos? Se pregunta con una consulta pequeña
-   * antes de mandar copias grandes; si no, se espera 6 horas para volver a probar.
+   * antes de mandar copias grandes; si no, se espera 20 minutos para volver a probar
+   * (o se prueba ya mismo con force, p. ej. al tocar "Guardar copia ahora").
    */
-  function serverReady(now) {
+  function serverReady(now, force) {
     const t = (now || new Date()).getTime();
     const st = readState();
     if (st.serverOkAt && t - st.serverOkAt < 24 * 60 * 60 * 1000) return Promise.resolve(true);
-    if (st.serverFailAt && t - st.serverFailAt < SERVER_RETRY_MS) return Promise.resolve(false);
+    if (!force && st.serverFailAt && t - st.serverFailAt < SERVER_RETRY_MS) return Promise.resolve(false);
     return post('respaldolistar', { app: 'suite' }).then((r) => {
       if (r?.ok) writeState({ serverOkAt: t, serverFailAt: 0 });
-      else writeState({ serverFailAt: t, suiteError: r?.mensaje || 'La nube aún no está lista.' });
+      else writeState({ serverFailAt: t, serverError: String(r?.mensaje || 'sin respuesta').slice(0, 160), suiteError: r?.mensaje || 'La nube aún no está lista.' });
       return !!r?.ok;
     });
   }
@@ -159,7 +160,7 @@
       return Promise.resolve({ ok: true, skipped: 'reciente' });
     }
     const base = 'suite-' + deviceTag();
-    running = serverReady(now)
+    running = serverReady(now, !!o.force)
       .then((ready) => (ready
         ? post('respaldoguardar', { app: 'suite', nombre: base + '-ultimo.json', contenido: text })
         : { ok: false, mensaje: 'La nube aún no está lista.', skippedServer: true }))
