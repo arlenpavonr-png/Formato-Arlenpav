@@ -134,6 +134,7 @@
   }
 
   async function compartirFormatoWhatsApp() {
+    if (!(await global.ArpaBrand?.ensureCompanyName?.() ?? true)) return;
     const telRaw = document.getElementById('formato-cliente-tel')?.value.trim() || '';
     const message = buildFormatoMessage();
 

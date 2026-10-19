@@ -483,6 +483,13 @@
   /* ── VIDEO ENTREGA + QR ── */
   /* Avisos flotantes (p. ej. "Próximo mantenimiento") no salen en el PDF impreso. */
   @media print { .no-print { display: none !important; } }
+  /* Sin empresa configurada, los textos de ayuda ("NOMBRE DE TU EMPRESA", "Configure…") no van al PDF. */
+  @media print {
+    html.brand-unconfigured #brand-company-name,
+    html.brand-unconfigured #brand-company-contact,
+    html.brand-unconfigured #brand-screen-footer,
+    html.brand-unconfigured #cot-print-footer-local { visibility: hidden !important; }
+  }
   .formato-video-qr-print {
     display: none;
     margin-top: 20px;
@@ -3773,8 +3780,8 @@ document.documentElement.classList.add('license-checking');
         <input type="text" id="cat-form-nom" required data-i18n-placeholder="prod_modal.placeholder.nombre" placeholder="Nombre del producto o servicio">
       </div>
       <div class="field">
-        <label for="cat-form-cod"><span data-i18n="prod_modal.label.referencia">Referencia</span> <span class="req">*</span></label>
-        <input type="text" id="cat-form-cod" required data-i18n-placeholder="prod_modal.placeholder.referencia" placeholder="Código o referencia única">
+        <label for="cat-form-cod"><span data-i18n="prod_modal.label.referencia">Referencia</span></label>
+        <input type="text" id="cat-form-cod" data-i18n-placeholder="prod_modal.placeholder.referencia" placeholder="Opcional: se crea sola si la dejas vacía">
       </div>
       <div class="grid g2">
         <div class="field">
@@ -3836,20 +3843,20 @@ document.documentElement.classList.add('license-checking');
         <input type="text" id="settings-company" required autocomplete="organization" data-i18n-placeholder="settings.placeholder.company" placeholder="Nombre de su empresa">
       </div>
       <div class="field">
-        <label for="settings-nit"><span data-i18n="settings.label.nit">NIT</span> <span class="req">*</span></label>
-        <input type="text" id="settings-nit" required inputmode="numeric" data-i18n-placeholder="formato.placeholder.nit_cedula" placeholder="000.000.000-0">
+        <label for="settings-nit"><span data-i18n="settings.label.nit">NIT</span></label>
+        <input type="text" id="settings-nit" inputmode="numeric" data-i18n-placeholder="formato.placeholder.nit_cedula" placeholder="000.000.000-0">
       </div>
       <div class="field">
-        <label for="settings-address"><span data-i18n="settings.label.address">Dirección</span> <span class="req">*</span></label>
-        <input type="text" id="settings-address" required autocomplete="street-address" data-i18n-placeholder="settings.placeholder.address" placeholder="Dirección comercial">
+        <label for="settings-address"><span data-i18n="settings.label.address">Dirección</span></label>
+        <input type="text" id="settings-address" autocomplete="street-address" data-i18n-placeholder="settings.placeholder.address" placeholder="Dirección comercial">
       </div>
       <div class="field">
         <label for="settings-city" data-i18n="settings.label.city_optional">Ciudad (opcional)</label>
         <input type="text" id="settings-city" autocomplete="address-level2" data-i18n-placeholder="formato.placeholder.ciudad" placeholder="Medellín">
       </div>
       <div class="field">
-        <label for="settings-phone"><span data-i18n="settings.label.phone">Teléfono</span> <span class="req">*</span></label>
-        <input type="tel" id="settings-phone" required autocomplete="tel" inputmode="tel" data-i18n-placeholder="settings.placeholder.phone" placeholder="Teléfono de contacto">
+        <label for="settings-phone"><span data-i18n="settings.label.phone">Teléfono</span></label>
+        <input type="tel" id="settings-phone" autocomplete="tel" inputmode="tel" data-i18n-placeholder="settings.placeholder.phone" placeholder="Teléfono de contacto">
       </div>
       <div class="field">
         <label for="settings-website" data-i18n="settings.label.website_optional">Sitio web (opcional)</label>
@@ -3921,20 +3928,20 @@ document.documentElement.classList.add('license-checking');
       </div>
       <div class="settings-section-title" data-i18n="settings.section.bank">Datos Bancarios</div>
       <div class="field">
-        <label for="settings-bank"><span data-i18n="settings.label.bank">Banco</span> <span class="req">*</span></label>
-        <input type="text" id="settings-bank" required data-i18n-placeholder="settings.placeholder.bank" placeholder="Nombre del banco">
+        <label for="settings-bank"><span data-i18n="settings.label.bank">Banco</span></label>
+        <input type="text" id="settings-bank" data-i18n-placeholder="settings.placeholder.bank" placeholder="Nombre del banco">
       </div>
       <div class="field">
-        <label for="settings-account-type"><span data-i18n="settings.label.account_type">Tipo de cuenta</span> <span class="req">*</span></label>
-        <select id="settings-account-type" required>
+        <label for="settings-account-type"><span data-i18n="settings.label.account_type">Tipo de cuenta</span></label>
+        <select id="settings-account-type">
           <option value="Ahorros" data-i18n="cc.cuenta.ahorros">Ahorros</option>
           <option value="Corriente" data-i18n="cc.cuenta.corriente">Corriente</option>
           <option value="CLABE" data-i18n="cc.cuenta.clabe">CLABE</option>
         </select>
       </div>
       <div class="field">
-        <label for="settings-account-number"><span data-i18n="settings.label.account_number">Número de cuenta</span> <span class="req">*</span></label>
-        <input type="text" id="settings-account-number" required inputmode="numeric" data-i18n-placeholder="settings.placeholder.account_number" placeholder="Número de cuenta">
+        <label for="settings-account-number"><span data-i18n="settings.label.account_number">Número de cuenta</span></label>
+        <input type="text" id="settings-account-number" inputmode="numeric" data-i18n-placeholder="settings.placeholder.account_number" placeholder="Número de cuenta">
       </div>
       <div class="field">
         <label for="settings-account-holder" data-i18n="settings.label.account_holder_optional">Titular de la cuenta (opcional)</label>
