@@ -46,19 +46,35 @@
   }
 
   function detectDefaultCurrencyFromLocale() {
+    return COUNTRY_PROFILES[detectDefaultCountryFromLocale()]?.currency || 'COP';
+  }
+
+  // Zona horaria del celular: más confiable que el idioma (muchos celulares en
+  // México dicen "es" o "es-US" y antes caían en Colombia).
+  const TIMEZONE_COUNTRY = {
+    'America/Mexico_City': 'MX', 'America/Monterrey': 'MX', 'America/Cancun': 'MX',
+    'America/Merida': 'MX', 'America/Matamoros': 'MX', 'America/Chihuahua': 'MX',
+    'America/Ciudad_Juarez': 'MX', 'America/Ojinaga': 'MX', 'America/Hermosillo': 'MX',
+    'America/Mazatlan': 'MX', 'America/Bahia_Banderas': 'MX', 'America/Tijuana': 'MX',
+    'America/Ensenada': 'MX', 'America/Santa_Isabel': 'MX', 'Mexico/General': 'MX',
+    'Mexico/BajaNorte': 'MX', 'Mexico/BajaSur': 'MX',
+    'America/Bogota': 'CO',
+    'America/Lima': 'PE',
+    'America/Santiago': 'CL', 'America/Punta_Arenas': 'CL', 'Pacific/Easter': 'CL', 'Chile/Continental': 'CL'
+  };
+
+  function detectCountryFromTimezone() {
     try {
-      const lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
-      if (lang.includes('mx')) return 'MXN';
-      if (lang.includes('pe')) return 'PEN';
-      if (lang.includes('cl')) return 'CLP';
-      if (lang.includes('us') || lang === 'en') return 'USD';
-      return 'COP';
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      return TIMEZONE_COUNTRY[tz] || '';
     } catch (e) {
-      return 'COP';
+      return '';
     }
   }
 
   function detectDefaultCountryFromLocale() {
+    const fromTz = detectCountryFromTimezone();
+    if (fromTz) return fromTz;
     try {
       const lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
       if (lang.includes('mx')) return 'MX';
