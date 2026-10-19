@@ -598,21 +598,31 @@
         return;
       }
       const taxId = global.ArpaPricing?.getTaxIdLabel?.() || 'NIT';
-      const phone = global.ArpaPricing?.formatCompanyPhone?.(s.phone) || val(s.phone, '—');
-      // Sin RFC/NIT no se imprime "RFC: —".
-      const taxPart = val(s.nit, '') ? `${taxId}: ${val(s.nit, '')} &nbsp;|&nbsp; ` : '';
-      let html = `${taxPart}Tel: ${phone}<br>${val(s.address, '—')}`;
+      const phoneRaw = val(s.phone, '');
+      const phone = phoneRaw ? (global.ArpaPricing?.formatCompanyPhone?.(s.phone) || phoneRaw) : '';
+      // Datos vacíos no se imprimen: nada de "RFC: —" ni "Tel: —".
+      const line1 = [
+        val(s.nit, '') ? `${taxId}: ${val(s.nit, '')}` : '',
+        phone ? `Tel: ${phone}` : ''
+      ].filter(Boolean).join(' &nbsp;|&nbsp; ');
       const website = (s.website || '').trim();
-      if (website && !isInternalAppUrl(website)) html += `<br>${website}`;
-      el.innerHTML = html;
+      el.innerHTML = [
+        line1,
+        val(s.address, ''),
+        website && !isInternalAppUrl(website) ? website : ''
+      ].filter(Boolean).join('<br>');
     });
     const footerLocalHtml = !configured
       ? (window.ArpaI18n?.t?.('brand.screen_footer.placeholder') || 'Configure los datos de su empresa en ⚙️ Ajustes')
       : (() => {
         const taxId = global.ArpaPricing?.getTaxIdLabel?.() || 'NIT';
-        const phone = global.ArpaPricing?.formatCompanyPhone?.(s.phone) || val(s.phone, '—');
-        const taxPart = val(s.nit, '') ? `${taxId} ${val(s.nit, '')} &nbsp;|&nbsp; ` : '';
-        return `${company} &nbsp;|&nbsp; ${taxPart}Tel ${phone}`;
+        const phoneRaw = val(s.phone, '');
+        const phone = phoneRaw ? (global.ArpaPricing?.formatCompanyPhone?.(s.phone) || phoneRaw) : '';
+        return [
+          company,
+          val(s.nit, '') ? `${taxId} ${val(s.nit, '')}` : '',
+          phone ? `Tel ${phone}` : ''
+        ].filter(Boolean).join(' &nbsp;|&nbsp; ');
       })();
     set('brand-screen-footer', (el) => {
       if (el.dataset.editable !== 'true') return;
@@ -966,7 +976,8 @@
 
     const current = getSettings();
 
-    if (!companyName || !nit || !address || !phone || !bankName || !accountType || !accountNumber) {
+    // Solo el nombre es obligatorio: RFC/NIT, dirección, teléfono y banco se completan cuando el técnico quiera.
+    if (!companyName) {
       showError(window.ArpaI18n.t('alert.brand.campos_obligatorios'));
       return;
     }
@@ -1049,6 +1060,107 @@
     pendingAppLogoBase64 = null;
     applyToUI();
     closeSettings();
+  }
+
+  function isCompanyConfigured() {
+    return hasUserSettings() && Boolean(String(getSettings().companyName || '').trim());
+  }
+
+  /** Guarda solo nombre y teléfono (primer PDF sin haber configurado la empresa). */
+  function quickSaveCompany(data) {
+    const companyName = String(data?.companyName || '').trim();
+    if (!companyName) return false;
+    const current = getSettings();
+    const patch = { companyName };
+    const phone = String(data?.phone || '').trim();
+    if (phone) patch.phone = phone;
+    if (!current.country) {
+      const country = global.ArpaPricing?.getCountryCode?.() || '';
+      if (country) {
+        patch.country = country;
+        patch.currency = global.ArpaPricing?.COUNTRY_PROFILES?.[country]?.currency || current.currency;
+      }
+    }
+    if (!saveSettings(patch)) return false;
+    try { localStorage.setItem(SETTINGS_CONFIGURED_KEY, 'true'); } catch (e) {}
+    if (!isDemoMode()) persistHomeFromCurrent();
+    pushCompanyDataToSheets(getSettings());
+    if (typeof document !== 'undefined') applyToUI();
+    return true;
+  }
+
+  let quickCompanyPending = null;
+
+  /**
+   * Antes de sacar un PDF: si no hay nombre de empresa, pide solo nombre y teléfono.
+   * Resuelve true para seguir con el PDF, false si el usuario cancela.
+   */
+  function ensureCompanyName() {
+    if (typeof document === 'undefined' || isCompanyConfigured()) return Promise.resolve(true);
+    if (quickCompanyPending) return quickCompanyPending;
+    const tr = (key, fallback) => {
+      const v = window.ArpaI18n?.t?.(key);
+      return v && v !== key ? v : fallback;
+    };
+    quickCompanyPending = new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.className = 'settings-overlay open';
+      overlay.id = 'quick-company-modal';
+      overlay.setAttribute('role', 'dialog');
+      overlay.setAttribute('aria-modal', 'true');
+      overlay.innerHTML = `
+        <div class="settings-modal">
+          <div class="settings-modal-header">
+            <h2>${tr('quick_company.title', 'Antes de tu primer PDF')}</h2>
+            <button type="button" class="settings-modal-close" data-qc="cancel" aria-label="${tr('common.btn.cancel', 'Cancelar')}">&times;</button>
+          </div>
+          <div class="settings-modal-body">
+            <p style="margin:0 0 12px;line-height:1.45;">${tr('quick_company.intro', 'Escribe el nombre de tu negocio para que salga en el documento. Lo demás (logo, RFC, banco) lo puedes poner después en ⚙️ Configuración.')}</p>
+            <p class="settings-error" data-qc="error" role="alert" hidden></p>
+            <div class="field">
+              <label for="qc-company">${tr('quick_company.label.nombre', 'Nombre de tu negocio')} <span class="req">*</span></label>
+              <input type="text" id="qc-company" autocomplete="organization">
+            </div>
+            <div class="field">
+              <label for="qc-phone">${tr('quick_company.label.tel', 'Teléfono / WhatsApp (opcional)')}</label>
+              <input type="tel" id="qc-phone" inputmode="tel" autocomplete="tel">
+            </div>
+          </div>
+          <div class="settings-modal-footer">
+            <button type="button" data-qc="cancel">${tr('common.btn.cancel', 'Cancelar')}</button>
+            <button type="button" data-qc="ok" style="background:var(--navy, #1a2a4a);color:#fff;font-weight:700;">${tr('quick_company.btn.continuar', 'Continuar')}</button>
+          </div>
+        </div>`;
+      const close = (ok) => {
+        overlay.remove();
+        quickCompanyPending = null;
+        resolve(ok);
+      };
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay || e.target.closest('[data-qc="cancel"]')) {
+          close(false);
+          return;
+        }
+        if (!e.target.closest('[data-qc="ok"]')) return;
+        const name = overlay.querySelector('#qc-company').value.trim();
+        const err = overlay.querySelector('[data-qc="error"]');
+        if (!name) {
+          err.textContent = tr('quick_company.error.nombre', 'Escribe el nombre de tu negocio.');
+          err.hidden = false;
+          overlay.querySelector('#qc-company').focus();
+          return;
+        }
+        if (!quickSaveCompany({ companyName: name, phone: overlay.querySelector('#qc-phone').value })) {
+          err.textContent = tr('alert.brand.config_no_guardada', 'No se pudo guardar.');
+          err.hidden = false;
+          return;
+        }
+        close(true);
+      });
+      document.body.appendChild(overlay);
+      setTimeout(() => overlay.querySelector('#qc-company')?.focus(), 50);
+    });
+    return quickCompanyPending;
   }
 
   let printUiBackup = null;
@@ -1381,6 +1493,9 @@
     openSettings,
     closeSettings,
     saveFromModal,
+    isCompanyConfigured,
+    quickSaveCompany,
+    ensureCompanyName,
     showError,
     formatBankBlock,
     syncBankBlocksForPrint,

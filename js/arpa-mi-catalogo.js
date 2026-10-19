@@ -425,6 +425,18 @@
     }
   }
 
+  // Referencia opcional: si el técnico no la escribe, se arma una única (MIO-001, MIO-002…).
+  function nextProductCode(products) {
+    const used = new Set((products || []).map((p) => String(p.cod || '').trim().toLowerCase()));
+    let n = (products || []).length + 1;
+    let cod = '';
+    do {
+      cod = 'MIO-' + String(n).padStart(3, '0');
+      n++;
+    } while (used.has(cod.toLowerCase()));
+    return cod;
+  }
+
   function saveProductForm() {
     const data = readProductFormData();
     const oid = editingOficioId;
@@ -432,10 +444,7 @@
       showProductFormError(window.ArpaI18n.t('alert.catalogo.nombre_obligatorio'));
       return;
     }
-    if (!data.cod) {
-      showProductFormError(window.ArpaI18n.t('alert.catalogo.referencia_obligatoria'));
-      return;
-    }
+    if (!data.cod) data.cod = nextProductCode(getProducts(oid));
     if (data.pvp <= 0) {
       showProductFormError(window.ArpaI18n.t('alert.catalogo.precio_invalido'));
       return;
@@ -1387,6 +1396,7 @@
     refreshView,
     setFabVisible,
     resyncPrecargadoPrices,
+    nextProductCode,
     renderConvertedPriceNotice,
     initMiCatalogo
   };

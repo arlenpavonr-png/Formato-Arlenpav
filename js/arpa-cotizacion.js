@@ -996,6 +996,7 @@
   }
 
   async function guardarCotPDF() {
+    if (!(await global.ArpaBrand?.ensureCompanyName?.() ?? true)) return;
     if (!(await asegurarNumeroCot())) return;
     saveCotMetadata();
 
@@ -1020,6 +1021,7 @@
   }
 
   async function guardarCotPDFYWhatsApp() {
+    if (!(await global.ArpaBrand?.ensureCompanyName?.() ?? true)) return;
     if (!(await asegurarNumeroCot())) return;
     saveCotMetadata();
 

@@ -686,7 +686,8 @@
     a.click();
     URL.revokeObjectURL(url);
   }
-  function guardarPDFYHistorial() {
+  async function guardarPDFYHistorial() {
+    if (!(await global.ArpaBrand?.ensureCompanyName?.() ?? true)) return;
     if (typeof global.guardarPDF === 'function') global.guardarPDF();
   }
   function patchCloseSettingsForHistorial() {

@@ -482,6 +482,7 @@
   }
 
   async function enviarWhatsApp() {
+    if (!(await global.ArpaBrand?.ensureCompanyName?.() ?? true)) return;
     const jsPDF = getJsPDF();
     if (!jsPDF) {
       scheduleCcDraftSave(true);
@@ -770,8 +771,9 @@
     doc.text(dt('cc.pdf.sig_customer', 'Firma cliente'), m + sigW + 10 + sigW / 2, y + 17, { align: 'center' });
     doc.setTextColor(30, 41, 59);
     doc.setFont('helvetica', 'bold');
-    doc.text(d.cobrador.nombre || '—', m + sigW / 2, y + 22, { align: 'center' });
-    doc.text(d.cliente.nombre || '—', m + sigW + 10 + sigW / 2, y + 22, { align: 'center' });
+    // Sin nombre del técnico firma la empresa; nunca un "—" suelto.
+    doc.text(d.cobrador.nombre || d.cobrador.empresa || '', m + sigW / 2, y + 22, { align: 'center' });
+    doc.text(d.cliente.nombre || '', m + sigW + 10 + sigW / 2, y + 22, { align: 'center' });
 
     doc.setFillColor(...NAVY);
     doc.rect(0, ph - 14, pw, 14, 'F');
@@ -789,6 +791,7 @@
   }
 
   async function generarPDF() {
+    if (!(await global.ArpaBrand?.ensureCompanyName?.() ?? true)) return;
     const jsPDF = getJsPDF();
     if (!jsPDF) {
       scheduleCcDraftSave(true);
