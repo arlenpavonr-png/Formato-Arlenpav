@@ -504,11 +504,23 @@
       .replace(/^(.*?):/, '<strong>$1:</strong>');
   }
 
+  // Sin banco: en pantalla queda el aviso, pero el PDF no imprime la sección "Datos bancarios".
+  function hasBankData(s) {
+    const settings = s || getSettings();
+    return !!(val(settings.bankName, '') || val(settings.accountNumber, ''));
+  }
+
+  function toggleBankSectionPrint(el, s) {
+    el?.closest('.section')?.classList.toggle('print-hide-empty', !hasBankData(s));
+  }
+
   function syncBankBlocksForPrint() {
-    const html = formatBankBlock(getSettings());
+    const s = getSettings();
+    const html = formatBankBlock(s);
     ['brand-bank-block-formato', 'brand-bank-block'].forEach((id) => {
       const el = document.getElementById(id);
       if (el) el.innerHTML = html;
+      toggleBankSectionPrint(el, s);
     });
   }
 
@@ -587,7 +599,9 @@
       }
       const taxId = global.ArpaPricing?.getTaxIdLabel?.() || 'NIT';
       const phone = global.ArpaPricing?.formatCompanyPhone?.(s.phone) || val(s.phone, '—');
-      let html = `${taxId}: ${val(s.nit, '—')} &nbsp;|&nbsp; Tel: ${phone}<br>${val(s.address, '—')}`;
+      // Sin RFC/NIT no se imprime "RFC: —".
+      const taxPart = val(s.nit, '') ? `${taxId}: ${val(s.nit, '')} &nbsp;|&nbsp; ` : '';
+      let html = `${taxPart}Tel: ${phone}<br>${val(s.address, '—')}`;
       const website = (s.website || '').trim();
       if (website && !isInternalAppUrl(website)) html += `<br>${website}`;
       el.innerHTML = html;
@@ -597,7 +611,8 @@
       : (() => {
         const taxId = global.ArpaPricing?.getTaxIdLabel?.() || 'NIT';
         const phone = global.ArpaPricing?.formatCompanyPhone?.(s.phone) || val(s.phone, '—');
-        return `${company} &nbsp;|&nbsp; ${taxId} ${val(s.nit, '—')} &nbsp;|&nbsp; Tel ${phone}`;
+        const taxPart = val(s.nit, '') ? `${taxId} ${val(s.nit, '')} &nbsp;|&nbsp; ` : '';
+        return `${company} &nbsp;|&nbsp; ${taxPart}Tel ${phone}`;
       })();
     set('brand-screen-footer', (el) => {
       if (el.dataset.editable !== 'true') return;
@@ -608,8 +623,8 @@
       const isWL = global.ArpaLicense?.isWhiteLabelLicense?.() ?? false;
       el.textContent = isWL ? '' : getGlobalFooterText();
     });
-    set('brand-bank-block', (el) => { el.innerHTML = formatBankBlock(s); });
-    set('brand-bank-block-formato', (el) => { el.innerHTML = formatBankBlock(s); });
+    set('brand-bank-block', (el) => { el.innerHTML = formatBankBlock(s); toggleBankSectionPrint(el, s); });
+    set('brand-bank-block-formato', (el) => { el.innerHTML = formatBankBlock(s); toggleBankSectionPrint(el, s); });
     applyLegalCopyToDocuments();
     set('brand-verification-company', (el) => { el.textContent = configured ? company : 'su empresa'; });
     document.querySelectorAll('[data-brand-company]').forEach((el) => { el.textContent = configured ? company : 'su empresa'; });

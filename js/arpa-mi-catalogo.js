@@ -574,12 +574,18 @@
     render();
   }
 
+  // m2 se muestra como m² en la tarjeta del catálogo.
+  function unidadCorta(u) {
+    const v = String(u || 'unidad');
+    return v === 'm2' ? 'm²' : v;
+  }
+
   function renderProductCard(p) {
     return `
       <article class="catalogo-card" data-id="${escapeHtml(p.id)}">
         <div class="catalogo-card-head">
           <span class="catalogo-ref">${escapeHtml(p.cod)}</span>
-          <span class="catalogo-unidad">${escapeHtml(p.unidad || 'unidad')}</span>
+          <span class="catalogo-unidad">${escapeHtml(unidadCorta(p.unidad))}</span>
         </div>
         <h3 class="catalogo-nom">${escapeHtml(p.nom)}</h3>
         ${p.marca ? `<p class="catalogo-meta"><span>${escapeHtml(p.marca)}</span></p>` : ''}

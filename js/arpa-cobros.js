@@ -1,5 +1,5 @@
 /**
- * Cobros dinámicos: filas editables (descripción + valor) con suma automática
+ * Cobros dinámicos: filas editables (descripción + cantidad + valor unitario) con suma automática
  */
 (function (global) {
   const stores = {};
@@ -7,6 +7,20 @@
   function getStore(id) {
     if (!stores[id]) stores[id] = { lines: [], seeded: false };
     return stores[id];
+  }
+
+  // Cantidad con decimales (287,25 m²); ítems viejos sin cantidad = 1.
+  function parseCant(value) {
+    if (global.ArpaPricing?.parseCantidad) return global.ArpaPricing.parseCantidad(value);
+    const n = Number(String(value == null ? '' : value).trim().replace(',', '.'));
+    return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : 1;
+  }
+
+  // Los cobros de ejemplo (instalación, visita técnica…) son de automatismos; otros oficios arrancan vacíos.
+  function usesDefaultCobros() {
+    const oficios = global.ArpaOficios?.getActiveOficiosFromSettings?.();
+    if (!Array.isArray(oficios) || !oficios.length) return true;
+    return oficios.indexOf('automatismos') !== -1;
   }
 
   function defaultPriceKeys() {
@@ -72,6 +86,7 @@
       id: Date.now() + Math.random(),
       desc: desc || '',
       value: Number(value) || 0,
+      cant: parseCant(extra.cant),
       valueCop: extra.valueCop != null ? Number(extra.valueCop) : null,
       userEdited: !!extra.userEdited,
       priceKey: extra.priceKey || ''
@@ -97,9 +112,13 @@
           <label>${window.ArpaI18n.t('cobros.descripcion')}</label>
           <input type="text" class="cobro-desc" value="${escapeAttr(line.desc)}" placeholder="${escapeAttr(window.ArpaI18n.t('cobros.descripcion_placeholder'))}">
         </div>
+        <div class="field cobro-cant-field">
+          <label>${window.ArpaI18n.t('cobros.cantidad')}</label>
+          <input type="number" class="cobro-cant" min="0.01" step="0.01" inputmode="decimal" value="${line.cant}" placeholder="1">
+        </div>
         <div class="field cobro-valor-field">
           <label>${window.ArpaI18n.t('cobros.valor_cop', { moneda: window.ArpaPricing?.getDefaultCurrency?.() || 'COP' })}</label>
-          <input type="number" class="cobro-valor" min="0" step="1" inputmode="numeric" value="${line.value || ''}" placeholder="0">
+          <input type="number" class="cobro-valor" min="0" step="any" inputmode="decimal" value="${line.value || ''}" placeholder="0">
         </div>
         <button type="button" class="btn-quitar-extra cobro-remove" data-index="${index}" aria-label="${escapeAttr(window.ArpaI18n.t('cobros.quitar'))}">✕</button>
       </div>
@@ -108,6 +127,13 @@
     container.querySelectorAll('.cobro-desc').forEach((input, i) => {
       input.addEventListener('input', () => {
         store.lines[i].desc = input.value;
+        notifyChange(storeId);
+      });
+    });
+    container.querySelectorAll('.cobro-cant').forEach((input, i) => {
+      input.addEventListener('input', () => {
+        if (!store.lines[i]) return;
+        store.lines[i].cant = parseCant(input.value);
         notifyChange(storeId);
       });
     });
@@ -145,7 +171,9 @@
       if (!line) return;
       const desc = row.querySelector('.cobro-desc');
       const valor = row.querySelector('.cobro-valor');
+      const cant = row.querySelector('.cobro-cant');
       if (desc) line.desc = desc.value;
+      if (cant) line.cant = parseCant(cant.value);
       if (valor) line.value = Number(valor.value) || 0;
     });
   }
@@ -168,7 +196,7 @@
         cod: `COBRO-${index + 1}`,
         nom: l.desc.trim() || window.ArpaI18n.t('cobros.item_generico'),
         pvp: Number(l.value) || 0,
-        cant: 1,
+        cant: parseCant(l.cant),
         tipo: 'cobro'
       }));
   }
@@ -179,8 +207,13 @@
 
   function seedFromPriceList(storeId) {
     const store = getStore(storeId);
-    if (store.seeded && store.lines.length) {
-      refreshPrecargadoValues(storeId);
+    if (store.seeded) {
+      if (store.lines.length) refreshPrecargadoValues(storeId);
+      return;
+    }
+    if (!usesDefaultCobros()) {
+      store.seeded = true;
+      renderEditor(storeId);
       return;
     }
     const list = global.ArpaPricing?.getPriceList?.();
@@ -245,16 +278,18 @@
     renderEditor(storeId);
   }
 
-  function setLines(storeId, rawLines, options) {
+  function setLines(storeId, rawLines) {
     const store = getStore(storeId);
     store.lines = (rawLines || []).map(function (l) {
       return createLine(l.desc || l.nom || '', l.value != null ? l.value : (l.pvp || 0), {
+        cant: l.cant,
         valueCop: l.valueCop,
         userEdited: !!l.userEdited,
         priceKey: l.priceKey || ''
       });
     });
-    store.seeded = !!(options && options.keepSeeded);
+    // Líneas puestas a mano (historial, borrador): no volver a sembrar los cobros de ejemplo encima.
+    store.seeded = true;
     if (store.lines.length) refreshPrecargadoValues(storeId);
     else renderEditor(storeId);
   }

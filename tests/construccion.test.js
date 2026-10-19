@@ -33,10 +33,10 @@ test('el oficio existe con sus tipos de trabajo y "Otra" al final', () => {
   assert.strictEqual(cfg.showMedidas, false, 'no muestra medidas de puerta');
 });
 
-test('catálogo base: 20 productos, códigos únicos y los de m² con unidad m2', () => {
+test('catálogo base: 22 productos (con plafón reticular), códigos únicos y los de m² con unidad m2', () => {
   const list = loadOficios().seedCatalog_construccion();
-  assert.strictEqual(list.length, 20);
-  assert.strictEqual(new Set(list.map((p) => p.cod)).size, 20);
+  assert.strictEqual(list.length, 22);
+  assert.strictEqual(new Set(list.map((p) => p.cod)).size, 22);
   list.filter((p) => /\(m²\)/.test(p.nom)).forEach((p) => assert.strictEqual(p.unidad, 'm2', p.nom));
 });
 

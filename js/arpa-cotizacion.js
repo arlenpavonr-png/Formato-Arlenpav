@@ -6,6 +6,10 @@
     return global.ArpaPricing?.formatoPesos(n) || ('$ ' + (Number(n) || 0).toLocaleString('es-CO'));
   }
 
+  function formatoCant(n) {
+    return global.ArpaPricing?.formatoCantidad ? global.ArpaPricing.formatoCantidad(n) : String(n || 1);
+  }
+
   function getCatalogoDeOficio(oid) {
     const normalized = global.ArpaOficios?.normalizeOficioId?.(oid) || oid;
     const fromMiCatalogo = global.ArpaMiCatalogo?.getProducts?.(normalized);
@@ -251,7 +255,7 @@
         <td class="td-cod">${escapeHtml(f.cod)}</td>
         <td class="td-desc"><span class="cot-desc-text">${escapeHtml(f.nom)}</span></td>
         <td class="td-cant"><input type="number" class="cot-cant-input" min="0.01" step="0.01" inputmode="decimal" value="${f.cant}" data-fila="${idx}"></td>
-        <td class="td-precio"><input type="number" class="cot-pvp-input" min="0" step="1000" value="${f.pvp}" data-fila="${idx}" inputmode="numeric"></td>
+        <td class="td-precio"><input type="number" class="cot-pvp-input" min="0" step="any" value="${f.pvp}" data-fila="${idx}" inputmode="decimal"></td>
         <td class="td-total">${formatoPesos(f.pvp * f.cant)}</td>
         <td class="td-action"><button type="button" class="btn-quitar no-print" data-quitar="${idx}">✕</button></td>
       </tr>`;
@@ -260,9 +264,9 @@
       html += `<tr class="row-cobro cot-row" data-cobro="1">
         <td class="td-cod">${escapeHtml(f.cod)}</td>
         <td class="td-desc"><span class="cot-desc-text">${escapeHtml(f.nom)}</span></td>
-        <td class="td-cant"><span class="cot-cant-static">1</span></td>
+        <td class="td-cant"><span class="cot-cant-static">${escapeHtml(formatoCant(f.cant))}</span></td>
         <td class="td-precio">${formatoPesos(f.pvp)}</td>
-        <td class="td-total">${formatoPesos(f.pvp)}</td>
+        <td class="td-total">${formatoPesos(f.pvp * f.cant)}</td>
         <td class="td-action"></td>
       </tr>`;
     });
@@ -529,7 +533,7 @@
     renderTablaCot();
     const rowPrintBackups = lockCotRowsForPrint(viewRoot);
     const elementos = viewRoot.querySelectorAll(
-      'input:not([type=file]):not([type=checkbox]):not(.cot-cant-input):not(.cot-pvp-input):not(.cobro-desc):not(.cobro-valor), select, textarea'
+      'input:not([type=file]):not([type=checkbox]):not(.cot-cant-input):not(.cot-pvp-input):not(.cobro-desc):not(.cobro-cant):not(.cobro-valor), select, textarea'
     );
     const respaldos = [];
     const obs = document.getElementById('cot-obs');
@@ -1095,7 +1099,8 @@
       conIva:   document.getElementById('iva-check-cot')?.checked || false,
       filas:    filas.map(function(f) {
         return { cod: f.cod, nom: f.nom, pvp: f.pvp, cant: f.cant };
-      })
+      }),
+      cobros:   getCobrosLineas()
     };
   }
 
@@ -1135,6 +1140,10 @@
         });
         renderTablaCot();
         recalcularCotizacion();
+      }
+      // Borradores viejos no traen cobros: se dejan los sembrados.
+      if (Array.isArray(d.cobros) && global.ArpaCobros?.setLines) {
+        global.ArpaCobros.setLines('cot', d.cobros);
       }
       return true;
     } catch (e) {
