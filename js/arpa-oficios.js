@@ -460,7 +460,7 @@
     ];
   }
 
-  /** Catálogo base Construcción y acabados — 20 productos (COP). Drywall = tablaroca en México. */
+  /** Catálogo base Construcción y acabados — 22 productos (COP). Drywall = tablaroca en México. */
   function seedCatalog_construccion() {
     return [
       { cod: 'CON-001', nom: 'Muro en drywall / tablaroca, ambas caras (m²)', categoria: 'Drywall / Tablaroca', pvp: 85000, unidad: 'm2' },
@@ -482,7 +482,9 @@
       { cod: 'CON-017', nom: 'Hueco para lámpara empotrada en cielo raso / plafón', categoria: 'Servicios', pvp: 25000, unidad: 'servicio' },
       { cod: 'CON-018', nom: 'Retiro de escombro (viaje)', categoria: 'Servicios', pvp: 150000, unidad: 'servicio' },
       { cod: 'CON-019', nom: 'Mano de obra por día (oficial)', categoria: 'Servicios', pvp: 120000, unidad: 'servicio' },
-      { cod: 'CON-020', nom: 'Visita técnica y toma de medidas', categoria: 'Servicios', pvp: 50000, unidad: 'servicio' }
+      { cod: 'CON-020', nom: 'Visita técnica y toma de medidas', categoria: 'Servicios', pvp: 50000, unidad: 'servicio' },
+      { cod: 'CON-021', nom: 'Plafón reticular suspendido 61 x 61 cm, material y mano de obra (m²)', categoria: 'Drywall / Tablaroca', pvp: 209000, unidad: 'm2' },
+      { cod: 'CON-022', nom: 'Plafón reticular suspendido 61 x 122 cm, material y mano de obra (m²)', categoria: 'Drywall / Tablaroca', pvp: 198000, unidad: 'm2' }
     ];
   }
 
@@ -846,7 +848,7 @@
   const AUTOMATISMOS_SEED_VERSION = '2026-09-listas-distribuidor-2';
   const AUTOMATISMOS_SEED_VERSION_KEY = 'arpa_seed_version_automatismos';
   /** Catálogos ampliados después de sembrados: agregan solo los códigos que faltan, una vez. */
-  const SEED_UPDATES = { metalmecanica: '2026-10-cerrajeria' };
+  const SEED_UPDATES = { metalmecanica: '2026-10-cerrajeria', construccion: '2026-10-plafon-reticular' };
 
   function seedOficioIfNeeded(oficioId) {
     const id = normalizeOficioId(oficioId);
@@ -871,6 +873,10 @@
       }
     }
     const result = importSeedCatalog(id, { force: false });
+    // Recién sembrado con la versión vigente: no repetir la actualización en la próxima carga.
+    if (SEED_UPDATES[id] && !result.skipped) {
+      try { localStorage.setItem('arpa_seed_version_' + id, SEED_UPDATES[id]); } catch (e) { /* ignore */ }
+    }
     if (id === OFICIO_AUTOMATISMOS && !result.skipped) {
       try { localStorage.setItem(AUTOMATISMOS_SEED_VERSION_KEY, AUTOMATISMOS_SEED_VERSION); } catch (e) { /* ignore */ }
     }

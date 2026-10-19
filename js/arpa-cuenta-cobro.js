@@ -279,7 +279,7 @@
       <tr class="cc-row" data-idx="${idx}">
         <td class="td-desc"><input type="text" class="cc-svc-desc" value="${escAttr(row.desc)}" placeholder="Descripción del servicio"></td>
         <td class="td-cant"><input type="number" class="cc-svc-cant" min="0.01" step="0.01" value="${row.cant}" inputmode="decimal"></td>
-        <td class="td-precio"><input type="number" class="cc-svc-unit" min="0" step="1000" value="${row.unit || ''}" inputmode="numeric" placeholder="0"></td>
+        <td class="td-precio"><input type="number" class="cc-svc-unit" min="0" step="any" value="${row.unit || ''}" inputmode="decimal" placeholder="0"></td>
         <td class="td-total cc-svc-total">${formatoPesos(row.cant * row.unit)}</td>
         <td class="td-action">${servicios.length > 1 ? `<button type="button" class="btn-quitar cc-svc-remove" data-idx="${idx}">✕</button>` : ''}</td>
       </tr>
@@ -712,23 +712,26 @@
       d.pago.accountHolder && `${dt('cc.pdf.holder', 'Titular')}: ${d.pago.accountHolder}`,
       d.pago.accountHolderDocument && `${dt('cc.pdf.holder_doc', taxLabel === 'NIT' ? 'NIT/C.C.' : taxLabel)}: ${d.pago.accountHolderDocument}`
     ].filter(Boolean);
-    const consigBoxH = 10 + consigLines.length * 4.5 + 4;
-    if (y > ph - (consigBoxH + 15)) { doc.addPage(); y = m; }
-    doc.setFillColor(220, 252, 231);
-    doc.setDrawColor(22, 163, 74);
-    doc.roundedRect(m, y, pw - m * 2, consigBoxH, 2, 2, 'FD');
-    doc.setTextColor(21, 128, 61);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.text(dt('cc.pdf.payment', 'DATOS PARA CONSIGNACIÓN'), m + 4, y + 6);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    let py = y + 12;
-    consigLines.forEach((line) => {
-      doc.text(line, m + 4, py);
-      py += 4.5;
-    });
-    y += consigBoxH + 6;
+    // Sin banco ni número de cuenta no se imprime el recuadro de consignación vacío.
+    if (d.pago.bankName || d.pago.accountNumber) {
+      const consigBoxH = 10 + consigLines.length * 4.5 + 4;
+      if (y > ph - (consigBoxH + 15)) { doc.addPage(); y = m; }
+      doc.setFillColor(220, 252, 231);
+      doc.setDrawColor(22, 163, 74);
+      doc.roundedRect(m, y, pw - m * 2, consigBoxH, 2, 2, 'FD');
+      doc.setTextColor(21, 128, 61);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.text(dt('cc.pdf.payment', 'DATOS PARA CONSIGNACIÓN'), m + 4, y + 6);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      let py = y + 12;
+      consigLines.forEach((line) => {
+        doc.text(line, m + 4, py);
+        py += 4.5;
+      });
+      y += consigBoxH + 6;
+    }
 
     if (d.observaciones) {
       const obsLines = doc.splitTextToSize(d.observaciones, pw - m * 2);
