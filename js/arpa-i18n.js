@@ -574,10 +574,6 @@
     'ui.historial.eliminar': 'Delete',
     'aria.historial.eliminar_registro': 'Delete record',
     'ui.historial.ver_documento': 'View document',
-    'hist.no_results': 'No results found.',
-    'ui.historial.sin_subir': '⚠ Not uploaded to the cloud',
-    'ui.historial.numero_repetido': '⚠ Duplicate number: check before sending',
-    'alert.historial.numero_repetido': 'Another document already has number {numero}. This one was saved separately (the previous one was not deleted). Check the number before sending it to the customer.',
     'ui.historial.sin_descripcion': 'No description',
     'ui.cotizacion.sin_resultados': 'No results',
     'ui.cotizacion.tabla_vacia': 'Add products or invoice items',
@@ -925,11 +921,7 @@
       'currency.name.clp': 'pesos chilenos',
       'tax.label.iva': 'IVA',
       'tax.label.igv': 'IGV',
-      'tax.label.sales_tax': 'Impuesto sobre ventas',
-      'hist.no_results': 'No se encontraron resultados.',
-      'ui.historial.sin_subir': '⚠ Sin subir a la nube',
-      'ui.historial.numero_repetido': '⚠ Número repetido: revise antes de enviar',
-      'alert.historial.numero_repetido': 'Ya existe otro documento con el número {numero}. Se guardó aparte (no se borró el anterior). Revise el número antes de enviarlo al cliente.'
+      'tax.label.sales_tax': 'Impuesto sobre ventas'
     });
   }
 
