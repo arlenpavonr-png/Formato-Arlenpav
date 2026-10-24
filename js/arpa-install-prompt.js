@@ -59,6 +59,15 @@
     });
   }
 
+  /** Técnico nuevo que aún no saca su primer PDF: el aviso sale después, en la pantalla de logro de la guía. */
+  function waitingFirstPdf() {
+    return !!safe(function () {
+      if (global.localStorage.getItem('arpa_tecnico_nuevo') !== 'true') return false;
+      var guia = JSON.parse(global.localStorage.getItem('arpa_guia') || 'null');
+      return !(guia && guia.logro);
+    });
+  }
+
   function markBannerDismissed() {
     safe(function () {
       if (global.sessionStorage) global.sessionStorage.setItem(DISMISS_KEY, '1');
@@ -111,6 +120,10 @@
       var otherIos = isIosOther();
       var canChrome = !!deferredPrompt;
       if (!safariIos && !otherIos && !canChrome) return;
+      if (waitingFirstPdf()) {
+        hideAll();
+        return;
+      }
 
       Array.prototype.forEach.call(roots(), function (root) {
         bindRoot(root);

@@ -1244,6 +1244,9 @@
   function applySpanishInRoot(root, items) {
     if (!root) return;
     root.querySelectorAll('[data-i18n]').forEach(function (el) {
+      // La etiqueta del documento la pone preparePdfSpanish según la vista; si se respalda
+      // aquí también, al restaurar quedaba "Formato de Servicio" estando en Cotización.
+      if (el.id === 'doc-type-label') return;
       var def = el.getAttribute('data-i18n-default');
       if (def == null) return;
       pushBackup(items, el, 'textContent', el.textContent);
