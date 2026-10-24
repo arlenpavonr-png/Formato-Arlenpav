@@ -6,6 +6,8 @@
   const ONBOARDING_KEY = 'arpa_onboarding';
   const RUBRO_KEY = 'arpa_rubro';
   const OFICIO_AUTOMATISMOS = 'automatismos';
+  // Solo lo marca quien termina la bienvenida por primera vez (los usuarios de siempre no lo tienen).
+  const NEW_TECH_KEY = 'arpa_tecnico_nuevo';
   let pendingFinish = null; // { oficioId, opts }
 
   function isOnboardingDone() {
@@ -72,20 +74,45 @@
     global.ArpaOficios?.saveActiveOficios?.([oficioId]);
   }
 
+  /** Catálogo base del oficio elegido, para que la primera búsqueda encuentre productos. */
+  function seedChosenOficio(oficioId, opts) {
+    // Automatismos con "Omitir, empezar vacío": se respeta la elección.
+    if (oficioId === OFICIO_AUTOMATISMOS && !opts?.loadDemo) return;
+    try {
+      global.ArpaOficios?.seedOficioIfNeeded?.(oficioId);
+      global.ArpaCatalogo?.invalidateListaCache?.();
+      global.ArpaCotizacion?.updateCatalogHint?.();
+    } catch (e) {
+      console.warn('[arpa-onboarding] seed', e);
+    }
+  }
+
+  /** Técnico nuevo: los cobros salen como sugerencias y se ofrece la guía de primeros pasos. */
+  function markNewTechnician() {
+    try { localStorage.setItem(NEW_TECH_KEY, 'true'); } catch (e) { /* ignore */ }
+  }
+
+  function openCotizacionFirst() {
+    const btn = document.querySelector('.main-menu-btn[onclick*="openCotizacionView"]');
+    if (typeof global.openCotizacionView === 'function') global.openCotizacionView(btn);
+  }
+
   function finishOnboarding(oficioId, opts) {
     localStorage.setItem(ONBOARDING_KEY, 'true');
     localStorage.setItem(RUBRO_KEY, oficioId);
+    markNewTechnician();
+    global.ArpaCobros?.resetToSuggestions?.('cot');
     activateOficio(oficioId);
     hideGate();
     if (opts?.loadDemo) {
       loadDemoCatalog();
     }
-    if (opts?.goToCatalog) {
-      const btn = document.querySelector('[data-onboarding-oficio="' + OFICIO_AUTOMATISMOS + '"]')
-        || document.querySelector('.main-menu-btn[onclick*="openCatalogoView"]');
-      global.openCatalogoView?.(btn);
-      global.ArpaMiCatalogo?.refreshView?.();
-    }
+    seedChosenOficio(oficioId, opts);
+    // Lo que vende el anuncio es la cotización: se entra directo ahí.
+    openCotizacionFirst();
+    try {
+      global.dispatchEvent(new CustomEvent('arpa:onboarding-done', { detail: { oficioId } }));
+    } catch (e) { /* ignore */ }
   }
 
   function onOficioSelected(oficioId) {
@@ -104,9 +131,9 @@
     const oficios = global.ArpaOficios?.getOficiosList?.() || [];
     container.innerHTML = oficios.map((o) => {
       const label = global.ArpaOficios?.getOficioLabel?.(o.id) || o.id;
-      const isPrimary = o.id === OFICIO_AUTOMATISMOS;
+      // Todos los oficios con el mismo color: ninguno parece "el recomendado".
       return (
-        '<button type="button" class="btn-onboarding-rubro' + (isPrimary ? ' primary' : '') + '" ' +
+        '<button type="button" class="btn-onboarding-rubro" ' +
         'data-onboarding-oficio="' + o.id + '" data-i18n="' + o.i18nKey + '">' +
         label +
         '</button>'
@@ -150,6 +177,7 @@
   global.ArpaOnboarding = {
     ONBOARDING_KEY,
     RUBRO_KEY,
+    NEW_TECH_KEY,
     isOnboardingDone,
     loadDemoCatalog,
     tryShow,

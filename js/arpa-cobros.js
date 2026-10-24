@@ -101,7 +101,10 @@
     const store = getStore(storeId);
 
     if (!store.lines.length) {
-      container.innerHTML = '<p class="extra-items-empty">' + window.ArpaI18n.t('cobros.vacio') + '</p>';
+      container.innerHTML = store.suggest
+        ? ''
+        : '<p class="extra-items-empty">' + window.ArpaI18n.t('cobros.vacio') + '</p>';
+      renderSuggestions(storeId);
       notifyChange(storeId);
       return;
     }
@@ -155,6 +158,7 @@
       btn.addEventListener('click', () => removeLine(storeId, Number(btn.dataset.index)));
     });
 
+    renderSuggestions(storeId);
     notifyChange(storeId);
   }
 
@@ -205,10 +209,99 @@
     return getLines(storeId).reduce((s, l) => s + l.pvp * l.cant, 0);
   }
 
+  // Técnico nuevo (terminó la bienvenida con esta versión): los cobros de la lista de precios
+  // no se cargan solos; salen como sugerencias "+ Visita $390" y no suman hasta que se tocan.
+  // Quien ya usaba la app no tiene la marca y sigue igual que siempre.
+  function usesSuggestions() {
+    try {
+      return localStorage.getItem('arpa_tecnico_nuevo') === 'true';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function suggestionLabel(key, item, defaults) {
+    return item.label || global.ArpaI18n?.t?.(defaults[key].labelKey) || key;
+  }
+
+  function formatMoney(value) {
+    try {
+      const out = global.ArpaPricing?.formatoPesos?.(value);
+      if (out) return out;
+    } catch (e) { /* ignore */ }
+    return '$ ' + Number(value || 0).toLocaleString('es-CO');
+  }
+
+  function renderSuggestions(storeId) {
+    const container = document.getElementById(`cobros-editor-${storeId}`);
+    if (!container || !getStore(storeId).suggest) return;
+    const list = global.ArpaPricing?.getPriceList?.();
+    const defaults = global.ArpaPricing?.DEFAULT_PRICE_LIST;
+    if (!list || !defaults) return;
+    const used = new Set(getStore(storeId).lines.map((l) => l.priceKey).filter(Boolean));
+    const keys = Object.keys(defaults).filter((key) => !used.has(key));
+    if (!keys.length) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'cobros-sugerencias no-print';
+    wrap.innerHTML = keys.map((key) => {
+      const item = list[key] || {};
+      return `<button type="button" class="cobro-sugerencia" data-sugerencia="${escapeAttr(key)}">+ ${escapeHtml(suggestionLabel(key, item, defaults))} ${escapeHtml(formatMoney(item.value))}</button>`;
+    }).join('');
+    wrap.querySelectorAll('[data-sugerencia]').forEach((btn) => {
+      btn.addEventListener('click', () => addSuggestion(storeId, btn.getAttribute('data-sugerencia')));
+    });
+    container.appendChild(wrap);
+  }
+
+  function addSuggestion(storeId, key) {
+    const list = global.ArpaPricing?.getPriceList?.();
+    const defaults = global.ArpaPricing?.DEFAULT_PRICE_LIST;
+    if (!list || !defaults || !defaults[key]) return;
+    const item = list[key] || {};
+    getStore(storeId).lines.push(createLine(suggestionLabel(key, item, defaults), item.value, {
+      priceKey: key,
+      valueCop: defaults[key].value,
+      userEdited: !!item.userEdited
+    }));
+    renderEditor(storeId);
+    try {
+      global.dispatchEvent(new CustomEvent('arpa:cobro-agregado', { detail: { storeId, key } }));
+    } catch (e) { /* ignore */ }
+  }
+
+  function escapeHtml(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  /**
+   * Al terminar la bienvenida: si lo único puesto son los cobros sembrados sin tocar,
+   * se quitan para que el técnico nuevo arranque con sugerencias.
+   */
+  function resetToSuggestions(storeId) {
+    const store = getStore(storeId);
+    syncFromEditor(storeId);
+    const untouched = store.lines.every((l) => l.priceKey && !l.userEdited);
+    if (!untouched) return false;
+    store.lines = [];
+    store.seeded = false;
+    seedFromPriceList(storeId);
+    return true;
+  }
+
   function seedFromPriceList(storeId) {
     const store = getStore(storeId);
     if (store.seeded) {
       if (store.lines.length) refreshPrecargadoValues(storeId);
+      else if (store.suggest) renderEditor(storeId);
+      return;
+    }
+    if (usesSuggestions()) {
+      // Lo que ya esté puesto (borrador, historial) se deja como está.
+      store.suggest = true;
+      store.seeded = true;
+      if (store.lines.length) refreshPrecargadoValues(storeId);
+      else renderEditor(storeId);
       return;
     }
     if (!usesDefaultCobros()) {
@@ -312,6 +405,9 @@
     setLines,
     getSubtotal,
     seedFromPriceList,
+    addSuggestion,
+    usesSuggestions,
+    resetToSuggestions,
     refreshPrecargadoValues,
     refreshDefaultLabels,
     renderEditor,

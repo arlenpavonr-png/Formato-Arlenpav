@@ -1675,6 +1675,65 @@
   .resultado-nom { color: var(--text); flex: 1; }
   .resultado-pvp { color: var(--green); font-weight: 700; flex-shrink: 0; font-family: 'DM Mono', monospace; }
   .tabla-cot-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  /* Cobros sugeridos (técnico nuevo): se tocan para agregarlos; no suman hasta entonces. */
+  .cobros-sugerencias { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .cobro-sugerencia {
+    border: 1.5px dashed var(--accent, #2563eb);
+    background: #fff;
+    color: var(--navy, #1a2a4a);
+    border-radius: 999px;
+    padding: 6px 10px;
+    min-height: 40px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .cobro-sugerencia:active { background: #eff6ff; }
+  /* Tabla de productos en el celular: tarjetas con descripción, cantidad, precio y total, sin deslizar.
+     No aplica al armar el PDF (body.is-printing), que conserva la tabla de siempre. */
+  @media (max-width: 479.98px) {
+    body:not(.is-printing) #view-cotizacion .tabla-cot-wrap { overflow-x: visible; }
+    body:not(.is-printing) #view-cotizacion .tabla-productos { min-width: 0; display: block; border: none; }
+    body:not(.is-printing) #view-cotizacion .tabla-productos colgroup,
+    body:not(.is-printing) #view-cotizacion .tabla-productos thead { display: none; }
+    body:not(.is-printing) #view-cotizacion .tabla-productos tbody { display: block; }
+    body:not(.is-printing) #view-cotizacion .tabla-productos tbody tr.cot-row {
+      display: grid;
+      grid-template-columns: minmax(64px, 0.8fr) minmax(0, 1.2fr) minmax(0, 1.2fr) 36px;
+      grid-template-areas: "desc desc desc act" "cant precio total act";
+      gap: 4px 8px;
+      align-items: end;
+      padding: 10px;
+      margin-bottom: 8px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+    }
+    body:not(.is-printing) #view-cotizacion .tabla-productos tbody tr.empty-row,
+    body:not(.is-printing) #view-cotizacion .tabla-productos tbody tr.empty-row td { display: block; }
+    body:not(.is-printing) #view-cotizacion .tabla-productos tr.cot-row td {
+      display: block; width: auto; min-width: 0; padding: 0; overflow: hidden; text-overflow: ellipsis;
+    }
+    body:not(.is-printing) #view-cotizacion .tabla-productos tr.cot-row .td-cod { display: none; }
+    body:not(.is-printing) #view-cotizacion .tabla-productos tr.cot-row .td-desc { grid-area: desc; font-weight: 600; font-size: 13px; }
+    body:not(.is-printing) #view-cotizacion .tabla-productos tr.cot-row .td-cant { grid-area: cant; text-align: left; }
+    body:not(.is-printing) #view-cotizacion .tabla-productos tr.cot-row .td-precio { grid-area: precio; text-align: left; }
+    body:not(.is-printing) #view-cotizacion .tabla-productos tr.cot-row .td-total { grid-area: total; text-align: right; font-size: 13px; }
+    body:not(.is-printing) #view-cotizacion .tabla-productos tr.cot-row .td-action { grid-area: act; align-self: center; }
+    body:not(.is-printing) #view-cotizacion .tabla-productos tr.cot-row td[data-label]::before {
+      content: attr(data-label);
+      display: block;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .3px;
+      margin-bottom: 2px;
+    }
+    body:not(.is-printing) #view-cotizacion .tabla-productos tr.cot-row .cot-cant-input { width: 100%; max-width: 72px; box-sizing: border-box; }
+    body:not(.is-printing) #view-cotizacion .tabla-productos tr.cot-row .cot-pvp-input { width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; }
+  }
   .cot-catalog-hint {
     margin: 8px 0 0;
     font-size: 12px;
@@ -2078,6 +2137,21 @@
     background: var(--accent);
     color: #fff;
   }
+  /* Botones de Modo Demo (Configuración): mismo estilo que "Guardar"; el color de fondo lo pone cada botón. */
+  .settings-save-btn {
+    display: block;
+    width: 100%;
+    padding: 11px;
+    border-radius: 8px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 44px;
+  }
   .btn-settings-cancel {
     background: var(--light);
     color: var(--text);
@@ -2353,6 +2427,20 @@
   }
   .trial-capture-btn:hover { background: #d4b86a; }
   .trial-capture-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .trial-capture-later {
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .trial-capture-field.is-known { display: none; }
   .license-gate-panel { display: none; }
   .license-gate-panel.is-visible { display: block; }
   .license-gate-loading-spinner {
@@ -2608,9 +2696,7 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    max-height: min(52vh, 480px);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    /* Lista completa a la vista: se desplaza toda la página, no un recuadro escondido. */
   }
   .btn-onboarding-rubro {
     width: 100%;
@@ -2829,6 +2915,7 @@ document.documentElement.classList.add('license-checking');
     </div>
     <p id="trial-capture-error" class="trial-capture-error" role="alert"></p>
     <button type="button" id="trial-capture-submit" class="trial-capture-btn" data-i18n="trial_capture.btn_submit">Guardar y continuar</button>
+    <button type="button" id="trial-capture-later" class="trial-capture-later" hidden data-i18n="trial_capture.btn_later">Ahora no</button>
   </div>
 </div>
 
@@ -2841,19 +2928,19 @@ document.documentElement.classList.add('license-checking');
     <div id="license-gate-loading" class="license-gate-panel is-visible">
       <div class="license-gate-loading-spinner" aria-hidden="true"></div>
       <p id="license-gate-loading-text" class="license-gate-sub" data-i18n="license_gate.loading">Activando su prueba de 7 días…</p>
-      <p class="license-gate-manual-link"><span data-i18n="license_gate.have_code">¿Ya tiene un código Pro o PYME?</span> <a href="#" id="license-show-manual-loading" data-i18n="license_gate.enter_code">Ingréselo aquí</a></p>
+      <p class="license-gate-manual-link"><span data-i18n="license_gate.have_code">¿Ya tienes un código de licencia?</span> <a href="#" id="license-show-manual-loading" data-i18n="license_gate.enter_code">Ingrésalo aquí</a></p>
       <button type="button" id="license-loading-continue" class="license-gate-btn license-gate-loading-continue" hidden data-i18n="license_gate.btn_continue_trial">Continuar con prueba gratis</button>
     </div>
     <div id="license-gate-expired" class="license-gate-panel">
       <div class="license-gate-expired-icon" aria-hidden="true">⏱</div>
       <p class="license-gate-sub" data-i18n="license_gate.expired_title">Su prueba de 7 días ha terminado.</p>
-      <p class="license-gate-sub" data-i18n="license_gate.expired_sub">Elija un plan para seguir usando ARPA Suite. Recibirá su código por email al comprar.</p>
+      <p class="license-gate-sub" data-i18n="license_gate.expired_sub">Para seguir usando ARPA Suite, escríbenos y te enviamos tu código de licencia al pagar.</p>
       <div class="license-gate-upgrade-btns">
-        <a id="license-btn-pro" class="license-gate-btn-pro" href="https://arpatechnologyglobal.com/" target="_blank" rel="noopener" data-i18n="license_gate.btn_pro">Comprar plan Pro</a>
-        <a id="license-btn-pyme" class="license-gate-btn-pyme" href="https://arpatechnologyglobal.com/" target="_blank" rel="noopener" data-i18n="license_gate.btn_pyme">Comprar plan PYME</a>
+        <!-- No hay página de precios publicada: la compra se hace por el WhatsApp oficial de ARPA Suite. -->
+        <a id="license-btn-comprar" class="license-gate-btn-pro" href="https://wa.me/573016092542?text=Hola%2C%20quiero%20comprar%20ARPA%20Suite" target="_blank" rel="noopener" data-i18n="license_gate.btn_comprar">Comprar ARPA Suite</a>
       </div>
       <a id="license-btn-whatsapp" class="license-gate-btn-link" href="https://wa.me/573016092542" target="_blank" rel="noopener" data-i18n="license_gate.btn_whatsapp">¿Dudas? Escríbenos por WhatsApp</a>
-      <p class="license-gate-manual-link"><span data-i18n="license_gate.have_code">¿Ya tiene un código Pro o PYME?</span> <a href="#" id="license-show-manual" data-i18n="license_gate.enter_code">Ingréselo aquí</a></p>
+      <p class="license-gate-manual-link"><span data-i18n="license_gate.have_code">¿Ya tienes un código de licencia?</span> <a href="#" id="license-show-manual" data-i18n="license_gate.enter_code">Ingrésalo aquí</a></p>
     </div>
     <div id="license-gate-activate" class="license-gate-panel">
       <p id="license-gate-sub" class="license-gate-sub" data-i18n="license_gate.subtitle">Ingrese su código de licencia para activar la plataforma.</p>
@@ -5403,6 +5490,7 @@ document.addEventListener('arpa:sync-complete', updateSyncStatusText);
 })();
 </script>
 <script src="./js/arpa-install-prompt.js"></script>
+<script src="./js/arpa-guia.js"></script>
 <script>
 window.addEventListener('beforeinstallprompt', function () {
   if (window.ArpaInstall && typeof window.ArpaInstall.mostrarBoton === 'function') {
