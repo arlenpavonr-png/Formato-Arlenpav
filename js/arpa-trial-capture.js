@@ -17,6 +17,8 @@
   const TRIAL_SYNCED_KEY = 'arpa_trial_synced';
   const TRIAL_DOC_SAVED_KEY = 'arpa_trial_doc_saved';
   const TRIAL_CAPTURED_KEY = 'arpa_trial_captured';
+  // "Ahora no": fecha (AAAA-MM-DD) hasta la que no se vuelve a pedir; después sale al abrir la app.
+  const TRIAL_LATER_KEY = 'arpa_trial_capture_ahora_no';
 
   const OFICIO_OPTIONS = [
     { id: 'automatismos', label: 'Automatismos' },
@@ -93,11 +95,60 @@
     return Math.floor((today - startDate) / 86400000);
   }
 
+  function localISO(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  function getLaterUntil() {
+    try {
+      return (localStorage.getItem(TRIAL_LATER_KEY) || '').trim();
+    } catch (e) {
+      return '';
+    }
+  }
+
+  /** true mientras dura el "Ahora no" (hasta el día 3 de la prueba). */
+  function isLaterActive() {
+    const until = getLaterUntil();
+    return !!until && localISO(new Date()) < until;
+  }
+
+  /** "Ahora no": no vuelve a salir hasta el día 3 de la prueba (o mañana, si ya es el día 3 o después). */
+  function markLater() {
+    const start = getTrialStartDate();
+    let until;
+    if (start && getTrialDayIndex() < 2) {
+      const d = new Date(start + 'T00:00:00');
+      d.setDate(d.getDate() + 2);
+      until = localISO(d);
+    } else {
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      until = localISO(d);
+    }
+    try { localStorage.setItem(TRIAL_LATER_KEY, until); } catch (e) { /* ignore */ }
+  }
+
   function needsBackupCaptureOnLoad() {
     if (!shouldOfferTrialCapture()) return false;
     if (!getTrialStartDate()) return false;
+    // Quien tocó "Ahora no" lo vuelve a ver al abrir la app cuando se cumple el plazo.
+    if (getLaterUntil()) return !isLaterActive();
     if (hasDocumentSaved()) return false;
     return getTrialDayIndex() >= 2;
+  }
+
+  /** Nombre del negocio que el técnico ya dio (Configuración o "Antes de tu primer PDF"). */
+  function getKnownName() {
+    try {
+      const stored = (localStorage.getItem(TRIAL_NOMBRE_KEY) || '').trim();
+      if (stored) return stored;
+      const brand = global.ArpaBrand;
+      if (brand?.hasUserSettings?.() && brand?.getSettings) {
+        return String(brand.getSettings().companyName || '').trim();
+      }
+    } catch (e) { /* ignore */ }
+    return '';
   }
 
   function ensureTrialStartSilent() {
@@ -328,6 +379,23 @@
     populateOficioSelect(oficioSelect);
     if (phoneInput && !phoneInput.value.trim()) phoneInput.value = '+' + trialPhonePrefix() + ' ';
 
+    // Lo que el técnico ya dio no se le vuelve a pedir: el campo se llena solo y se esconde.
+    const knownName = getKnownName();
+    if (nameInput && knownName && !nameInput.value.trim()) nameInput.value = knownName;
+    nameInput?.closest('.trial-capture-field')?.classList.toggle('is-known', !!knownName);
+    const knownOficio = !!readOficioSelectValue(oficioSelect);
+    oficioSelect?.closest('.trial-capture-field')?.classList.toggle('is-known', knownOficio);
+
+    const laterBtn = document.getElementById('trial-capture-later');
+    if (laterBtn) {
+      laterBtn.hidden = !options.allowLater;
+      laterBtn.onclick = function () {
+        markLater();
+        hideCapture();
+        if (typeof onComplete === 'function') onComplete();
+      };
+    }
+
     function finish() {
       hideCapture();
       if (typeof onComplete === 'function') onComplete();
@@ -391,7 +459,8 @@
       }, { once: false });
     });
 
-    nameInput?.focus();
+    if (!knownName) nameInput?.focus();
+    else phoneInput?.focus();
   }
 
   let pdfExportDepth = 0;
@@ -412,22 +481,29 @@
   }
 
   function showCaptureAfterSave(docType) {
-    const docLabel = docType === 'cotizacion'
-      ? t('trial_capture.doc_cotizacion', 'Cotización')
-      : t('trial_capture.doc_formato', 'Formato de Servicio');
+    // La guía de primeros pasos muestra antes su pantalla de logro y luego llama a este formulario.
+    if (global.ArpaGuia?.deferCapture?.(() => openCaptureAfterSave(docType))) return;
+    openCaptureAfterSave(docType);
+  }
 
-    const titleTemplate = t('trial_capture.title_after_save', '¡Tu {doc} quedó guardado!');
-    const title = titleTemplate.replace('{doc}', docLabel);
+  function openCaptureAfterSave(docType) {
+    if (!shouldOfferTrialCapture() || isLaterActive()) return;
+    // Cada documento con su género: "tu cotización quedó guardada", "tu formato quedó guardado".
+    const title = docType === 'cotizacion'
+      ? t('trial_capture.title_after_save_cot', '¡Tu cotización quedó guardada!')
+      : t('trial_capture.title_after_save', '¡Tu {doc} quedó guardado!')
+        .replace('{doc}', t('trial_capture.doc_formato', 'Formato de Servicio'));
 
     showCapture({
       mode: 'modal',
       variant: 'achievement',
       title: title,
       subtitle: t(
-        'trial_capture.subtitle_after_save',
-        'Para acompañarte durante la prueba, confirma tu nombre, oficio y un WhatsApp de contacto.'
+        'trial_capture.subtitle_after_save_wa',
+        'Te avisamos por WhatsApp antes de que venza tu prueba.'
       ),
-      btnText: t('trial_capture.btn_submit_modal', 'Enviar datos')
+      btnText: t('trial_capture.btn_submit_modal', 'Enviar datos'),
+      allowLater: true
     });
   }
 
@@ -435,8 +511,11 @@
     try {
       localStorage.setItem(TRIAL_DOC_SAVED_KEY, 'true');
     } catch (e) { /* ignore */ }
+    try {
+      global.dispatchEvent(new CustomEvent('arpa:documento-guardado', { detail: { docType } }));
+    } catch (e) { /* ignore */ }
 
-    if (!shouldOfferTrialCapture()) return;
+    if (!shouldOfferTrialCapture() || isLaterActive()) return;
 
     if (pdfExportDepth > 0) {
       pendingCaptureDocType = docType;
@@ -460,7 +539,8 @@
         'Completa el formulario en menos de un minuto. Te avisamos por WhatsApp antes de que venza tu prueba gratis.'
       ),
       btnText: t('trial_capture.btn_start', 'Continuar a la app'),
-      onComplete: onContinue
+      onComplete: onContinue,
+      allowLater: true
     });
   }
 
@@ -473,7 +553,9 @@
     TRIAL_ID_KEY,
     TRIAL_DOC_SAVED_KEY,
     TRIAL_CAPTURED_KEY,
+    TRIAL_LATER_KEY,
     ensureTrialStartSilent,
+    isLaterActive,
     isCaptureCompleted,
     beginPdfExport,
     endPdfExport,

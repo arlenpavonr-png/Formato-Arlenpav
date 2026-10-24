@@ -249,14 +249,19 @@
       return;
     }
 
+    // Etiquetas para la vista en tarjetas del celular (CSS ::before); no salen en el PDF.
+    const lbl = (key) => escapeHtml(window.ArpaI18n?.t?.(key) || '');
+    const lc = ` data-label="${lbl('cot.table.cant')}"`;
+    const lp = ` data-label="${lbl('cot.table.pvp_unit')}"`;
+    const lt = ` data-label="${lbl('cot.table.total')}"`;
     let html = '';
     filas.forEach((f, idx) => {
       html += `<tr class="cot-row" data-fila="${idx}">
         <td class="td-cod">${escapeHtml(f.cod)}</td>
         <td class="td-desc"><span class="cot-desc-text">${escapeHtml(f.nom)}</span></td>
-        <td class="td-cant"><input type="number" class="cot-cant-input" min="0.01" step="0.01" inputmode="decimal" value="${f.cant}" data-fila="${idx}"></td>
-        <td class="td-precio"><input type="number" class="cot-pvp-input" min="0" step="any" value="${f.pvp}" data-fila="${idx}" inputmode="decimal"></td>
-        <td class="td-total">${formatoPesos(f.pvp * f.cant)}</td>
+        <td class="td-cant"${lc}><input type="number" class="cot-cant-input" min="0.01" step="0.01" inputmode="decimal" value="${f.cant}" data-fila="${idx}"></td>
+        <td class="td-precio"${lp}><input type="number" class="cot-pvp-input" min="0" step="any" value="${f.pvp}" data-fila="${idx}" inputmode="decimal"></td>
+        <td class="td-total"${lt}>${formatoPesos(f.pvp * f.cant)}</td>
         <td class="td-action"><button type="button" class="btn-quitar no-print" data-quitar="${idx}">✕</button></td>
       </tr>`;
     });
@@ -264,9 +269,9 @@
       html += `<tr class="row-cobro cot-row" data-cobro="1">
         <td class="td-cod">${escapeHtml(f.cod)}</td>
         <td class="td-desc"><span class="cot-desc-text">${escapeHtml(f.nom)}</span></td>
-        <td class="td-cant"><span class="cot-cant-static">${escapeHtml(formatoCant(f.cant))}</span></td>
-        <td class="td-precio">${formatoPesos(f.pvp)}</td>
-        <td class="td-total">${formatoPesos(f.pvp * f.cant)}</td>
+        <td class="td-cant"${lc}><span class="cot-cant-static">${escapeHtml(formatoCant(f.cant))}</span></td>
+        <td class="td-precio"${lp}>${formatoPesos(f.pvp)}</td>
+        <td class="td-total"${lt}>${formatoPesos(f.pvp * f.cant)}</td>
         <td class="td-action"></td>
       </tr>`;
     });

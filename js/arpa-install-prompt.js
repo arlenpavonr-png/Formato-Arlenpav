@@ -32,11 +32,19 @@
     });
   }
 
+  /** Navegador interno de WhatsApp, Instagram o Facebook: ahí no se puede instalar la app. */
+  function isInAppBrowser() {
+    return !!safe(function () {
+      return /WhatsApp|Instagram|FBAN|FBAV|FB_IAB|FBIOS/i.test(iosUserAgent());
+    });
+  }
+
   function isIosSafari() {
     return !!safe(function () {
       var ua = iosUserAgent();
       if (!/iPhone|iPad|iPod/i.test(ua)) return false;
       if (/CriOS|FxiOS|EdgiOS|OPiOS|OPT\//i.test(ua)) return false;
+      if (isInAppBrowser()) return false;
       return true;
     });
   }
@@ -94,7 +102,8 @@
 
   function mostrarBoton() {
     safe(function () {
-      if (isStandalone()) {
+      if (isStandalone() || isInAppBrowser()) {
+        // Dentro de WhatsApp/Instagram/Facebook la guía muestra su propia franja ("ábrela en Chrome/Safari").
         hideAll();
         return;
       }
@@ -173,8 +182,10 @@
     global.addEventListener('appinstalled', onAppInstalled);
   });
 
+  // El aviso fijo de iPhone ya no sale al abrir la app: la guía lo muestra una sola vez,
+  // después del primer PDF (pantalla de logro). Se deja la función por si se quiere volver.
   function tryIosOnReady() {
-    if (isIosDevice() && !isStandalone()) mostrarBoton();
+    return false;
   }
 
   safe(function () {
@@ -186,6 +197,9 @@
   });
 
   global.ArpaInstall = {
-    mostrarBoton: mostrarBoton
+    mostrarBoton: mostrarBoton,
+    canInstall: function () { return !!deferredPrompt; },
+    promptInstall: promptInstall,
+    isInAppBrowser: isInAppBrowser
   };
 })(typeof window !== 'undefined' ? window : this);
