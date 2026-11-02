@@ -99,7 +99,7 @@ const CONFIG = {
   TRIAL_NOTIFY_EMAIL: 'support@arpatechnologyglobal.com',
 
   /** Link Gumroad plan Técnico Independiente ($83 USD) — actualizar si cambia */
-  TRIAL_UPGRADE_GUMROAD_URL: 'https://arpatechnologyglobal.com/',
+  TRIAL_UPGRADE_GUMROAD_URL: 'https://arpatech.gumroad.com/l/arpa-suite-tecnico',
 
 };
 
@@ -1914,15 +1914,17 @@ function normalizePhoneForWaMe_(telefono) {
 
 
 
-function buildTrialDay6WhatsAppMessage_(nombre, venceHoy) {
+function buildTrialDay6WhatsAppMessage_(nombre, venceHoy, telefono) {
 
-  const gumroad = CONFIG.TRIAL_UPGRADE_GUMROAD_URL || 'https://arpatechnologyglobal.com/';
+  const gumroad = CONFIG.TRIAL_UPGRADE_GUMROAD_URL || 'https://arpatech.gumroad.com/l/arpa-suite-tecnico';
+  // En Colombia se paga por Nequi (Arlen da el número); en los demás países, con tarjeta en Gumroad.
+  const esColombia = String(telefono || '').replace(/\D/g, '').indexOf('57') === 0;
 
   const first = String(nombre || '').trim().split(/\s+/)[0];
 
   const saludo = first ? ('Hola ' + first + '! ') : 'Hola! ';
 
-  return saludo + 'Vi que llevas usando ARPA Suite estos días. ¿Cómo te ha ido con las cotizaciones? ' + (venceHoy ? 'Hoy' : 'Mañana') + ' se vence tu prueba gratis. Si te sirvió, el plan Técnico Independiente queda en $83 USD pago único, de por vida. ¿Quieres que te ayude a activarlo? Aquí está el link: ' + gumroad;
+  return saludo + 'Vi que llevas usando ARPA Suite estos días. ¿Cómo te ha ido con las cotizaciones? ' + (venceHoy ? 'Hoy' : 'Mañana') + ' se vence tu prueba gratis. Si te sirvió, el plan Técnico Independiente queda en ' + (esColombia ? '$269.000' : '$83 USD') + ' pago único, de por vida.' + (esColombia ? ' Se paga por Nequi: ¿te paso el número para activarlo?' : ' ¿Quieres que te ayude a activarlo? Aquí está el link: ' + gumroad);
 
 }
 
@@ -2010,7 +2012,7 @@ function revisarTrialsDia6() {
 
 
 
-    const message = buildTrialDay6WhatsAppMessage_(nombre, today.getTime() === day7.getTime());
+    const message = buildTrialDay6WhatsAppMessage_(nombre, today.getTime() === day7.getTime(), telefono);
 
     const waLink = buildTrialWhatsAppLink_(telefono, message);
 
