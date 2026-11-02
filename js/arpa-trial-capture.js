@@ -164,10 +164,21 @@
     }
   }
 
-  /** País configurado en la app (CO, MX, US, CL, PE) y su prefijo; Colombia si no se sabe. */
+  const PHONE_PREFIX_BY_COUNTRY = { CO: '57', MX: '52', US: '1', CL: '56', PE: '51' };
+
+  /**
+   * País para el registro de prueba (CO, MX, US, CL, PE); Colombia si no se sabe.
+   * Si la app quedó en EE.UU. (celular en "es-US") pero la zona horaria del celular
+   * dice otro país (p. ej. Monterrey), manda la zona horaria: así un mexicano no
+   * queda con +1.
+   */
   function trialCountry() {
     try {
-      return global.ArpaPricing?.getCountryProfile?.()?.code || 'CO';
+      const pricing = global.ArpaPricing;
+      const code = pricing?.getCountryProfile?.()?.code || 'CO';
+      const fromTz = pricing?.detectCountryFromTimezone?.() || '';
+      if (code === 'US' && fromTz && fromTz !== 'US' && PHONE_PREFIX_BY_COUNTRY[fromTz]) return fromTz;
+      return code;
     } catch (e) {
       return 'CO';
     }
@@ -175,10 +186,24 @@
 
   function trialPhonePrefix() {
     try {
-      return global.ArpaPricing?.getCountryProfile?.()?.phonePrefix || '57';
+      const code = trialCountry();
+      const profile = global.ArpaPricing?.getCountryProfile?.();
+      if (profile && profile.code === code && profile.phonePrefix) return profile.phonePrefix;
+      return PHONE_PREFIX_BY_COUNTRY[code] || '57';
     } catch (e) {
       return '57';
     }
+  }
+
+  /**
+   * +1 con una "lada" que no existe en EE.UU./Canadá (empieza por 0 o 1, o es 211…911).
+   * Ej.: +1 811 123 4567 es un número de Monterrey al que le quedó el +1.
+   */
+  function looksLikeWrongUsNumber(digits) {
+    const d = String(digits || '');
+    if (d.length !== 11 || d[0] !== '1') return false;
+    const area = d.slice(1, 4);
+    return /^[01]/.test(area) || area.slice(1) === '11';
   }
 
   function normalizePhone(raw) {
@@ -422,6 +447,13 @@
         phoneInput?.focus();
         return;
       }
+      if (looksLikeWrongUsNumber(phone) && phoneInput) {
+        // No se guarda: se cambia a +52 y se le pide confirmar con otro toque.
+        phoneInput.value = '+52 ' + phone.slice(1);
+        showCaptureError(t('trial_capture.error_phone_us', 'Ese número no existe en Estados Unidos (+1). Lo cambiamos a México (+52). Revíselo y toque Guardar de nuevo.'));
+        phoneInput.focus();
+        return;
+      }
 
       ensureTrialStartSilent();
       let fechaInicio = getTrialStartDate();
@@ -564,7 +596,9 @@
     showCapture,
     retryPendingRegistration,
     registerTrialUserSilent,
-    normalizePhone
+    normalizePhone,
+    trialCountry,
+    looksLikeWrongUsNumber
   };
 
   if (document.readyState === 'loading') {

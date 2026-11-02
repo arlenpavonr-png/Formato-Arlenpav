@@ -58,6 +58,7 @@
     'trial_capture.error_name': 'Enter your name.',
     'trial_capture.error_oficio': 'Select your trade.',
     'trial_capture.error_phone': 'Enter a valid WhatsApp number with country code.',
+    'trial_capture.error_phone_us': 'That number does not exist in the US (+1). We changed it to Mexico (+52). Check it and tap Save again.',
 
     'onboarding.title': 'Welcome to ARPA Suite',
     'onboarding.subtitle_rubro': 'What is your main line of business?',

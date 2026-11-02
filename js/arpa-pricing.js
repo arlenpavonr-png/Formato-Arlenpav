@@ -392,6 +392,7 @@
     renderPriceListSettings,
     detectDefaultCurrencyFromLocale,
     detectDefaultCountryFromLocale,
+    detectCountryFromTimezone,
     getCountryCode,
     getCountryProfile,
     getTaxRate,
