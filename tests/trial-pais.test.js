@@ -128,3 +128,45 @@ test('+1 con lada que no existe en EE.UU. se detecta (lada de Monterrey)', () =>
   assert.strictEqual(api.looksLikeWrongUsNumber('528111234567'), false, 'ya tiene +52');
   assert.strictEqual(api.looksLikeWrongUsNumber('573001234567'), false, 'Colombia');
 });
+
+function loadForTiming(stored) {
+  const store = Object.assign({ arpa_suite_license_code: 'ARPA-FREE-X' }, stored || {});
+  const listeners = {};
+  const win = {
+    console,
+    localStorage: {
+      getItem: (k) => (k in store ? store[k] : null),
+      setItem: (k, v) => { store[k] = String(v); },
+      removeItem: (k) => { delete store[k]; }
+    },
+    document: { readyState: 'complete', getElementById: () => null, querySelector: () => null, addEventListener() {} },
+    addEventListener(name, fn) { listeners[name] = fn; },
+    fetch: () => Promise.resolve({ json: () => ({ ok: true }) })
+  };
+  win.window = win;
+  vm.createContext(win);
+  vm.runInContext(code, win);
+  return { api: win.ArpaTrialCapture, store, listeners };
+}
+
+test('al terminar la bienvenida pide el WhatsApp una sola vez', () => {
+  const { api, store, listeners } = loadForTiming();
+  assert.strictEqual(typeof listeners['arpa:onboarding-done'], 'function', 'escucha el fin de la bienvenida');
+  api.onOnboardingDone();
+  assert.strictEqual(store.arpa_trial_capture_bienvenida, 'true');
+  assert.ok(store.arpa_trial_fecha_inicio, 'arranca la prueba');
+});
+
+test('quien ya dejó su WhatsApp no lo vuelve a ver en la bienvenida', () => {
+  const { api, store } = loadForTiming({ arpa_trial_captured: 'true' });
+  api.onOnboardingDone();
+  assert.strictEqual(store.arpa_trial_capture_bienvenida, undefined);
+});
+
+test('"Ahora no" en la bienvenida no quita la pregunta tras el primer documento', () => {
+  const futuro = '2999-01-01';
+  const primera = loadForTiming({ arpa_trial_capture_ahora_no: futuro });
+  assert.strictEqual(primera.api.canAskAfterSave(), true, 'primera vez después de guardar: sí pregunta');
+  const despues = loadForTiming({ arpa_trial_capture_ahora_no: futuro, arpa_trial_capture_tras_guardar: 'true' });
+  assert.strictEqual(despues.api.canAskAfterSave(), false, 'ya se preguntó y dijo "Ahora no": respeta');
+});
