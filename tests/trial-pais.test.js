@@ -84,3 +84,47 @@ test('registro guardado antes del cambio (sin país) sigue funcionando', async (
   assert.strictEqual(body.pais, '');
   assert.strictEqual(body.telefono, '573001234567');
 });
+
+function loadCaptureTz(country, tz) {
+  const store = {};
+  const win = {
+    console,
+    localStorage: {
+      getItem: (k) => (k in store ? store[k] : null),
+      setItem: (k, v) => { store[k] = String(v); },
+      removeItem: (k) => { delete store[k]; }
+    },
+    document: { readyState: 'complete', getElementById: () => null, addEventListener() {} },
+    addEventListener() {},
+    fetch: () => Promise.resolve({ json: () => ({ ok: true }) }),
+    ArpaPricing: {
+      getCountryProfile: () => ({ code: country, phonePrefix: PREFIX[country] }),
+      detectCountryFromTimezone: () => tz
+    }
+  };
+  win.window = win;
+  vm.createContext(win);
+  vm.runInContext(code, win);
+  return win.ArpaTrialCapture;
+}
+
+test('app en EE.UU. pero celular con hora de México: registro y prefijo de México', () => {
+  const api = loadCaptureTz('US', 'MX');
+  assert.strictEqual(api.trialCountry(), 'MX');
+  assert.strictEqual(api.normalizePhone('811 123 4567'), '528111234567');
+});
+
+test('técnico de verdad en EE.UU. sigue con +1', () => {
+  const api = loadCaptureTz('US', '');
+  assert.strictEqual(api.trialCountry(), 'US');
+  assert.strictEqual(api.normalizePhone('(305) 555-1234'), '13055551234');
+});
+
+test('+1 con lada que no existe en EE.UU. se detecta (lada de Monterrey)', () => {
+  const api = loadCaptureTz('US', '');
+  assert.strictEqual(api.looksLikeWrongUsNumber('18111234567'), true, 'lada 811');
+  assert.strictEqual(api.looksLikeWrongUsNumber('10551234567'), true, 'lada empieza por 0');
+  assert.strictEqual(api.looksLikeWrongUsNumber('13055551234'), false, 'Miami es válido');
+  assert.strictEqual(api.looksLikeWrongUsNumber('528111234567'), false, 'ya tiene +52');
+  assert.strictEqual(api.looksLikeWrongUsNumber('573001234567'), false, 'Colombia');
+});
