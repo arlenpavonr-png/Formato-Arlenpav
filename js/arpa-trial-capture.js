@@ -19,6 +19,10 @@
   const TRIAL_CAPTURED_KEY = 'arpa_trial_captured';
   // "Ahora no": fecha (AAAA-MM-DD) hasta la que no se vuelve a pedir; después sale al abrir la app.
   const TRIAL_LATER_KEY = 'arpa_trial_capture_ahora_no';
+  // Ya se pidió el WhatsApp después del primer documento guardado (se pide una vez aunque haya "Ahora no").
+  const TRIAL_AFTER_SAVE_ASKED_KEY = 'arpa_trial_capture_tras_guardar';
+  // Ya se pidió al terminar la bienvenida (apenas el técnico elige su oficio).
+  const TRIAL_WELCOME_ASKED_KEY = 'arpa_trial_capture_bienvenida';
 
   const OFICIO_OPTIONS = [
     { id: 'automatismos', label: 'Automatismos' },
@@ -518,8 +522,23 @@
     openCaptureAfterSave(docType);
   }
 
+  function flag(key) {
+    try { return localStorage.getItem(key) === 'true'; } catch (e) { return false; }
+  }
+
+  function setFlag(key) {
+    try { localStorage.setItem(key, 'true'); } catch (e) { /* ignore */ }
+  }
+
+  /** Después de guardar: siempre la primera vez (aunque antes dijera "Ahora no"); después, respeta el "Ahora no". */
+  function canAskAfterSave() {
+    if (!shouldOfferTrialCapture()) return false;
+    return !flag(TRIAL_AFTER_SAVE_ASKED_KEY) || !isLaterActive();
+  }
+
   function openCaptureAfterSave(docType) {
-    if (!shouldOfferTrialCapture() || isLaterActive()) return;
+    if (!canAskAfterSave()) return;
+    setFlag(TRIAL_AFTER_SAVE_ASKED_KEY);
     // Cada documento con su género: "tu cotización quedó guardada", "tu formato quedó guardado".
     const title = docType === 'cotizacion'
       ? t('trial_capture.title_after_save_cot', '¡Tu cotización quedó guardada!')
@@ -547,7 +566,7 @@
       global.dispatchEvent(new CustomEvent('arpa:documento-guardado', { detail: { docType } }));
     } catch (e) { /* ignore */ }
 
-    if (!shouldOfferTrialCapture() || isLaterActive()) return;
+    if (!canAskAfterSave()) return;
 
     if (pdfExportDepth > 0) {
       pendingCaptureDocType = docType;
@@ -576,6 +595,33 @@
     });
   }
 
+  /**
+   * Apenas termina la bienvenida (ya eligió su oficio): pide nombre y WhatsApp una vez,
+   * con "Ahora no". Antes solo se pedía al guardar el primer documento o al día 3, y la
+   * mayoría de los que abrían la app se iba sin dejar cómo contactarlos.
+   */
+  function onOnboardingDone() {
+    if (!shouldOfferTrialCapture() || flag(TRIAL_WELCOME_ASKED_KEY)) return;
+    if (pdfExportDepth > 0) return;
+    setFlag(TRIAL_WELCOME_ASKED_KEY);
+    ensureTrialStartSilent();
+    showCapture({
+      mode: 'modal',
+      variant: 'backup',
+      title: t('trial_capture.title', 'Bienvenido a ARPA Suite'),
+      subtitle: t(
+        'trial_capture.subtitle_backup',
+        'Para recordarte antes de que termine tu prueba y poder ayudarte, déjanos un WhatsApp de contacto.'
+      ),
+      btnText: t('trial_capture.btn_submit', 'Guardar y continuar'),
+      allowLater: true
+    });
+  }
+
+  try {
+    global.addEventListener('arpa:onboarding-done', onOnboardingDone);
+  } catch (e) { /* ignore */ }
+
   global.ArpaTrialCapture = {
     TRIAL_START_KEY,
     TRIAL_WHATSAPP_KEY,
@@ -598,7 +644,9 @@
     registerTrialUserSilent,
     normalizePhone,
     trialCountry,
-    looksLikeWrongUsNumber
+    looksLikeWrongUsNumber,
+    onOnboardingDone,
+    canAskAfterSave
   };
 
   if (document.readyState === 'loading') {
