@@ -1914,7 +1914,7 @@ function normalizePhoneForWaMe_(telefono) {
 
 
 
-function buildTrialDay6WhatsAppMessage_(nombre) {
+function buildTrialDay6WhatsAppMessage_(nombre, venceHoy) {
 
   const gumroad = CONFIG.TRIAL_UPGRADE_GUMROAD_URL || 'https://arpatechnologyglobal.com/';
 
@@ -1922,7 +1922,7 @@ function buildTrialDay6WhatsAppMessage_(nombre) {
 
   const saludo = first ? ('Hola ' + first + '! ') : 'Hola! ';
 
-  return saludo + 'Vi que llevas usando ARPA Suite estos días. ¿Cómo te ha ido con las cotizaciones? Mañana se vence tu prueba gratis. Si te sirvió, el plan Técnico Independiente queda en $83 USD pago único, de por vida. ¿Quieres que te ayude a activarlo? Aquí está el link: ' + gumroad;
+  return saludo + 'Vi que llevas usando ARPA Suite estos días. ¿Cómo te ha ido con las cotizaciones? ' + (venceHoy ? 'Hoy' : 'Mañana') + ' se vence tu prueba gratis. Si te sirvió, el plan Técnico Independiente queda en $83 USD pago único, de por vida. ¿Quieres que te ayude a activarlo? Aquí está el link: ' + gumroad;
 
 }
 
@@ -2004,11 +2004,13 @@ function revisarTrialsDia6() {
 
     const day6 = stripTime_(addDays_(fechaInicio, 6));
 
-    if (day6.getTime() !== today.getTime()) continue;
+    // Día 6 o día 7: si el disparador falló el día 6, no se pierde el aviso (pasó el 24-oct).
+    const day7 = stripTime_(addDays_(fechaInicio, 7));
+    if (today.getTime() < day6.getTime() || today.getTime() > day7.getTime()) continue;
 
 
 
-    const message = buildTrialDay6WhatsAppMessage_(nombre);
+    const message = buildTrialDay6WhatsAppMessage_(nombre, today.getTime() === day7.getTime());
 
     const waLink = buildTrialWhatsAppLink_(telefono, message);
 
@@ -2056,7 +2058,7 @@ function revisarTrialsDia6() {
 
     '<p>Hola,</p>' +
 
-    '<p>Estos usuarios de trial están en <strong>día 6</strong> (vence mañana). Contactar por WhatsApp:</p>' +
+    '<p>Estos usuarios de trial están en <strong>día 6 o 7</strong> (vence mañana u hoy). Contactar por WhatsApp:</p>' +
 
     '<ul><li>' + lines.join('</li><li>') + '</li></ul>' +
 
