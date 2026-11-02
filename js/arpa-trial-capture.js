@@ -200,6 +200,37 @@
   }
 
   /**
+   * País según el indicativo del WhatsApp que escribió el técnico ("528111234567" → "MX").
+   * '' si no es de un país que maneja la app.
+   */
+  function countryFromPhone(digits) {
+    const d = String(digits || '').replace(/\D/g, '');
+    if (d.length < 11) return '';
+    for (const code of Object.keys(PHONE_PREFIX_BY_COUNTRY)) {
+      const pre = PHONE_PREFIX_BY_COUNTRY[code];
+      if (code !== 'US' && d.indexOf(pre) === 0) return code;
+    }
+    return d[0] === '1' ? 'US' : '';
+  }
+
+  /**
+   * Si el WhatsApp es de México, Colombia, Chile o Perú y la app quedó en EE.UU. o sin país
+   * (celular en "español de EE.UU."), la app se pone en el país del WhatsApp: moneda, IVA y RFC/NIT.
+   * Caso real: un técnico de México con IVA 0 % "Impuesto sobre ventas" (2-nov-2026).
+   */
+  function syncCountryWithPhone(phone) {
+    const fromPhone = countryFromPhone(phone);
+    if (!fromPhone || fromPhone === 'US') return '';
+    let saved = '';
+    try { saved = global.ArpaBrand?.getSettings?.()?.country || ''; } catch (e) { /* ignore */ }
+    const current = trialCountry();
+    if (current === fromPhone) return fromPhone;
+    if (saved && saved !== 'US' && current !== 'US') return '';
+    try { global.ArpaBrand?.applyCountry?.(fromPhone); } catch (e) { /* ignore */ }
+    return fromPhone;
+  }
+
+  /**
    * +1 con una "lada" que no existe en EE.UU./Canadá (empieza por 0 o 1, o es 211…911).
    * Ej.: +1 811 123 4567 es un número de Monterrey al que le quedó el +1.
    */
@@ -475,7 +506,7 @@
         localStorage.setItem(TRIAL_WHATSAPP_KEY, phone);
         localStorage.setItem(TRIAL_NOMBRE_KEY, nombre);
         localStorage.setItem(TRIAL_OFICIO_KEY, oficio);
-        localStorage.setItem(TRIAL_PAIS_KEY, trialCountry());
+        localStorage.setItem(TRIAL_PAIS_KEY, syncCountryWithPhone(phone) || trialCountry());
         localStorage.setItem(TRIAL_CAPTURED_KEY, 'true');
         localStorage.setItem(ACTIVE_OFICIOS_KEY, JSON.stringify([oficio]));
         localStorage.removeItem(TRIAL_SYNCED_KEY);
@@ -645,6 +676,8 @@
     normalizePhone,
     trialCountry,
     looksLikeWrongUsNumber,
+    countryFromPhone,
+    syncCountryWithPhone,
     onOnboardingDone,
     canAskAfterSave
   };

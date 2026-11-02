@@ -863,8 +863,17 @@
       const code = countrySelect.value;
       const currency = global.ArpaPricing?.COUNTRY_PROFILES?.[code]?.currency;
       if (currency && currencySelect) currencySelect.value = currency;
-      const current = getSettings();
-      saveSettings({ ...current, country: code, currency: currency || current.currency });
+      applyCountry(code);
+    });
+  }
+
+  /** Cambia el país de la app (moneda, impuesto, RFC/NIT) y refresca precios y etiquetas. */
+  function applyCountry(code) {
+    const currency = global.ArpaPricing?.COUNTRY_PROFILES?.[code]?.currency;
+    if (!currency) return false;
+    const current = getSettings();
+    if (!saveSettings({ ...current, country: code, currency: currency })) return false;
+    try {
       global.ArpaPricing?.renderPriceListSettings?.();
       global.ArpaMiCatalogo?.resyncPrecargadoPrices?.();
       global.ArpaCatalogo?.invalidateListaCache?.();
@@ -872,7 +881,10 @@
       global.ArpaCobros?.refreshPrecargadoValues?.('cot');
       global.ArpaCotizacion?.syncTaxLabels?.();
       applyToUI();
-    });
+    } catch (e) {
+      console.warn('[arpa-brand] applyCountry', e);
+    }
+    return true;
   }
 
   function openSettings(menuBtn) {
@@ -1479,6 +1491,7 @@
     resetUnconfiguredFormFields,
     getSettings,
     saveSettings,
+    applyCountry,
     getLogo,
     getAppLogo,
     getAppBrandName,

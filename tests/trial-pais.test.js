@@ -170,3 +170,53 @@ test('"Ahora no" en la bienvenida no quita la pregunta tras el primer documento'
   const despues = loadForTiming({ arpa_trial_capture_ahora_no: futuro, arpa_trial_capture_tras_guardar: 'true' });
   assert.strictEqual(despues.api.canAskAfterSave(), false, 'ya se preguntó y dijo "Ahora no": respeta');
 });
+
+function loadWithBrand(country, saved) {
+  const store = { arpa_suite_license_code: 'ARPA-FREE-X' };
+  const applied = [];
+  const win = {
+    console,
+    localStorage: {
+      getItem: (k) => (k in store ? store[k] : null),
+      setItem: (k, v) => { store[k] = String(v); },
+      removeItem: (k) => { delete store[k]; }
+    },
+    document: { readyState: 'complete', getElementById: () => null, querySelector: () => null, addEventListener() {} },
+    addEventListener() {},
+    fetch: () => Promise.resolve({ json: () => ({ ok: true }) }),
+    ArpaPricing: { getCountryProfile: () => ({ code: country, phonePrefix: PREFIX[country] }), detectCountryFromTimezone: () => '' },
+    ArpaBrand: { getSettings: () => ({ country: saved || '' }), applyCountry: (c) => { applied.push(c); return true; } }
+  };
+  win.window = win;
+  vm.createContext(win);
+  vm.runInContext(code, win);
+  return { api: win.ArpaTrialCapture, applied };
+}
+
+test('país según el indicativo del WhatsApp', () => {
+  const { api } = loadWithBrand('CO');
+  assert.strictEqual(api.countryFromPhone('528111234567'), 'MX');
+  assert.strictEqual(api.countryFromPhone('573001234567'), 'CO');
+  assert.strictEqual(api.countryFromPhone('56912345678'), 'CL');
+  assert.strictEqual(api.countryFromPhone('51912345678'), 'PE');
+  assert.strictEqual(api.countryFromPhone('13055551234'), 'US');
+  assert.strictEqual(api.countryFromPhone('3001234567'), '', 'sin indicativo no adivina');
+});
+
+test('app en EE.UU. y WhatsApp de México: la app pasa a México (caso Manuel)', () => {
+  const { api, applied } = loadWithBrand('US', '');
+  assert.strictEqual(api.syncCountryWithPhone('528111234567'), 'MX');
+  assert.deepStrictEqual([...applied], ['MX']);
+});
+
+test('país elegido a mano (Colombia) no se cambia por un WhatsApp de otro país', () => {
+  const { api, applied } = loadWithBrand('CO', 'CO');
+  assert.strictEqual(api.syncCountryWithPhone('528111234567'), '');
+  assert.strictEqual(applied.length, 0);
+});
+
+test('técnico de EE.UU. con WhatsApp +1 sigue en EE.UU.', () => {
+  const { api, applied } = loadWithBrand('US', 'US');
+  assert.strictEqual(api.syncCountryWithPhone('13055551234'), '');
+  assert.strictEqual(applied.length, 0);
+});
