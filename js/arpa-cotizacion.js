@@ -102,6 +102,17 @@
     return String(str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   }
 
+  /**
+   * ¿La palabra buscada está en el texto? También en singular: "cremalleras" encuentra
+   * "Cremallera", "motores" encuentra "Motor", "paneles" encuentra "Panel".
+   */
+  function textoTienePalabra(texto, palabra) {
+    if (texto.includes(palabra)) return true;
+    if (palabra.length > 4 && palabra.endsWith('es') && texto.includes(palabra.slice(0, -2))) return true;
+    if (palabra.length > 3 && palabra.endsWith('s') && texto.includes(palabra.slice(0, -1))) return true;
+    return false;
+  }
+
   function isEnglishUi() {
     const lang = global.ArpaI18n?.getLang?.() || global.ArpaI18n?.lang || document.documentElement.lang || 'es';
     return String(lang).toLowerCase().startsWith('en');
@@ -163,7 +174,7 @@
     let encontrados = catalogo.filter((p) => {
       if (marcaFiltroCot && String(p.marca || '').trim() !== marcaFiltroCot) return false;
       const texto = normTxt([p.nom, p.cod, p.marca].filter(Boolean).join(' '));
-      return palabras.every((palabra) => texto.includes(palabra));
+      return palabras.every((palabra) => textoTienePalabra(texto, palabra));
     });
     if (!q) encontrados = encontrados.slice().sort((a, b) => String(a.nom || '').localeCompare(String(b.nom || '')));
     if (!encontrados.length) {
@@ -1289,6 +1300,7 @@
   }
 
   global.ArpaCotizacion = {
+    textoTienePalabra,
     initCotizacion,
     refreshCobros,
     renderTablaCot,

@@ -2867,8 +2867,11 @@
     }
   }
 
+  // Antes, quien entraba sin "?start=1" caía en la página de ventas y muchos no seguían
+  // (pasó en la primera instalación guiada de México). Ahora todo link entra directo a la
+  // prueba gratis; la página de ventas sigue en LANDING_URL para quien la busque.
   if (!hasCompanySettings() && !hasSalesEntry() && !hasActiveLicense()) {
-    window.location.replace(LANDING_URL);
+    markSalesEntry();
   }
 })();
 </script>
