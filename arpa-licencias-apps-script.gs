@@ -3055,32 +3055,29 @@ function procesarVentasManuales() {
 
 
 
+/**
+ * Código de licencia NUEVO al azar (seguridad, 4-nov-2026): antes iban en orden
+ * (…-0001, …-0002) y se podían adivinar. Ahora: PREFIJO + XXXX-XXXX con letras y
+ * números fáciles de leer (sin 0/O ni 1/I), y se verifica que no exista ya.
+ * Los códigos viejos siguen funcionando igual.
+ */
 function generateCode_(prefix) {
-
+  const ALFABETO = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 32 caracteres
   const values = getLicenseSheet_().getDataRange().getValues();
-
-  let maxNum = 0;
-
-  const upperPrefix = prefix.toUpperCase();
-
-
-
+  const existentes = {};
   for (let i = 1; i < values.length; i++) {
-
-    const cod = String(values[i][0] || '').trim().toUpperCase();
-
-    if (!cod.startsWith(upperPrefix)) continue;
-
-    const num = parseInt(cod.slice(upperPrefix.length), 10);
-
-    if (!isNaN(num) && num > maxNum) maxNum = num;
-
+    existentes[String(values[i][0] || '').trim().toUpperCase()] = true;
   }
-
-
-
-  return prefix + String(maxNum + 1).padStart(4, '0');
-
+  for (let intento = 0; intento < 20; intento++) {
+    const hex = Utilities.getUuid().replace(/-/g, '');
+    let s = '';
+    for (let i = 0; i < 8; i++) {
+      s += ALFABETO[parseInt(hex.substr(i * 2, 2), 16) % 32];
+    }
+    const codigo = prefix + s.slice(0, 4) + '-' + s.slice(4);
+    if (!existentes[codigo.toUpperCase()]) return codigo;
+  }
+  throw new Error('No se pudo generar un código de licencia único');
 }
 
 
