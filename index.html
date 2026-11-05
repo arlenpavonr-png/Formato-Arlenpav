@@ -3098,7 +3098,7 @@ document.documentElement.classList.add('license-checking');
       <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.tecnico">Técnico Responsable</span></div>
       <div class="grid g2">
         <div class="field"><label data-i18n="formato.label.tecnico">Técnico</label><input type="text" id="campo-tecnico-responsable" data-i18n-placeholder="formato.placeholder.tecnico" placeholder="Nombre del técnico"></div>
-        <div class="field"><label data-i18n="formato.label.auxiliar">Auxiliar (si aplica)</label><input type="text" data-i18n-placeholder="formato.placeholder.auxiliar" placeholder="Nombre del auxiliar"></div>
+        <div class="field"><label data-i18n="formato.label.auxiliar">Auxiliar (si aplica)</label><input id="formato-auxiliar" type="text" data-i18n-placeholder="formato.placeholder.auxiliar" placeholder="Nombre del auxiliar"></div>
       </div>
     </div>
 
@@ -3136,18 +3136,18 @@ document.documentElement.classList.add('license-checking');
           </thead>
           <tbody>
             <tr>
-              <td><input type="text" data-i18n-placeholder="formato.placeholder.dimension" placeholder="0.00"></td>
-              <td><input type="text" data-i18n-placeholder="formato.placeholder.dimension" placeholder="0.00"></td>
-              <td><input type="text" data-i18n-placeholder="formato.placeholder.dimension" placeholder="0.00"></td>
-              <td><input type="text" data-i18n-placeholder="formato.placeholder.dimension" placeholder="0.00"></td>
+              <td><input id="formato-medida-ancho" type="text" data-i18n-placeholder="formato.placeholder.dimension" placeholder="0.00"></td>
+              <td><input id="formato-medida-alto" type="text" data-i18n-placeholder="formato.placeholder.dimension" placeholder="0.00"></td>
+              <td><input id="formato-medida-md" type="text" data-i18n-placeholder="formato.placeholder.dimension" placeholder="0.00"></td>
+              <td><input id="formato-medida-mi" type="text" data-i18n-placeholder="formato.placeholder.dimension" placeholder="0.00"></td>
             </tr>
           </tbody>
         </table>
         <table class="dims-extra">
           <tbody>
             <tr>
-              <td class="dim-field"><label data-i18n="formato.label.peso">Peso aprox. (kg)</label><input type="text" data-i18n-placeholder="formato.placeholder.peso" placeholder="kg"></td>
-              <td class="dim-field"><label data-i18n="formato.label.material_puerta">Material puerta</label><input type="text" data-i18n-placeholder="formato.placeholder.material_puerta" placeholder="Hierro, aluminio..."></td>
+              <td class="dim-field"><label data-i18n="formato.label.peso">Peso aprox. (kg)</label><input id="formato-peso" type="text" data-i18n-placeholder="formato.placeholder.peso" placeholder="kg"></td>
+              <td class="dim-field"><label data-i18n="formato.label.material_puerta">Material puerta</label><input id="formato-material-puerta" type="text" data-i18n-placeholder="formato.placeholder.material_puerta" placeholder="Hierro, aluminio..."></td>
             </tr>
           </tbody>
         </table>
@@ -3186,9 +3186,9 @@ document.documentElement.classList.add('license-checking');
           <label data-i18n="formato.label.referencia_modelo">Referencia / Modelo</label>
           <input id="formato-equipo-ref-text" type="text" data-i18n-placeholder="formato.placeholder.referencia_manual" placeholder="Ej: ARES 1500">
         </div>
-        <div class="field"><label data-i18n="formato.label.serie_codigo">Serie / Código</label><input type="text" data-i18n-placeholder="formato.placeholder.serie" placeholder="N° de serie"></div>
+        <div class="field"><label data-i18n="formato.label.serie_codigo">Serie / Código</label><input id="formato-serie" type="text" data-i18n-placeholder="formato.placeholder.serie" placeholder="N° de serie"></div>
         <div class="field"><label data-i18n="formato.label.voltaje">Voltaje</label>
-          <select>
+          <select id="formato-voltaje">
             <option>110V</option><option>220V</option><option>110V / 220V</option>
           </select>
         </div>
@@ -3196,13 +3196,13 @@ document.documentElement.classList.add('license-checking');
       <div id="formato-equipo-accesorios" style="margin-top:10px;">
         <div class="field"><label style="margin-bottom:6px; display:block;" data-i18n="formato.label.accesorios">Accesorios incluidos</label>
           <div class="check-group">
-            <label class="check-item"><input type="checkbox"><span data-i18n="formato.accesorio.control_remoto">Control remoto</span></label>
-            <label class="check-item"><input type="checkbox"><span data-i18n="formato.accesorio.teclado">Teclado numérico</span></label>
-            <label class="check-item"><input type="checkbox"><span data-i18n="formato.accesorio.fotocelda">Fotocelda</span></label>
-            <label class="check-item"><input type="checkbox"><span data-i18n="formato.accesorio.sensor_apertura">Sensor apertura</span></label>
-            <label class="check-item"><input type="checkbox"><span data-i18n="formato.accesorio.bateria">Batería respaldo</span></label>
-            <label class="check-item"><input type="checkbox"><span data-i18n="formato.accesorio.cierre_automatico">Cierre automático</span></label>
-            <label class="check-item"><input type="checkbox"><span data-i18n="formato.accesorio.tarjeta_lector">Tarjeta / lector</span></label>
+            <label class="check-item"><input type="checkbox" id="formato-acc-control-remoto"><span data-i18n="formato.accesorio.control_remoto">Control remoto</span></label>
+            <label class="check-item"><input type="checkbox" id="formato-acc-teclado"><span data-i18n="formato.accesorio.teclado">Teclado numérico</span></label>
+            <label class="check-item"><input type="checkbox" id="formato-acc-fotocelda"><span data-i18n="formato.accesorio.fotocelda">Fotocelda</span></label>
+            <label class="check-item"><input type="checkbox" id="formato-acc-sensor-apertura"><span data-i18n="formato.accesorio.sensor_apertura">Sensor apertura</span></label>
+            <label class="check-item"><input type="checkbox" id="formato-acc-bateria"><span data-i18n="formato.accesorio.bateria">Batería respaldo</span></label>
+            <label class="check-item"><input type="checkbox" id="formato-acc-cierre-automatico"><span data-i18n="formato.accesorio.cierre_automatico">Cierre automático</span></label>
+            <label class="check-item"><input type="checkbox" id="formato-acc-tarjeta-lector"><span data-i18n="formato.accesorio.tarjeta_lector">Tarjeta / lector</span></label>
           </div>
         </div>
       </div>
@@ -3245,10 +3245,10 @@ document.documentElement.classList.add('license-checking');
       <div class="section-title"><span class="dot"></span><span data-i18n="formato.section.observaciones">Observaciones y Recomendaciones</span></div>
       <div class="obs-box">
         <div class="obs-lines">
-          <input type="text" data-i18n-placeholder="formato.placeholder.obs1" placeholder="Observación 1...">
-          <input type="text" data-i18n-placeholder="formato.placeholder.obs2" placeholder="Observación 2...">
-          <input type="text" data-i18n-placeholder="formato.placeholder.obs3" placeholder="Observación 3...">
-          <input type="text" data-i18n-placeholder="formato.placeholder.obs4" placeholder="Observación 4...">
+          <input id="formato-obs-1" type="text" data-i18n-placeholder="formato.placeholder.obs1" placeholder="Observación 1...">
+          <input id="formato-obs-2" type="text" data-i18n-placeholder="formato.placeholder.obs2" placeholder="Observación 2...">
+          <input id="formato-obs-3" type="text" data-i18n-placeholder="formato.placeholder.obs3" placeholder="Observación 3...">
+          <input id="formato-obs-4" type="text" data-i18n-placeholder="formato.placeholder.obs4" placeholder="Observación 4...">
         </div>
       </div>
     </div>
@@ -3303,8 +3303,8 @@ document.documentElement.classList.add('license-checking');
             <canvas id="canvas-firma-cliente" class="firma-canvas" width="600" height="200" data-i18n-aria-label="formato.firma.aria_cliente" aria-label="Lienzo firma cliente"></canvas>
             <button type="button" class="btn-firma-clear no-print" onclick="limpiarFirma('canvas-firma-cliente')" data-i18n="formato.firma.btn_borrar">Borrar</button>
           </div>
-          <input class="firma-name" type="text" data-i18n-placeholder="formato.firma.placeholder.nombre" placeholder="Nombre completo">
-          <input class="firma-name" type="text" data-i18n-placeholder="formato.firma.placeholder.doc" placeholder="CC / NIT">
+          <input class="firma-name" id="formato-firma-cliente-nombre" type="text" data-i18n-placeholder="formato.firma.placeholder.nombre" placeholder="Nombre completo">
+          <input class="firma-name" id="formato-firma-cliente-doc" type="text" data-i18n-placeholder="formato.firma.placeholder.doc" placeholder="CC / NIT">
         </div>
         <div class="firma-box">
           <div class="firma-label" id="brand-technician-signature-label" data-i18n="formato.firma.tecnico">Firma Técnico</div>
@@ -3313,7 +3313,7 @@ document.documentElement.classList.add('license-checking');
             <button type="button" class="btn-firma-clear no-print" onclick="limpiarFirma('canvas-firma-tecnico')" data-i18n="formato.firma.btn_borrar">Borrar</button>
           </div>
           <input class="firma-name" id="campo-tecnico-firma" type="text" data-i18n-placeholder="formato.firma.placeholder.tecnico" placeholder="Nombre del técnico">
-          <input class="firma-name" type="text" data-i18n-placeholder="formato.firma.placeholder.id_tecnico" placeholder="ID técnico">
+          <input class="firma-name" id="formato-firma-tecnico-id" type="text" data-i18n-placeholder="formato.firma.placeholder.id_tecnico" placeholder="ID técnico">
         </div>
       </div>
       <div id="formato-video-qr-print" class="formato-video-qr-print" hidden aria-hidden="true">
@@ -3484,7 +3484,7 @@ document.documentElement.classList.add('license-checking');
             <canvas id="canvas-cot-cliente" class="firma-canvas" width="600" height="200" data-i18n-aria-label="cot.firma.aria_cliente" aria-label="Firma cliente cotización"></canvas>
             <button type="button" class="btn-firma-clear no-print" onclick="limpiarFirma('canvas-cot-cliente')" data-i18n="formato.firma.btn_borrar">Borrar</button>
           </div>
-          <input class="firma-name" type="text" data-i18n-placeholder="formato.firma.placeholder.nombre" placeholder="Nombre completo">
+          <input class="firma-name" id="cot-firma-cliente-nombre" type="text" data-i18n-placeholder="formato.firma.placeholder.nombre" placeholder="Nombre completo">
         </div>
         <div class="firma-box">
           <div class="firma-label" id="cot-elaborado-label" data-i18n="cot.firma.elaborado">Elaborado por</div>

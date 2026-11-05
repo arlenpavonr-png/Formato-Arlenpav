@@ -380,6 +380,10 @@
       nit,
       tel,
       email,
+      validez: document.getElementById('cot-validez')?.value || '',
+      obs:     document.getElementById('cot-obs')?.value || '',
+      conIva:  !!document.getElementById('iva-check-cot')?.checked,
+      firmaClienteNombre: document.getElementById('cot-firma-cliente-nombre')?.value || '',
       filas:  global.ArpaCotizacion?.getFilas?.()  || [],
       cobros: global.ArpaCobros?.getLines?.('cot') || []
     } : null;
@@ -529,6 +533,10 @@
             nit:     fs.nit   || '',
             tel:     fs.tel   || '',
             email:   fs.email || '',
+            validez: fs.validez,
+            obs:     fs.obs,
+            conIva:  fs.conIva,
+            firmaClienteNombre: fs.firmaClienteNombre,
             filas:   fs.filas  || [],
             cobros:  fs.cobros || []
           });
