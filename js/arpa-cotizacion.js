@@ -857,7 +857,7 @@
   function buildCotShareMessage() {
     const nombre = (document.getElementById('cot-nombre')?.value.trim() || 'Cliente').split(' ')[0];
     const numero = document.getElementById('numero-cot')?.value.trim() || '—';
-    const company = global.ArpaBrand?.getSettings?.()?.companyName?.trim() || 'su empresa';
+    const companyName = global.ArpaBrand?.getSettings?.()?.companyName?.trim() || '';
     // Idioma del documento = English (arpa-i18n.js): mensaje al cliente en inglés. Con Español, null → texto de siempre.
     const enMsg = global.ArpaDocLang?.shareMessage?.('cot', {
       nombre: (document.getElementById('cot-nombre')?.value.trim() || '').split(' ')[0],
@@ -865,7 +865,9 @@
       company: global.ArpaBrand?.getSettings?.()?.companyName?.trim()
     });
     if (enMsg) return enMsg;
-    return `Hola ${nombre}, le comparto la cotización N°${numero} de ${company}. Por favor revísela y confírmenos su recepción.`;
+    // Sin nombre de negocio (sacó el PDF sin nombre) no se escribe "de su empresa".
+    const deCompany = companyName ? ` de ${companyName}` : '';
+    return `Hola ${nombre}, le comparto la cotización N°${numero}${deCompany}. Por favor revísela y confírmenos su recepción.`;
   }
 
   async function generarCotPdfFile() {

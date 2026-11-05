@@ -87,3 +87,14 @@ test('referencia opcional en el catálogo: código automático único', () => {
   assert.strictEqual(nextProductCode([{ cod: 'CON-001' }, { cod: 'MIO-003' }]), 'MIO-004');
   assert.strictEqual(nextProductCode([{ cod: 'MIO-002' }, { cod: 'mio-003' }]), 'MIO-004');
 });
+
+test('el primer PDF nunca se bloquea: "Sacar sin nombre" sigue sin pedir nada más', () => {
+  const src = read('js/arpa-brand.js');
+  assert.ok(/data-qc="skip"/.test(src), 'hay botón para sacar el PDF sin nombre');
+  const skip = src.slice(src.indexOf('[data-qc="skip"]\')'), src.indexOf('[data-qc="ok"]\')) return;'));
+  assert.ok(/applyToUI\(\);\s*close\(true\);/.test(skip), 'sin nombre: el PDF sigue, ya sin textos de ayuda');
+  assert.ok(/if \(e\.target === overlay\) return;/.test(src), 'un toque fuera no cancela el PDF');
+  const i18n = read('js/arpa-i18n.js');
+  assert.ok(!/RFC, banco/.test(i18n), 'el aviso no dice RFC a un técnico de Colombia');
+  assert.ok(/'quick_company\.btn\.sin_nombre'/.test(i18n));
+});

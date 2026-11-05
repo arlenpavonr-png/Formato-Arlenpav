@@ -121,8 +121,9 @@
       openDemoModal();
       return;
     }
-    pendingFinish = { oficioId: id, opts: null };
-    openExplainerModal();
+    // Sin la ventana "Así funciona": era un toque y una pantalla más antes de empezar,
+    // y la guía de primeros pasos ya explica cada paso sobre la cotización.
+    finishOnboarding(id, null);
   }
 
   function renderRubroButtons() {
@@ -153,12 +154,10 @@
   function initOnboarding() {
     renderRubroButtons();
     document.getElementById('btn-onboarding-demo-yes')?.addEventListener('click', () => {
-      pendingFinish = { oficioId: OFICIO_AUTOMATISMOS, opts: { loadDemo: true, goToCatalog: true } };
-      openExplainerModal();
+      finishOnboarding(OFICIO_AUTOMATISMOS, { loadDemo: true, goToCatalog: true });
     });
     document.getElementById('btn-onboarding-demo-skip')?.addEventListener('click', () => {
-      pendingFinish = { oficioId: OFICIO_AUTOMATISMOS, opts: null };
-      openExplainerModal();
+      finishOnboarding(OFICIO_AUTOMATISMOS, null);
     });
     document.getElementById('btn-onboarding-otro-continue')?.addEventListener('click', () => {
       if (pendingFinish) {
