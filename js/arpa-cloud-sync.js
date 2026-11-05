@@ -58,12 +58,38 @@
 
   // ── HTTP ──────────────────────────────────────────────────────────────────
 
-  function postJson(payload) {
+  /** Llave de este celular (la entrega el servidor al validar la licencia). */
+  function getLlave() {
+    try { return (localStorage.getItem('arpa_suite_license_llave') || '').trim(); } catch (e) { return ''; }
+  }
+
+  function withLlave(payload) {
+    if (!payload || !payload.licencia || payload.llave) return payload;
+    const llave = getLlave();
+    return llave ? Object.assign({}, payload, { llave }) : payload;
+  }
+
+  function sendJson(payload) {
     return fetch(LICENSE_API, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(withLlave(payload))
     }).then((res) => res.json());
+  }
+
+  /** Si el servidor dice que falta la llave, la pide una vez y repite. */
+  function postJson(payload) {
+    return sendJson(payload).then((data) => {
+      if (!data || data.sinLlave !== true || !payload || !payload.licencia) return data;
+      const refresh = global.ArpaLicenseGate?.refreshLlave;
+      if (typeof refresh !== 'function') return data;
+      return refresh().then((tiene) => {
+        if (!tiene) return data;
+        const sinLlaveVieja = Object.assign({}, payload);
+        delete sinLlaveVieja.llave;
+        return sendJson(sinLlaveVieja);
+      });
+    });
   }
 
   // ── Catálogo local ────────────────────────────────────────────────────────

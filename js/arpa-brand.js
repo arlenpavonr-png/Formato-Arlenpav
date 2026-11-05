@@ -302,7 +302,25 @@
     }
   }
 
+  function getLlave() {
+    try { return (localStorage.getItem('arpa_suite_license_llave') || '').trim(); } catch (e) { return ''; }
+  }
+
+  /** JSONP con la llave de este celular; si el servidor la pide, la renueva una vez. */
   function licenseJsonp(params) {
+    const conLlave = (p) => {
+      const llave = getLlave();
+      return p.licencia && llave ? Object.assign({}, p, { llave }) : p;
+    };
+    return licenseJsonpRaw(conLlave(params)).then((data) => {
+      if (!data || data.sinLlave !== true || !params.licencia) return data;
+      const refresh = global.ArpaLicenseGate?.refreshLlave;
+      if (typeof refresh !== 'function') return data;
+      return refresh().then((tiene) => (tiene ? licenseJsonpRaw(conLlave(params)) : data));
+    });
+  }
+
+  function licenseJsonpRaw(params) {
     return new Promise((resolve, reject) => {
       companyApiCounter += 1;
       const cbName = 'arpaCompanyCb' + companyApiCounter + '_' + Date.now();
