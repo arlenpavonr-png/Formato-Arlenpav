@@ -574,7 +574,9 @@
     document.documentElement.classList.toggle('brand-unconfigured', !configured);
 
     const company = (s.companyName || '').trim();
-    const companyUpper = configured ? company.toUpperCase() : (window.ArpaI18n?.t?.('brand.company_name.placeholder') || 'NOMBRE DE TU EMPRESA');
+    // Eligió "Sacar sin nombre": el documento (y el PDF por WhatsApp) va limpio, sin textos de ayuda.
+    const sinNombre = !configured && isPdfSinNombre();
+    const companyUpper = configured ? company.toUpperCase() : (sinNombre ? '' : (window.ArpaI18n?.t?.('brand.company_name.placeholder') || 'NOMBRE DE TU EMPRESA'));
     const companyLogo = getLogo(s);
     const appLogo = getAppLogo(s);
     const appBrandName = getAppBrandName(s);
@@ -594,6 +596,7 @@
     });
     set('brand-company-contact', (el) => {
       if (!configured) {
+        if (sinNombre) { el.innerHTML = ''; return; }
         el.innerHTML = window.ArpaI18n?.t?.('brand.company_contact.placeholder') || 'Configure su empresa en <strong>⚙️ Ajustes</strong> para personalizar este documento.';
         return;
       }
@@ -613,7 +616,7 @@
       ].filter(Boolean).join('<br>');
     });
     const footerLocalHtml = !configured
-      ? (window.ArpaI18n?.t?.('brand.screen_footer.placeholder') || 'Configure los datos de su empresa en ⚙️ Ajustes')
+      ? (sinNombre ? '' : (window.ArpaI18n?.t?.('brand.screen_footer.placeholder') || 'Configure los datos de su empresa en ⚙️ Ajustes'))
       : (() => {
         const taxId = global.ArpaPricing?.getTaxIdLabel?.() || 'NIT';
         const phoneRaw = val(s.phone, '');
@@ -1101,6 +1104,13 @@
     return true;
   }
 
+  // var (no const): applyToUI puede correr antes de llegar a esta línea.
+  var PDF_SIN_NOMBRE_KEY = 'arpa_pdf_sin_nombre';
+
+  function isPdfSinNombre() {
+    try { return localStorage.getItem(PDF_SIN_NOMBRE_KEY) === '1'; } catch (e) { return false; }
+  }
+
   let quickCompanyPending = null;
 
   /**
@@ -1127,10 +1137,10 @@
             <button type="button" class="settings-modal-close" data-qc="cancel" aria-label="${tr('common.btn.cancel', 'Cancelar')}">&times;</button>
           </div>
           <div class="settings-modal-body">
-            <p style="margin:0 0 12px;line-height:1.45;">${tr('quick_company.intro', 'Escribe el nombre de tu negocio para que salga en el documento. Lo demás (logo, RFC, banco) lo puedes poner después en ⚙️ Configuración.')}</p>
+            <p style="margin:0 0 12px;line-height:1.45;">${tr('quick_company.intro', '¿Cómo se llama tu negocio? Así sale en el PDF. Si prefieres, sácalo sin nombre y lo pones después.')}</p>
             <p class="settings-error" data-qc="error" role="alert" hidden></p>
             <div class="field">
-              <label for="qc-company">${tr('quick_company.label.nombre', 'Nombre de tu negocio')} <span class="req">*</span></label>
+              <label for="qc-company">${tr('quick_company.label.nombre', 'Nombre de tu negocio')}</label>
               <input type="text" id="qc-company" autocomplete="organization">
             </div>
             <div class="field">
@@ -1139,7 +1149,7 @@
             </div>
           </div>
           <div class="settings-modal-footer">
-            <button type="button" data-qc="cancel">${tr('common.btn.cancel', 'Cancelar')}</button>
+            <button type="button" data-qc="skip">${tr('quick_company.btn.sin_nombre', 'Sacar sin nombre')}</button>
             <button type="button" data-qc="ok" style="background:var(--navy, #1a2a4a);color:#fff;font-weight:700;">${tr('quick_company.btn.continuar', 'Continuar')}</button>
           </div>
         </div>`;
@@ -1149,8 +1159,17 @@
         resolve(ok);
       };
       overlay.addEventListener('click', (e) => {
-        if (e.target === overlay || e.target.closest('[data-qc="cancel"]')) {
+        // Un toque fuera de la ventana ya no la cierra sin avisar (el PDF no salía y no se sabía por qué).
+        if (e.target === overlay) return;
+        if (e.target.closest('[data-qc="cancel"]')) {
           close(false);
+          return;
+        }
+        // El primer PDF nunca se bloquea: sale sin nombre (los textos de ayuda no se imprimen).
+        if (e.target.closest('[data-qc="skip"]')) {
+          try { localStorage.setItem(PDF_SIN_NOMBRE_KEY, '1'); } catch (err) { /* ignore */ }
+          applyToUI();
+          close(true);
           return;
         }
         if (!e.target.closest('[data-qc="ok"]')) return;
