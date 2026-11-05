@@ -3922,7 +3922,7 @@ document.documentElement.classList.add('license-checking');
         <p class="settings-license-row"><span data-i18n="settings.license.expiry">Vencimiento</span>: <strong id="settings-license-venc">—</strong></p>
         <button type="button" class="btn-settings-license-change" id="settings-license-change" data-i18n="settings.license.change">Cambiar licencia</button>
       </div>
-      <div class="settings-section" id="settings-demo-section">
+      <div class="settings-section" id="settings-demo-section" hidden>
         <div class="settings-section-title">Modo Demo</div>
         <p class="logo-upload-hint">Primero activa el Modo Demo. Después ingresa los datos del cliente y guarda. Tus datos reales se respaldan y se restauran con un clic. No guardes los datos del cliente antes de activar.</p>
         <div id="settings-demo-btn-container">
@@ -5490,10 +5490,16 @@ document.addEventListener('arpa:sync-complete', updateSyncStatusText);
     var active = window.ArpaBrand && window.ArpaBrand.isDemoMode && window.ArpaBrand.isDemoMode();
     banner.style.display = active ? 'flex' : 'none';
   }
+  /** Modo Demo es solo para el dueño (licencia fundador). Si quedó activo, se muestra para poder salir. */
+  function esDueno() {
+    try { return localStorage.getItem('arpa_suite_license_founder') === '1'; } catch (e) { return false; }
+  }
   function renderDemoButton() {
     var container = document.getElementById('settings-demo-btn-container');
     if (!container) return;
     var active = window.ArpaBrand && window.ArpaBrand.isDemoMode && window.ArpaBrand.isDemoMode();
+    var section = document.getElementById('settings-demo-section');
+    if (section) section.hidden = !(esDueno() || active);
     if (active) {
       container.innerHTML =
         '<p class="logo-upload-hint" style="color:#2e7d32;font-weight:600;margin:0 0 8px;">✓ Modo demo activo. Ingresa los datos del cliente abajo y elige su oficio en «Tu oficio principal» para que el catálogo y los textos sean los de su negocio.</p>' +
@@ -5513,6 +5519,7 @@ document.addEventListener('arpa:sync-complete', updateSyncStatusText);
     updateDemoBanner();
     renderDemoButton();
   }
+  window.ArpaDemoUi = { refresh: initDemoUi };
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initDemoUi);
   } else {
