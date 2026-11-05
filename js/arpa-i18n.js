@@ -407,6 +407,8 @@
     'cc.firma.cliente': 'Client',
     'cc.firma.label': 'Signature',
     'cc.btn.limpiar': '🗑 Clear',
+    'cot.btn.nueva': '🆕 Start a new blank quote',
+    'cot.confirm.nueva': 'Start a new blank quote?\n\nThe client, products and notes from the previous quote will be cleared.',
     'cc.btn.whatsapp': '💬 WhatsApp',
     'cc.btn.pdf': '📄 Generate PDF',
 

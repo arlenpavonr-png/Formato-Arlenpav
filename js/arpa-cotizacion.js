@@ -373,7 +373,69 @@
     return N.getMaxCounter(N.KEYS.cot, document.getElementById('numero-cot')?.value);
   }
 
+  /** ¿Hay datos de un cliente o productos en pantalla? */
+  function cotTieneContenido() {
+    var ids = ['cot-nombre', 'cot-nit', 'cot-tel', 'cot-email', 'cot-ciudad', 'cot-obs'];
+    for (var i = 0; i < ids.length; i++) {
+      if (String(document.getElementById(ids[i])?.value || '').trim()) return true;
+    }
+    return filas.length > 0;
+  }
+
+  /**
+   * Deja la cotización en blanco: cliente, productos, cobros, observaciones y firma
+   * del cliente. Se conservan "Elaborado por", el IVA y el filtro de marca.
+   */
+  function limpiarCotizacion() {
+    ['numero-cot', 'cot-nombre', 'cot-nit', 'cot-tel', 'cot-email', 'cot-ciudad', 'cot-obs', 'buscador-cot'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    var res = document.getElementById('resultados-cot');
+    if (res) res.style.display = 'none';
+    var hoy = new Date();
+    var fecha = document.getElementById('cot-fecha');
+    var validez = document.getElementById('cot-validez');
+    if (fecha) fecha.value = global.fechaLocalISO(hoy);
+    if (validez) validez.value = global.fechaLocalISO(new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 15));
+    filas = [];
+    global.ArpaCobros?.reset?.('cot');
+    global.ArpaSignature?.clear?.('canvas-cot-cliente');
+    var badge = document.getElementById('sync-status-cot');
+    if (badge) badge.style.display = 'none';
+    renderTablaCot();
+    recalcularCotizacion();
+    clearCotDraft();
+  }
+
+  /**
+   * "+ NUEVO N°": si en pantalla quedó una cotización con número y datos (la anterior),
+   * pregunta y empieza una nueva en blanco. Si aún no tiene número, solo se lo pone.
+   */
   async function nuevoCotNumero() {
+    var numActual = document.getElementById('numero-cot')?.value.trim();
+    if (numActual && cotTieneContenido()) {
+      var msg = (global.ArpaI18n?.getLang?.() === 'en' && global.ArpaI18n.t('cot.confirm.nueva')) || '¿Empezar una cotización nueva en blanco?\n\nSe borran el cliente, los productos y las observaciones de la cotización anterior.';
+      if (!confirm(msg)) return false;
+      limpiarCotizacion();
+    }
+    return asignarNuevoCotNumero();
+  }
+
+  /** Botón "Empezar cotización nueva": deja todo en blanco (sin gastar número). */
+  function nuevaCotizacionEnBlanco() {
+    if (cotTieneContenido()) {
+      var msg = (global.ArpaI18n?.getLang?.() === 'en' && global.ArpaI18n.t('cot.confirm.nueva')) || '¿Empezar una cotización nueva en blanco?\n\nSe borran el cliente, los productos y las observaciones de la cotización anterior.';
+      if (!confirm(msg)) return false;
+    }
+    limpiarCotizacion();
+    document.title = 'ARPA Suite';
+    try { window.scrollTo(0, 0); } catch (e) {}
+    setTimeout(function() { document.getElementById('cot-nombre')?.focus(); }, 50);
+    return true;
+  }
+
+  async function asignarNuevoCotNumero() {
     if (!global.ArpaNumeracion?.blockIfNoLicense?.()) return false;
     if (!global.ArpaNumeracion?.blockIfPymeMissingCode?.()) return false;
     const numField = document.getElementById('numero-cot');
@@ -427,7 +489,7 @@
       saveCotDraftNow();
       return true;
     }
-    return (await nuevoCotNumero()) === true && !!numField.value.trim();
+    return (await asignarNuevoCotNumero()) === true && !!numField.value.trim();
   }
 
   /**
@@ -1308,6 +1370,9 @@
     renderTablaCot,
     recalcularCotizacion,
     nuevoCotNumero,
+    nuevaCotizacionEnBlanco,
+    limpiarCotizacion,
+    cotTieneContenido,
     ensureCotNumero,
     asegurarNumeroCot,
     guardarCotPDF,
@@ -1330,6 +1395,7 @@
   global.guardarCotPDF = guardarCotPDF;
   global.guardarCotPDFYWhatsApp = guardarCotPDFYWhatsApp;
   global.nuevoCotNumero = nuevoCotNumero;
+  global.nuevaCotizacionEnBlanco = nuevaCotizacionEnBlanco;
   global.ensureCotNumero = ensureCotNumero;
   global.exportarACuentaCobro = exportarACuentaCobro;
 })(window);
