@@ -106,8 +106,18 @@
    * ¿La palabra buscada está en el texto? También en singular: "cremalleras" encuentra
    * "Cremallera", "motores" encuentra "Motor", "paneles" encuentra "Panel".
    */
+  // Palabras que el técnico usa para lo mismo: "levadiza" encuentra los motores de garaje.
+  const SINONIMOS_COT = [
+    ['levadiz', 'garaje', 'basculante', 'seccional'],
+    ['corrediz'],
+    ['batiente'],
+  ];
+
   function textoTienePalabra(texto, palabra) {
     if (texto.includes(palabra)) return true;
+    for (const grupo of SINONIMOS_COT) {
+      if (grupo.some((raiz) => palabra.startsWith(raiz)) && grupo.some((raiz) => texto.includes(raiz))) return true;
+    }
     if (palabra.length > 4 && palabra.endsWith('es') && texto.includes(palabra.slice(0, -2))) return true;
     if (palabra.length > 3 && palabra.endsWith('s') && texto.includes(palabra.slice(0, -1))) return true;
     return false;
@@ -173,7 +183,7 @@
     const palabras = q.split(/\s+/).filter(Boolean);
     let encontrados = catalogo.filter((p) => {
       if (marcaFiltroCot && String(p.marca || '').trim() !== marcaFiltroCot) return false;
-      const texto = normTxt([p.nom, p.cod, p.marca].filter(Boolean).join(' '));
+      const texto = normTxt([p.nom, p.cod, p.marca, p.cat || p.categoria].filter(Boolean).join(' '));
       return palabras.every((palabra) => textoTienePalabra(texto, palabra));
     });
     if (!q) encontrados = encontrados.slice().sort((a, b) => String(a.nom || '').localeCompare(String(b.nom || '')));
