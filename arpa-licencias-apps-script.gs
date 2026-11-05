@@ -141,15 +141,13 @@ function doGet(e) {
 
   }
 
-  if (accion === 'savecompanydata') {
+  if (accion === 'savecompanydata' || accion === 'getcompanydata') {
 
-    return respondJsonp_(saveCompanyData_(params), callback);
+    const neg = revisarLlave_(params.licencia, params.llave, accion);
 
-  }
+    if (neg) return respondJsonp_(neg, callback);
 
-  if (accion === 'getcompanydata') {
-
-    return respondJsonp_(getCompanyData_(params), callback);
+    return respondJsonp_(accion === 'savecompanydata' ? saveCompanyData_(params) : getCompanyData_(params), callback);
 
   }
 
@@ -209,7 +207,19 @@ function validateLicense_(codigo, deviceId) {
 
     }
 
-    return buildValidationResult_(data[i], cols, rowCodigo);
+    const result = buildValidationResult_(data[i], cols, rowCodigo);
+
+    if (result.valido) {
+
+      const rowDevice = cols.deviceId >= 0 ? String(data[i][cols.deviceId] || '').trim() : '';
+
+      const llave = emitirLlave_(rowCodigo, planLabel, deviceId, rowDevice);
+
+      if (llave) result.llave = llave;
+
+    }
+
+    return result;
 
   }
 
@@ -263,6 +273,14 @@ function provisionTrial_(deviceId) {
 
     result.nuevo = false;
 
+    if (result.valido) {
+
+      const llave = emitirLlave_(codigo, 'Free', deviceId, rowDevice);
+
+      if (llave) result.llave = llave;
+
+    }
+
     return result;
 
   }
@@ -297,6 +315,8 @@ function provisionTrial_(deviceId) {
 
 
 
+  const llaveNueva = emitirLlave_(codigo, plan.planLabel, deviceId, deviceId);
+
   return {
 
     valido: true,
@@ -312,6 +332,8 @@ function provisionTrial_(deviceId) {
     trial: true,
 
     nuevo: true,
+
+    llave: llaveNueva || undefined,
 
   };
 
@@ -1258,6 +1280,10 @@ function handleSyncPost_(e) {
 
   if (accion === 'savecompanydata') {
 
+    const negEmpresa = revisarLlave_(body.licencia, body.llave, accion);
+
+    if (negEmpresa) return respondJson_(negEmpresa);
+
     return respondJson_(saveCompanyData_(body));
 
   }
@@ -1277,6 +1303,10 @@ function handleSyncPost_(e) {
     return respondJson_({ ok: false, mensaje: 'Licencia requerida.' });
 
   }
+
+  const negLlave = revisarLlave_(licencia, body.llave, accion);
+
+  if (negLlave) return respondJson_(negLlave);
 
 
 
@@ -3523,4 +3553,134 @@ function respaldoLeer_(licencia, body) {
 
 function autorizarDrive() {
   DriveApp.createFolder('prueba permiso ARPA').setTrashed(true);
+}
+
+
+// ─── Llave por dispositivo (versión 44) ─────────────────────────────────────
+// Al validar la licencia (o activar la prueba), cada celular recibe una llave
+// propia. Empresa, catálogo, historial, numeración y respaldos piden licencia
+// + llave. Propiedad del script LLAVE_MODO:
+//   (vacía) o 'aviso' → sin llave igual responde, pero queda anotado en la
+//                        pestaña "LlavesAviso" (transición).
+//   'exigir'          → sin llave válida no responde.
+// Para quitarle el acceso a un celular: borrar su fila en la pestaña "Llaves".
+
+const LLAVES_SHEET_NAME_ = 'Llaves';
+const LLAVES_HEADERS_ = ['Codigo', 'DeviceId', 'Llave', 'Creada', 'UltimoUso'];
+const LLAVES_AVISO_SHEET_NAME_ = 'LlavesAviso';
+const LLAVES_AVISO_HEADERS_ = ['Fecha', 'Codigo', 'Accion', 'Motivo'];
+const LLAVES_POR_DEFECTO_ = 3;
+
+function llaveModo_() {
+  const modo = String(PropertiesService.getScriptProperties().getProperty('LLAVE_MODO') || '').trim().toLowerCase();
+  return modo === 'exigir' ? 'exigir' : 'aviso';
+}
+
+function getLlavesSheet_() {
+  const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
+  let sheet = ss.getSheetByName(LLAVES_SHEET_NAME_);
+  if (!sheet) {
+    sheet = ss.insertSheet(LLAVES_SHEET_NAME_);
+    sheet.getRange(1, 1, 1, LLAVES_HEADERS_.length).setValues([LLAVES_HEADERS_]);
+  }
+  return sheet;
+}
+
+function nuevaLlave_() {
+  return (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '');
+}
+
+/** Cuántos celulares pueden tener llave con este código (0 = sin límite). */
+function limiteLlaves_(codigo, planLabel) {
+  if (isPermanentLicense_(codigo)) return 0;
+  if (String(codigo).indexOf('ARPA-FREE-') === 0) return 1;
+  return DEVICE_LIMITS_[planLabel] || LLAVES_POR_DEFECTO_;
+}
+
+/**
+ * Llave de este celular para este código. Si ya tiene, se le devuelve la misma.
+ * Si no, se crea solo si no se pasó del límite de celulares. En la prueba gratis,
+ * solo el celular que la activó (DEVICE_ID de la licencia) recibe llave.
+ */
+function emitirLlave_(codigo, planLabel, deviceId, rowDeviceId) {
+  codigo = String(codigo || '').trim().toUpperCase();
+  deviceId = String(deviceId || '').trim();
+  if (!codigo || deviceId.length < 12) return '';
+  if (codigo.indexOf('ARPA-FREE-') === 0 && rowDeviceId && rowDeviceId !== deviceId) return '';
+  const lock = LockService.getScriptLock();
+  try { lock.waitLock(10000); } catch (err) { return ''; }
+  try {
+    const sheet = getLlavesSheet_();
+    const data = sheet.getDataRange().getValues();
+    let deEsteCodigo = 0;
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0] || '').trim().toUpperCase() !== codigo) continue;
+      if (String(data[i][1] || '').trim() === deviceId) {
+        sheet.getRange(i + 1, 5).setValue(new Date());
+        return String(data[i][2] || '');
+      }
+      deEsteCodigo++;
+    }
+    const limite = limiteLlaves_(codigo, planLabel);
+    if (limite && deEsteCodigo >= limite) {
+      debugLog_('llave_limite', { codigo: codigo, plan: planLabel });
+      return '';
+    }
+    const llave = nuevaLlave_();
+    sheet.appendRow([codigo, deviceId, llave, new Date(), new Date()]);
+    return llave;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function llaveValida_(codigo, llave) {
+  codigo = String(codigo || '').trim().toUpperCase();
+  llave = String(llave || '').trim();
+  if (!codigo || llave.length < 32) return false;
+  const cache = CacheService.getScriptCache();
+  const ck = 'llave_' + codigo + '_' + llave;
+  if (cache.get(ck) === '1') return true;
+  const data = getLlavesSheet_().getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0] || '').trim().toUpperCase() === codigo && String(data[i][2] || '') === llave) {
+      cache.put(ck, '1', 600);
+      return true;
+    }
+  }
+  return false;
+}
+
+/** null = puede seguir. Si no, la respuesta de "no autorizado". */
+function revisarLlave_(licencia, llave, accion) {
+  const codigo = String(licencia || '').trim().toUpperCase();
+  if (!codigo) return null; // cada acción ya responde "Licencia requerida."
+  if (llaveValida_(codigo, llave)) return null;
+  const motivo = llave ? 'llave_incorrecta' : 'sin_llave';
+  if (llaveModo_() === 'exigir') {
+    return {
+      ok: false,
+      sinLlave: true,
+      mensaje: 'Este dispositivo no está autorizado para esta licencia. Cierre y abra la app de nuevo; si sigue, escríbanos al ' + CONFIG.SUPPORT_WHATSAPP_DISPLAY + '.',
+    };
+  }
+  anotarAvisoLlave_(codigo, accion, motivo);
+  return null;
+}
+
+/** Transición: anota (máximo una vez cada 6 horas por código) quién llega sin llave. */
+function anotarAvisoLlave_(codigo, accion, motivo) {
+  try {
+    const cache = CacheService.getScriptCache();
+    const ck = 'aviso_llave_' + codigo;
+    if (cache.get(ck)) return;
+    cache.put(ck, '1', 21600);
+    const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
+    let sheet = ss.getSheetByName(LLAVES_AVISO_SHEET_NAME_);
+    if (!sheet) {
+      sheet = ss.insertSheet(LLAVES_AVISO_SHEET_NAME_);
+      sheet.getRange(1, 1, 1, LLAVES_AVISO_HEADERS_.length).setValues([LLAVES_AVISO_HEADERS_]);
+    }
+    sheet.appendRow([new Date(), codigo, String(accion || ''), motivo]);
+  } catch (err) { /* el aviso nunca bloquea */ }
 }

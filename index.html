@@ -5095,8 +5095,14 @@ if ('serviceWorker' in navigator) {
     }
   }
 
+  var LLAVE_STORAGE_KEY = 'arpa_suite_license_llave';
+
   function saveLicenseData(data) {
     try {
+      var codigoAnterior = (localStorage.getItem(LICENSE_STORAGE_KEY) || '').trim().toUpperCase();
+      var codigoNuevo = String(data.codigo || '').trim().toUpperCase();
+      if (data.llave) localStorage.setItem(LLAVE_STORAGE_KEY, String(data.llave));
+      else if (codigoNuevo && codigoNuevo !== codigoAnterior) localStorage.removeItem(LLAVE_STORAGE_KEY);
       if (data.codigo) localStorage.setItem(LICENSE_STORAGE_KEY, String(data.codigo).trim().toUpperCase());
       if (data.vencimiento) localStorage.setItem(LICENSE_VENC_KEY, data.vencimiento);
       if (data.plan) localStorage.setItem(LICENSE_PLAN_KEY, data.plan);
@@ -5122,7 +5128,27 @@ if ('serviceWorker' in navigator) {
       localStorage.removeItem(LICENSE_VENC_KEY);
       localStorage.removeItem(LICENSE_PLAN_KEY);
       localStorage.removeItem('arpa_suite_license_founder');
+      localStorage.removeItem(LLAVE_STORAGE_KEY);
     } catch (e) {}
+  }
+
+  /** Vuelve a validar el código guardado para recibir la llave de este celular. */
+  var refreshLlavePromise = null;
+  function refreshLlave() {
+    if (refreshLlavePromise) return refreshLlavePromise;
+    var code = getSavedCode();
+    if (!code) return Promise.resolve(false);
+    refreshLlavePromise = validarLicenciaJsonp(code).then(function (data) {
+      if (data && data.valido === true) {
+        saveLicenseData(data);
+        return !!data.llave;
+      }
+      return false;
+    }).catch(function () { return false; }).then(function (r) {
+      refreshLlavePromise = null;
+      return r;
+    });
+    return refreshLlavePromise;
   }
 
   function getSavedCode() {
@@ -5371,7 +5397,8 @@ if ('serviceWorker' in navigator) {
   window.ArpaLicenseGate = {
     showActivatePanel: showActivatePanel,
     clearLicenseData: clearLicenseData,
-    hadPaidLicense: hadPaidLicense
+    hadPaidLicense: hadPaidLicense,
+    refreshLlave: refreshLlave
   };
 
   if (document.readyState === 'loading') {
