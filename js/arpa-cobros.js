@@ -289,6 +289,14 @@
     return true;
   }
 
+  /** Cotización nueva: quita los cobros puestos y vuelve a sembrar los de la lista. */
+  function reset(storeId) {
+    const store = getStore(storeId);
+    store.lines = [];
+    store.seeded = false;
+    seedFromPriceList(storeId);
+  }
+
   function seedFromPriceList(storeId) {
     const store = getStore(storeId);
     if (store.seeded) {
@@ -405,6 +413,7 @@
     setLines,
     getSubtotal,
     seedFromPriceList,
+    reset,
     addSuggestion,
     usesSuggestions,
     resetToSuggestions,
