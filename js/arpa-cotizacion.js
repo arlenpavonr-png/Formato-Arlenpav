@@ -565,6 +565,16 @@
     if (nit)    nit.value    = snap.nit     || '';
     if (tel)    tel.value    = snap.tel     || '';
     if (email)  email.value  = snap.email   || '';
+    // Registros viejos del historial no traen validez ni IVA: si no vienen, no se tocan.
+    // Observaciones y firma sí se limpian, para que no queden las de otro cliente.
+    var validez = document.getElementById('cot-validez');
+    var obs     = document.getElementById('cot-obs');
+    var ivaChk  = document.getElementById('iva-check-cot');
+    var firmaCl = document.getElementById('cot-firma-cliente-nombre');
+    if (validez && snap.validez != null) validez.value = snap.validez;
+    if (obs) obs.value = snap.obs || '';
+    if (ivaChk && snap.conIva != null) ivaChk.checked = !!snap.conIva;
+    if (firmaCl) firmaCl.value = snap.firmaClienteNombre || '';
     filas = (snap.filas || []).map(function(f) {
       return { cod: f.cod || '', nom: f.nom || '', pvp: f.pvp || 0, cant: f.cant || 1, tipo: f.tipo || 'producto' };
     });
@@ -572,6 +582,7 @@
     if (snap.cobros && global.ArpaCobros?.setLines) {
       global.ArpaCobros.setLines('cot', snap.cobros);
     }
+    recalcularCotizacion();
   }
 
   function getCotItemLabels() {
