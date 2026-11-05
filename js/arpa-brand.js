@@ -964,6 +964,7 @@
     global.ArpaOficios?.renderSettingsCheckboxes?.(document.getElementById('settings-oficios-grid'));
     global.ArpaPricing?.renderPriceListSettings?.();
     global.ArpaLicense?.fillSettingsLicensePanel?.();
+    global.ArpaDemoUi?.refresh?.();
     document.getElementById('settings-modal')?.classList.add('open');
     try { global.dispatchEvent(new CustomEvent('arpa-demo-mode-changed')); } catch (e) {}
     if (menuBtn) {
