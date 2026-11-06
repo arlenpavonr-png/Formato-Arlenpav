@@ -45,27 +45,27 @@ describe('CSS de impresión: pie no tapa contenido', () => {
     assert.ok(Number(m[1]) >= 20261002, 'CACHE_VERSION anterior al 2-oct-2026: ' + m[0]);
   });
 
-  it('el PDF de WhatsApp fija ancho de escritorio también en el celular', () => {
-    const cot = fs.readFileSync(path.join(root, 'js/arpa-cotizacion.js'), 'utf8');
-    assert.match(cot, /cot-pdf-fixed-width \.page \{ width:760px/);
-    assert.match(cot, /cot-pdf-fixed-width \.tabla-cot-wrap \{ overflow:visible/);
-    assert.match(cot, /classList\.add\('cot-pdf-fixed-width'\)/);
-    assert.match(cot, /classList\.remove\('cot-pdf-fixed-width'\)/);
+  it('el PDF de WhatsApp tiene el ancho de la hoja impresa también en el celular', () => {
+    // Desde el 6-nov-2026 la captura (js/arpa-pdf-captura.js) arma la copia con el ancho útil de la hoja Carta
+    // y las reglas de impresión: el mismo diseño en celular y en PC.
+    const cap = fs.readFileSync(path.join(root, 'js/arpa-pdf-captura.js'), 'utf8');
+    assert.match(cap, /windowWidth: PRINT_WIDTH_PX/);
+    assert.match(cap, /\.page \{ width:' \+ PRINT_WIDTH_PX/);
+    assert.match(cap, /collectPrintCss\(document\)/);
   });
 
   it('el PDF de WhatsApp de la cotización usa Carta y cortes por bloques', () => {
     const cot = fs.readFileSync(path.join(root, 'js/arpa-cotizacion.js'), 'utf8');
-    const fn = cot.slice(cot.indexOf('async function generarCotPdfFile'), cot.indexOf('function guardarCotPDF'));
-    assert.match(fn, /format:\s*['"]letter['"]/);
-    assert.doesNotMatch(fn, /format:\s*['"]a4['"]/);
-    assert.match(cot, /function computeCanvasPageStarts/);
-    assert.match(cot, /collectCotPdfBreakRanges/);
-    assert.match(cot, /beginCotPdfExport/);
-    assert.match(cot, /endCotPdfExport/);
-    assert.match(cot, /marginBottom:\s*14/);
-    assert.match(fn, /\.header/);
-    assert.match(cot, /#cot-print-footer-local/);
-    assert.match(cot, /#334155/);
+    const cap = fs.readFileSync(path.join(root, 'js/arpa-pdf-captura.js'), 'utf8');
+    const fn = cot.slice(cot.indexOf('async function generarCotPdfFile'), cot.indexOf('async function guardarCotPDF'));
+    assert.match(cap, /format:\s*['"]letter['"]/);
+    assert.doesNotMatch(cap, /format:\s*['"]a4['"]/);
+    assert.match(cap, /function computePageStarts/);
+    assert.match(cap, /function collectBlocks/);
+    assert.match(cap, /marginBottom:\s*14/);
+    assert.match(fn, /beginCotPdfExport/);
+    assert.match(fn, /endCotPdfExport/);
+    assert.match(fn, /ArpaPdfCaptura\.capturarPdf\(pageEl/);
   });
 
   it('impresión oculta buscador, casilla IVA, placeholders y observaciones vacías', () => {

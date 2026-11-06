@@ -82,53 +82,29 @@
   }
 
   async function generarFormatoPdfFile() {
-    const jsPDF = global.jspdf?.jsPDF || global.jsPDF;
-    const html2canvas = global.html2canvas;
-    if (!jsPDF || !html2canvas) return null;
-
     const element = document.querySelector('.page');
-    if (!element) return null;
+    if (!element || !global.ArpaPdfCaptura || typeof global.prepararFormatoParaPdf !== 'function') return null;
 
     global.ArpaTrialCapture?.beginPdfExport?.();
-    // Solo con idioma del documento = English: textos y fechas del formato en inglés durante la captura.
-    const docEnglish = !!global.ArpaDocLang?.isEnglish?.();
-    if (docEnglish) global.ArpaI18n?.preparePdfDocument?.('view-formato');
+    // Los mismos pasos que "Guardar como PDF" (campos como texto, firmas como imagen, sin botones),
+    // y la captura con los estilos de impresión: el PDF compartido sale igual al guardado.
+    // (prepararFormatoParaPdf ya pone el documento en su idioma, también con English.)
+    const prep = global.prepararFormatoParaPdf();
     try {
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
-
-      const imgData = canvas.toDataURL('image/jpeg', 0.92);
-      const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = pageWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      const blob = pdf.output('blob');
+      await prep.ready;
       const numero = readFormatoField(document.getElementById('numero-formato'));
       const cliente = readFormatoField(document.getElementById('formato-cliente-nombre'));
+      const { blob } = await global.ArpaPdfCaptura.capturarPdf(element, {
+        searchableText: [
+          (document.getElementById('brand-company-name')?.textContent || '').trim(),
+          numero,
+          cliente
+        ]
+      });
       const filename = `${global.ArpaDocLang?.text?.('file.formato', 'Formato') ?? 'Formato'}_${sanitizeFilenamePart(numero)}_${sanitizeFilenamePart(cliente)}.pdf`;
-
       return new File([blob], filename, { type: 'application/pdf' });
     } finally {
-      if (docEnglish) global.ArpaI18n?.restorePdfDocument?.();
+      prep.restore();
       global.ArpaTrialCapture?.endPdfExport?.();
     }
   }
