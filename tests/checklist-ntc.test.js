@@ -100,7 +100,94 @@ test('cambiar el tipo de puerta cambia los puntos y el resumen', () => {
   assert.strictEqual(s.ok, 1, 'los comunes se conservan');
   C.setTipo('nada');
   assert.strictEqual(C.getState().tipo, '');
-  assert.strictEqual(C.summarize(C.getState(), 'es').total, 0);
+  assert.strictEqual(C.summarize(C.getState(), 'es').total, 16, 'sin tipo: solo los 16 comunes');
+});
+
+// ── Filtro por tipo de puerta (2026-11-06: Arlen veía puntos de otros tipos) ──
+const IDS_DE = (C, tipo) => J(C.getItems(tipo, 'es').map((i) => i.id));
+const PREFIJO = { corrediza: 'cor_', batiente: 'bat_', seccional: 'sec_', enrollable: 'enr_', peatonal: 'pea_', barrera: 'bar_' };
+
+test('filtro: cada tipo muestra solo los comunes y sus propios puntos, nunca los de otro tipo', () => {
+  const { C } = load();
+  C.DOOR_TYPES.forEach((tipo) => {
+    const ids = IDS_DE(C, tipo);
+    const otros = ids.filter((id) => !id.startsWith('com_') && !id.startsWith(PREFIJO[tipo]));
+    assert.deepStrictEqual(otros, [], tipo + ' no trae puntos de otros tipos');
+    const html = C.buildEditorHtml({ enabled: true, tipo, items: {} }, 'es', false);
+    const enPantalla = [...html.matchAll(/data-item="([a-z_]+)"/g)].map((m) => m[1]);
+    assert.deepStrictEqual(enPantalla, ids, tipo + ': en pantalla solo comunes + ' + tipo);
+    const grupos = [...html.matchAll(/class="ntc-group-title">([^<]+)</g)].map((m) => m[1]);
+    assert.strictEqual(grupos.length, 2, tipo + ': dos grupos');
+    assert.strictEqual(grupos[0], 'Comunes a todas las puertas');
+    const pdf = C.buildPrintHtml({ enabled: true, tipo, items: {} }, 'es');
+    assert.strictEqual((pdf.match(/class="ntc-pr-row /g) || []).length, ids.length, tipo + ': tabla del PDF');
+    assert.strictEqual((pdf.match(/class="ntc-pr-cell ntc-pr-cell-/g) || []).length, ids.length, tipo + ': cuadrícula del PDF');
+  });
+});
+
+test('filtro: sin tipo se ven solo los comunes, con el aviso y el selector arriba', () => {
+  const { C } = load();
+  const html = C.buildEditorHtml({ enabled: true, tipo: '', items: {} }, 'es', false);
+  assert.ok(html.includes('Elige el tipo de puerta para ver sus puntos.'), 'aviso corto');
+  const enPantalla = [...html.matchAll(/data-item="([a-z_]+)"/g)].map((m) => m[1]);
+  assert.strictEqual(enPantalla.length, 16);
+  assert.ok(enPantalla.every((id) => id.startsWith('com_')), 'solo comunes');
+  assert.ok(html.indexOf('data-ntc="tipo"') < html.indexOf('data-ntc-aviso') && html.indexOf('data-ntc-aviso') < html.indexOf('data-item='), 'selector y aviso arriba de la lista');
+  const conTipo = C.buildEditorHtml({ enabled: true, tipo: 'barrera', items: {} }, 'es', false);
+  assert.ok(!conTipo.includes('data-ntc-aviso'), 'con tipo no sale el aviso');
+  assert.ok(conTipo.indexOf('data-ntc="tipo"') < conTipo.indexOf('data-item='), 'selector arriba de la lista');
+  const pdf = C.buildPrintHtml({ enabled: true, tipo: '', items: { com_paro: { r: 'ok' } } }, 'es');
+  assert.strictEqual((pdf.match(/class="ntc-pr-row /g) || []).length, 16, 'PDF sin tipo: solo los comunes');
+  assert.ok(pdf.includes('Tipo de puerta: <strong>sin elegir</strong>'));
+});
+
+test('filtro: lo marcado en un tipo que se deja de ver no cuenta ni sale en el PDF, y vuelve al regresar', () => {
+  const { C } = load();
+  C.setEnabled(true);
+  C.setTipo('seccional');
+  C.setItem('sec_cables', { r: 'no', obs: 'Hilos rotos', foto: FOTO });
+  C.setItem('com_paro', { r: 'ok' });
+  C.setTipo('corrediza');
+  const st = C.getState();
+  const s = C.summarize(st, 'es');
+  assert.deepStrictEqual([s.total, s.ok, s.no, s.fotos.length], [21, 1, 0, 0], 'contadores sin el punto de seccional');
+  const pdf = C.buildPrintHtml(st, 'es');
+  assert.ok(!pdf.includes('Hilos rotos') && !pdf.includes('ntc-pr-reco') && !pdf.includes('ntc-pr-foto'), 'el PDF no trae lo de seccional');
+  assert.ok(!C.buildSummaryHtml(st, 'es').includes('Hilos rotos'), 'el resumen tampoco');
+  assert.ok(!C.buildProgressHtml(st, 'es').includes('✗ 1'), 'ni la barra');
+  C.setTipo('seccional');
+  const back = C.summarize(C.getState(), 'es');
+  assert.deepStrictEqual([back.total, back.no, back.fotos.length], [23, 1, 1], 'al volver a seccional se recupera');
+});
+
+test('filtro: la lista sigue al tipo de puerta marcado en el formato, al momento', () => {
+  const { C, saves } = load();
+  const chips = {};
+  const chip = (id, checked) => { chips[id] = { id, checked }; return chips[id]; };
+  // Documento mínimo: solo las casillas del formato.
+  const fakeDoc = { getElementById: (id) => chips[id] || null };
+  C.setEnabled(true);
+  assert.strictEqual(C.getState().tipo, '');
+  assert.strictEqual(C.tipoFromChips(fakeDoc), '');
+  chip('c1', true);
+  assert.strictEqual(C.tipoFromChips(fakeDoc), 'corrediza');
+  chip('c10', true);
+  chips.c1.checked = false;
+  assert.strictEqual(C.tipoFromChips(fakeDoc), 'peatonal', 'la puerta de vidrio (cabezal) es peatonal');
+  // syncTipoFromChip con la casilla que cambió (sin document en las pruebas: tipoFromChips da '').
+  const n0 = saves.length;
+  C.syncTipoFromChip({ id: 'c5', checked: true });
+  assert.strictEqual(C.getState().tipo, 'seccional', 'marcar Seccional cambia la lista');
+  assert.ok(saves.length > n0, 'guarda el borrador');
+  C.syncTipoFromChip({ id: 'c6', checked: true });
+  assert.strictEqual(C.getState().tipo, 'barrera', 'la casilla recién marcada manda');
+  C.syncTipoFromChip({ id: 'c6', checked: false });
+  assert.strictEqual(C.getState().tipo, '', 'sin casillas marcadas: solo comunes');
+  C.setTipo('peatonal');
+  C.syncTipoFromChip({ id: 'c8', checked: true });
+  assert.strictEqual(C.getState().tipo, 'peatonal', '"Otra" no borra el tipo elegido a mano');
+  C.syncTipoFromChip({ id: 'formato-cliente-nombre', checked: false });
+  assert.strictEqual(C.getState().tipo, 'peatonal', 'otros campos no tocan la lista');
 });
 
 test('resumen: cuenta cumple / no cumple / no aplica / sin revisar y lista los "No cumple" con su observación', () => {
