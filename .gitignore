@@ -41,3 +41,5 @@ test-results/
 playwright-report/
 pdf-test-out/
 pdf-test-out-mobile/
+pdf-test-out-wa/
+pdf-test-out-wa-mobile/
