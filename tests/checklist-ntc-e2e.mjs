@@ -359,6 +359,60 @@ try {
   console.log('  hosts externos bloqueados:', [...A.blocked].join(', ') || 'ninguno');
   await A.context.close();
 
+  // ── D) Filtro por tipo de puerta en Instalación, Mantenimiento y Reparación ──
+  console.log('D) DUEÑO: solo comunes + el tipo de puerta elegido');
+  for (const [radio, nombre] of [['t1', 'Instalación'], ['t2', 'Mantenimiento'], ['t3', 'Reparación']]) {
+    const D = await newContext(browser, { founder: true });
+    const pd = D.page;
+    await openFormato(pd);
+    await pd.waitForSelector('#formato-checklist-ntc-section [data-ntc="toggle"]', { state: 'attached' });
+    await pd.click(`label[for="${radio}"]`);
+    await pd.locator('#formato-checklist-ntc-section .ntc-switch').click();
+    const ver = () => pd.evaluate(() => ({
+      ids: [...document.querySelectorAll('.ntc-item')].map((e) => e.getAttribute('data-item')),
+      grupos: [...document.querySelectorAll('.ntc-group-title')].map((g) => g.textContent),
+      aviso: document.querySelector('[data-ntc-aviso]')?.textContent || '',
+      sel: document.querySelector('[data-ntc="tipo"]')?.value,
+      selArriba: (() => {
+        const s = document.querySelector('[data-ntc="tipo"]'); const i = document.querySelector('.ntc-item');
+        return !!(s && i && s.getBoundingClientRect().top < i.getBoundingClientRect().top);
+      })(),
+    }));
+    const solo = (v, pref) => v.ids.every((id) => id.startsWith('com_') || id.startsWith(pref));
+    let v = await ver();
+    assert(v.ids.length === 16 && solo(v, 'com_') && v.aviso.includes('Elige el tipo de puerta'), `${nombre}: sin tipo, solo 16 comunes y el aviso`);
+    assert(v.selArriba, `${nombre}: el selector de tipo está arriba de la lista`);
+    await pd.click('label[for="c1"]');
+    v = await ver();
+    assert(v.sel === 'corrediza' && v.ids.length === 21 && solo(v, 'cor_') && v.grupos.length === 2 && !v.aviso, `${nombre}: marcar Corrediza en el formato → 21 puntos, solo de corrediza`);
+    await pd.$eval('.ntc-item[data-item="cor_riel"] [data-v="no"]', (b) => b.click());
+    await pd.click('label[for="c1"]');
+    await pd.click('label[for="c5"]');
+    v = await ver();
+    assert(v.sel === 'seccional' && v.ids.length === 23 && solo(v, 'sec_'), `${nombre}: cambiar a Seccional en el formato actualiza al momento (23 puntos)`);
+    const cnt = await pd.$eval('[data-count="no"]', (el) => el.textContent);
+    assert(cnt === '✗ 0', `${nombre}: el "No cumple" de corrediza no cuenta en seccional`);
+    await pd.selectOption('#formato-checklist-ntc-section select[data-ntc="tipo"]', 'barrera');
+    v = await ver();
+    assert(v.ids.length === 21 && solo(v, 'bar_'), `${nombre}: el selector de la lista también filtra (barrera)`);
+    await pd.selectOption('#formato-checklist-ntc-section select[data-ntc="tipo"]', 'corrediza');
+    assert((await pd.$eval('.ntc-item[data-item="cor_riel"]', (el) => el.getAttribute('data-r'))) === 'no', `${nombre}: al volver a corrediza se recupera lo marcado`);
+    await pd.selectOption('#formato-checklist-ntc-section select[data-ntc="tipo"]', 'seccional');
+    await fillHeader(pd);
+    await pd.click(`label[for="${radio}"]`);
+    await signAndPrint(pd);
+    const p = await pd.evaluate(() => {
+      const t = document.querySelector('#formato-checklist-ntc-section [data-ntc-print]');
+      const ids = [...t.querySelectorAll('.ntc-pr-cell-name')].map((c) => c.textContent);
+      return { rows: t.querySelectorAll('.ntc-pr-row').length, cells: ids.length, text: t.textContent };
+    });
+    assert(p.rows === 23 && p.cells === 23 && !p.text.includes('Riel') && !/REQUIERE ATENCI/.test(p.text), `${nombre}: PDF con 23 filas y 23 cuadritos, nada de corrediza`);
+    await pd.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+    const ownD = D.errors.filter((e) => /ntc|checklist/i.test(e));
+    assert(ownD.length === 0, `${nombre}: sin errores de la lista en la consola`);
+    await D.context.close();
+  }
+
   // ── B) Cliente (no dueño) ───────────────────────────────────────────────
   console.log('B) CLIENTE (licencia PRO, sin founder)');
   const B = await newContext(browser, { founder: false });
