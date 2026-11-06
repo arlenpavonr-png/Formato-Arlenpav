@@ -1,6 +1,6 @@
 // ARPA Suite — Service Worker
 // Cambia CACHE_VERSION con cada deploy para que los usuarios reciban la versión nueva.
-const CACHE_VERSION = 'v20261106-checklist-solo-dueno';
+const CACHE_VERSION = 'v20261106-checklist-y-pdf';
 const CACHE_NAME = 'arpa-suite-' + CACHE_VERSION;
 
 // Todos los archivos que carga index.html (antes faltaban varios, p. ej. arpa-numeracion.js,
@@ -38,6 +38,7 @@ const LOCAL_ASSETS = [
   './js/catalogo-ppa.js',
   './js/html2canvas.min.js',
   './js/jspdf.umd.min.js',
+  './js/arpa-pdf-captura.js',
   './js/qrcode.min.js',
   // ARPA NEXT (app de campo; se abre solo con la actualización anual vigente)
   './js/arpa-actualizaciones.js',

@@ -2280,6 +2280,22 @@
     #validation-badge { display: none !important; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
+  /* Avisos y controles de la app nunca van en el documento (6-nov-2026): franja "Modo Demo",
+     instalar app, pastillas de estado/sincronización bajo el N°, idioma, botones flotantes y ayudas. */
+  @media print {
+    #arpa-demo-banner, #arpa-install-banner, [data-arpa-install-root], .trial-days-banner,
+    #validation-badge, [id^="sync-status-"], .lang-switch, .settings-btn,
+    .catalogo-fab, .arpa-guia-tip, .arpa-guia-logro, .arpa-activar-modal, #pdf-actions-formato, #pdf-actions-cot,
+    .tabla-productos .td-action, .tabla-productos .td-action * { display: none !important; }
+    /* La columna de acciones (oculta) no debe dejar el encabezado azul más angosto que la tabla. */
+    #view-cotizacion .tabla-productos colgroup col:last-child,
+    #view-cuenta-cobro .tabla-productos colgroup col:last-child { width: 0 !important; visibility: collapse; }
+    /* Cada título va en la misma hoja que su contenido; el resumen (título + totales) no se separa. */
+    .section-title { break-after: avoid; page-break-after: avoid; }
+    #view-cotizacion .cot-cierre-block { display: block; }
+    #view-cotizacion .cot-cierre-block > .section + .section { margin-top: 18px; }
+    #view-cotizacion .cot-cierre-block > .section:first-child { break-inside: avoid; page-break-inside: avoid; }
+  }
   @media (max-width: 520px) {
     .g3 { grid-template-columns: 1fr 1fr; }
     .g4 { grid-template-columns: 1fr 1fr; }
@@ -4389,13 +4405,10 @@ function validarFirmaClienteFormato() {
   return false;
 }
 
-function guardarPDF() {
-  if (!validarFirmaClienteFormato()) return;
-
-  window.ArpaTrialCapture?.beginPdfExport?.();
-  window.ArpaWhatsApp?.hideFormatoShareButton?.();
-  window.ArpaHistorial?.captureFromFormato?.();
-
+// Deja el formato listo para PDF (los mismos pasos para "Guardar como PDF" y "Enviar por WhatsApp"):
+// campos → texto, firmas → imagen, secciones según el tipo de servicio, sin botones.
+// Devuelve { ready, restore }: ready se cumple cuando firmas y QR están listos; restore deja la pantalla como estaba.
+function prepararFormatoParaPdf() {
   applyUserSettingsToUI();
   window.ArpaBrand?.syncBankBlocksForPrint?.();
   persistFormatoDraftToStorage();
@@ -4453,7 +4466,15 @@ function guardarPDF() {
   const settingsModal = document.getElementById('settings-modal');
   if (settingsModal) settingsModal.classList.remove('open');
 
-  const finishPrintRestore = () => {
+  const printReady = window.ArpaSignature?.prepareForPrint?.([
+    'canvas-firma-cliente',
+    'canvas-firma-tecnico'
+  ]);
+
+  let restored = false;
+  const restore = () => {
+    if (restored) return;
+    restored = true;
     document.body.classList.remove('is-printing', 'is-printing-formato', 'formato-has-video-qr');
     const medidasSection = document.getElementById('formato-medidas-section');
     if (medidasSection) {
@@ -4465,7 +4486,7 @@ function guardarPDF() {
     window.ArpaBrand?.restoreAfterPrint?.();
     restoreVideoQrAfterPrint(qrBlock);
     window.ArpaSignature?.restoreAfterPrint?.();
-    respaldos.forEach(({ el, parent, next }) => {
+    respaldos.forEach(({ el, parent }) => {
       const span = parent.querySelector('.pdf-valor');
       if (span) parent.replaceChild(el, span);
     });
@@ -4475,6 +4496,23 @@ function guardarPDF() {
     });
     window.ArpaChecklistNtc?.restoreAfterPrint?.();
     if (btnPDF) btnPDF.parentElement.style.display = '';
+  };
+
+  return { ready: Promise.all([Promise.resolve(printReady), qrReady]), restore };
+}
+window.prepararFormatoParaPdf = prepararFormatoParaPdf;
+
+function guardarPDF() {
+  if (!validarFirmaClienteFormato()) return;
+
+  window.ArpaTrialCapture?.beginPdfExport?.();
+  window.ArpaWhatsApp?.hideFormatoShareButton?.();
+  window.ArpaHistorial?.captureFromFormato?.();
+
+  const prep = prepararFormatoParaPdf();
+
+  const finishPrintRestore = () => {
+    prep.restore();
     scheduleFormatoDraftSave();
     window.ArpaWhatsApp?.showFormatoShareAfterPdf?.();
     window.ArpaTrialCapture?.onDocumentSaved?.('formato');
@@ -4492,11 +4530,7 @@ function guardarPDF() {
     setTimeout(run, 5000);
   }
 
-  const printReady = window.ArpaSignature?.prepareForPrint?.([
-    'canvas-firma-cliente',
-    'canvas-firma-tecnico'
-  ]);
-  Promise.all([Promise.resolve(printReady), qrReady]).then(() => {
+  prep.ready.then(() => {
     requestAnimationFrame(() => {
       forzarSaltoSiSeCorta();
       window.print();
@@ -5423,6 +5457,7 @@ if ('serviceWorker' in navigator) {
 <script src="./js/arpa-i18n.js"></script>
 <script src="./js/html2canvas.min.js"></script>
 <script src="./js/jspdf.umd.min.js"></script>
+<script src="./js/arpa-pdf-captura.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous"></script>
 <script src="./js/arpa-license.js"></script>
 <script src="./js/arpa-oficios.js"></script>

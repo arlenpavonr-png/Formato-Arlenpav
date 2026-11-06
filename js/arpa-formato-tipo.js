@@ -721,7 +721,8 @@
       hint: 'Revisión de seguridad y funcionamiento de la puerta. Marque cada punto.',
       tipo: 'Tipo de puerta',
       tipo_elegir: 'Seleccione el tipo de puerta…',
-      tipo_hint: 'Elija el tipo de puerta para ver los puntos.',
+      tipo_hint: 'Elige el tipo de puerta para ver sus puntos.',
+      tipo_sin: 'sin elegir',
       'tipo.corrediza': 'Corrediza',
       'tipo.batiente': 'Batiente (1 o 2 hojas)',
       'tipo.seccional': 'Seccional o levadiza',
@@ -767,7 +768,8 @@
       hint: 'Door safety and operation check. Mark every item.',
       tipo: 'Door type',
       tipo_elegir: 'Select the door type…',
-      tipo_hint: 'Choose the door type to see the items.',
+      tipo_hint: 'Choose the door type to see its items.',
+      tipo_sin: 'not selected',
       'tipo.corrediza': 'Sliding gate',
       'tipo.batiente': 'Swing gate (1 or 2 leaves)',
       'tipo.seccional': 'Sectional or up-and-over',
@@ -812,8 +814,9 @@
   // Casillas de "Tipo de Puerta / Motor" del formato (oficio Automatismos) → tipo de la lista.
   const CHIP_TO_TYPE = [
     ['c5', 'seccional'], ['c4', 'seccional'], ['c9', 'enrollable'], ['c1', 'corrediza'],
-    ['c7', 'corrediza'], ['c2', 'batiente'], ['c3', 'batiente'], ['c6', 'barrera']
+    ['c7', 'corrediza'], ['c2', 'batiente'], ['c3', 'batiente'], ['c6', 'barrera'], ['c10', 'peatonal']
   ];
+  const CHIP_TYPE = Object.fromEntries(CHIP_TO_TYPE);
 
   let state = emptyState();
 
@@ -890,11 +893,13 @@
     return JSON.parse(JSON.stringify(st));
   }
 
-  /** Conteo y lista de "No cumple" solo con los puntos del tipo de puerta elegido. */
+  /**
+   * Conteo y lista de "No cumple" solo con los puntos que se ven: comunes + los del tipo de
+   * puerta elegido (sin tipo, solo los comunes). Lo marcado en otro tipo no cuenta.
+   */
   function summarize(st, l) {
     const s = normalize(st);
     const res = { total: 0, ok: 0, no: 0, na: 0, pending: 0, noItems: [], fotos: [] };
-    if (!s.tipo) return res;
     getItems(s.tipo, l).forEach((item) => {
       const it = s.items[item.id] || {};
       res.total += 1;
@@ -941,11 +946,14 @@
     return s;
   }
 
-  /** PDF (HTML): veredicto, cuadrícula, recomendaciones, fotos, tabla y nota. Vacío si está apagada o sin tipo. */
+  /**
+   * PDF (HTML): veredicto, cuadrícula, recomendaciones, fotos, tabla y nota. Vacío si está apagada.
+   * Solo lleva los comunes + los del tipo elegido (sin tipo, solo los comunes).
+   */
   function buildPrintHtml(st, l) {
     if (!isOwner()) return '';
     const s = normalize(st);
-    if (!s.enabled || !s.tipo) return '';
+    if (!s.enabled) return '';
     const lang = pickLang(l);
     const sum = summarize(s, lang);
     const items = getItems(s.tipo, lang);
@@ -973,7 +981,7 @@
       '<span class="ntc-pr-leg"><i class="ntc-pr-leg-sw ntc-pr-cell-' + r + '"></i>' + esc(resultLabel(r === 'pending' ? '' : r, lang)) + '</span>').join('');
     // El título "Lista de verificación basada en la NTC 5926-3" va en el título de la sección.
     let html = '<div class="ntc-pr-top">' +
-      '<div class="ntc-pr-head"><div class="ntc-pr-tipo">' + esc(tx('print_tipo', lang)) + ': <strong>' + esc(tipoLabel(s.tipo, lang)) + '</strong></div></div>' +
+      '<div class="ntc-pr-head"><div class="ntc-pr-tipo">' + esc(tx('print_tipo', lang)) + ': <strong>' + esc(tipoLabel(s.tipo, lang) || tx('tipo_sin', lang)) + '</strong></div></div>' +
       '<div class="ntc-pr-verdict ntc-pr-verdict-' + v + '" data-verdict="' + v + '">' +
       '<span class="ntc-pr-verdict-text">' + esc(tx('veredicto.' + v, lang)) + '</span>' +
       '<span class="ntc-pr-verdict-counts">' + esc(countsText(sum, lang)) + '</span></div>' +
@@ -1034,12 +1042,13 @@
     let html = '<label class="ntc-switch"><input type="checkbox" data-ntc="toggle"' + (s.enabled ? ' checked' : '') + dis + '>' +
       '<span class="ntc-switch-ui" aria-hidden="true"></span><span class="ntc-switch-text">' + esc(tx('toggle', l)) + '</span></label>';
     if (!s.enabled) return html;
-    html += '<p class="ntc-hint">' + esc(tx('hint', l)) + '</p>';
-    html += '<div class="field ntc-tipo"><label>' + esc(tx('tipo', l)) + '</label><select data-ntc="tipo"' + dis + '>' +
+    // El tipo de puerta va arriba: decide qué puntos se ven (comunes + los de ese tipo).
+    html += '<div class="field ntc-tipo"><label for="ntc-tipo-sel">' + esc(tx('tipo', l)) + '</label><select id="ntc-tipo-sel" data-ntc="tipo"' + dis + '>' +
       '<option value="">' + esc(tx('tipo_elegir', l)) + '</option>' +
       DOOR_TYPES.map((t) => '<option value="' + t + '"' + (s.tipo === t ? ' selected' : '') + '>' + esc(tipoLabel(t, l)) + '</option>').join('') +
       '</select></div>';
-    if (!s.tipo) return html + '<p class="ntc-hint">' + esc(tx('tipo_hint', l)) + '</p>';
+    if (!s.tipo) html += '<p class="ntc-tipo-aviso" data-ntc-aviso>' + esc(tx('tipo_hint', l)) + '</p>';
+    html += '<p class="ntc-hint">' + esc(tx('hint', l)) + '</p>';
     html += '<div class="ntc-progress" data-ntc-progress>' + buildProgressHtml(s, l) + '</div>';
     let lastGroup = '';
     getItems(s.tipo, l).forEach((item) => {
@@ -1090,7 +1099,10 @@
     '.ntc-switch input:checked+.ntc-switch-ui::after{left:21px}',
     '.ntc-switch input:focus-visible+.ntc-switch-ui{outline:2px solid #2563eb;outline-offset:2px}',
     '.ntc-hint{font-size:11px;color:var(--muted,#64748b);margin:8px 0;line-height:1.4}',
-    '.ntc-tipo{margin:6px 0 10px}',
+    '.ntc-tipo{margin:10px 0 6px}',
+    '.ntc-tipo label{font-weight:700}',
+    '.ntc-tipo select{width:100%;min-height:44px;font-size:15px;font-weight:600}',
+    '.ntc-tipo-aviso{font-size:13px;font-weight:700;color:#92400e;background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:8px 10px;margin:6px 0}',
     // Progreso y contadores
     '.ntc-progress{border:1px solid var(--border,#e2e8f0);border-radius:10px;padding:10px 12px;background:#f8fafc;margin:4px 0 6px}',
     '.ntc-prog-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}',
@@ -1244,7 +1256,7 @@
     if (!section) return;
     const l = uiLang();
     section.hidden = !isApplicable();
-    section.classList.toggle('ntc-print-off', !state.enabled || !state.tipo);
+    section.classList.toggle('ntc-print-off', !state.enabled);
     section.querySelector('[data-ntc-title]').textContent = tx('title', l);
     section.querySelector('[data-ntc-editor]').innerHTML = buildEditorHtml(state, l, isLocked(), expanded);
   }
@@ -1331,7 +1343,27 @@
   function setEnabled(on) {
     if (!isOwner()) return;
     state.enabled = !!on;
-    if (state.enabled && !state.tipo) state.tipo = tipoFromChips();
+    // Al encenderla toma el tipo marcado arriba en el formato (si hay uno).
+    if (state.enabled) state.tipo = tipoFromChips() || state.tipo;
+    render();
+    save();
+  }
+
+  /**
+   * Se marcó o desmarcó una casilla de "Tipo de Puerta / Motor" del formato: la lista sigue al
+   * formato al momento. La casilla recién marcada manda; al desmarcarla se toma otra marcada, y
+   * si no queda ninguna se vuelve a "sin tipo" (solo los comunes). Lo marcado en otro tipo no se
+   * borra: queda guardado (no cuenta ni sale en el PDF) y vuelve si se elige otra vez ese tipo.
+   */
+  function syncTipoFromChip(el) {
+    if (!isOwner() || isLocked() || !el || !Object.prototype.hasOwnProperty.call(CHIP_TYPE, el.id)) return;
+    const before = state.tipo;
+    let next = el.checked ? CHIP_TYPE[el.id] : tipoFromChips();
+    // Sin casilla con tipo: si el técnico eligió a mano un tipo que no tiene casilla, se respeta.
+    if (!next && !Object.values(CHIP_TYPE).includes(before)) next = before;
+    if (next === before) return;
+    state.tipo = next;
+    if (!state.enabled) return;
     render();
     save();
   }
@@ -1372,6 +1404,7 @@
 
   function restoreFromDraft(data) {
     state = isOwner() ? normalize(data && data[DRAFT_KEY]) : emptyState();
+    if (state.enabled && !state.tipo) state.tipo = tipoFromChips();
     expanded = {};
     render();
   }
@@ -1401,7 +1434,7 @@
     if (!section) return;
     section.hidden = !isApplicable();
     const l = docLang();
-    section.classList.toggle('ntc-print-off', !state.enabled || !state.tipo);
+    section.classList.toggle('ntc-print-off', !state.enabled);
     section.querySelector('[data-ntc-title]').textContent = tx('print_title', l);
     const printEl = section.querySelector('[data-ntc-print]');
     if (printEl) printEl.innerHTML = section.hidden ? '' : buildPrintHtml(state, l);
@@ -1424,6 +1457,8 @@
     global.document.addEventListener('click', (ev) => {
       if (ev.target?.closest?.('.lang-btn')) setTimeout(render, 0);
     });
+    // Las casillas del tipo de puerta se vuelven a pintar por oficio: se escucha en el documento.
+    global.document.addEventListener('change', (ev) => syncTipoFromChip(ev.target));
   }
 
   global.ArpaChecklistNtc = {
@@ -1444,6 +1479,7 @@
     getState,
     setEnabled,
     setTipo,
+    syncTipoFromChip,
     setItem,
     enrichDraft,
     restoreFromDraft,

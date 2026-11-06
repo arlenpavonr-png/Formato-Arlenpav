@@ -731,55 +731,6 @@
       .substring(0, 40) || 'Cotizacion';
   }
 
-  const COT_PDF_LETTER = { widthMm: 215.9, heightMm: 279.4, marginX: 12, marginTop: 12, marginBottom: 14 };
-  const COT_WHATSAPP_PRINT_CSS = [
-    'body.is-printing:not(.is-printing-formato) #cot-buscar-section,',
-    'body.is-printing:not(.is-printing-formato) #cot-cobros-section,',
-    'body.is-printing:not(.is-printing-formato) .buscador-wrap-cot,',
-    'body.is-printing:not(.is-printing-formato) .iva-toggle,',
-    'body.is-printing:not(.is-printing-formato) .cot-catalog-hint,',
-    'body.is-printing:not(.is-printing-formato) .print-hide-empty,',
-    'body.is-printing:not(.is-printing-formato) #pdf-actions-cot,',
-    'body.is-printing:not(.is-printing-formato) #pdf-actions-formato,',
-    'body.is-printing:not(.is-printing-formato) #view-cotizacion button,',
-    'body.is-printing:not(.is-printing-formato) #view-cotizacion .tabla-productos .td-action,',
-    'body.is-printing:not(.is-printing-formato) #view-cotizacion .tabla-productos thead th:last-child,',
-    'body.is-printing:not(.is-printing-formato) #view-cotizacion .tabla-productos tbody td:last-child { display:none !important; }',
-    'body.is-printing:not(.is-printing-formato) #cot-print-footer { display:block !important; background:#fff; border-top:1px solid #e2e8f0; margin-top:10px; }',
-    'body.is-printing:not(.is-printing-formato) #cot-print-footer-local,',
-    'body.is-printing:not(.is-printing-formato) #cot-print-footer .suite-footer-local { color:#334155 !important; font-size:10px !important; }',
-    'body.is-printing:not(.is-printing-formato) #cot-print-footer-global,',
-    'body.is-printing:not(.is-printing-formato) #cot-print-footer .suite-footer-global-text { color:#475569 !important; font-size:8pt !important; }',
-    'body.is-printing:not(.is-printing-formato) .suite-footer { display:none !important; }',
-    'body.is-printing .header { flex-direction:column; align-items:center; text-align:center; gap:10px; padding:16px 24px 12px; }',
-    'body.is-printing .brand-logo-wrap { margin:0 auto; order:-1; max-width:180px; min-height:64px; padding:8px; }',
-    'body.is-printing .header #brand-logo { max-height:56px; }',
-    'body.is-printing .header-info, body.is-printing .header-meta { flex:none; width:100%; text-align:center; }',
-    'body.is-printing .header-meta .no-field { justify-content:center; }',
-    'body.is-printing #validation-badge,',
-    'body.is-printing .lang-switch,',
-    'body.is-printing .settings-btn,',
-    'body.is-printing #header-meta-formato,',
-    'body.is-printing #header-meta-cc,',
-    'body.is-printing .header button,',
-    'body.is-printing #sync-status-cot,',
-    'body.is-printing #sync-status-formato,',
-    'body.is-printing #sync-status-cc { display:none !important; }',
-    'body.is-printing #header-meta-cot { display:block !important; }',
-    'body.is-printing #view-cotizacion .firma-canvas, body.is-printing #view-cotizacion .firma-print-img { height:72px !important; }',
-    'body.is-printing #view-cotizacion .firma-box { padding:6px 8px; gap:4px; }',
-    'body.is-printing #view-cotizacion .garantia-body { padding:8px 12px; gap:5px; }',
-    'body.is-printing #view-cotizacion .nota, body.is-printing #view-cotizacion .nota-cot { padding:8px 10px; }',
-    // En el celular la página mide ~400 px: la tabla se cortaba (sin Precio/Total) y el PDF salía de 6-7 hojas.
-    // Durante la exportación se fija el ancho de escritorio (760 px) y se anulan las reglas de pantalla angosta,
-    // para que lo medido en pantalla y lo capturado por html2canvas sean el mismo diseño.
-    'body.is-printing.cot-pdf-fixed-width .page { width:760px !important; min-width:760px !important; max-width:760px !important; margin:0 !important; }',
-    'body.is-printing.cot-pdf-fixed-width .tabla-cot-wrap { overflow:visible !important; }',
-    'body.is-printing.cot-pdf-fixed-width .g3 { grid-template-columns:1fr 1fr 1fr !important; }',
-    'body.is-printing.cot-pdf-fixed-width .g4 { grid-template-columns:1fr 1fr 1fr 1fr !important; }',
-    'body.is-printing.cot-pdf-fixed-width .firmas { grid-template-columns:1fr 1fr !important; }'
-  ].join('\n');
-
   function isVisibleBreakEl(el) {
     if (!el) return false;
     const cs = window.getComputedStyle(el);
@@ -851,21 +802,6 @@
     return starts;
   }
 
-  function pageIntervalHits(range, start, end, eps) {
-    if (!range) return false;
-    return range.top < end - eps && range.bottom > start + eps;
-  }
-
-  function injectCotWhatsAppPrintCss() {
-    const existing = document.getElementById('arpa-cot-whatsapp-print-css');
-    if (existing) existing.remove();
-    const style = document.createElement('style');
-    style.id = 'arpa-cot-whatsapp-print-css';
-    style.textContent = COT_WHATSAPP_PRINT_CSS;
-    document.head.appendChild(style);
-    return style;
-  }
-
   function waitForCotPdfLayout() {
     return new Promise((resolve) => {
       requestAnimationFrame(() => requestAnimationFrame(resolve));
@@ -882,59 +818,6 @@
     const parent = input.parentNode;
     parent.replaceChild(span, input);
     return { el: input, parent, span };
-  }
-
-  async function captureElementCanvas(html2canvas, el, opts) {
-    opts = opts || {};
-    const w = Math.max(1, Math.ceil(opts.width || el.scrollWidth || el.getBoundingClientRect().width));
-    const h = Math.max(1, Math.ceil(opts.height || el.scrollHeight || el.getBoundingClientRect().height));
-    return html2canvas(el, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: opts.backgroundColor == null ? '#ffffff' : opts.backgroundColor,
-      width: w,
-      height: h,
-      windowWidth: w,
-      windowHeight: h,
-      scrollX: 0,
-      scrollY: 0
-    });
-  }
-
-  function stackCanvases(parts, targetW) {
-    const scaled = parts.map((c) => {
-      const h = c.height * (targetW / c.width);
-      return { canvas: c, height: h };
-    });
-    const totalH = Math.max(1, Math.ceil(scaled.reduce((s, p) => s + p.height, 0)));
-    const out = document.createElement('canvas');
-    out.width = targetW;
-    out.height = totalH;
-    const ctx = out.getContext('2d');
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, targetW, totalH);
-    let y = 0;
-    const tops = [];
-    scaled.forEach((p) => {
-      tops.push(y);
-      ctx.drawImage(p.canvas, 0, y, targetW, p.height);
-      y += p.height;
-    });
-    return { canvas: out, tops, heights: scaled.map((p) => p.height) };
-  }
-
-  function stampSearchableHeaderText(pdf, lines) {
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(8);
-    pdf.setTextColor(255, 255, 255);
-    let y = 5;
-    (lines || []).forEach((line) => {
-      const text = String(line || '').replace(/\s+/g, ' ').trim();
-      if (!text) return;
-      pdf.text(text, COT_PDF_LETTER.marginX, y);
-      y += 3.2;
-    });
   }
 
   function buildCotShareMessage() {
@@ -954,133 +837,29 @@
   }
 
   async function generarCotPdfFile() {
-    const jsPDF = global.jspdf?.jsPDF || global.jsPDF;
-    const html2canvas = global.html2canvas;
     const viewRoot = document.getElementById('view-cotizacion');
-    if (!jsPDF || !html2canvas || !viewRoot) return null;
+    const pageEl = document.querySelector('.page');
+    if (!viewRoot || !pageEl || !global.ArpaPdfCaptura) return null;
 
+    // Los mismos pasos que "Guardar como PDF" (campos como texto, firmas como imagen) y la captura con
+    // los estilos de impresión (ArpaPdfCaptura): el PDF compartido sale igual al guardado, en hoja Carta,
+    // sin botones ni avisos de la app, y sin partir filas, títulos, resumen ni firmas entre hojas.
     const ctx = beginCotPdfExport();
-    const printStyle = injectCotWhatsAppPrintCss();
-    document.body.classList.add('cot-pdf-fixed-width');
     let numeroSwap = null;
     try {
-      if (document.fonts?.ready) await document.fonts.ready;
       viewRoot.scrollTop = 0;
-      window.scrollTo(0, 0);
       numeroSwap = replaceHeaderCotNumber();
       await waitForCotPdfLayout();
-
-      const headerEl = document.querySelector('.page > .header') || document.querySelector('.header');
-      const goldEl = document.querySelector('.page > .gold-bar');
-      const pageEl = document.querySelector('.page');
-      const captureW = Math.max(
-        320,
-        Math.ceil((pageEl && pageEl.clientWidth) || viewRoot.scrollWidth || viewRoot.getBoundingClientRect().width)
-      );
-
-      const measured = collectCotPdfBreakRanges(viewRoot);
-      const viewCanvas = await captureElementCanvas(html2canvas, viewRoot, {
-        width: captureW,
-        height: measured.rootHeight,
-        backgroundColor: '#ffffff'
-      });
-      const headerCanvas = headerEl
-        ? await captureElementCanvas(html2canvas, headerEl, {
-          width: captureW,
-          height: Math.ceil(headerEl.scrollHeight || headerEl.getBoundingClientRect().height),
-          backgroundColor: '#0f2044'
-        })
-        : null;
-      const goldCanvas = goldEl
-        ? await captureElementCanvas(html2canvas, goldEl, {
-          width: captureW,
-          height: Math.max(4, Math.ceil(goldEl.getBoundingClientRect().height)),
-          backgroundColor: '#d97706'
-        })
-        : null;
-
-      const parts = [];
-      if (headerCanvas) parts.push(headerCanvas);
-      if (goldCanvas) parts.push(goldCanvas);
-      parts.push(viewCanvas);
-      const stacked = stackCanvases(parts, viewCanvas.width);
-      const canvas = stacked.canvas;
-      const headerBlockH = (headerCanvas ? stacked.heights[0] : 0)
-        + (goldCanvas ? stacked.heights[headerCanvas ? 1 : 0] : 0);
-
-      const scaleY = viewCanvas.height / measured.rootHeight;
-      const viewOffset = headerBlockH;
-      const toCanvas = (r) => ({
-        name: r.name,
-        top: r.top * scaleY + viewOffset,
-        bottom: r.bottom * scaleY + viewOffset
-      });
-      const atomicPx = measured.atomic.map(toCanvas);
-      if (headerBlockH > 1) {
-        atomicPx.unshift({ name: 'encabezado', top: 0, bottom: headerBlockH });
-      }
-      const extrasPx = measured.extras.map(toCanvas);
-
-      const contentW = COT_PDF_LETTER.widthMm - COT_PDF_LETTER.marginX * 2;
-      const contentH = COT_PDF_LETTER.heightMm - COT_PDF_LETTER.marginTop - COT_PDF_LETTER.marginBottom;
-      const pageCanvasH = contentH * (canvas.width / contentW);
-      const starts = computeCanvasPageStarts(atomicPx, pageCanvasH, canvas.height);
 
       const company = (document.getElementById('brand-company-name')?.textContent || '').trim();
       const contact = (document.getElementById('brand-company-contact')?.innerText || '').replace(/\s+/g, ' ').trim();
       const numero = (numeroSwap?.el?.value || document.querySelector('.pdf-valor-numero-cot')?.textContent || document.getElementById('numero-cot')?.value || '').trim();
 
-      const pdf = new jsPDF({ unit: 'mm', format: 'letter', orientation: 'portrait' });
-      for (let i = 0; i < starts.length; i += 1) {
-        const srcY = Math.max(0, Math.floor(starts[i]));
-        const nextY = i + 1 < starts.length ? starts[i + 1] : canvas.height;
-        const srcH = Math.max(1, Math.min(Math.ceil(nextY - srcY), Math.ceil(canvas.height - srcY)));
-        const slice = document.createElement('canvas');
-        slice.width = canvas.width;
-        slice.height = srcH;
-        const sctx = slice.getContext('2d');
-        sctx.fillStyle = '#ffffff';
-        sctx.fillRect(0, 0, slice.width, slice.height);
-        sctx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
-        const destH = srcH * contentW / canvas.width;
-        if (i > 0) pdf.addPage();
-        pdf.addImage(slice.toDataURL('image/jpeg', 0.92), 'JPEG', COT_PDF_LETTER.marginX, COT_PDF_LETTER.marginTop, contentW, destH);
-        if (i === 0) stampSearchableHeaderText(pdf, [company, contact, numero]);
-      }
+      const { blob, debug } = await global.ArpaPdfCaptura.capturarPdf(pageEl, {
+        searchableText: [company, contact, numero]
+      });
+      global.__arpaCotWhatsAppPdf = debug;
 
-      const footer = extrasPx.find((r) => r.name === 'pie');
-      const firmas = extrasPx.find((r) => r.name === 'firmas');
-      const footerOnlyPages = [];
-      for (let i = 0; i < starts.length; i += 1) {
-        const s = starts[i];
-        const e = i + 1 < starts.length ? starts[i + 1] : canvas.height;
-        const hitsFooter = pageIntervalHits(footer, s, e, 2);
-        const hitsFirmas = pageIntervalHits(firmas, s, e, 2);
-        const hitsOther = atomicPx.some((r) => r.name !== 'aprobacion' && pageIntervalHits(r, s, e, 2));
-        if (hitsFooter && !hitsFirmas && !hitsOther) footerOnlyPages.push(i + 1);
-      }
-
-      global.__arpaCotWhatsAppPdf = {
-        format: 'letter',
-        pageWidthMm: pdf.internal.pageSize.getWidth(),
-        pageHeightMm: pdf.internal.pageSize.getHeight(),
-        canvasH: canvas.height,
-        pageCanvasH,
-        starts,
-        ranges: atomicPx,
-        extras: extrasPx,
-        footerOnlyPages,
-        headerPx: headerBlockH,
-        prep: {
-          buscarHidden: window.getComputedStyle(document.getElementById('cot-buscar-section') || document.body).display === 'none',
-          ivaHidden: window.getComputedStyle(document.querySelector('#view-cotizacion .iva-toggle') || document.body).display === 'none',
-          suiteFooterHidden: window.getComputedStyle(document.getElementById('suite-footer') || document.body).display === 'none',
-          cotFooterShown: window.getComputedStyle(document.getElementById('cot-print-footer') || document.body).display !== 'none',
-          headerCaptured: headerBlockH > 40
-        }
-      };
-
-      const blob = pdf.output('blob');
       const numeroArchivo = numero || document.getElementById('numero-cot')?.value.trim() || 'Cotizacion';
       const cliente = document.getElementById('cot-nombre')?.value.trim() || 'Cliente';
       // Nombre del archivo en el idioma del documento ("Estimate_…" con English; igual que siempre con Español).
@@ -1090,8 +869,6 @@
       if (numeroSwap?.parent && numeroSwap.span?.parentNode === numeroSwap.parent) {
         numeroSwap.parent.replaceChild(numeroSwap.el, numeroSwap.span);
       }
-      printStyle?.remove();
-      document.body.classList.remove('cot-pdf-fixed-width');
       endCotPdfExport(ctx);
     }
   }
