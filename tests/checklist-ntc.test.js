@@ -295,8 +295,9 @@ test('index.html: sección después de las fotos y antes de las firmas, y enganc
   ['ArpaChecklistNtc?.enrichDraft?.(data)', 'ArpaChecklistNtc?.restoreFromDraft?.(data)', 'ArpaChecklistNtc?.reset?.()',
     'ArpaChecklistNtc?.stripPhotos?.(fallback)', 'ArpaChecklistNtc?.prepareForPrint?.()', 'ArpaChecklistNtc?.restoreAfterPrint?.()']
     .forEach(pos);
-  // El PDF se arma antes de que guardarPDF cambie los campos por texto.
-  const g = html.slice(pos('function guardarPDF()'), pos('function forzarSaltoSiSeCorta()'));
+  // El PDF se arma antes de que guardarPDF cambie los campos por texto
+  // (desde el 6-nov-2026 esos pasos viven en prepararFormatoParaPdf, compartidos con WhatsApp).
+  const g = html.slice(pos('function prepararFormatoParaPdf()'), pos('function forzarSaltoSiSeCorta()'));
   assert.ok(g.indexOf('prepareForPrint') < g.indexOf('replaceChild(span, el)'));
   assert.ok(read('js/arpa-historial.js').includes('ArpaChecklistNtc?.stripPhotos?.(next.fullSnapshot)'));
 });
