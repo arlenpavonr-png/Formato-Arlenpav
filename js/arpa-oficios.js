@@ -773,9 +773,7 @@
           ? (global.ArpaCatalogo?.normalizeAutomatismosCategory?.(item.categoria || item.category) || item.categoria || 'General')
           : (item.categoria || item.category || 'General')
       );
-      const seedPvp = id === OFICIO_AUTOMATISMOS
-        ? 0
-        : (Number(item.pvp != null ? item.pvp : item.precio) || 0);
+      const seedPvp = Number(item.pvp != null ? item.pvp : item.precio) || 0;
       products.push(global.ArpaPricing?.markPrecargadoProduct?.({
         id: newId(),
         cod,
@@ -845,7 +843,7 @@
     global.ArpaCotizacion?.updateCatalogHint?.();
   }
 
-  const AUTOMATISMOS_SEED_VERSION = '2026-09-listas-distribuidor-2';
+  const AUTOMATISMOS_SEED_VERSION = '2026-11-precios-de-lista';
   const AUTOMATISMOS_SEED_VERSION_KEY = 'arpa_seed_version_automatismos';
   /** Catálogos ampliados después de sembrados: agregan solo los códigos que faltan, una vez. */
   const SEED_UPDATES = { metalmecanica: '2026-10-cerrajeria', construccion: '2026-10-plafon-reticular' };
@@ -868,7 +866,8 @@
       if (current !== AUTOMATISMOS_SEED_VERSION) {
         const result = importSeedCatalog(id, { force: true });
         try { localStorage.setItem(AUTOMATISMOS_SEED_VERSION_KEY, AUTOMATISMOS_SEED_VERSION); } catch (e) { /* ignore */ }
-        if (result.added > 0) global.ArpaMiCatalogo?.resyncPrecargadoPrices?.();
+        // Llena los precios de lista en los productos precargados que quedaron en $0 (no toca los editados).
+        global.ArpaMiCatalogo?.resyncPrecargadoPrices?.();
         return result;
       }
     }
