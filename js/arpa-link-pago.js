@@ -18,17 +18,19 @@
   const TXT = {
     es: {
       label: 'Link de pago (opcional)',
-      placeholder: 'https://… (Nequi, Bold, Wompi, Mercado Pago, PayPal)',
-      help: 'Si lo pones, la cotización y la cuenta de cobro muestran un botón y un código QR para pagar.',
-      invalid: 'Debe empezar por https:// (o http://)',
+      placeholder: 'https://… (Bold, Wompi, Mercado Pago, PayPal)',
+      help: 'Solo si tienes un link de cobro (Bold, Wompi, Mercado Pago, PayPal). Sale en la cotización y la cuenta de cobro con un código QR. Nequi o Daviplata: pon "Nequi" como Banco y tu número como Número de cuenta, arriba.',
+      invalid: 'Debe ser un link que empiece por https://',
+      phone: 'Eso parece un número de celular: el número de Nequi o Daviplata va arriba, en Banco y Número de cuenta. Aquí solo va un link de pago.',
       title: 'PAGAR EN LÍNEA',
       cta: 'Escanea el código o abre el link para pagar:'
     },
     en: {
       label: 'Payment link (optional)',
       placeholder: 'https://… (PayPal, Stripe, Square, Zelle page)',
-      help: 'If set, quotes and invoices show a button and a QR code to pay.',
-      invalid: 'Must start with https:// (or http://)',
+      help: 'Only if you have a payment link (PayPal, Stripe, Square). It appears on quotes and invoices with a QR code. Bank or wallet numbers go above, in Bank and Account number.',
+      invalid: 'Must be a link starting with https://',
+      phone: 'That looks like a phone number: put it above, in Bank and Account number. Only a payment link goes here.',
       title: 'PAY ONLINE',
       cta: 'Scan the code or open the link to pay:'
     }
@@ -92,8 +94,10 @@
     const paint = () => {
       wrap.querySelector('label').textContent = t('label');
       input.placeholder = t('placeholder');
-      const bad = input.value.trim() && !normalize(input.value);
-      help.textContent = bad ? t('invalid') : t('help');
+      const v = input.value.trim();
+      const bad = v && !normalize(v);
+      const looksPhone = bad && /^[+\d\s().-]{7,}$/.test(v);
+      help.textContent = looksPhone ? t('phone') : (bad ? t('invalid') : t('help'));
       help.style.color = bad ? '#dc2626' : '';
     };
     input.value = get();
