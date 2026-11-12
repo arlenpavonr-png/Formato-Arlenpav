@@ -343,6 +343,29 @@
    * Esto preserva entradas creadas sin conexión y descarta entradas que
    * fueron eliminadas desde otro dispositivo (no están en la nube).
    */
+  /**
+   * Une el historial de la nube con el del celular.
+   * La nube solo guarda número, cliente, ciudad, fecha y total; el celular guarda la
+   * cotización completa (teléfono, NIT, productos, cobros…). Antes la copia de la nube
+   * reemplazaba a la del celular cada 30 minutos y se perdía todo el detalle (11-nov-2026).
+   * Ahora, si el registro existe en los dos, se combinan y gana lo del celular.
+   */
+  function mergeHistorialRecords(cloudRecords, localRecords) {
+    const merged = new Map();
+    (cloudRecords || []).forEach((r) => { if (r && r.id) merged.set(r.id, r); });
+    (localRecords || []).forEach((r) => {
+      if (!r || !r.id) return;
+      const cloud = merged.get(r.id);
+      merged.set(r.id, cloud ? Object.assign({}, cloud, r) : r);
+    });
+    // Más reciente primero
+    return Array.from(merged.values()).sort((a, b) => {
+      const dateA = a.savedAt || a.fecha || '';
+      const dateB = b.savedAt || b.fecha || '';
+      return dateB.localeCompare(dateA);
+    });
+  }
+
   function applyHistorialFromCloud(entradas) {
     if (!Array.isArray(entradas) || !entradas.length) return false;
 
@@ -356,21 +379,7 @@
       if (!Array.isArray(localRecords)) localRecords = [];
     } catch (e) {}
 
-    // Construir mapa: nube es la base (autoridad)
-    const merged = new Map();
-    cloudRecords.forEach((r) => merged.set(r.id, r));
-
-    // Agregar registros locales que la nube no tiene (offline-created)
-    localRecords.forEach((r) => {
-      if (r.id && !merged.has(r.id)) merged.set(r.id, r);
-    });
-
-    // Ordenar: más reciente primero
-    const records = Array.from(merged.values()).sort((a, b) => {
-      const dateA = a.savedAt || a.fecha || '';
-      const dateB = b.savedAt || b.fecha || '';
-      return dateB.localeCompare(dateA);
-    });
+    const records = mergeHistorialRecords(cloudRecords, localRecords);
 
     suppressHistorialSync = true;
     try {
@@ -501,6 +510,6 @@
   };
 
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { stripBase64 };
+    module.exports = { stripBase64, mergeHistorialRecords };
   }
 })(typeof window !== 'undefined' ? window : globalThis);
