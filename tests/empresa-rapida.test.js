@@ -10,7 +10,8 @@ const path = require('path');
 const vm = require('vm');
 
 const root = path.join(__dirname, '..');
-const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
+// En Windows git deja los archivos con CRLF; las pruebas buscan saltos `\n`.
+const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8').replace(/\r\n/g, '\n');
 
 function loadBrand(initial) {
   const data = { ...(initial || {}) };
