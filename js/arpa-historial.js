@@ -305,6 +305,37 @@
     if (!concepto && d?.observaciones) concepto = trimBrief(d.observaciones, 120);
     return concepto || getSinDescripcion();
   }
+  /**
+   * Al abrir una cotización vieja del historial, pregunta si es para hacer una NUEVA.
+   * Antes quedaba con el mismo número y la fecha vieja: al guardarla reemplazaba la
+   * original y quedaba enterrada en el mes viejo del historial (pasó con la AP-185).
+   */
+  function ofrecerCotizacionNueva(numero) {
+    const en = (global.ArpaI18n?.getLang?.() || 'es') === 'en';
+    const msg = en
+      ? 'Quote ' + numero + ' restored.\n\nOK = use it as the base for a NEW quote (new number and today\'s date).\nCancel = edit ' + numero + ' itself.'
+      : 'Se abrió la cotización ' + numero + '.\n\nAceptar = usarla como base para una cotización NUEVA (número nuevo y fecha de hoy).\nCancelar = editar la misma ' + numero + '.';
+    if (!global.confirm(msg)) return false;
+    const hoy = new Date();
+    const iso = function (d) {
+      if (typeof global.fechaLocalISO === 'function') return global.fechaLocalISO(d);
+      const p = function (n) { return String(n).padStart(2, '0'); };
+      return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+    };
+    const fecha = document.getElementById('cot-fecha');
+    if (fecha) fecha.value = iso(hoy);
+    const validez = document.getElementById('cot-validez');
+    if (validez) validez.value = iso(new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 15));
+    const num = document.getElementById('numero-cot');
+    if (num) num.value = '';
+    try {
+      const p = global.ArpaCotizacion?.nuevoCotNumero?.();
+      if (p && typeof p.then === 'function') p.catch(function () {});
+    } catch (e) { /* el número se asigna al guardar */ }
+    global.ArpaCotizacion?.scheduleCotDraftSave?.();
+    return true;
+  }
+
   function addRecord(record) {
     const records = getRecords();
     const numero = String(record.numero || '').trim();
@@ -552,7 +583,7 @@
           if (fecha)   { const el = document.getElementById('cot-fecha');   if (el) el.value = fecha; }
         }
         window.scrollTo(0, 0);
-        alert(window.ArpaI18n.t('alert.historial.documento_restaurado'));
+        ofrecerCotizacionNueva(r.numero || (fs && fs.numero) || '');
       }, 400);
     } else {
       document.querySelector('.main-menu-btn[onclick*="openCuentaCobroView"]')?.click();
