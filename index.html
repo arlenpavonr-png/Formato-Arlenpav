@@ -4732,6 +4732,9 @@ function renderFormatoFotos(slot) {
     img.style.cssText = 'width:calc(50% - 2px);height:90px;object-fit:cover;border-radius:6px;cursor:pointer;';
     img.title = 'Toca para quitar';
     img.onclick = function () {
+      // Antes un toque borraba la foto sin preguntar (Arlen la perdió así en el AP-031).
+      const msg = window.ArpaI18n?.t?.('confirm.foto_quitar') || '¿Quitar esta foto del formato?';
+      if (!window.confirm(msg)) return;
       store[slot].splice(index, 1);
       renderFormatoFotos(slot);
       scheduleFormatoDraftSave();
