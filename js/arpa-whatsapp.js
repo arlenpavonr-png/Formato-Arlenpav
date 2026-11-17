@@ -85,6 +85,11 @@
     const element = document.querySelector('.page');
     if (!element || !global.ArpaPdfCaptura || typeof global.prepararFormatoParaPdf !== 'function') return null;
 
+    // El nombre del cliente se lee ANTES de preparar el PDF: prepararFormatoParaPdf cambia las casillas
+    // por texto y después #formato-cliente-nombre ya no está, por eso el archivo salía
+    // "Formato_AP-031_Formato.pdf" (igual que pasó con la cotización).
+    const clienteArchivo = readFormatoField(document.getElementById('formato-cliente-nombre'));
+
     global.ArpaTrialCapture?.beginPdfExport?.();
     // Los mismos pasos que "Guardar como PDF" (campos como texto, firmas como imagen, sin botones),
     // y la captura con los estilos de impresión: el PDF compartido sale igual al guardado.
@@ -93,7 +98,7 @@
     try {
       await prep.ready;
       const numero = readFormatoField(document.getElementById('numero-formato'));
-      const cliente = readFormatoField(document.getElementById('formato-cliente-nombre'));
+      const cliente = clienteArchivo;
       const { blob } = await global.ArpaPdfCaptura.capturarPdf(element, {
         searchableText: [
           (document.getElementById('brand-company-name')?.textContent || '').trim(),
