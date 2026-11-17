@@ -195,6 +195,64 @@
     return starts;
   }
 
+  /**
+   * html2canvas 1.4.1 no entiende `object-fit`: estira la foto al tamaño de la cajita (las fotos
+   * verticales del celular salían aplastadas) y la achica de un solo golpe (salía pixelada).
+   * Aquí, en la copia de la página, cada <img> con object-fit cover/contain se cambia por la misma
+   * foto ya recortada (o encajada) a la proporción de su cajita y achicada con buena calidad.
+   * Formato de servicio, 16-nov-2026 (AP-031).
+   */
+  async function prepararImagenesObjectFit(root, win, scale) {
+    const imgs = Array.from(root.querySelectorAll('img'));
+    for (const img of imgs) {
+      const fit = win.getComputedStyle(img).objectFit;
+      if (fit !== 'cover' && fit !== 'contain') continue;
+      try {
+        if (!img.complete || !img.naturalWidth) { try { await img.decode(); } catch (e) { continue; } }
+        const nw = img.naturalWidth, nh = img.naturalHeight;
+        const rect = img.getBoundingClientRect();
+        const bw = rect.width, bh = rect.height;
+        if (!nw || !nh || bw < 2 || bh < 2) continue;
+        const boxRatio = bw / bh, imgRatio = nw / nh;
+        if (Math.abs(boxRatio - imgRatio) < 0.01 && nw <= bw * scale * 2) continue;
+        // Tamaño final: el de la cajita a la escala de captura (un poco más para que quede nítida).
+        const outW = Math.max(1, Math.round(bw * scale * 1.5));
+        const outH = Math.max(1, Math.round(bh * scale * 1.5));
+        let sx = 0, sy = 0, sw = nw, sh = nh, dx = 0, dy = 0, dw = outW, dh = outH;
+        if (fit === 'cover') {
+          if (imgRatio > boxRatio) { sw = nh * boxRatio; sx = (nw - sw) / 2; }
+          else { sh = nw / boxRatio; sy = (nh - sh) / 2; }
+        } else {
+          if (imgRatio > boxRatio) { dh = outW / imgRatio; dy = (outH - dh) / 2; }
+          else { dw = outH * imgRatio; dx = (outW - dw) / 2; }
+        }
+        // Achicar por pasos de a la mitad: de un solo golpe la foto queda pixelada.
+        let src = img, cw = sw, ch = sh, cx = sx, cy = sy;
+        while (cw / 2 > dw && ch / 2 > dh) {
+          const step = document.createElement('canvas');
+          step.width = Math.round(cw / 2); step.height = Math.round(ch / 2);
+          const sctx = step.getContext('2d');
+          sctx.imageSmoothingEnabled = true; sctx.imageSmoothingQuality = 'high';
+          sctx.drawImage(src, cx, cy, cw, ch, 0, 0, step.width, step.height);
+          src = step; cx = 0; cy = 0; cw = step.width; ch = step.height;
+        }
+        const out = document.createElement('canvas');
+        out.width = outW; out.height = outH;
+        const ctx = out.getContext('2d');
+        ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+        if (fit === 'contain') { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, outW, outH); }
+        ctx.drawImage(src, cx, cy, cw, ch, dx, dy, dw, dh);
+        const url = out.toDataURL('image/jpeg', 0.92);
+        img.removeAttribute('srcset');
+        img.src = url;
+        img.style.objectFit = 'fill';
+        try { await img.decode(); } catch (e) { /* sigue */ }
+      } catch (e) {
+        /* si una foto falla, se deja como estaba */
+      }
+    }
+  }
+
   function waitFrames() {
     return new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   }
@@ -241,6 +299,7 @@
           normalizeTextNodes(root);
           if (cloneDoc.fonts?.ready) { try { await cloneDoc.fonts.ready; } catch (e) { /* sigue */ } }
           const win = cloneDoc.defaultView;
+          await prepararImagenesObjectFit(root, win, scale);
           const rect = root.getBoundingClientRect();
           measured = {
             width: rect.width,
