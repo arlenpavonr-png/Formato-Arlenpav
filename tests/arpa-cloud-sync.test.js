@@ -74,6 +74,23 @@ describe('mergeHistorialRecords (la nube no borra el detalle de la cotización, 
     assert.equal(r.fullSnapshot.tel, '999');
   });
 
+  it('si otro aparato cambió la cotización, gana la nube y no se reabre el detalle viejo (AP-185)', () => {
+    const viejoCel = { id: 'e5', numero: 'AP-185', total: 4740841, concepto: 'Phobos A25 + 4 más', savedAt: '2026-10-10T15:00:00Z', fullSnapshot: { filas: [{ nom: 'Phobos A25' }] } };
+    const nuevoNube = { id: 'e5', numero: 'AP-185', total: 7644441, concepto: 'Icaro A2000V + 2 más', savedAt: '2026-11-16T23:59:00Z' };
+    const [r] = mergeHistorialRecords([nuevoNube], [viejoCel], Date.parse('2026-11-01T00:00:00Z'));
+    assert.equal(r.total, 7644441);
+    assert.equal(r.concepto, 'Icaro A2000V + 2 más');
+    assert.equal(r.fullSnapshot, undefined);
+  });
+
+  it('si el cambio se guardó en este aparato después de la última sincronización, gana el aparato', () => {
+    const local2 = { id: 'f6', total: 900, concepto: 'nuevo', savedAt: '2026-11-16T12:00:00Z', fullSnapshot: { filas: [1] } };
+    const cloud2 = { id: 'f6', total: 500, concepto: 'viejo' };
+    const [r] = mergeHistorialRecords([cloud2], [local2], Date.parse('2026-11-16T10:00:00Z'));
+    assert.equal(r.total, 900);
+    assert.equal(r.fullSnapshot.filas.length, 1);
+  });
+
   it('ordena del más reciente al más viejo', () => {
     const viejo = { id: 'c3', savedAt: '2026-10-01T00:00:00Z' };
     const nuevo = { id: 'd4', savedAt: '2026-11-11T00:00:00Z' };

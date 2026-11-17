@@ -350,13 +350,31 @@
    * reemplazaba a la del celular cada 30 minutos y se perdía todo el detalle (11-nov-2026).
    * Ahora, si el registro existe en los dos, se combinan y gana lo del celular.
    */
-  function mergeHistorialRecords(cloudRecords, localRecords) {
+  /**
+   * Mezcla historial de la nube con el del aparato.
+   * Regla (16-nov-2026, caso AP-185): si el mismo documento cambió en otro aparato
+   * (la nube trae otro total o concepto) y aquí no se guardó nada desde la última
+   * sincronización, gana la versión de la nube; el detalle viejo de este aparato se
+   * descarta para no reabrir una versión que ya no existe. Si no hay diferencias,
+   * se conserva el detalle del aparato (teléfono, productos, cobros: caso 11-nov).
+   */
+  function mergeHistorialRecords(cloudRecords, localRecords, lastSyncMs) {
     const merged = new Map();
     (cloudRecords || []).forEach((r) => { if (r && r.id) merged.set(r.id, r); });
     (localRecords || []).forEach((r) => {
       if (!r || !r.id) return;
       const cloud = merged.get(r.id);
-      merged.set(r.id, cloud ? Object.assign({}, cloud, r) : r);
+      if (!cloud) { merged.set(r.id, r); return; }
+      const totalDistinto = cloud.total != null && r.total != null && Number(cloud.total) !== Number(r.total);
+      const conceptoDistinto = !!cloud.concepto && !!r.concepto && cloud.concepto !== r.concepto;
+      const guardadoAquiDespues = !!lastSyncMs && !!r.savedAt && Date.parse(r.savedAt) > lastSyncMs;
+      if ((totalDistinto || conceptoDistinto) && !guardadoAquiDespues) {
+        const nube = Object.assign({}, r, cloud);
+        if (!cloud.fullSnapshot) delete nube.fullSnapshot;
+        merged.set(r.id, nube);
+        return;
+      }
+      merged.set(r.id, Object.assign({}, cloud, r));
     });
     // Más reciente primero
     return Array.from(merged.values()).sort((a, b) => {
@@ -379,7 +397,7 @@
       if (!Array.isArray(localRecords)) localRecords = [];
     } catch (e) {}
 
-    const records = mergeHistorialRecords(cloudRecords, localRecords);
+    const records = mergeHistorialRecords(cloudRecords, localRecords, getLastSyncTime());
 
     suppressHistorialSync = true;
     try {
