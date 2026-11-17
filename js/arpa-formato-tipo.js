@@ -1295,6 +1295,9 @@
       render();
       getSection()?.querySelector('[data-item="' + id + '"] [data-ntc="obs"]')?.focus?.();
     } else if (kind === 'foto-del' && id) {
+      // Pregunta antes de quitar: un toque sin querer borraba la foto.
+      const msg = global.ArpaI18n?.t?.('confirm.foto_quitar') || '¿Quitar esta foto del formato?';
+      if (!global.confirm(msg)) return;
       setItemRaw(id, { foto: '' });
       render();
       save();
