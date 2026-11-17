@@ -651,8 +651,10 @@
     var records = getRecords();
     var ahora = new Date();
     var mesActual = ahora.getFullYear() + '-' + String(ahora.getMonth() + 1).padStart(2, '0');
+    // Cuenta por la fecha del documento. savedAt solo si no hay fecha: al sincronizar,
+    // la nube marca todos los registros con la fecha de hoy y salían todos "de este mes".
     var esteMes = records.filter(function(r) {
-      return toYM(r.fecha) === mesActual || toYM(r.savedAt) === mesActual;
+      return toYM(r.fecha || r.savedAt) === mesActual;
     });
     var totalCotMes = esteMes
       .filter(function(r) { return inferModulo(r) === 'cotizacion' && r.total; })
