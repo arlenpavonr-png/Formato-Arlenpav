@@ -147,3 +147,14 @@ test('la captura arma hoja Carta con el ancho de impresión', () => {
   assert.equal(C.PRINT_WIDTH_PX, 725);
   assert.match(read('js/arpa-pdf-captura.js'), /format: 'letter'/);
 });
+
+test('fotos del PDF compartido: recortadas a su cajita, no estiradas (html2canvas no entiende object-fit)', () => {
+  const cap = read('js/arpa-pdf-captura.js');
+  assert.match(cap, /async function prepararImagenesObjectFit\(root, win, scale\)/);
+  const onclone = cap.slice(cap.indexOf('onclone:'), cap.indexOf('measured = {'));
+  assert.match(onclone, /await prepararImagenesObjectFit\(root, win, scale\)/, 'se arreglan las fotos antes de medir y capturar');
+  const fn = cap.slice(cap.indexOf('async function prepararImagenesObjectFit'), cap.indexOf('function waitFrames'));
+  assert.match(fn, /objectFit/);
+  assert.match(fn, /imageSmoothingQuality = 'high'/, 'se achican con buena calidad');
+  assert.match(fn, /img\.style\.objectFit = 'fill'/);
+});
