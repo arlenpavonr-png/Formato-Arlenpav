@@ -4426,6 +4426,9 @@ function prepararFormatoParaPdf() {
 
   const { block: qrBlock, qrReady } = prepareVideoQrForPrint();
   if (qrBlock) document.body.classList.add('formato-has-video-qr');
+  // Sin enlace de video, la sección "Video de entrega" no sale en el PDF (antes salía el título y el campo vacío).
+  const videoUrl = document.getElementById('formato-video-url')?.value || '';
+  document.getElementById('formato-video-section')?.classList.toggle('print-hide-empty', !isValidVideoEntregaUrl(videoUrl));
 
   const viewRoot = document.getElementById('view-formato');
   const elementos = viewRoot.querySelectorAll('input:not([type=file]):not([type=radio]):not([type=checkbox]), select, textarea');

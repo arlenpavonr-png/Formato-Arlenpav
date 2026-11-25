@@ -202,6 +202,21 @@
    * foto ya recortada (o encajada) a la proporción de su cajita y achicada con buena calidad.
    * Formato de servicio, 16-nov-2026 (AP-031).
    */
+  /**
+   * En algunos equipos el PDF salía con palabras pegadas ("La garantíade manode obra"): html2canvas
+   * ubica cada palabra según la página, pero la dibuja con el ancho que mide el lienzo, y si los dos
+   * anchos no coinciden las palabras se montan. Con un letter-spacing distinto de 0, html2canvas
+   * dibuja letra por letra, cada una en la posición exacta que tiene en la página. Solo se toca el
+   * texto que no tiene letter-spacing propio, para no cambiar el diseño de los títulos.
+   */
+  function dibujarLetraPorLetra(root, win) {
+    const els = [root].concat(Array.from(root.querySelectorAll('*')));
+    els.forEach((el) => {
+      const ls = win.getComputedStyle(el).letterSpacing;
+      if (ls === 'normal' || parseFloat(ls) === 0) el.style.setProperty('letter-spacing', '0.01px', 'important');
+    });
+  }
+
   async function prepararImagenesObjectFit(root, win, scale) {
     const imgs = Array.from(root.querySelectorAll('img'));
     for (const img of imgs) {
@@ -299,6 +314,7 @@
           normalizeTextNodes(root);
           if (cloneDoc.fonts?.ready) { try { await cloneDoc.fonts.ready; } catch (e) { /* sigue */ } }
           const win = cloneDoc.defaultView;
+          dibujarLetraPorLetra(root, win);
           await prepararImagenesObjectFit(root, win, scale);
           const rect = root.getBoundingClientRect();
           measured = {
