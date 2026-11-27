@@ -52,3 +52,13 @@ test('sin IndexedDB no hay migración y el registro conserva sus fotos', async (
   assert.equal(H.separarFotos({ fotosAntes: [], fotosDespues: [] }), null);
   assert.equal(await H.migrarFotosAlDispositivo(), 0);
 });
+
+test('la foto de la placa también sale del snapshot y vuelve igual (27-nov)', () => {
+  const { H } = cargar();
+  const original = { numero: 'AP-040', fotosAntes: [], fotosDespues: [], 'formato-foto-placa': F('P') };
+  const sep = H.separarFotos(original);
+  assert.ok(sep, 'solo con la placa ya hay algo que separar');
+  assert.equal(sep.snapshot['formato-foto-placa'], '');
+  assert.equal(sep.fotos.placa, F('P'));
+  assert.deepEqual(JSON.parse(JSON.stringify(H.unirFotos(sep.snapshot, sep.fotos))), original);
+});
